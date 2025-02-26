@@ -16,3 +16,6 @@ Detail how you think this feature should work. Include any technical details, if
 Add any other context or screenshots related to the request here.
 
 ## Acceptance Criteria
+
+## Deadline
+Write the deadline of the issue here
