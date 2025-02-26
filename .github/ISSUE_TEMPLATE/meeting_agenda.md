@@ -25,3 +25,6 @@ _What is the goal of this meeting? (e.g., project update, brainstorming, decisio
    - Discussion points  
 
 ---
+
+## Deadline
+Write the deadline of the issue here

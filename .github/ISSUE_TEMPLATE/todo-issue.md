@@ -14,3 +14,6 @@ Describe what needs to be done.
 Add any other info or relevant details here.
 
 ## Acceptance Criteria
+
+## Deadline
+Write the deadline of the issue here
