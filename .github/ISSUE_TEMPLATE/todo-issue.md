@@ -3,17 +3,16 @@ name: "Simple To-Do"
 about: "Add a straightforward task or checklist item"
 ---
 
-## Task Description
+## 📌 Task Description
 Describe what needs to be done.
 
-## Checklist
+## ✅ Acceptance Criteria
+[//]: <> (i.e: Image is created under `src/assets` directory.)
 - [ ] A specific step or sub-task
 - [ ] Another step or sub-task
 
-## Additional Context
+## 📝 Additional Context
 Add any other info or relevant details here.
 
-## Acceptance Criteria
-
-## Deadline
+## 🕛 Deadline
 Write the deadline of the issue here
