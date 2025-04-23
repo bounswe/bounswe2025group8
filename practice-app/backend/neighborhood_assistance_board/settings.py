@@ -90,15 +90,13 @@ WSGI_APPLICATION = 'neighborhood_assistance_board.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'db_352',
+        'NAME': 'neighborhood_assistance',
         'USER': 'postgres',
-        'PASSWORD': '12345',  # Change this to a secure password
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'PASSWORD': 'postgres',
+        'HOST': 'db',  # This is correct - using the service name
+        'PORT': '5432',  # This should be 5432, not 5433
     }
 }
-
-
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
