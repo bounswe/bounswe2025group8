@@ -12,14 +12,18 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.0.2",
+    "@mui/x-data-grid": "^8.2.0",
     "@reduxjs/toolkit": "^2.7.0",
     "axios": "^1.9.0",
+    "formik": "^2.4.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.56.2",
     "react-redux": "^9.2.0",
-    "react-router-dom": "^7.5.3"
+    "react-router-dom": "^7.5.3",
+    "yup": "^1.6.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
