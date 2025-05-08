@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../hooks/useAuth"; // Updated import path
 import logoImage from "../../assets/logo.png";
 import userIcon from "../../assets/user.svg";
 import keyIcon from "../../assets/key_for_register.svg";
@@ -30,28 +30,24 @@ const RegisterPage = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [registerError, setRegisterError] = useState("");
 
-  const { register } = useAuth();
+  const { register, loading, error } = useAuth(); // Now using Redux state
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!agreeTerms) {
-      return setError("You must agree to the Terms & Conditions");
+      return setRegisterError("You must agree to the Terms & Conditions");
     }
 
     try {
-      setError("");
-      setLoading(true);
+      setRegisterError("");
       await register(email, password, fullName, username, phone);
       navigate("/dashboard"); // Redirect to dashboard after registration
     } catch (error) {
-      setError("Failed to create an account: " + error.message);
-    } finally {
-      setLoading(false);
+      setRegisterError("Failed to create an account: " + error.message);
     }
   };
 
@@ -166,9 +162,10 @@ const RegisterPage = () => {
                 Enter your details to register for the app
               </Typography>
 
-              {error && (
+              {/* Show either the register error or the Redux error */}
+              {(registerError || error) && (
                 <Typography color="error" sx={{ mb: 2 }}>
-                  {error}
+                  {registerError || error}
                 </Typography>
               )}
 

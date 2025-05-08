@@ -1,4 +1,3 @@
-import { useState } from "react";
 import "./App.css";
 import {
   BrowserRouter as Router,
@@ -10,12 +9,13 @@ import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
-import { AuthProvider } from "./contexts/AuthContext";
+import { Provider } from "react-redux";
+import { store } from "./store/index";
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
+    <Provider store={store}>
+      <Router>
         <Routes>
           {/* Authentication routes */}
           <Route path="/login" element={<LoginPage />} />
@@ -28,8 +28,8 @@ function App() {
           {/* Default routes */}
           <Route path="/" element={<Navigate to="/login" />} />
         </Routes>
-      </AuthProvider>
-    </Router>
+      </Router>
+    </Provider>
   );
 }
 

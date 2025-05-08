@@ -13,18 +13,17 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Link as RouterLink, useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../hooks/useAuth"; // Updated import path
 import logoImage from "../../assets/logo.png";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [resetError, setResetError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const { resetPassword } = useAuth();
+  const { resetPassword, loading, error } = useAuth(); // Now using Redux state
   const navigate = useNavigate();
   const { token } = useParams(); // Get the token from the URL
 
@@ -32,25 +31,23 @@ const ResetPassword = () => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      return setError("Passwords don't match");
+      return setResetError("Passwords don't match");
     }
 
     try {
-      setError("");
+      setResetError("");
       setSuccessMessage("");
-      setLoading(true);
       await resetPassword(password, token);
       setSuccessMessage("Password has been reset successfully!");
       setTimeout(() => {
         navigate("/login");
       }, 3000);
     } catch (error) {
-      setError("Failed to reset password: " + error.message);
-    } finally {
-      setLoading(false);
+      setResetError("Failed to reset password: " + error.message);
     }
   };
 
+  // The rest of the component remains the same
   return (
     <Box
       sx={{
@@ -102,9 +99,10 @@ const ResetPassword = () => {
                 Enter your new password
               </Typography>
 
-              {error && (
+              {/* Show either the reset error or the Redux error */}
+              {(resetError || error) && (
                 <Alert severity="error" sx={{ mb: 2, width: "100%" }}>
-                  {error}
+                  {resetError || error}
                 </Alert>
               )}
 

@@ -11,31 +11,27 @@ import {
   InputAdornment,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import logoImage from "../../assets/logo.png";
 import mailIcon from "../../assets/mail.svg";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [forgotError, setForgotError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const { forgotPassword } = useAuth();
+  const { forgotPassword, loading, error } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      setError("");
+      setForgotError("");
       setSuccessMessage("");
-      setLoading(true);
       const result = await forgotPassword(email);
       setSuccessMessage("Password reset link sent to your email!");
     } catch (error) {
-      setError("Failed to reset password: " + error.message);
-    } finally {
-      setLoading(false);
+      setForgotError("Failed to reset password: " + error.message);
     }
   };
 
@@ -57,7 +53,7 @@ const ForgotPassword = () => {
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "center",
-            mb: 1, // Reduced from mb: 6 to mb: 3
+            mb: 1,
           }}
         >
           <img src={logoImage} alt="Logo" width="160" height="160" />
@@ -91,9 +87,10 @@ const ForgotPassword = () => {
                 password
               </Typography>
 
-              {error && (
+              {/* Show either the forgot error or the Redux error */}
+              {(forgotError || error) && (
                 <Alert severity="error" sx={{ mb: 2, width: "100%" }}>
-                  {error}
+                  {forgotError || error}
                 </Alert>
               )}
 

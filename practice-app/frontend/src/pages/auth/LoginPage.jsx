@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../hooks/useAuth"; // Updated import path
 import logoImage from "../../assets/logo.png";
 import lockIcon from "../../assets/lock.svg";
 import mailIcon from "../../assets/mail.svg";
@@ -25,27 +25,24 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [loginError, setLoginError] = useState(""); // Renamed to avoid conflict
 
-  const { login } = useAuth();
+  const { login, loading, error } = useAuth(); // Now getting loading and error from Redux
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      setError("");
-      setLoading(true);
+      setLoginError("");
       await login(email, password);
       navigate("/dashboard"); // Redirect to dashboard after login
     } catch (error) {
-      setError("Failed to sign in: " + error.message);
-    } finally {
-      setLoading(false);
+      setLoginError("Failed to sign in: " + error.message);
     }
   };
 
+  // The rest of the component remains the same
   return (
     <Box
       sx={{
@@ -157,9 +154,10 @@ const LoginPage = () => {
                 Enter your details to sign in to your account
               </Typography>
 
-              {error && (
+              {/* Show either the login error or the Redux error */}
+              {(loginError || error) && (
                 <Typography color="error" sx={{ mb: 2 }}>
-                  {error}
+                  {loginError || error}
                 </Typography>
               )}
 
