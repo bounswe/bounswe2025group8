@@ -1,9 +1,11 @@
 // app/signin.tsx
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Image,
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -16,12 +18,14 @@ export default function SignIn() {
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
   const { colors } = useTheme();
+  const [showPwd, setShowPwd] = useState(false);
+  const [remember, setRemember] = useState(false);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Back button */}
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <Text style={styles.backText}>‹ Back</Text>
+        <Text style={[styles.backText, {color : colors.primary}]}>‹ Back</Text>
       </TouchableOpacity>
 
       {/* Logo aligned left*/}
@@ -30,22 +34,57 @@ export default function SignIn() {
         style={styles.logo}
       />
 
-      <Text style={styles.header}>Sign In</Text>
+    <View style={styles.header}>
+      <Text style={[styles.title, {color : colors.text}]}>Welcome back</Text>
+      <Text style={styles.subtitle}>Enter your details to sign in{'\n'}to your account
+      </Text>
+    </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+    {/* Email Input */}
+        <View style={styles.inputWrapper}>
+          <Ionicons name="mail-outline" size={20} color="#666" />
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+        </View>
+
+        {/* Password Input */}
+        <View style={styles.inputWrapper}>
+          <Ionicons name="lock-closed-outline" size={20} color="#666" />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            secureTextEntry={!showPwd}
+            value={password}
+            onChangeText={setPassword}
+          />
+          <Pressable onPress={() => setShowPwd(v => !v)}>
+            <Ionicons
+              name={showPwd ? 'eye' : 'eye-off'}
+              size={20}
+              color="#666"
+            />
+          </Pressable>
+        </View>
+
+      
+        {/* Remember Me */}
+        <Pressable
+          style={styles.rememberWrapper}
+          onPress={() => setRemember(r => !r)}
+        >
+          <Ionicons
+            name={remember ? 'checkbox' : 'square-outline'}
+            size={20}
+            color="#666"
+          />
+          <Text style={styles.rememberText}>Remember me</Text>
+        </Pressable>
 
       <TouchableOpacity
         style={[styles.button, { backgroundColor: colors.primary }]}
@@ -56,6 +95,25 @@ export default function SignIn() {
       >
         <Text style={styles.buttonText}>Submit</Text>
       </TouchableOpacity>
+
+         {/* Forgot Password */}
+      <TouchableOpacity onPress={() => router.push('/')}>
+        <Text style={[styles.forgotText, { color: colors.primary }]}>
+          Forgot my password
+        </Text>
+      </TouchableOpacity>
+
+          {/* Sign‑Up Prompt */}
+      <View style={styles.signupPrompt}>
+        <Text style={[styles.promptText, { color: colors.text }]}>
+          Don’t have an account?
+        </Text>
+        <TouchableOpacity onPress={() => router.push('/signup')}>
+          <Text style={[styles.promptLink, { color: colors.primary }]}>
+            {' '}Sign Up
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -72,29 +130,74 @@ const styles = StyleSheet.create({
     zIndex: 1
   },
    logo: {
-      width: 100,
-      height: 100,
+      width: 140,
+      height: 140,
       resizeMode: 'contain',
-      marginBottom: 24,
+      marginBottom: 12,
       alignSelf: 'flex-start', // aligns the logo to the left edge
     },
   backText: {
     fontSize: 16,
-    color: '#6C63FF'
   },
   header: {
-    fontSize: 24, fontWeight: '600',
-    marginBottom: 20, textAlign: 'center'
+    marginBottom: 20, textAlign: 'auto'
   },
-  input: {
-    borderWidth: 1, borderColor: '#ccc',
-    borderRadius: 8, padding: 12, marginBottom: 16
+    title: {
+    fontSize: 32,
+    fontWeight: '700',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+    marginTop: 8,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderColor: '#DDD',
+    marginBottom: 16,
+    paddingBottom: 4,
+  },
+    input: {
+    flex: 1,
+    marginLeft: 8,
+    height: 40,
+    color: '#333',
+  },
+    rememberWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+    rememberText: {
+    marginLeft: 8,
+    color: '#666',
+    fontSize: 14,
   },
   button: {
     padding: 14,
-    borderRadius: 8, alignItems: 'center'
+    borderRadius: 36, alignItems: 'center',
+    marginBottom: 24
   },
   buttonText: {
     color: '#fff', fontWeight: 'bold', fontSize: 16
-  }
+  },
+    forgotText: {
+    textAlign: 'center',
+    fontSize: 14,
+    marginBottom: 144,
+  },
+    signupPrompt: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+    promptText: {
+    fontSize: 14,
+  },
+    promptLink: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
 });
