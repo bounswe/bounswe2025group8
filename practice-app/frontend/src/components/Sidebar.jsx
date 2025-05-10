@@ -4,26 +4,22 @@ import CategoryIcon from '@mui/icons-material/Category';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import LoginIcon from '@mui/icons-material/Login';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import LoginIcon from '@mui/icons-material/Login';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
-import { selectIsAuthenticated, selectCurrentUser, selectUserRole, logout } from '../store/slices/authSlice.js';
-import LogoutIcon from '@mui/icons-material/Logout';
 import { Tooltip, IconButton } from '@mui/material';
 import UserAvatar from './UserAvatar.jsx';
 import logo from '../assets/logo.png'; 
+import { useAuth } from '../hooks';
 
 const Sidebar = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const dispatch = useDispatch();
 
-  // Get auth state from Redux
-  const isAuthenticated = useSelector(selectIsAuthenticated);
-  const currentUser = useSelector(selectCurrentUser);
-  const userRole = useSelector(selectUserRole);
+  const { isAuthenticated, currentUser, userRole } = useAuth();
 
   const menuItems = [
     { text: 'Home', icon: <HomeIcon />, path: '/' },
@@ -40,17 +36,6 @@ const Sidebar = () => {
     });
   }
 
-  const handleLogout = () => {
-    // Remove token from localStorage
-    localStorage.removeItem('token');
-    
-    // Dispatch logout action
-    dispatch(logout());
-    
-    // Navigate to home page after logout
-    navigate('/');
-  };
-
   return (
     <Box
       sx={{
@@ -60,11 +45,11 @@ const Sidebar = () => {
         flexDirection: 'column',
         borderRight: `1px solid ${theme.palette.divider}`,
         backgroundColor: theme.palette.background.paper,
-        position: "fixed",  // Make the sidebar fixed
-        left: 0,           // Align to left edge
-        top: 0,            // Align to top edge
-        zIndex: 1200,      // Ensure it appears above other content
-        overflowY: "auto"  // Allow scrolling if sidebar content is too tall
+        position: "fixed",
+        left: 0,
+        top: 0,
+        zIndex: 1200,
+        overflowY: "auto"
       }}
     >
       {/* Logo */}
@@ -75,9 +60,9 @@ const Sidebar = () => {
           justifyContent: 'center',
           alignItems: 'center',
           height: 80,
-          cursor: 'pointer',  // Add pointer cursor to indicate it's clickable
+          cursor: 'pointer',
           '&:hover': {
-            opacity: 0.9,     // Optional: add hover effect
+            opacity: 0.9,
           }
         }}
         onClick={() => navigate('/')}
@@ -139,8 +124,8 @@ const Sidebar = () => {
         })}
       </List>
 
-      {/* Create Request Button - Only show if authenticated or move to a public section */}
-      <Box sx={{ flexGrow: 1, p: 2 }}>
+      {/* Create Request Button */}
+      <Box sx={{ p: 2 }}>
         <Button
           variant="contained"
           startIcon={<AddCircleOutlineIcon />}
@@ -164,36 +149,11 @@ const Sidebar = () => {
         </Button>
       </Box>
 
-      {/* User Profile or Auth Buttons based on authentication status */}
-      {isAuthenticated ? (
-        // Show user profile for authenticated users
-        <Box sx={{ 
-          p: 2, 
-          display: 'flex', 
-          alignItems: 'center', 
-          borderTop: `1px solid ${theme.palette.divider}` 
-        }}>
-          <UserAvatar user={currentUser} />
-          <Box sx={{ flexGrow: 1 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 'medium' }}>
-              {currentUser?.name || "User"}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {userRole.charAt(0).toUpperCase() + userRole.slice(1)}
-            </Typography>
-          </Box>
-          <Tooltip title="Logout">
-            <IconButton 
-              onClick={handleLogout}
-              color="error"
-              size="small"
-            >
-              <LogoutIcon />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      ) : (
-        // Show login/signup buttons for guests
+      {/* Push content to bottom */}
+      <Box sx={{ flexGrow: 1 }} />
+
+      {/* Authentication Buttons for non-authenticated users */}
+      {!isAuthenticated && (
         <Box sx={{ 
           p: 2, 
           display: 'flex', 
@@ -219,6 +179,65 @@ const Sidebar = () => {
           >
             Sign Up
           </Button>
+        </Box>
+      )}
+      
+      {/* User Profile section */}
+      {isAuthenticated && (
+        <Box sx={{ 
+          p: 2, 
+          borderTop: `1px solid ${theme.palette.divider}`,
+          display: 'flex',
+        }}>
+          {/* Avatar on the left */}
+          <Box 
+            sx={{ 
+              cursor: 'pointer',
+              '&:hover': { opacity: 0.8 }
+            }}
+            onClick={() => navigate(`/profile/${currentUser?.id}`)}
+          >
+            <UserAvatar user={currentUser} />
+          </Box>
+          
+          {/* Username and buttons on the right */}
+          <Box sx={{ 
+            display: 'flex',
+            flexDirection: 'column',
+            ml: 1,
+            gap: 0.5
+          }}>
+            {/* Username */}
+            <Typography 
+              variant="subtitle1" 
+              sx={{ 
+                fontWeight: 'medium',
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                '&:hover': { opacity: 0.8 }
+              }}
+              onClick={() => navigate(`/profile/${currentUser?.id}`)}
+            >
+              {currentUser?.name || "User"}
+            </Typography>
+            
+            {/* Buttons below username */}
+            <Box sx={{ 
+              display: 'flex',
+              alignItems: 'center'
+            }}>
+              <Tooltip title="Notifications">
+                <IconButton size="small" sx={{ p: 0.5, mr: 1 }}>
+                  <NotificationsIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Settings">
+                <IconButton size="small" sx={{ p: 0.5 }} onClick={() => navigate('/settings')}>
+                  <SettingsIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Box>
         </Box>
       )}
     </Box>
