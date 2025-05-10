@@ -1,0 +1,114 @@
+.card {
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+  
+  .card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .image {
+    width: 70px;
+    height: 70px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+  
+  .content {
+    flex-grow: 1;
+  }
+  
+  .title {
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+  
+  .metaInfo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 4px;
+  }
+  
+  .locationTime {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #757575;
+    font-size: 12px;
+  }
+  
+  .category {
+    background-color: #F5F5F5;
+    color: #5C69FF;
+    padding: 4px 8px;
+    border-radius: 16px;
+    font-size: 12px;
+    margin-bottom: 4px;
+    display: inline-block;
+  }
+  
+  .chips {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .urgencyHigh {
+    background-color: #F44336;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 16px;
+    font-size: 12px;
+  }
+  
+  .urgencyMedium {
+    background-color: #FF9800;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 16px;
+    font-size: 12px;
+  }
+  
+  .urgencyLow {
+    background-color: #4CAF50;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 16px;
+    font-size: 12px;
+  }
+  
+  .statusAccepted {
+    background-color: #5C69FF;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 16px;
+    font-size: 12px;
+  }
+  
+  .statusPending {
+    background-color: white;
+    color: #5C69FF;
+    border: 1px solid #5C69FF;
+    padding: 4px 8px;
+    border-radius: 16px;
+    font-size: 12px;
+  }
+  
+  .statusRejected {
+    background-color: white;
+    color: #F44336;
+    border: 1px solid #F44336;
+    padding: 4px 8px;
+    border-radius: 16px;
+    font-size: 12px;
+  }
+  
+  .arrowIcon {
+    color: #9E9E9E;
+  }
