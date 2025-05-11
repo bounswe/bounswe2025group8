@@ -108,7 +108,7 @@ export default function SignIn() {
         <Text style={[styles.promptText, { color: colors.text }]}>
           Don’t have an account?
         </Text>
-        <TouchableOpacity onPress={() => router.push('/signup')}>
+        <TouchableOpacity onPress={() => router.replace('/signup')}>
           <Text style={[styles.promptLink, { color: colors.primary }]}>
             {' '}Sign Up
           </Text>

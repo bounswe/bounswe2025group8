@@ -52,7 +52,7 @@ export default function Index() {
       <Text style={[styles.orText, { color: colors.text }]}>OR</Text>
 
       {/* Continue as guest */}
-      <TouchableOpacity onPress={() => {/* TODO: guest flow */}}>
+      <TouchableOpacity onPress={() => router.push('/create_request')}>
         <Text style={[styles.guestText, { color: colors.primary }]}>
           Continue as a guest
         </Text>
