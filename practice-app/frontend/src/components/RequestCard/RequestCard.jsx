@@ -43,6 +43,9 @@ const RequestCard = ({ request, userRole = 'requester' }) => {
   
   // Style based on status
   const getStatusStyle = (status) => {
+
+    if (!status) return {};
+
     switch (status.toLowerCase()) {
       case 'accepted':
         return {
