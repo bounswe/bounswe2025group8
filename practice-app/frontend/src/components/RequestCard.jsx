@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
+import { categoryMapping } from '../constants/categories';
 
 
 
@@ -203,7 +204,7 @@ const RequestCard = ({ request, onClick, sx = {} }) => {
           {request.categories.map((category) => (
             <Chip
               key={category}
-              label={category}
+              label={categoryMapping[category] || category}
               size="small"
               onClick={(e) => handleCategoryClick(category, e)}
               sx={{

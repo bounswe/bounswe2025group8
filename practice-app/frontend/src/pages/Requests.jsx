@@ -22,13 +22,14 @@ import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import TuneIcon from '@mui/icons-material/Tune';
 import ClearIcon from '@mui/icons-material/Clear';
-
+import { categoryMapping } from '../constants/categories.js';
+// Sample request data - in a real app this would come from an API
 // Sample request data - in a real app this would come from an API
 const sampleRequests = [
   {
     id: '1',
     title: 'Help me to see a doctor',
-    categories: ['Healthcare'],
+    categories: ['HEALTHCARE'],
     urgency: 'High',
     distance: '2 km away',
     postedTime: '3 hours ago',
@@ -38,7 +39,7 @@ const sampleRequests = [
   {
     id: '2',
     title: 'Need help moving furniture to my new apartment',
-    categories: ['Moving Help', 'Heavy Lifting'],
+    categories: ['MOVING_HELP', 'HEAVY_LIFTING'],
     urgency: 'Medium',
     distance: '1.5 km away',
     postedTime: '5 hours ago',
@@ -48,7 +49,7 @@ const sampleRequests = [
   {
     id: '3',
     title: 'Looking for someone to help clean my house before guests arrive',
-    categories: ['House Cleaning', 'Home Maintenance'],
+    categories: ['HOUSE_CLEANING', 'HOME_MAINTENANCE'],
     urgency: 'High',
     distance: '0.8 km away',
     postedTime: '2 hours ago',
@@ -56,7 +57,7 @@ const sampleRequests = [
   {
     id: '4',
     title: 'Need help with grocery shopping for elderly parents',
-    categories: ['Grocery Shopping', 'Elderly Care'],
+    categories: ['GROCERY_SHOPPING', 'ELDERLY_CARE'],
     urgency: 'Medium',
     distance: '3 km away',
     postedTime: '1 day ago',
@@ -66,7 +67,7 @@ const sampleRequests = [
   {
     id: '5',
     title: 'Math tutor needed for high school student',
-    categories: ['Tutoring', 'Education'],
+    categories: ['TUTORING', 'EDUCATION'],
     urgency: 'Low',
     distance: '5 km away',
     postedTime: '2 days ago',
@@ -74,7 +75,7 @@ const sampleRequests = [
   {
     id: '6',
     title: 'Need help fixing a leaky faucet and clogged drain',
-    categories: ['Home Repair', 'Plumbing'],
+    categories: ['HOME_REPAIR', 'PLUMBING'],
     urgency: 'Medium',
     distance: '1 km away',
     postedTime: '6 hours ago',
@@ -83,15 +84,6 @@ const sampleRequests = [
   },
 ];
 
-// Category mapping - could be expanded with proper data
-const categoryMapping = {
-  GROCERY_SHOPPING: 'Grocery Shopping',
-  TUTORING: 'Tutoring',
-  HOME_REPAIR: 'Home Repair',
-  MOVING_HELP: 'Moving Help',
-  HOUSE_CLEANING: 'House Cleaning',
-  OTHER: 'Other Services',
-};
 
 const Requests = () => {
   const navigate = useNavigate();
@@ -126,9 +118,7 @@ const Requests = () => {
     if (currentCategoryParam) {
       results = results.filter((request) =>
         request.categories.some(
-          (cat) =>
-            cat.toLowerCase() === categoryMapping[currentCategoryParam]?.toLowerCase() ||
-            cat.toLowerCase() === currentCategoryParam.toLowerCase()
+          (cat) => cat === currentCategoryParam
         )
       );
     }

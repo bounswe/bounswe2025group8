@@ -1,0 +1,16 @@
+export const categoryMapping = {
+  GROCERY_SHOPPING: 'Grocery Shopping',
+  TUTORING: 'Tutoring',
+  HOME_REPAIR: 'Home Repair',
+  MOVING_HELP: 'Moving Help',
+  HOUSE_CLEANING: 'House Cleaning',
+  OTHER: 'Other Services',
+  HOME_CLEANING: 'Home Cleaning',
+  TECHNICAL_SUPPORT: 'Technical Support',
+  PROFESSIONAL_ADVICE: 'Professional Advice',
+  PLUMBING: 'Plumbing',
+  ELDERLY_CARE: 'Elderly Care',
+  EDUCATION: 'Education',
+  HEALTHCARE: 'Healthcare',
+  HEAVY_LIFTING: 'Heavy Lifting',
+};
