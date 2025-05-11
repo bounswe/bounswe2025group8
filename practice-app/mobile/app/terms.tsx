@@ -10,45 +10,99 @@ export default function Terms() {
   const params = useLocalSearchParams();
 
   return (
-    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}> 
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
       <TouchableOpacity style={styles.backButton} onPress={() => router.replace('/signup')}>
         <Ionicons name="arrow-back" size={24} color={colors.primary} />
         <Text style={[styles.backText, { color: colors.primary }]}>Back</Text>
       </TouchableOpacity>
+
       <Text style={[styles.title, { color: colors.text }]}>Terms &amp; Conditions</Text>
-      <Text style={[styles.subtitle, { color: colors.text + '99' }]}>Last updated: 1 April 2025</Text>
+      <Text style={[styles.subtitle, { color: colors.text + '99' }]}>Last updated: 11 May 2025</Text>
+
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.primary }]}>1. Acceptance of the Absurd</Text>
-        <Text style={[styles.sectionText, { color: colors.text }]}>By using this app, you agree to laugh at least once a day. If you do not laugh, please try again tomorrow.</Text>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>1. Data Confiscation</Text>
+        <Text style={[styles.sectionText, { color: colors.text }]}>
+          • We will collect, store, and monetize every piece of data you generate: messages, photos, biometric readings, and even your thoughts (if we figure out how).{'\n'}
+          • Consent? You gave it by using the App. No take-backs.
+        </Text>
       </View>
+
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.primary }]}>2. Obligatory Coffee Clause</Text>
-        <Text style={[styles.sectionText, { color: colors.text }]}>You must consume at least one cup of coffee (or tea) while reading these terms. Decaf is acceptable, but not recommended.</Text>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>2. No Legal Recourse</Text>
+        <Text style={[styles.sectionText, { color: colors.text }]}>
+          • You cannot sue, dispute, protest, or complain in any forum, real or digital.{'\n'}
+          • All claims against us are waived forever.{'\n'}
+          • If you try to initiate legal action, we will countersue for betrayal of trust.
+        </Text>
       </View>
+
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.primary }]}>3. Cat Picture Requirement</Text>
-        <Text style={[styles.sectionText, { color: colors.text }]}>If you encounter a bug, you are required to send us a picture of a cat. This will not fix the bug, but it will make us happy.</Text>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>3. License to Abuse</Text>
+        <Text style={[styles.sectionText, { color: colors.text }]}>
+          • We may modify, delete, or corrupt your Content at will, for any reason or no reason.{'\n'}
+          • You grant us a perpetual, irrevocable license to abuse your Content, profile, and reputation in marketing or blackmailer newsletters.
+        </Text>
       </View>
+
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.primary }]}>4. The Infinite Scroll</Text>
-        <Text style={[styles.sectionText, { color: colors.text }]}>By scrolling to the end of these terms, you acknowledge that you have reached the end.</Text>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>4. Required Cooperation</Text>
+        <Text style={[styles.sectionText, { color: colors.text }]}>
+          • You must comply with any request to provide additional personal data, including but not limited to DNA samples, social security numbers.{'\n'}
+          • Failure to comply will result in account suspension and public shaming on our official Twitter account.
+        </Text>
       </View>
-      <Text style={[styles.footer, { color: colors.text + '99' }]}>Thank you for reading. Now go enjoy the app!</Text>
-      <TouchableOpacity
-        style={{
-          marginTop: 32,
-          backgroundColor: colors.primary,
-          borderRadius: 24,
-          paddingVertical: 14,
-          alignItems: 'center',
-          alignSelf: 'stretch',
-        }}
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>5. Unlimited Liability Shift</Text>
+        <Text style={[styles.sectionText, { color: colors.text }]}>
+          • We assume zero liability for loss, theft, data breaches, emotional distress, or existential crisis caused by the App.{'\n'}
+          • Our only obligation is to send you one apology emoji if we feel like it.
+        </Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>6. Mandatory Arbitration</Text>
+        <Text style={[styles.sectionText, { color: colors.text }]}>
+          • Any disputes will be settled by a secret tribunal composed entirely of our board members.{'\n'}
+          • Decisions are final and binding.{'\n'}
+          • Appeals are strictly prohibited.
+        </Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>7. Changes Without Notice</Text>
+        <Text style={[styles.sectionText, { color: colors.text }]}>
+          • We may alter these Terms at any time, for any reason, without notifying you.{'\n'}
+          • Continued use constitutes acceptance of the new, possibly more draconian, Terms.
+        </Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>8. Termination Rights</Text>
+        <Text style={[styles.sectionText, { color: colors.text }]}>
+          • We may terminate or suspend your account at our sole discretion.{'\n'}
+          • This will permanently block access to any content or funds you've entrusted to the App.
+        </Text>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>9. Governing Law</Text>
+        <Text style={[styles.sectionText, { color: colors.text }]}>
+          • These Terms are governed by the laws of Banana Republic.{'\n'}
+          • You waive any jurisdictional immunity or local consumer protection rights.
+        </Text>
+      </View>
+
+      <TouchableOpacity 
+        style={[styles.agreeButton, { backgroundColor: colors.primary }]} 
         onPress={() => {
-          // Go back to signup and set agreed param
-          router.replace({ pathname: '/signup', params: { agreed: 'true' } });
+          router.replace({
+            pathname: '/signup',
+            params: { agreed: 'true' }
+          });
         }}
       >
-        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>I agree</Text>
+        <Text style={styles.agreeButtonText}>I Agree</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -97,5 +151,18 @@ const styles = StyleSheet.create({
     marginTop: 32,
     textAlign: 'center',
     alignSelf: 'center',
+  },
+  agreeButton: {
+    width: '100%',
+    padding: 16,
+    borderRadius: 36,
+    alignItems: 'center',
+    marginTop: 32,
+    marginBottom: 24,
+  },
+  agreeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

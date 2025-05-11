@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   },
   button: {
      padding: 14,
-    borderRadius: 8, alignItems: 'center',
+    borderRadius: 36, alignItems: 'center',
     marginBottom: 75
   },
   buttonText: {

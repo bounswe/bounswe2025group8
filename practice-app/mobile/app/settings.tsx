@@ -14,7 +14,7 @@ export default function Settings() {
         <Text style={[styles.backText, { color: colors.primary }]}>Back</Text>
       </TouchableOpacity>
       <Text style={[styles.title, { color: colors.primary }]}>Settings</Text>
-      <Text style={[styles.text, { color: colors.text }]}>You can change your account settings here.</Text>
+      <Text style={[styles.text, { color: colors.text }]}>You can't change your account settings here.</Text>
     </SafeAreaView>
   );
 }
