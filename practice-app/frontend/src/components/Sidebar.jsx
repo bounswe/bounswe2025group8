@@ -227,7 +227,7 @@ const Sidebar = () => {
               alignItems: 'center'
             }}>
               <Tooltip title="Notifications">
-                <IconButton size="small" sx={{ p: 0.5, mr: 1 }}>
+                <IconButton size="small" sx={{ p: 0.5, mr: 1 }} onClick={() => navigate('/notifications')}>
                   <NotificationsIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
