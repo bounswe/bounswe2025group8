@@ -10,14 +10,25 @@ const Home = () => {
   // Mock popular categories data - in a real app, this would come from an API
   const popularCategories = useMemo(
     () => [
-      { id: 1, title: 'Home Cleaning', image: 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf', requestCount: 24 },
+      {
+        id: 1,
+        title: 'Home Cleaning',
+        image: 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf',
+        requestCount: 24,
+      },
       {
         id: 2,
         title: 'Technical Support',
-        image: 'https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&w=500&q=80',
+        image:
+          'https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&w=500&q=80',
         requestCount: 18,
       },
-      { id: 3, title: 'Home Repairs', image: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39', requestCount: 32 },
+      {
+        id: 3,
+        title: 'Home Repairs',
+        image: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39',
+        requestCount: 32,
+      },
       {
         id: 4,
         title: 'Professional Advice',
@@ -47,7 +58,7 @@ const Home = () => {
       {
         id: 102,
         title: 'Computer not starting after update',
-        description: 'My laptop won\'t boot after the latest Windows update',
+        description: "My laptop won't boot after the latest Windows update",
         categories: ['TECHNICAL_SUPPORT'],
         urgency: 'Medium',
         location: 'Remote',
@@ -170,13 +181,10 @@ const Home = () => {
           )}
         </Box>
 
-        <Grid container spacing={3} sx={{ mt: 2 , justifyContent:'center'}}>
+        <Grid container spacing={3} sx={{ mt: 2, justifyContent: 'center' }}>
           {requests.slice(0, 6).map((request) => (
             <Grid item xs={12} sm={6} key={request.id}>
-              <RequestCard
-                request={request}
-                onClick={() => navigate(`/requests/${request.id}`)}
-              />
+              <RequestCard request={request} onClick={() => navigate(`/requests/${request.id}`)} />
             </Grid>
           ))}
         </Grid>
