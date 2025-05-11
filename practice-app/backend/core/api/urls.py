@@ -36,5 +36,9 @@ urlpatterns = [
     # User-specific endpoints
     path('users/<int:user_id>/tasks/', task_views.UserTasksView.as_view(), name='user-tasks'),
     path('users/<int:user_id>/reviews/', review_views.UserReviewsView.as_view(), name='user-reviews'),
-
+    
+    # Admin endpoints
+    path('admin/reported-users/', admin_views.ReportedUsersView.as_view(), name='reported-users'),
+    path('admin/users/<int:user_id>/', admin_views.AdminUserDetailView.as_view(), name='admin-user-detail'),
+    path('admin/users/<int:user_id>/ban/', admin_views.BanUserView.as_view(), name='ban-user'),
 ]
