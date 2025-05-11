@@ -5,6 +5,8 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
 
+
+
 /**
  * RequestCard component that displays a request with category, urgency, and other details.
  * @param {Object} props
@@ -33,15 +35,15 @@ const RequestCard = ({ request, onClick, sx = {} }) => {
   const handleCategoryClick = (category, event) => {
     // Prevent triggering the card's onClick
     event.stopPropagation();
-    // Navigate to category page (temporary route)
-    navigate(`/categories/${category.toLowerCase().replace(' ', '-')}`);
+
+    navigate(`/requests?category=${category}`);
   };
 
   const handleUrgencyClick = (urgency, event) => {
     // Prevent triggering the card's onClick
     event.stopPropagation();
-    // Navigate to filtered requests by urgency (temporary route)
-    navigate(`/requests/filter/urgency/${urgency.toLowerCase()}`);
+    // Navigate to filtered requests by urgency using query params
+    navigate(`/requests?urgency=${urgency}`);
   };
   return (
     <Card
@@ -156,7 +158,6 @@ const RequestCard = ({ request, onClick, sx = {} }) => {
         <Divider sx={{ mt: 1, mb: 2 }} />
         {/* Categories and Urgency */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          
           {/* Urgency chip/label - styled to match design */}
           {request.urgency === 'High' ? (
             <Paper
@@ -198,24 +199,24 @@ const RequestCard = ({ request, onClick, sx = {} }) => {
           )}
         </Box>
         {/* Categories - allowing vertical growth */}
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1, minHeight: 24 }}>
-            {request.categories.map((category) => (
-              <Chip
-                key={category}
-                label={category}
-                size="small"
-                onClick={(e) => handleCategoryClick(category, e)}
-                sx={{
-                  borderRadius: '16px',
-                  bgcolor: theme.palette.action.hover,
-                  my: 0.5, // Add vertical margin for better spacing when wrapped
-                  '&:hover': {
-                    bgcolor: theme.palette.action.selected,
-                  },
-                }}
-              />
-            ))}
-          </Box>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1, minHeight: 24 }}>
+          {request.categories.map((category) => (
+            <Chip
+              key={category}
+              label={category}
+              size="small"
+              onClick={(e) => handleCategoryClick(category, e)}
+              sx={{
+                borderRadius: '16px',
+                bgcolor: theme.palette.action.hover,
+                my: 0.5, // Add vertical margin for better spacing when wrapped
+                '&:hover': {
+                  bgcolor: theme.palette.action.selected,
+                },
+              }}
+            />
+          ))}
+        </Box>
       </CardContent>
     </Card>
   );

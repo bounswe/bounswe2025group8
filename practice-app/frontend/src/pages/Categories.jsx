@@ -1,6 +1,6 @@
 import React from 'react';
 import { Grid, Typography, Box, Divider } from '@mui/material';
-import CategoryCard from '../components/categoryCard';
+import { useNavigate } from 'react-router-dom';
 import CategoryCardDetailed from '../components/CategoryCardDetailed';
 
 // Sample category images - in a real app these would likely come from an API
@@ -29,11 +29,15 @@ const categories = [
   { id: 'OTHER', title: 'Other Services', image: CATEGORY_IMAGES.OTHER },
 ];
 
-const Categories = () => {  const handleCategoryClick = (categoryId) => {
-    // This would navigate to category-specific tasks page
-    console.log(`Selected category: ${categoryId}`);
-    // In a real app: navigate(`/categories/${categoryId}`);
+const Categories = () => {
+  const navigate = useNavigate();
+  
+  const handleCategoryClick = (categoryId) => {
+    // Navigate to requests filtered by this category
+    console.log(`Viewing requests for category: ${categoryId}`);
+    navigate(`/requests?category=${categoryId}`);
   };
+
   return (
     <>
       <Box sx={{ my: 4 }}>
@@ -45,66 +49,34 @@ const Categories = () => {  const handleCategoryClick = (categoryId) => {
         </Typography>
       </Box>
       
-      <Grid container spacing={4} justifyContent="center">
+      <Divider sx={{ my: 4 }} />
+      
+      {/* All Categories in Detailed Format */}
+      <Grid
+        container
+        spacing={4}
+        sx={{ mt: 2 }}
+        justifyContent="center"
+      >
         {categories.map((category) => (
           <Grid
             item
             xs={12}
-            sm={6}
-            md={4}
-            lg={3}
+            sm={12}
+            md={6}
+            lg={6}
             key={category.id}
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              mb: 2,
-            }}
           >
-            <CategoryCard
+            <CategoryCardDetailed
               title={category.title}
-              image={category.image}
+              imageUrl={category.image}
+              requestCount={Math.floor(Math.random() * 30) + 5} // Random number for demo
+              categoryId={category.id}
               onClick={() => handleCategoryClick(category.id)}
             />
           </Grid>
         ))}
       </Grid>
-
-      <Divider sx={{ my: 6 }} />
-
-      {/* Section for CategoryCardDetailed examples */}
-      <Box sx={{ mb: 6 }}>
-        <Typography variant="h5" component="h2" gutterBottom>
-          Popular Categories
-        </Typography>
-        <Typography variant="body1" color="text.secondary" paragraph>
-          Categories with the most help requests
-        </Typography>
-        
-        <Grid
-          container
-          spacing={4}
-          sx={{ mt: 2 }}
-          justifyContent="flex-start"
-        >
-          {categories.slice(0, 4).map((category) => (
-            <Grid
-              item
-              xs={12}
-              sm={12}
-              md={6}
-              lg={6}
-              key={`detailed-${category.id}`}
-            >
-              <CategoryCardDetailed
-                title={category.title}
-                imageUrl={category.image}
-                requestCount={Math.floor(Math.random() * 30) + 5} // Random number for demo
-                categoryId={category.id}
-              />
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
     </>
   );
 };
