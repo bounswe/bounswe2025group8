@@ -7,11 +7,28 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
+const myLightTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: '#636AE8', // purple
+  },
+};
+
+const myDarkTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    primary: '#636AE8', // purple
+  },
+};
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    // The below should be 'dark', but it can be changed to 'light' for testing
+    <ThemeProvider value={colorScheme === 'dark' ? myDarkTheme : myLightTheme}>
       <Stack screenOptions={{ headerShown: false }}>
         {/* Plain Stack—no bottom tabs */}
         <Stack.Screen name="index" />
