@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, useColorScheme, View, Text } from 'react-native';
+import { ScrollView, StyleSheet, useColorScheme, View, Text, TouchableOpacity } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
 import ProfileTop from '../components/ui/ProfileTop';
@@ -7,11 +7,12 @@ import TabButton from '../components/ui/TabButton';
 import CategoryCard from '../components/ui/CategoryCard';
 import RatingPill from '../components/ui/RatingPill';
 import ReviewCard from '../components/ui/ReviewCard';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 
 // --- Mock Data ---
-const MOCK_USER = {
+export const MOCK_USER = {
   name: 'Ashley Robinson',
-  profileImageUrl: 'https://i.pravatar.cc/400?img=32', // Placeholder image
+  profileImageUrl: 'https://cdn.visily.ai/app/avatars/v1/big-size/F.png', // Placeholder image
   totalRating: 4.7,
   totalReviewCount: 12,
   volunteerRating: 4.9,
@@ -20,33 +21,41 @@ const MOCK_USER = {
   requesterReviewCount: 3,
 };
 
-const MOCK_V_ACTIVE_REQUESTS = [
+export const MOCK_V_ACTIVE_REQUESTS = [
   {
-    title: 'Help for my math exam',
-    imageUrl: 'https://images.pexels.com/photos/8472944/pexels-photo-8472944.jpeg?auto=compress&cs=tinysrgb&h=350',
-    category: 'Tutoring',
-    urgencyLevel: 'Medium',
-    status: 'Rejected',
+    title: 'Help me to see a doctor',
+    distance: '2 km away',
+    time: '3 hours ago',
+    imageUrl: 'https://images.pexels.com/photos/2324837/pexels-photo-2324837.jpeg?auto=compress&cs=tinysrgb&h=350',
+    category: 'Healthcare',
+    urgencyLevel: 'High',
+    status: 'Accepted',
   },
   {
     title: 'I need to clean my house',
+    distance: '750 m away',
+    time: '22 hours ago',
     imageUrl: 'https://images.pexels.com/photos/3787027/pexels-photo-3787027.jpeg?auto=compress&cs=tinysrgb&h=350',
     category: 'House Cleaning',
     urgencyLevel: 'Low',
     status: 'Pending',
   },
   {
-    title: 'Help me to see a doctor',
-    imageUrl: 'https://images.pexels.com/photos/2324837/pexels-photo-2324837.jpeg?auto=compress&cs=tinysrgb&h=350',
-    category: 'Healthcare',
-    urgencyLevel: 'High',
-    status: 'Accepted',
+    title: 'Help for my math exam',
+    distance: '550 m away',
+    time: '10 hours ago',
+    imageUrl: 'https://images.pexels.com/photos/8472944/pexels-photo-8472944.jpeg?auto=compress&cs=tinysrgb&h=350',
+    category: 'Tutoring',
+    urgencyLevel: 'Medium',
+    status: 'Rejected',
   },
 ];
 
-const MOCK_V_PAST_REQUESTS = [
+export const MOCK_V_PAST_REQUESTS = [
   {
     title: 'Grocery shopping',
+    distance: '900 m away',
+    time: '18 hours ago',
     imageUrl: 'https://images.pexels.com/photos/6508357/pexels-photo-6508357.jpeg?auto=compress&cs=tinysrgb&h=350',
     category: 'Shopping',
     score: 4.0,
@@ -59,27 +68,29 @@ const MOCK_V_REVIEWS = [
     imageUrl: 'https://i.pravatar.cc/400?img=17',
     date: '13/05/2025',
     score: 5.0,
-    comment: 'Ashley was very helpful and kind. I would definitely recommend her to others. She helped me with my math exam. I passed with flying colors!',
+    comment: 'Ashley was very helpful and kind. I would definitely recommend her to other. She helped me with my math exam. I passed with flying colors!',
   },
   {
     author: 'Ashley Gonzalez',
     imageUrl: 'https://i.pravatar.cc/400?img=13',
     date: '08/05/2025',
     score: 3.0,
-    comment: 'Ashley was very helpful and kind. I would definitely recommend her to others. She helped me with my math exam. I passed with flying colors!',
+    comment: 'Ashley was very helpful and kind. I would definitely recommend her to other. She helped me with my math exam. I passed with flying colors! Ashley was very helpful and kind. I would definitely recommend her to other. She helped me with my math exam. I passed with flying colors!',
   },
   {
     author: 'Jennifer Edwards',
     imageUrl: 'https://i.pravatar.cc/400?img=59',
     date: '22/12/2024',
     score: 4.0,
-    comment: 'Ashley was very helpful and kind. I would definitely recommend her to others. She helped me with my math exam. I passed with flying colors!',
+    comment: 'Ashley was very helpful and kind. I would definitely recommend her to other. She helped me with my math exam. I passed with flying colors! Ashley was very helpful and kind. I would definitely recommend her to other.',
   },
 ]
 
-const MOCK_R_ACTIVE_REQUESTS = [
+export const MOCK_R_ACTIVE_REQUESTS = [
   {
     title: 'I need to clean my house',
+    distance: '750 m away',
+    time: '22 hours ago',
     imageUrl: 'https://images.pexels.com/photos/3787027/pexels-photo-3787027.jpeg?auto=compress&cs=tinysrgb&h=350',
     category: 'House Cleaning',
     urgencyLevel: 'Low',
@@ -87,15 +98,19 @@ const MOCK_R_ACTIVE_REQUESTS = [
   },
 ];
 
-const MOCK_R_PAST_REQUESTS = [
+export const MOCK_R_PAST_REQUESTS = [
   {
     title: 'Need help with yard work',
+    distance: '2.5 km away',
+    time: '1 day ago',
     imageUrl: 'https://images.pexels.com/photos/1023234/pexels-photo-1023234.jpeg?auto=compress&cs=tinysrgb&h=350',
     category: 'Uncategorized',
     score: 5.0,
   },
   {
     title: 'I need to wash my car',
+    distance: '650 m away',
+    time: '2 days ago',
     imageUrl: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wyMzM4Mzh8MHwxfHNlYXJjaHwxOXx8Y2FyfGVufDB8fHx8MTc0MjgxODM5OXww&ixlib=rb-4.0.3&q=80&w=400',
     category: 'Uncategorized',
     score: 4.5,
@@ -108,21 +123,21 @@ const MOCK_R_REVIEWS = [
     imageUrl: 'https://i.pravatar.cc/400?img=69',
     date: '13/05/2025',
     score: 3.5,
-    comment: 'Ashley was very helpful and kind. I would definitely recommend her to others. She helped me with my math exam. I passed with flying colors!',
+    comment: 'Ashley was very helpful and kind. I would definitely recommend her to other. She helped me with my math exam. I passed with flying colors! Ashley was very helpful and kind. I would definitely recommend her to other. She helped me with my math exam. I passed with flying colors!',
   },
   {
     author: 'Ashley Gonzalez',
     imageUrl: 'https://i.pravatar.cc/400?img=65',
     date: '08/05/2025',
     score: 4.5,
-    comment: 'Ashley was very helpful and kind. I would definitely recommend her to others. She helped me with my math exam. I passed with flying colors!',
+    comment: 'Ashley was very helpful and kind. I would definitely recommend her to other. She helped me with my math exam. I passed with flying colors! Ashley was very helpful and kind. I would definitely recommend her to other.',
   },
   {
     author: 'Jennifer Edwards',
     imageUrl: 'https://i.pravatar.cc/400?img=44',
     date: '22/12/2024',
     score: 5.0,
-    comment: 'Ashley was very helpful and kind. I would definitely recommend her to others. She helped me with my math exam. I passed with flying colors!',
+    comment: 'Ashley was very helpful and kind. I would definitely recommend her to other. She helped me with my math exam. I passed with flying colors!',
   },
 ]
 
@@ -130,24 +145,27 @@ export default function ProfileScreen() {
   const { colors } = useTheme();
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme || 'light'];
-  const [activeTab, setActiveTab] = useState<'volunteer' | 'requester'>('volunteer');
+  const params = useLocalSearchParams();
+  const initialTab = params.tab === 'requester' ? 'requester' : 'volunteer';
+  const [activeTab, setActiveTab] = useState<'volunteer' | 'requester'>(initialTab);
+  const router = useRouter();
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: themeColors.gray }]}>
 
       {/* Top Profile */}
-      <ProfileTop
-        MOCK_USER={MOCK_USER}
-      />
+      <ProfileTop MOCK_USER={MOCK_USER}/>
 
       {/* Tab Selector */}
       <View style={styles.tabSelectorContainer}>
         <TabButton
           title="Volunteer"
           isActive={activeTab === 'volunteer'}
-          onPress={() => setActiveTab('volunteer')}
+          onPress={() => {
+            router.replace({ pathname: '/profile', params: { tab: 'volunteer' } });
+          }}
           buttonStyle={[styles.tabButton, { borderColor: colors.text }]}
           activeButtonStyle={{ backgroundColor: colors.primary }}
-          inactiveButtonStyle={{ backgroundColor: 'transparent' }}
+          inactiveButtonStyle={{ backgroundColor: themeColors.background }}
           textStyle={{ fontSize: 16, fontWeight: '400', color: colors.text }}
           activeTextStyle={{ fontWeight: '500', color: '#fff' }}
           inactiveTextStyle={{ color: colors.text }}
@@ -156,10 +174,12 @@ export default function ProfileScreen() {
         <TabButton
           title="Requester"
           isActive={activeTab === 'requester'}
-          onPress={() => setActiveTab('requester')}
+          onPress={() => {
+            router.replace({ pathname: '/profile', params: { tab: 'requester' } });
+          }}
           buttonStyle={[styles.tabButton, { borderColor: colors.text }]}
           activeButtonStyle={{ backgroundColor: colors.primary }}
-          inactiveButtonStyle={{ backgroundColor: 'transparent' }}
+          inactiveButtonStyle={{ backgroundColor: themeColors.background }}
           textStyle={{ fontSize: 16, fontWeight: '400', color: colors.text }}
           activeTextStyle={{ fontWeight: '500', color: '#fff' }}
           inactiveTextStyle={{ color: colors.text }}
@@ -173,15 +193,17 @@ export default function ProfileScreen() {
             {MOCK_V_ACTIVE_REQUESTS.length > 0 && (
               <CategoryCard
                 title="Active Requests"
-                imageSource={{ uri: MOCK_V_ACTIVE_REQUESTS[MOCK_V_ACTIVE_REQUESTS.length - 1].imageUrl }}
+                imageSource={{ uri: MOCK_V_ACTIVE_REQUESTS[0].imageUrl }}
                 badgeNumber={MOCK_V_ACTIVE_REQUESTS.length}
+                onPress={() => router.push('/v-active-requests')}
               />
             )}
             {MOCK_V_PAST_REQUESTS.length > 0 && (
               <CategoryCard
                 title="Past Requests"
-                imageSource={{ uri: MOCK_V_PAST_REQUESTS[MOCK_V_PAST_REQUESTS.length - 1].imageUrl }}
+                imageSource={{ uri: MOCK_V_PAST_REQUESTS[0].imageUrl }}
                 badgeNumber={MOCK_V_PAST_REQUESTS.length}
+                onPress={() => router.push('/v-past-requests')}
               />
             )}
           </View>
@@ -192,15 +214,17 @@ export default function ProfileScreen() {
             {MOCK_R_ACTIVE_REQUESTS.length > 0 && (
               <CategoryCard
                 title="Active Requests"
-                imageSource={{ uri: MOCK_R_ACTIVE_REQUESTS[MOCK_R_ACTIVE_REQUESTS.length - 1].imageUrl }}
+                imageSource={{ uri: MOCK_R_ACTIVE_REQUESTS[0].imageUrl }}
                 badgeNumber={MOCK_R_ACTIVE_REQUESTS.length}
+                onPress={() => router.push('/r-active-requests')}
               />
             )}
             {MOCK_R_PAST_REQUESTS.length > 0 && (
               <CategoryCard
                 title="Past Requests"
-                imageSource={{ uri: MOCK_R_PAST_REQUESTS[MOCK_R_PAST_REQUESTS.length - 1].imageUrl }}
+                imageSource={{ uri: MOCK_R_PAST_REQUESTS[0].imageUrl }}
                 badgeNumber={MOCK_R_PAST_REQUESTS.length}
+                onPress={() => router.push('/r-past-requests')}
               />
             )}
           </View>
@@ -231,6 +255,14 @@ export default function ProfileScreen() {
             date={review.date}
           />
         ))}
+        <TouchableOpacity
+          style={{ alignItems: 'center', marginTop: 8, marginBottom: 16 }}
+          onPress={() => { /* TODO: Implement navigation to all reviews */ }}
+        >
+          <Text style={{ color: colors.primary, fontWeight: '500', fontSize: 15, textAlign: 'center', marginBottom: 16 }}>
+            See all reviews
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {/* Add more content here if needed */}
@@ -246,6 +278,7 @@ const styles = StyleSheet.create({
   tabSelectorContainer: {
     flexDirection: 'row',
     width: '100%',
+    marginTop: 2,
   },
   tabButton: {
     flex: 1,
