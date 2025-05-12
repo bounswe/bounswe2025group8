@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, Image, StyleSheet, useColorScheme, TouchableOpacity } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
 
@@ -7,15 +7,16 @@ interface CategoryCardProps {
   title: string;
   imageSource: any;
   badgeNumber: number;
+  onPress?: () => void;
 }
 
-const CategoryCard: React.FC<CategoryCardProps> = ({ title, imageSource, badgeNumber }) => {
+const CategoryCard: React.FC<CategoryCardProps> = ({ title, imageSource, badgeNumber, onPress }) => {
   const { colors } = useTheme();
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme || 'light'];
 
   return (
-    <View style={[styles.cardContainer, { backgroundColor: themeColors.background }]}>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={[styles.cardContainer, { backgroundColor: themeColors.background }]}>
       <View style={styles.contentWrapper}>
         <Text style={[styles.cardTitle, { color: colors.text }]}>{title}</Text>
         <Image source={imageSource} style={styles.cardImage} />
@@ -23,7 +24,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ title, imageSource, badgeNu
           <Text style={styles.badgeText}>{badgeNumber}</Text>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -59,7 +60,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     position: 'absolute',
-    top: 12,
+    top: 18,
     right: -10,
     minWidth: 28,
     minHeight: 28,
