@@ -19,7 +19,7 @@ const RatingPill: React.FC<RatingPillProps> = ({
 }) => (
   <View style={[styles.ratingPill, { backgroundColor }]}> 
     <Ionicons name="star-outline" size={16} color={iconColor} style={styles.icon} />
-    <Text style={[styles.ratingPillText, { color: textColor }]}> {rating} ({reviewCount} reviews)</Text>
+    <Text style={[styles.ratingPillText, { color: textColor }]}> {Number(rating).toFixed(1)} ({reviewCount} reviews)</Text>
   </View>
 );
 
