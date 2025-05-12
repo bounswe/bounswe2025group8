@@ -6,8 +6,6 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
 import { categoryMapping } from '../constants/categories';
 
-
-
 /**
  * RequestCard component that displays a request with category, urgency, and other details.
  * @param {Object} props
@@ -50,6 +48,14 @@ const RequestCard = ({ request, onClick, sx = {} }) => {
     <Card
       onClick={() => onClick?.(request.id)}
       elevation={2}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault();
+          onClick(request.id);
+        }
+      }}
+      role="button"
+      tabIndex={0}
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -160,44 +166,33 @@ const RequestCard = ({ request, onClick, sx = {} }) => {
         {/* Categories and Urgency */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           {/* Urgency chip/label - styled to match design */}
-          {request.urgency === 'High' ? (
-            <Paper
-              onClick={(e) => handleUrgencyClick(request.urgency, e)}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                px: 1.5,
-                py: 0.5,
-                borderRadius: '16px',
-                bgcolor: urgencyColors[request.urgency] || theme.palette.error.main,
-                color: 'white',
-                fontSize: '0.75rem',
-                fontWeight: 'medium',
-                cursor: 'pointer',
-                '&:hover': {
-                  opacity: 0.9,
-                },
-              }}
-            >
-              <PriorityHighIcon sx={{ fontSize: '1rem', mr: 0.5 }} />
-              High Urgency
-            </Paper>
-          ) : (
-            <Chip
-              label={request.urgency}
-              size="small"
-              onClick={(e) => handleUrgencyClick(request.urgency, e)}
-              sx={{
-                borderRadius: '16px',
-                color: 'white',
-                bgcolor: urgencyColors[request.urgency] || theme.palette.grey[500],
-                fontWeight: 'medium',
-                '&:hover': {
-                  opacity: 0.9,
-                },
-              }}
-            />
-          )}
+          <Chip
+            label={'Urgency: ' + request.urgency}
+            size="small"
+            onClick={(e) => handleUrgencyClick(request.urgency, e)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+                e.preventDefault();
+                e.stopPropagation(); // Prevent card's keyboard handler
+                handleUrgencyClick(request.urgency, e);
+              }
+            }}
+            tabIndex={0}
+            sx={{
+              borderRadius: '16px',
+              color: 'white',
+              bgcolor: urgencyColors[request.urgency] || theme.palette.grey[500],
+              fontWeight: 'medium',
+              '&:hover': {
+                opacity: 0.9,
+              },
+              // Optional: Make high urgency chips slightly more prominent if desired
+              ...(request.urgency === 'High' && {
+                fontWeight: 'bold',
+                px: 0.5, // Slightly more padding for high urgency
+              }),
+            }}
+          />
         </Box>
         {/* Categories - allowing vertical growth */}
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1, minHeight: 24 }}>
