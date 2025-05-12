@@ -1,36 +1,40 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Typography, Button, Grid, Paper } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import CategoryCard from '../components/categoryCard';
+import CategoryCard from '../components/CategoryCard';
 import RequestCard from '../components/RequestCard'; // Import the RequestCard component
 
 const Home = () => {
   const navigate = useNavigate();
+  const handleCategoryClick = (categoryId) => {
+    // Navigate to requests filtered by this category
+    navigate(`/requests?category=${categoryId}`);
+  };
 
   // Mock popular categories data - in a real app, this would come from an API
   const popularCategories = useMemo(
     () => [
       {
-        id: 1,
+        id: 'HOME_CLEANING',
         title: 'Home Cleaning',
         image: 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf',
         requestCount: 24,
       },
       {
-        id: 2,
+        id: 'TECHNICAL_SUPPORT',
         title: 'Technical Support',
         image:
           'https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&w=500&q=80',
         requestCount: 18,
       },
       {
-        id: 3,
+        id: 'HOME_REPAIR',
         title: 'Home Repairs',
         image: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39',
         requestCount: 32,
       },
       {
-        id: 4,
+        id: 'PLUMBING',
         title: 'Professional Advice',
         image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40',
         requestCount: 15,
@@ -156,7 +160,7 @@ const Home = () => {
                 title={category.title}
                 image={category.image}
                 categoryId={category.id}
-                onClick={() => navigate(`/categories/${category.id}`)}
+                onClick={() => handleCategoryClick(category.id)}
               />
             </Grid>
           ))}

@@ -31,10 +31,9 @@ const categories = [
 
 const Categories = () => {
   const navigate = useNavigate();
-  
+
   const handleCategoryClick = (categoryId) => {
     // Navigate to requests filtered by this category
-    console.log(`Viewing requests for category: ${categoryId}`);
     navigate(`/requests?category=${categoryId}`);
   };
 
@@ -48,25 +47,13 @@ const Categories = () => {
           Browse available service categories and find help with your tasks
         </Typography>
       </Box>
-      
+
       <Divider sx={{ my: 4 }} />
-      
+
       {/* All Categories in Detailed Format */}
-      <Grid
-        container
-        spacing={4}
-        sx={{ mt: 2 }}
-        justifyContent="center"
-      >
+      <Grid container spacing={4} sx={{ mt: 2 }} justifyContent="center">
         {categories.map((category) => (
-          <Grid
-            item
-            xs={12}
-            sm={12}
-            md={6}
-            lg={6}
-            key={category.id}
-          >
+          <Grid item xs={12} sm={12} md={6} lg={6} key={category.id}>
             <CategoryCardDetailed
               title={category.title}
               imageUrl={category.image}
