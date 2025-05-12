@@ -52,8 +52,8 @@ export default function Index() {
       <Text style={[styles.orText, { color: colors.text }]}>OR</Text>
 
       {/* Continue as guest */}
-      <TouchableOpacity onPress={() => router.push('/create_request')}>
-        <Text style={[styles.guestText, { color: colors.primary }]}>
+      <TouchableOpacity onPress={() => router.push('/feed')}>
+        <Text style={[styles.guestLink, { color: colors.primary }]}>
           Continue as a guest
         </Text>
       </TouchableOpacity>
@@ -122,5 +122,10 @@ const styles = StyleSheet.create({
   guestText: {
     fontSize: 16,
     textDecorationLine: 'underline',
-  }
+  },
+  guestLink: {
+      marginTop: 16,
+      fontSize: 14,
+      textAlign: 'center',
+    },
 });
