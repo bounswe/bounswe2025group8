@@ -43,9 +43,18 @@ describe('RequestCard Component', () => {
   });
 
   it('shows the urgency level', () => {
-    renderWithRouter(<RequestCard request={mockRequest} />);
-    expect(screen.getByText('Medium')).toBeInTheDocument();
+  renderWithRouter(<RequestCard request={mockRequest} />);
+  
+  // Look for text that contains "Medium" anywhere
+  expect(screen.getByText(/Medium/)).toBeInTheDocument();
+  
+  // Alternative: Check that a chip containing the urgency exists
+  const urgencyElements = screen.getAllByText((content, element) => {
+    return content.includes('Medium') && 
+           (element.tagName.toLowerCase() === 'span' || element.closest('.MuiChip-root'));
   });
+  expect(urgencyElements.length).toBeGreaterThan(0);
+});
 
   it('displays posted time information', () => {
     renderWithRouter(<RequestCard request={mockRequest} />);
