@@ -1,15 +1,10 @@
 import React from 'react';
-import { 
-  Card, 
-  Typography, 
-  Box,
-  useTheme 
-} from '@mui/material';
+import { Card, Typography, Box, useTheme } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 /**
  * CategoryCardDetailed component displays a category with an image and request count
- * 
+ *
  * @param {Object} props
  * @param {string} props.title - The title of the category
  * @param {string} props.imageUrl - The URL of the image to display
@@ -18,13 +13,13 @@ import { useNavigate } from 'react-router-dom';
  * @param {Function} props.onClick - Optional custom click handler
  * @param {Object} props.sx - Additional MUI sx styles to apply
  */
-const CategoryCardDetailed = ({ 
-  title, 
-  imageUrl, 
+const CategoryCardDetailed = ({
+  title,
+  imageUrl,
   requestCount = 0,
   categoryId,
   onClick,
-  sx = {} 
+  sx = {},
 }) => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -42,6 +37,18 @@ const CategoryCardDetailed = ({
     <Card
       onClick={handleClick}
       elevation={1}
+      onKeyDown={(e) => {
+        // Handle Enter or Space key press
+        if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+          e.preventDefault(); // Prevent page scroll on Space
+          handleClick();
+        }
+      }}
+      role="button" // Add button role for accessibility
+      tabIndex={0} // Make it focusable
+      aria-label={`${title} category with ${requestCount} ${
+        requestCount === 1 ? 'request' : 'requests'
+      }`}
       sx={{
         display: 'flex',
         alignItems: 'center',
@@ -50,17 +57,23 @@ const CategoryCardDetailed = ({
         transition: 'all 0.2s ease',
         overflow: 'hidden',
         backgroundColor: 'white',
-        p: 1.5,        width: {
-          xs: '100%',    // Full width on mobile
-          sm: '400px'    // Adjusted width to better fit two per row
+        p: 1.5,
+        width: {
+          xs: '100%', // Full width on mobile
+          sm: '400px', // Adjusted width to better fit two per row
         },
-        height: '90px',  // Fixed height for consistent appearance
-        maxWidth: '100%',  // Ensure it doesn't overflow its container
+        height: '90px', // Fixed height for consistent appearance
+        maxWidth: '100%', // Ensure it doesn't overflow its container
         '&:hover': {
           boxShadow: theme.shadows[3],
-          transform: 'translateY(-2px)'
+          transform: 'translateY(-2px)',
         },
-        ...sx
+        '&:focus': {
+          // Add focus styles
+          outline: `2px solid ${theme.palette.primary.main}`,
+          outlineOffset: '2px',
+        },
+        ...sx,
       }}
     >
       {/* Image Container - Left Side */}
@@ -73,7 +86,7 @@ const CategoryCardDetailed = ({
           border: `1px solid ${theme.palette.grey[200]}`,
           flexShrink: 0,
           mr: 2,
-          backgroundColor: theme.palette.grey[100]
+          backgroundColor: theme.palette.grey[100],
         }}
       >
         {imageUrl ? (
@@ -84,7 +97,7 @@ const CategoryCardDetailed = ({
             sx={{
               width: '100%',
               height: '100%',
-              objectFit: 'cover'
+              objectFit: 'cover',
             }}
           />
         ) : (
@@ -95,7 +108,7 @@ const CategoryCardDetailed = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: theme.palette.grey[200]
+              backgroundColor: theme.palette.grey[200],
             }}
           >
             <Typography variant="body2" color="text.secondary">
@@ -114,7 +127,7 @@ const CategoryCardDetailed = ({
           fontWeight="bold"
           sx={{
             color: theme.palette.text.primary,
-            mb: 0.5
+            mb: 0.5,
           }}
         >
           {title}
@@ -124,9 +137,9 @@ const CategoryCardDetailed = ({
         <Typography
           variant="body2"
           color="text.secondary"
-          sx={{ 
+          sx={{
             display: 'flex',
-            alignItems: 'center'
+            alignItems: 'center',
           }}
         >
           {requestCount} {requestCount === 1 ? 'request' : 'requests'}

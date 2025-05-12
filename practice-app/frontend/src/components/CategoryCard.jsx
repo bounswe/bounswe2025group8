@@ -16,6 +16,14 @@ const CategoryCard = ({ title, image, onClick, sx = {} }) => {
     <Card
       elevation={2}
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          onClick();
+          e.preventDefault(); // Prevent page scroll on space
+        }
+      }}
       sx={{
         display: 'flex',
         flexDirection: 'column',
@@ -34,6 +42,11 @@ const CategoryCard = ({ title, image, onClick, sx = {} }) => {
         '&:hover': {
           transform: 'translateY(-4px)',
           boxShadow: theme.shadows[8],
+        },
+        '&:focus': {
+          // Add focus styles
+          outline: `2px solid ${theme.palette.primary.main}`,
+          outlineOffset: '2px',
         },
         ...sx,
       }}
@@ -94,7 +107,7 @@ const CategoryCard = ({ title, image, onClick, sx = {} }) => {
           <CardMedia
             component="img"
             image={image}
-            alt={`${title} category`}
+            alt={`${title}`}
             sx={{
               height: '100%',
               width: '100%',

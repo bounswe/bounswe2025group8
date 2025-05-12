@@ -10,9 +10,9 @@ const CATEGORY_IMAGES = {
   TUTORING:
     'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1470&auto=format&fit=crop',
   HOME_REPAIR:
-    'https://images.unsplash.com/photo-1581165417938-7d6454283bbe?q=80&w=1470&auto=format&fit=crop',
+    '',
   MOVING_HELP:
-    'https://images.unsplash.com/photo-1600518465367-6c5afebb4400?q=80&w=1470&auto=format&fit=crop',
+    '',
   HOUSE_CLEANING:
     'https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?q=80&w=1374&auto=format&fit=crop',
   OTHER:
