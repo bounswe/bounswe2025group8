@@ -8,6 +8,7 @@ import TabButton from '../components/ui/TabButton';
 import { MOCK_USER, MOCK_V_ACTIVE_REQUESTS } from './profile';
 import { Ionicons } from '@expo/vector-icons';
 import RequestCard from '../components/ui/RequestCard';
+import { red } from 'react-native-reanimated/lib/typescript/Colors';
 
 export default function VActiveRequestsScreen() {
   const router = useRouter();
@@ -54,7 +55,7 @@ export default function VActiveRequestsScreen() {
           <Ionicons name="chevron-back-outline" size={25} color={colors.text} style={styles.icon} />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>{'Active Requests'}</Text>
+        <Text style={[styles.headerTitle, {color: colors.text}]}>{'Active Requests'}</Text>
       </View>
 
       <View style={styles.content}>

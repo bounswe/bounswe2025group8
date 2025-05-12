@@ -54,7 +54,7 @@ export default function RPastRequestsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { backgroundColor: colors.background }]}> 
           <Ionicons name="chevron-back-outline" size={25} color={colors.text} style={styles.icon} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{'Past Requests'}</Text>
+        <Text style={[styles.headerTitle, {color: colors.text}]}>{'Past Requests'}</Text>
       </View>
 
       <View style={styles.content}>

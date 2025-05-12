@@ -54,7 +54,7 @@ export default function RActiveRequestsScreen() {
           <Ionicons name="chevron-back-outline" size={25} color={colors.text} style={styles.icon} />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>{'Active Requests'}</Text>
+        <Text style={[styles.headerTitle, {color: colors.text}]}>{'Active Requests'}</Text>
       </View>
 
       <View style={styles.content}>
