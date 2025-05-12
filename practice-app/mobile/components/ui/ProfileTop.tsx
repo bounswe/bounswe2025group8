@@ -119,6 +119,7 @@ const styles = StyleSheet.create({
         height: 100,
         borderRadius: 50,
         marginRight: 16,
+        backgroundColor: '#f2f2fd',
     },
     infoColumn: {
         flex: 1,
