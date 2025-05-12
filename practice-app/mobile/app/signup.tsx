@@ -1,8 +1,8 @@
 // app/signup.tsx
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import React, { useState, useEffect } from 'react';
 import {
   Image,
   Pressable,
@@ -16,6 +16,7 @@ import {
 
 export default function SignUp() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const { colors } = useTheme();
   const [fullName, setFullName]   = useState('');
   const [username, setUsername]   = useState('');
@@ -24,6 +25,14 @@ export default function SignUp() {
   const [password, setPassword]   = useState('');
   const [agree, setAgree]         = useState(false);
   const [showPwd, setShowPwd]     = useState(false);
+
+  useEffect(() => {
+    if (params.agreed === 'true') {
+      setAgree(true);
+      // Optionally clear the param
+      router.setParams({ agreed: undefined });
+    }
+  }, [params.agreed]);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -130,11 +139,11 @@ export default function SignUp() {
       </Pressable>
 
       <Text style={[styles.rememberText, { color: colors.text }]}>
-        I agree with{''}
+        I agree with{' '}
       </Text>
 
       <Pressable 
-        onPress={() => router.push('/')} 
+        onPress={() => router.replace({ pathname: '/terms', params: { fromSignup: 'true' } })} 
         hitSlop={8}
       >
         <Text style={[styles.rememberText, styles.linkText, { color: colors.primary }]}>
@@ -162,7 +171,7 @@ export default function SignUp() {
           <Text style={[styles.promptText, { color: colors.text }]}>
             Have an account?
           </Text>
-          <TouchableOpacity onPress={() => router.push('/signin')}>
+          <TouchableOpacity onPress={() => router.replace('/signin')}>
             <Text style={[styles.promptLink, { color: colors.primary }]}>
               {' '}Login
             </Text>
@@ -235,7 +244,7 @@ const styles = StyleSheet.create({
   },
   button: {
      padding: 14,
-    borderRadius: 8, alignItems: 'center',
+    borderRadius: 36, alignItems: 'center',
     marginBottom: 75
   },
   buttonText: {
