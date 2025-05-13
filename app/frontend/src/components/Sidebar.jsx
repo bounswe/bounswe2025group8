@@ -85,8 +85,7 @@ const Sidebar = () => {
           
           return (
             <ListItem key={item.text} disablePadding>
-              <ListItemButton
-                selected={isActive}
+              <ListItemButton                selected={isActive}
                 onClick={() => navigate(item.path)}
                 sx={{ 
                   borderRadius: theme.shape.borderRadius,
@@ -95,10 +94,10 @@ const Sidebar = () => {
                     backgroundColor: theme.palette.action.hover 
                   },
                   '&.Mui-selected': {
-                    backgroundColor: theme.palette.primary.light,
-                    color: theme.palette.primary.main,
+                    backgroundColor: theme.palette.primary.main, // Changed to primary.main for a stronger color
+                    color: '#FFFFFF', // White text for selected items
                     '&:hover': {
-                      backgroundColor: theme.palette.primary.light,
+                      backgroundColor: theme.palette.primary.main,
                     },
                   }
                 }}
@@ -106,7 +105,7 @@ const Sidebar = () => {
                 <ListItemIcon 
                   sx={{ 
                     minWidth: '40px', 
-                    color: isActive ? theme.palette.primary.main : 'inherit'
+                    color: isActive ? '#FFFFFF' : 'inherit' // White icon when active
                   }}
                 >
                   {item.icon}
@@ -115,8 +114,8 @@ const Sidebar = () => {
                   primary={item.text} 
                   primaryTypographyProps={{ 
                     fontWeight: isActive ? 500 : 400,
-                    color: isActive ? theme.palette.primary.main : 'inherit',
-                  }} 
+                    color: isActive ? '#FFFFFF' : 'inherit', // White text when active
+                  }}
                 />
               </ListItemButton>
             </ListItem>

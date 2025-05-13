@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Container } from '@mui/material';
+import { Box, Container, AppBar, Toolbar } from '@mui/material';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Searchbar from '../components/Searchbar';
@@ -20,6 +20,38 @@ const MainLayout = () => {
     <Box sx={{ display: 'flex' }}>
       {/* Sidebar */}
       <Sidebar />
+        {/* Fixed Search AppBar */}
+      <AppBar 
+        position="fixed" 
+        sx={{ 
+          width: `calc(100% - ${SIDEBAR_WIDTH}px)`, 
+          ml: `${SIDEBAR_WIDTH}px`,
+          boxShadow: 1,
+          bgcolor: 'background.paper', // Use theme background color
+          color: 'text.primary', // Use theme text color
+          zIndex: (theme) => theme.zIndex.drawer - 1, // Below drawer but above content
+        }}
+      >
+        <Toolbar>
+          <Box
+            sx={{
+              width: {
+                xs: '100%',
+                sm: '400px',
+                md: '500px',
+              },
+              mx: 'auto',
+            }}
+          >
+            <Searchbar
+              onSearch={handleSearch}
+              placeholder="Search across the app"
+              autoFocus={false}
+              defaultValue=""
+            />
+          </Box>
+        </Toolbar>
+      </AppBar>
       
       {/* Main content area */}
       <Box
@@ -31,7 +63,8 @@ const MainLayout = () => {
           minHeight: '100vh',
           overflow: 'auto',
           width: `calc(100% - ${SIDEBAR_WIDTH}px)`, // Set explicit width
-          boxSizing: 'border-box', // Include padding in width calculation
+          
+          mt: '64px', // Add top margin equal to AppBar height
         }}
       >
         {/* Full-width container */}
@@ -42,27 +75,7 @@ const MainLayout = () => {
             px: 3, // Add horizontal padding inside container
             py: 3, // Add vertical padding inside container
           }}
-        >
-          {/* Global search bar */}
-          <Box
-            sx={{
-              mb: 4,
-              mx: 'auto',
-              width: {
-                xs: '100%',
-                sm: '400px',
-                md: '500px',
-              },
-            }}
-          >
-            <Searchbar
-              onSearch={handleSearch}
-              placeholder="Search across the app"
-              autoFocus={false}
-              defaultValue=""
-            />
-          </Box>
-          
+        >          
           {/* Main content outlet */}
           <Outlet />
         </Container>
