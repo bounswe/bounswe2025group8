@@ -4,6 +4,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate, login, logout
 from django.utils import timezone
+from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
@@ -136,13 +137,12 @@ class PasswordResetRequestView(views.APIView):
                 expiry = generate_reset_token_expiry()
                 
                 # Store token and expiry in user instance
-                # (You would need to add these fields to your model)
                 user.reset_token = token
                 user.reset_token_expiry = expiry
                 user.save()
                 
                 # In a real implementation, send an email with the reset link
-                # For now, we'll just return the token in the response for testing
+                # For development/testing, return the token in the response when DEBUG is True
                 if settings.DEBUG:
                     return Response(format_response(
                         status='success',
@@ -266,14 +266,14 @@ class CheckAvailabilityView(views.APIView):
             if email_exists:
                 return Response(format_response(
                     status='error',
-                    available=False,
-                    message='This email is already associated with an existing account.'
+                    message='This email is already associated with an existing account.',
+                    data={'available': False}
                 ))
             else:
                 return Response(format_response(
                     status='success',
-                    available=True,
-                    message='This email is available for registration.'
+                    message='This email is available for registration.',
+                    data={'available': True}
                 ))
         
         # Check phone number availability
@@ -282,12 +282,12 @@ class CheckAvailabilityView(views.APIView):
             if phone_exists:
                 return Response(format_response(
                     status='error',
-                    available=False,
-                    message='This phone number is already associated with an existing account.'
+                    message='This phone number is already associated with an existing account.',
+                    data={'available': False}
                 ))
             else:
                 return Response(format_response(
                     status='success',
-                    available=True,
-                    message='This phone number is available for registration.'
+                    message='This phone number is available for registration.',
+                    data={'available': True}
                 ))
