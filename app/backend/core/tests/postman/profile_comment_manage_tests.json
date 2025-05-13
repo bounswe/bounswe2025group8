@@ -1,0 +1,276 @@
+{
+  "info": {
+    "name": "Neighborhood Assistance Board API - Yusuf",
+    "_postman_id": "yusuf-collection-uuid",
+    "description": "User Profile Management & Comment Management tests for Neighborhood Assistance Board API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "7. User Profile Management",
+      "item": [
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Token {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8000/api/users/1/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "users", "1", ""]
+            },
+            "description": "Get user profile details"
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Token {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Maria Updated\",\n  \"location\": \"Lisbon Downtown, Portugal\",\n  \"phone_number\": \"1234567899\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/users/1/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "users", "1", ""]
+            },
+            "description": "Update user profile information"
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Token {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"SecurePass123!\",\n  \"new_password\": \"NewSecurePass456!\",\n  \"confirm_password\": \"NewSecurePass456!\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/users/1/change-password/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "users", "1", "change-password", ""]
+            },
+            "description": "Change user password"
+          },
+          "response": []
+        },
+        {
+          "name": "List User's Tasks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Token {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8000/api/users/1/tasks/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "users", "1", "tasks", ""]
+            },
+            "description": "List all tasks created by a user"
+          },
+          "response": []
+        },
+        {
+          "name": "List User's Active Tasks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Token {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8000/api/users/1/tasks/?status=active",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "users", "1", "tasks", ""],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "active"
+                }
+              ]
+            },
+            "description": "List active tasks for a user"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "8. Comment Management",
+      "item": [
+        {
+          "name": "Add Comment to Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Token {{volunteer_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Is this task still available?\",\n  \"task_id\": {{plumbing_task_id}}\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/comments/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "comments", ""]
+            },
+            "description": "Add a comment to a task"
+          },
+          "response": []
+        },
+        {
+          "name": "View Task Comments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Token {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8000/api/tasks/{{plumbing_task_id}}/comments/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "tasks", "{{plumbing_task_id}}", "comments", ""]
+            },
+            "description": "View all comments for a task"
+          },
+          "response": []
+        },
+        {
+          "name": "Reply to Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Token {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Yes, the task is still available!\",\n  \"task_id\": {{plumbing_task_id}}\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/comments/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "comments", ""]
+            },
+            "description": "Reply to a comment on a task"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Comment",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Token {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"Yes, the task is still available and I'm looking for someone with experience!\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/comments/2/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "comments", "2", ""]
+            },
+            "description": "Update a comment"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Token {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8000/api/comments/2/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8000",
+              "path": ["api", "comments", "2", ""]
+            },
+            "description": "Delete a comment"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
