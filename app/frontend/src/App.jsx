@@ -1,0 +1,106 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Box } from "@mui/material";
+import ThemeDemo from "./components/ThemeDemo";
+// Home pages
+import Home from "./pages/Home.jsx";
+import HomeDashboard from "./pages/HomeDashboard.jsx";
+// Categories and Search
+import Categories from "./pages/Categories.jsx";
+import SearchResults from "./pages/SearchResults.jsx";
+// Request related pages
+import Requests from "./pages/Requests.jsx";
+import RequestDetail from "./pages/RequestDetail.jsx";
+// Task related pages
+import TaskPage from "./pages/TaskPage.jsx";
+import TaskPageVolunteer from "./pages/TaskPageVolunteer.jsx";
+import TaskListPage from "./pages/TaskListPage.jsx";
+import SelectVolunteerPage from "./pages/SelectVolunteerPage.jsx";
+// Review related
+import RateReviewPage from "./pages/RateReviewPage.jsx";
+// Auth pages
+import LoginPage from "./pages/auth/LoginPage.jsx";
+import RegisterPage from "./pages/auth/RegisterPage.jsx";
+import ForgotPassword from "./pages/auth/ForgotPassword.jsx";
+import ResetPassword from "./pages/auth/ResetPassword.jsx";
+// Layout components
+import MainLayout from "./layouts/MainLayout.jsx";
+// Dev components
+import DevUserPanel from "./components/DevUserPanel.jsx";
+import ProfilePage from "./components/ProfilePage/ProfilePage.jsx";
+import CreateRequestPage from "./components/CreateRequest/CreateRequestPage.jsx";
+
+import "./App.css";
+
+function App() {
+  // Check if we're in development mode
+  const _isDevelopment = import.meta.env.DEV;
+
+  return (
+    <Router>
+      <Box
+        sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+      >
+        {" "}
+        <Routes>
+          {/* Protected/Layout Routes */}
+          <Route element={<MainLayout />}>
+            {/* Home Routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/dashboard" element={<HomeDashboard />} />
+
+            {/* Categories Routes */}
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/categories/:categoryId" element={<Categories />} />
+
+            {/* Request Routes */}
+            <Route path="/requests" element={<Requests />} />
+            <Route path="/requests/:requestId" element={<RequestDetail />} />
+            <Route
+              path="/requests/filter/urgency/:urgency"
+              element={<Requests />}
+            />
+            <Route
+              path="/create-request"
+              element={<div>Create Request Form</div>}
+            />
+
+            {/* Task Routes */}
+            <Route path="/tasks" element={<TaskListPage />} />
+            <Route path="/tasks/:taskId" element={<TaskPage />} />
+            <Route
+              path="/volunteer/tasks/:taskId"
+              element={<TaskPageVolunteer />}
+            />
+            <Route
+              path="/tasks/:taskId/select-volunteer"
+              element={<SelectVolunteerPage />}
+            />
+
+            {/* Review Routes */}
+            <Route path="/rate-review/:taskId" element={<RateReviewPage />} />
+
+            {/* Search Routes */}
+            <Route path="/search" element={<SearchResults />} />
+
+            {/* Theme Demo */}
+            <Route path="/theme" element={<ThemeDemo />} />
+
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/create-request" element={<CreateRequestPage />} />
+          </Route>
+
+          {/* Auth Routes (without sidebar) */}
+
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+        </Routes>
+        {/* Dev User Panel - Only shown in development mode */}
+        {/*isDevelopment && <DevUserPanel />*/}
+      </Box>
+    </Router>
+  );
+}
+
+export default App;
