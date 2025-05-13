@@ -93,13 +93,6 @@ pip-delete-this-directory.txt
 /postman/collections/*-globals.json
 /postman/collections/*-environment.json
 
-# === Docker ===
-docker-compose.override.yml
-docker-compose.local.yml
-.docker/
-Dockerfile.*
-docker-compose*.yml
-
 # === Misc ===
 expo-env.d.ts
 app-example
