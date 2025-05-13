@@ -11,7 +11,7 @@ import {
   InputAdornment,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
+import useAuth  from "../../hooks/useAuth";
 import logoImage from "../../assets/logo.png";
 import mailIcon from "../../assets/mail.svg";
 

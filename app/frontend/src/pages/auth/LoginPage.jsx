@@ -15,7 +15,7 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth"; // Updated import path
+import  useAuth  from "../../hooks/useAuth"; // Updated import path
 import logoImage from "../../assets/logo.png";
 import lockIcon from "../../assets/lock.svg";
 import mailIcon from "../../assets/mail.svg";
