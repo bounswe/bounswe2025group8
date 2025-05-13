@@ -1,0 +1,55 @@
+.badge {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 90px;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.badge:hover {
+  transform: scale(1.05);
+  opacity: 1;
+}
+
+.badgeIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.icon {
+  color: white;
+  font-size: 30px;
+}
+
+.badgeTitle {
+  width: 100%;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+}
+
+.earned {
+  opacity: 1;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+
+.notEarned {
+  opacity: 0.5;
+}
+
+.progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
