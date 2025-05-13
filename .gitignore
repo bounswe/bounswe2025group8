@@ -75,7 +75,7 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # Django specific
-**/migrations/
+**/migrations/__pycache__/
 **/migrations/*.pyc
 **/local_settings.py
 **/db.sqlite3
