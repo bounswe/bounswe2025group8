@@ -1,0 +1,118 @@
+# === Node/React/React Native/Expo (recursive) ===
+**/node_modules/
+**/.expo/
+**/.expo-shared/
+**/web-build/
+**/dist/
+**/build/
+**/coverage/
+*.tgz
+
+# === React Native/Expo specific ===
+*.keystore
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.aab
+*.apk
+*.ipa
+*.app
+*.orig.*
+*.pem
+
+# === Metro ===
+.metro-health-check*
+
+# === Logs ===
+*.log
+logs/
+log/
+debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === macOS/System ===
+**/.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# === Editor/IDE ===
+**/.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.tmp
+*.bak
+
+# === TypeScript ===
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# === Environment variables ===
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+
+# === Python/Django ===
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Django specific
+**/migrations/
+**/migrations/*.pyc
+**/local_settings.py
+**/db.sqlite3
+**/media/
+**/staticfiles/
+**/static/
+
+# === PostgreSQL ===
+*.pgsql
+*.psql
+*.db
+*.dump
+
+# === Postman ===
+/postman/collections/*-globals.json
+/postman/collections/*-environment.json
+
+# === Docker ===
+docker-compose.override.yml
+docker-compose.local.yml
+.docker/
+Dockerfile.*
+docker-compose*.yml
+
+# === Misc ===
+expo-env.d.ts
+app-example
+*.Zone.Identifier
+
+# === Test/coverage ===
+coverage/
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+.cache/
+junit-*.xml
+
+# === Custom ===
+# Add any other custom ignores below 
