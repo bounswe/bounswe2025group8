@@ -23,7 +23,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Tooltip, IconButton } from "@mui/material";
 import UserAvatar from "./UserAvatar.jsx";
 import logo from "../assets/logo.png";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../hooks/useAuth.js";
 
 const Sidebar = () => {
   const theme = useTheme();
