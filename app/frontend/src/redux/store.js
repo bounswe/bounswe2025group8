@@ -1,10 +1,9 @@
 import { configureStore } from '@reduxjs/toolkit';
-import profileReducer from './slices/profileSlice';
+import createRequestReducer from './slices/createRequestSlice';
 
 export const store = configureStore({
   reducer: {
-    profile: profileReducer,
-    // Add other reducers as needed
+    createRequest: createRequestReducer,
   },
 });
 
