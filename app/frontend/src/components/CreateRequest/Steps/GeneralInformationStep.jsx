@@ -15,7 +15,7 @@ import {
   updateFormData, 
   incrementRequiredPeople, 
   decrementRequiredPeople 
-} from '../../../redux/slices/createRequestSlice';
+} from '../../../store/slices/createRequestSlice';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import CreateIcon from '@mui/icons-material/Create';

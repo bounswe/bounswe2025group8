@@ -1,5 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice.js';
+import createRequestReducer from './slices/createRequestSlice.js';
+import ProfileReducer from './slices/profileSlice.js';
 
 // Check for stored auth data
 const getPreloadedState = () => {
@@ -36,6 +38,8 @@ const getPreloadedState = () => {
 export const store = configureStore({
   reducer: {
     auth: authReducer,
+    createRequest: createRequestReducer,
+    profile: ProfileReducer,
   },
   preloadedState: getPreloadedState()
 });

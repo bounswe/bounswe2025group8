@@ -12,7 +12,7 @@ import {
   Grid
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
-import { updateFormData } from '../../../redux/slices/createRequestSlice';
+import { updateFormData } from '../../../store/slices/createRequestSlice';
 
 // Mock address data
 const addressData = {

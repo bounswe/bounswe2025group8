@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Box, Container, Typography, Button, Stepper, Step, StepLabel, Paper } from '@mui/material';
-import { fetchCategories, nextStep, prevStep, setStep, submitRequest } from '../../redux/slices/createRequestSlice';
+import { fetchCategories, nextStep, prevStep, setStep, submitRequest } from '../../store/slices/createRequestSlice';
 import GeneralInformationStep from './Steps/GeneralInformationStep';
 import UploadPhotosStep from './Steps/UploadPhotosStep';
 import DetermineDeadlineStep from './Steps/DetermineDeadlineStep';
 import SetupAddressStep from './Steps/SetupAddressStep';
-import Sidebar from '../Sidebar/Sidebar';
 import styles from './CreateRequestPage.module.css';
 
 const steps = [
@@ -80,36 +79,10 @@ const CreateRequestPage = () => {
   
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
-      {/* Sidebar navigation */}
-      <Sidebar />
       
       {/* Main content */}
       <Box component="main" sx={{ flexGrow: 1, p: 3, overflow: 'auto' }}>
         <Container maxWidth="lg">
-          {/* Search input */}
-          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
-            <Box sx={{ 
-              display: 'flex',
-              alignItems: 'center',
-              width: '100%',
-              maxWidth: '700px',
-              p: '2px 4px',
-              borderRadius: '25px',
-              backgroundColor: '#f5f5f5'
-            }}>
-              <input 
-                type="text" 
-                placeholder="What do you need help with" 
-                style={{ 
-                  width: '100%',
-                  padding: '10px',
-                  border: 'none',
-                  outline: 'none',
-                  backgroundColor: 'transparent'
-                }}
-              />
-            </Box>
-          </Box>
           
           {/* Form header */}
           <Box sx={{ 

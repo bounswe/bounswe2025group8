@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import { uploadPhotos, removePhoto } from '../../../redux/slices/createRequestSlice';
+import { uploadPhotos, removePhoto } from '../../../store/slices/createRequestSlice';
 
 const UploadPhotosStep = () => {
   const dispatch = useDispatch();

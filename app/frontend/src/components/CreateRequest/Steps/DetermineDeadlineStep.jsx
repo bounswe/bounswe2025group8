@@ -19,7 +19,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isToday, getDay, isSameDay } from 'date-fns';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import { updateFormData } from '../../../redux/slices/createRequestSlice';
+import { updateFormData } from '../../../store/slices/createRequestSlice';
 
 const DetermineDeadlineStep = () => {
   const dispatch = useDispatch();

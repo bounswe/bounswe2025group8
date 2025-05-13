@@ -10,11 +10,10 @@ import {
   fetchUserCreatedRequests,
   fetchUserVolunteeredRequests,
   fetchUserBadges
-} from '../../redux/slices/profileSlice';
+} from '../../store/slices/profileSlice';
 import RequestCard from '../RequestCard/RequestCard';
 import ReviewCard from '../ReviewCard/ReviewCard';
 import Badge from '../Badge/Badge';
-import Sidebar from '../Sidebar/Sidebar';
 import styles from './ProfilePage.module.css';
 
 const ProfilePage = () => {
@@ -117,42 +116,12 @@ const ProfilePage = () => {
   }
   
   return (
-    <Box sx={{ display: 'flex', height: '100vh' }}>
-      {/* Sidebar navigation */}
-      <Sidebar />
+    <Box sx={{ display: 'flex'}}>
       
       {/* Main content */}
       <Box component="main" sx={{ flexGrow: 1, p: 3, overflow: 'auto' }}>
         <Container maxWidth="lg">
-          {/* Search input */}
-          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
-            <Box sx={{ 
-              display: 'flex',
-              alignItems: 'center',
-              width: '100%',
-              maxWidth: '700px',
-              p: '2px 4px',
-              borderRadius: '25px',
-              backgroundColor: '#f5f5f5'
-            }}>
-              <IconButton sx={{ p: '10px' }} aria-label="search">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3C5.91 3 3 5.91 3 9.5C3 13.09 5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L19 20.49L20.49 19L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5C5 7.01 7.01 5 9.5 5C11.99 5 14 7.01 14 9.5C14 11.99 11.99 14 9.5 14Z" fill="#5C69FF"/>
-                </svg>
-              </IconButton>
-              <input 
-                type="text" 
-                placeholder="What do you need help with" 
-                style={{ 
-                  width: '100%',
-                  padding: '10px',
-                  border: 'none',
-                  outline: 'none',
-                  backgroundColor: 'transparent'
-                }}
-              />
-            </Box>
-          </Box>
+        
           
           {/* Profile header */}
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
