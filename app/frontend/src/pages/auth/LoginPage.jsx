@@ -32,11 +32,10 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       setLoginError("");
       await login(email, password);
-      navigate("/dashboard"); // Redirect to dashboard after login
+      navigate("/"); // Redirect to home dashboard after login
     } catch (error) {
       setLoginError("Failed to sign in: " + error.message);
     }
@@ -76,7 +75,6 @@ const LoginPage = () => {
             Assistance Board
           </Typography>
         </Box>
-
         <Paper
           elevation={3}
           sx={{ borderRadius: 2, overflow: "hidden", bgcolor: "white" }}
@@ -288,17 +286,15 @@ const LoginPage = () => {
             </Box>
           </Box>
         </Paper>
-
         <Box sx={{ textAlign: "center", my: 2 }}>
           <Typography variant="body2" color="text.secondary">
             OR
           </Typography>
-        </Box>
-
+        </Box>{" "}
         <Box sx={{ textAlign: "center", mb: 4 }}>
           <Link
             component={RouterLink}
-            to="/dashboard"
+            to="/"
             variant="body2"
             sx={{ color: "#6366f1", textDecoration: "none" }}
           >

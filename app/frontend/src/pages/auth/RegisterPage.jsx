@@ -41,11 +41,10 @@ const RegisterPage = () => {
     if (!agreeTerms) {
       return setRegisterError("You must agree to the Terms & Conditions");
     }
-
     try {
       setRegisterError("");
       await register(email, password, fullName, username, phone);
-      navigate("/dashboard"); // Redirect to dashboard after registration
+      navigate("/"); // Redirect to home dashboard after registration
     } catch (error) {
       setRegisterError("Failed to create an account: " + error.message);
     }
@@ -84,7 +83,6 @@ const RegisterPage = () => {
             Assistance Board
           </Typography>
         </Box>
-
         <Paper
           elevation={3}
           sx={{ borderRadius: 2, overflow: "hidden", bgcolor: "white" }}
@@ -359,17 +357,15 @@ const RegisterPage = () => {
             </Box>
           </Box>
         </Paper>
-
         <Box sx={{ textAlign: "center", my: 2 }}>
           <Typography variant="body2" color="text.secondary">
             OR
           </Typography>
-        </Box>
-
+        </Box>{" "}
         <Box sx={{ textAlign: "center", mb: 4 }}>
           <Link
             component={RouterLink}
-            to="/dashboard"
+            to="/"
             variant="body2"
             sx={{ color: "#6366f1", textDecoration: "none" }}
           >

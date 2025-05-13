@@ -55,9 +55,8 @@ export const useAuth = () => {
       throw error;
     }
   };
-
   // Reset password handler
-  const handleResetPassword = async (password, token) => {
+  const handleResetPassword = async ({ password, token }) => {
     try {
       const resultAction = await dispatch(resetPassword({ password, token }));
       // If reset password succeeded, return the result
