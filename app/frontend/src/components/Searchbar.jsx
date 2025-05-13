@@ -1,12 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  Box, 
-  InputBase, 
-  IconButton, 
-  useTheme, 
-  alpha,
-  Paper
-} from '@mui/material';
+import { Box, InputBase, IconButton, useTheme, alpha, Paper } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 
@@ -19,12 +12,12 @@ import ClearIcon from '@mui/icons-material/Clear';
  * @param {string} props.defaultValue - Default search query
  * @param {Object} props.sx - Additional MUI sx styles to apply
  */
-const Searchbar = ({ 
-  onSearch, 
-  placeholder = "What do you need help with", 
+const Searchbar = ({
+  onSearch,
+  placeholder = 'What do you need help with',
   autoFocus = false,
-  defaultValue = "",
-  sx = {}
+  defaultValue = '',
+  sx = {},
 }) => {
   const theme = useTheme();
   const [query, setQuery] = useState(defaultValue);
@@ -38,9 +31,9 @@ const Searchbar = ({
   };
 
   const handleClear = () => {
-    setQuery("");
+    setQuery('');
     if (onSearch) {
-      onSearch("");
+      onSearch('');
     }
   };
 
@@ -66,12 +59,12 @@ const Searchbar = ({
           boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
           backgroundColor: alpha(theme.palette.common.white, 0.25),
         }),
-        ...sx
+        ...sx,
       }}
       elevation={0}
     >
-      <IconButton 
-        sx={{ 
+      <IconButton
+        sx={{
           p: '10px',
           color: theme.palette.primary.main,
           backgroundColor: alpha(theme.palette.primary.main, 0.2),
@@ -80,20 +73,27 @@ const Searchbar = ({
           height: '100%', // Make button match height of container
           '&:hover': {
             backgroundColor: alpha(theme.palette.primary.main, 0.3),
-          }
+          },
         }}
         aria-label="search"
         onClick={handleSubmit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleSubmit(e);
+          }
+        }}
         type="button"
       >
         <SearchIcon />
       </IconButton>
-      
+
       <InputBase
         sx={{
           ml: 0.5,
           flex: 1,
-          color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.text.primary,
+          color:
+            theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.text.primary,
           '& .MuiInputBase-input': {
             py: 1.5,
             px: 1,
@@ -108,12 +108,18 @@ const Searchbar = ({
         onBlur={() => setFocused(false)}
         autoFocus={autoFocus}
       />
-      
+
       {query && (
         <IconButton
           sx={{ p: '10px', mr: 1 }}
           aria-label="clear"
           onClick={handleClear}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleClear(e);
+            }
+          }}
           type="button"
         >
           <ClearIcon fontSize="small" />

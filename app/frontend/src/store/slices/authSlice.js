@@ -3,20 +3,51 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 // Load user from localStorage
 const getUserFromStorage = () => {
   const user = localStorage.getItem('user');
-  return user ? JSON.parse(user) : null;
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role') || 'user';
+  
+  return user ? {
+    isAuthenticated: !!user,
+    user: JSON.parse(user),
+    role,
+    token
+  } : {
+    isAuthenticated: false,
+    user: null,
+    role: 'guest',
+    token: null
+  };
+};
+
+// Initial state with user data from localStorage
+const initialState = {
+  ...getUserFromStorage(),
+  loading: false,
+  error: null,
 };
 
 // Async thunks for authentication actions
-export const login = createAsyncThunk(
-  'auth/login',
+export const loginAsync = createAsyncThunk(
+  'auth/loginAsync',
   async ({ email, password }, { rejectWithValue }) => {
     try {
       // In a real app, this would be an API call to your backend
       if (email && password) {
         // Simulate successful login
-        const userData = { email, name: email.split('@')[0] };
+        const userData = { 
+          id: 'user-' + Date.now(),
+          email, 
+          name: email.split('@')[0] 
+        };
+        
+        const token = 'mock-token-' + Date.now();
+        const role = email.includes('admin') ? 'admin' : 'user';
+        
         localStorage.setItem('user', JSON.stringify(userData));
-        return userData;
+        localStorage.setItem('token', token);
+        localStorage.setItem('role', role);
+        
+        return { user: userData, token, role };
       } else {
         return rejectWithValue('Invalid email or password');
       }
@@ -26,21 +57,27 @@ export const login = createAsyncThunk(
   }
 );
 
-export const register = createAsyncThunk(
-  'auth/register',
-  async ({ email, password, fullName, username, phone }, { rejectWithValue }) => {
+export const registerAsync = createAsyncThunk(
+  'auth/registerAsync',
+  async ({ email, password, name }, { rejectWithValue }) => {
     try {
       // In a real app, this would be an API call to your backend
-      if (email && password) {
+      if (email && password && name) {
         // Simulate successful registration
         const userData = {
+          id: 'user-' + Date.now(),
           email,
-          fullName,
-          username,
-          phone,
+          name
         };
+        
+        const token = 'mock-token-' + Date.now();
+        const role = 'user'; // Default role for new users
+        
         localStorage.setItem('user', JSON.stringify(userData));
-        return userData;
+        localStorage.setItem('token', token);
+        localStorage.setItem('role', role);
+        
+        return { user: userData, token, role };
       } else {
         return rejectWithValue('Invalid registration data');
       }
@@ -86,47 +123,80 @@ export const resetPassword = createAsyncThunk(
 
 const authSlice = createSlice({
   name: 'auth',
-  initialState: {
-    currentUser: getUserFromStorage(),
-    loading: false,
-    error: null,
-  },
+  initialState,
   reducers: {
-    logout: (state) => {
-      localStorage.removeItem('user');
-      state.currentUser = null;
-      state.error = null;
+    // Login action (synchronous for DevUserPanel)
+    login(state, action) {
+      state.isAuthenticated = true;
+      state.user = action.payload.user;
+      state.role = action.payload.role;
+      state.token = action.payload.token;
+      
+      // Also update localStorage
+      localStorage.setItem('user', JSON.stringify(action.payload.user));
+      localStorage.setItem('token', action.payload.token);
+      localStorage.setItem('role', action.payload.role);
     },
-    clearError: (state) => {
+    
+    // Logout action
+    logout(state) {
+      state.isAuthenticated = false;
+      state.user = null;
+      state.role = 'guest';
+      state.token = null;
+      state.error = null;
+      
+      // Clear localStorage
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      localStorage.removeItem('role');
+    },
+    
+    // Update user profile
+    updateUserProfile(state, action) {
+      state.user = { ...state.user, ...action.payload };
+      
+      // Update localStorage
+      localStorage.setItem('user', JSON.stringify(state.user));
+    },
+    
+    // Clear error state
+    clearError(state) {
       state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      // Login cases
-      .addCase(login.pending, (state) => {
+      // Login async cases
+      .addCase(loginAsync.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(login.fulfilled, (state, action) => {
+      .addCase(loginAsync.fulfilled, (state, action) => {
         state.loading = false;
-        state.currentUser = action.payload;
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.role = action.payload.role;
       })
-      .addCase(login.rejected, (state, action) => {
+      .addCase(loginAsync.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
       
-      // Register cases
-      .addCase(register.pending, (state) => {
+      // Register async cases
+      .addCase(registerAsync.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(register.fulfilled, (state, action) => {
+      .addCase(registerAsync.fulfilled, (state, action) => {
         state.loading = false;
-        state.currentUser = action.payload;
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.role = action.payload.role;
       })
-      .addCase(register.rejected, (state, action) => {
+      .addCase(registerAsync.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -159,5 +229,15 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, clearError } = authSlice.actions;
+// Export actions
+export const { login, logout, updateUserProfile, clearError } = authSlice.actions;
+
+// Selectors for easy access to auth state
+export const selectIsAuthenticated = (state) => state.auth.isAuthenticated;
+export const selectCurrentUser = (state) => state.auth.user;
+export const selectUserRole = (state) => state.auth.role;
+export const selectAuthToken = (state) => state.auth.token;
+export const selectAuthLoading = (state) => state.auth.loading;
+export const selectAuthError = (state) => state.auth.error;
+
 export default authSlice.reducer;

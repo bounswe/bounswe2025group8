@@ -1,14 +1,41 @@
 import { configureStore } from '@reduxjs/toolkit';
-import authReducer from './slices/authSlice';
-import taskDetailReducer from './slices/taskDetailSlice';
-import searchReducer from './slices/searchSlice';
-import reviewReducer from './slices/reviewSlice';
+import authReducer from './slices/authSlice.js';
+
+// Check for stored auth data
+const getPreloadedState = () => {
+  try {
+    const token = localStorage.getItem('token');
+    if (token) {
+      // In a real app, you'd decode the token or make an API call
+      // For dev purposes, we'll just check if it contains role info
+      const role = token.includes('admin') ? 'admin' : 'user';
+      
+      // Example user data based on token
+      let userData = {
+        id: `mock-${role}-id`,
+        name: role === 'admin' ? 'Admin User' : 'Regular User',
+        email: `${role}@example.com`,
+        avatar: role === 'admin' ? 'https://randomuser.me/api/portraits/women/65.jpg' : null
+      };
+      
+      return {
+        auth: {
+          isAuthenticated: true,
+          token,
+          role,
+          user: userData
+        }
+      };
+    }
+  } catch (e) {
+    console.error('Error loading auth state:', e);
+  }
+  return {}; // Return empty state if no token found
+};
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
-    taskDetail: taskDetailReducer,
-    search: searchReducer,
-    review: reviewReducer,
   },
+  preloadedState: getPreloadedState()
 });

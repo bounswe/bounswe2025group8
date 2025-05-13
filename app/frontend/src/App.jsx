@@ -1,62 +1,46 @@
-import "./App.css";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-  Outlet,
-} from "react-router-dom";
-import LoginPage from "./pages/auth/LoginPage";
-import RegisterPage from "./pages/auth/RegisterPage";
-import ForgotPassword from "./pages/auth/ForgotPassword";
-import ResetPassword from "./pages/auth/ResetPassword";
-import { Provider } from "react-redux";
-import { store } from "./store/index";
-import TaskDetailComponent from "./components/TaskDetailComponent";
-import TaskDetailVolunteer from "./components/TaskDetailVolunteer";
-import SelectVolunteerPage from "./pages/SelectVolunteerPage";
-import RateReviewPage from "./pages/RateReviewPage";
-import TaskListPage from "./pages/TaskListPage";
-import TaskPage from "./pages/TaskPage";
-import TaskPageVolunteer from "./pages/TaskPageVolunteer";
-import HomeDashboard from "./pages/HomeDashboard";
-import MainLayout from "./layouts/MainLayout";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Box } from '@mui/material';
+import ThemeDemo from './components/ThemeDemo';
+import Login from './pages/Login.jsx';
+import Signup from './pages/Signup.jsx';
+import Home from './pages/Home.jsx';
+import Categories from './pages/Categories.jsx';
+import Requests from './pages/Requests.jsx';
+import RequestDetail from './pages/RequestDetail.jsx';
+import SearchResults from './pages/SearchResults.jsx';
+import DevUserPanel from './components/DevUserPanel.jsx';
+import MainLayout from './layouts/MainLayout.jsx';
+import './App.css';
 
 function App() {
+  // Check if we're in development mode
+  const isDevelopment = import.meta.env.DEV;
+  
   return (
-    <Provider store={store}>
-      <Router>
+    <Router>
+      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <Routes>
-          {/* Authentication routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/auth/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/auth/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
-          {/* Main layout routes */}{" "}
-          <Route path="/" element={<MainLayout />}>
-            <Route index element={<HomeDashboard />} />{" "}
-            <Route path="/tasks" element={<TaskListPage />} />
-            <Route
-              path="/tasks/volunteer/:taskId"
-              element={<TaskPageVolunteer />}
-            />
-            <Route path="/tasks/:taskId" element={<TaskPage />} />
-            <Route
-              path="/tasks/:taskId/select-volunteer"
-              element={<SelectVolunteerPage />}
-            />
-            <Route
-              path="/tasks/:taskId/rate-review"
-              element={<RateReviewPage />}
-            />
+          {/* Protected/Layout Routes */}
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/categories/:categoryId" element={<Categories />} />            <Route path="/requests" element={<Requests />} />
+            <Route path="/requests/:requestId" element={<RequestDetail />} />
+            <Route path="/requests/filter/urgency/:urgency" element={<Requests />} />
+            <Route path="/create-request" element={<div>Create Request Form</div>} />
+            <Route path="/search" element={<SearchResults />} />
+            <Route path="/theme" element={<ThemeDemo />} />
           </Route>
-          {/* Redirect any unknown routes to home */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          
+          {/* Auth Routes (without sidebar) */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
         </Routes>
-      </Router>
-    </Provider>
+        
+        {/* Dev User Panel - Only shown in development mode */}
+        {isDevelopment && <DevUserPanel />}
+      </Box>
+    </Router>
   );
 }
 

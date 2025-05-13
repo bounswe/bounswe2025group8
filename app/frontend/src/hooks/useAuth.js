@@ -1,84 +1,110 @@
-import { useSelector, useDispatch } from 'react-redux';
-import { login, register, logout, forgotPassword, resetPassword } from '../store/slices/authSlice';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { 
+  loginAsync, 
+  registerAsync, 
+  login, 
+  logout, 
+  selectIsAuthenticated, 
+  selectCurrentUser, 
+  selectUserRole, 
+  selectAuthLoading,
+  selectAuthError 
+} from '../store/slices/authSlice';
 
-// Custom hook for accessing auth state and methods from Redux
-export const useAuth = () => {
+/**
+ * Hook for handling authentication in the application
+ * @param {string} redirectTo - Path to redirect to after successful auth (default: null - no redirect)
+ * @returns {Object} Auth methods and state
+ */
+const useAuth = (redirectTo = null) => {
   const dispatch = useDispatch();
-  const { currentUser, loading, error } = useSelector(state => state.auth);
-
-  // Login handler
-  const handleLogin = async (email, password) => {
-    try {
-      const resultAction = await dispatch(login({ email, password }));
-      // If login succeeded, return the user data
-      if (login.fulfilled.match(resultAction)) {
-        return resultAction.payload;
-      }
-      // If there was an error, throw it
-      throw new Error(resultAction.payload || 'Login failed');
-    } catch (error) {
-      throw error;
+  const navigate = useNavigate();
+  
+  // Select auth state from Redux
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const currentUser = useSelector(selectCurrentUser);
+  const userRole = useSelector(selectUserRole);
+  const loading = useSelector(selectAuthLoading);
+  const error = useSelector(selectAuthError);
+  
+  // Redirect only on successful auth actions, not on every component mount
+  useEffect(() => {
+    // Only redirect if redirectTo is provided and we didn't create this effect just for state
+    if (isAuthenticated && redirectTo && redirectTo !== window.location.pathname) {
+      navigate(redirectTo, { replace: true });
     }
+  }, [isAuthenticated, navigate, redirectTo]);
+  
+  // Handle login submission
+  const handleLogin = async ({ email, password }) => {
+    const result = await dispatch(loginAsync({ email, password }));
+    return result.meta.requestStatus === 'fulfilled';
   };
-
-  // Register handler
-  const handleRegister = async (email, password, fullName, username, phone) => {
-    try {
-      const resultAction = await dispatch(register({ email, password, fullName, username, phone }));
-      // If registration succeeded, return the user data
-      if (register.fulfilled.match(resultAction)) {
-        return resultAction.payload;
-      }
-      // If there was an error, throw it
-      throw new Error(resultAction.payload || 'Registration failed');
-    } catch (error) {
-      throw error;
-    }
+  
+  // Handle signup submission
+  const handleSignup = async ({ email, password, firstName, lastName }) => {
+    const name = `${firstName} ${lastName}`;
+    const result = await dispatch(registerAsync({ email, password, name }));
+    return result.meta.requestStatus === 'fulfilled';
   };
-
-  // Logout handler
+  
+  // Handle logout
   const handleLogout = () => {
     dispatch(logout());
+    navigate('/'); // Always redirect to home on logout
   };
-
-  // Forgot password handler
-  const handleForgotPassword = async (email) => {
-    try {
-      const resultAction = await dispatch(forgotPassword(email));
-      // If forgot password succeeded, return the result
-      if (forgotPassword.fulfilled.match(resultAction)) {
-        return resultAction.payload;
-      }
-      // If there was an error, throw it
-      throw new Error(resultAction.payload || 'Forgot password request failed');
-    } catch (error) {
-      throw error;
+  
+  // Quick login with mock data (for development)
+  const quickLogin = (role = 'user') => {
+    let userData;
+    
+    if (role === 'admin') {
+      userData = {
+        user: {
+          id: 'admin-789',
+          name: 'Admin User',
+          email: 'admin@example.com',
+          avatar: 'https://randomuser.me/api/portraits/women/65.jpg'
+        },
+        role: 'admin',
+        token: `mock-token-admin-${Date.now()}`
+      };
+    } else {
+      userData = {
+        user: {
+          id: 'user-123',
+          name: 'Regular User',
+          email: 'user@example.com',
+          avatar: null
+        },
+        role: 'user',
+        token: `mock-token-user-${Date.now()}`
+      };
+    }
+    
+    dispatch(login(userData));
+    // Only navigate if redirectTo is provided
+    if (redirectTo) {
+      navigate(redirectTo);
     }
   };
-  // Reset password handler
-  const handleResetPassword = async ({ password, token }) => {
-    try {
-      const resultAction = await dispatch(resetPassword({ password, token }));
-      // If reset password succeeded, return the result
-      if (resetPassword.fulfilled.match(resultAction)) {
-        return resultAction.payload;
-      }
-      // If there was an error, throw it
-      throw new Error(resultAction.payload || 'Password reset failed');
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  // Return the auth state and methods
+  
   return {
+    // Current auth state
+    isAuthenticated,
     currentUser,
+    userRole,
     loading,
     error,
-    login: handleLogin,
-    register: handleRegister,
-    logout: handleLogout,
-    forgotPassword: handleForgotPassword,
-    resetPassword: handleResetPassword,
+    
+    // Auth methods
+    handleLogin,
+    handleSignup,
+    handleLogout,
+    quickLogin
   };
 };
+
+export default useAuth;
