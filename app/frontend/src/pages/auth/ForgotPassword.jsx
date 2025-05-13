@@ -11,7 +11,7 @@ import {
   InputAdornment,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
-import useAuth  from "../../hooks/useAuth";
+import useAuth from "../../hooks/useAuth";
 import logoImage from "../../assets/logo.png";
 import mailIcon from "../../assets/mail.svg";
 
@@ -19,7 +19,6 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [forgotError, setForgotError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-
   const { forgotPassword, loading, error } = useAuth();
 
   const handleSubmit = async (e) => {
@@ -29,9 +28,20 @@ const ForgotPassword = () => {
       setForgotError("");
       setSuccessMessage("");
       const result = await forgotPassword(email);
-      setSuccessMessage("Password reset link sent to your email!");
+
+      if (result && result.success) {
+        setSuccessMessage("Password reset link sent to your email!");
+
+        // In development mode, if token is returned, show it
+        if (result.token) {
+          console.log("DEV MODE TOKEN:", result.token);
+          // You could display the token in the UI for development purposes
+        }
+      }
     } catch (error) {
-      setForgotError("Failed to reset password: " + error.message);
+      setForgotError(
+        "Failed to reset password: " + (error.message || "Request failed")
+      );
     }
   };
 

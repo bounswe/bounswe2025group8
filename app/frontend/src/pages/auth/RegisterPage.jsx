@@ -15,7 +15,8 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-import  useAuth  from "../../hooks/useAuth"; // Updated import path
+import useAuth from "../../hooks/useAuth"; // Updated import path
+import { authAPI } from "../../utils/api"; // Import authAPI
 import logoImage from "../../assets/logo.png";
 import userIcon from "../../assets/user.svg";
 import keyIcon from "../../assets/key_for_register.svg";
@@ -23,30 +24,89 @@ import phoneIcon from "../../assets/phone.svg";
 import mailIcon from "../../assets/mail.svg";
 
 const RegisterPage = () => {
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [registerError, setRegisterError] = useState("");
 
   const { register, loading, error } = useAuth(); // Now using Redux state
   const navigate = useNavigate();
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!agreeTerms) {
       return setRegisterError("You must agree to the Terms & Conditions");
     }
+
+    if (password !== confirmPassword) {
+      return setRegisterError("Passwords do not match");
+    }
+
+    if (password.length < 8) {
+      return setRegisterError("Password must be at least 8 characters long");
+    }
+
     try {
       setRegisterError("");
-      await register(email, password, fullName, username, phone);
-      navigate("/"); // Redirect to home dashboard after registration
+
+      // Check email availability first
+      try {
+        const emailCheck = await authAPI.checkEmailAvailability(email);
+        console.log(emailCheck);
+        if (emailCheck && !emailCheck.data.available) {
+          return setRegisterError(
+            "This email is already in use. Please use a different email."
+          );
+        }
+      } catch (error) {
+        console.warn("Email availability check failed:", error);
+        // Continue with registration even if check fails
+      }
+
+      // If phone provided, check its availability too
+      if (phone) {
+        try {
+          const phoneCheck = await authAPI.checkPhoneAvailability(phone);
+          if (phoneCheck && !phoneCheck.data.available) {
+            return setRegisterError(
+              "This phone number is already in use. Please use a different number."
+            );
+          }
+        } catch (error) {
+          console.warn("Phone availability check failed:", error);
+          // Continue with registration even if check fails
+        }
+      } // All checks passed, register the user
+      const fullName = `${firstName} ${lastName}`.trim();
+      const result = await register(
+        firstName,
+        lastName,
+        username,
+        email,
+        phone,
+        password,
+        confirmPassword
+      );
+
+      if (result && result.registered) {
+        // Show success message and navigate to login
+        navigate("/login?registered=true");
+      } else {
+        // Direct registration with auto-login
+        navigate("/");
+      }
     } catch (error) {
-      setRegisterError("Failed to create an account: " + error.message);
+      setRegisterError(
+        "Failed to create an account: " +
+          (error.message || "Registration failed")
+      );
     }
   };
 
@@ -173,28 +233,64 @@ const RegisterPage = () => {
                 noValidate
                 sx={{ width: "100%" }}
               >
-                <TextField
-                  margin="normal"
-                  required
-                  fullWidth
-                  id="fullName"
-                  placeholder="Full Name"
-                  name="fullName"
-                  autoComplete="name"
-                  autoFocus
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  size="small"
-                  sx={{ mb: 2 }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <img src={userIcon} alt="Name" width="16" height="16" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-
+                {" "}
+                <Grid container spacing={2} sx={{ mb: 2, mt: 0 }}>
+                  <Grid size={{ xs: 7 }}>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="firstName"
+                      placeholder="First Name"
+                      name="firstName"
+                      autoComplete="given-name"
+                      autoFocus
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      size="small"
+                      sx={{ mt: 0 }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <img
+                              src={userIcon}
+                              alt="Name"
+                              width="16"
+                              height="16"
+                            />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 5 }}>
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      id="lastName"
+                      placeholder="Surname"
+                      name="lastName"
+                      autoComplete="family-name"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      size="small"
+                      sx={{ mt: 0 }}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <img
+                              src={userIcon}
+                              alt="Name"
+                              width="16"
+                              height="16"
+                            />
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Grid>
+                </Grid>
                 <TextField
                   margin="normal"
                   required
@@ -219,7 +315,6 @@ const RegisterPage = () => {
                     ),
                   }}
                 />
-
                 <TextField
                   margin="normal"
                   required
@@ -244,7 +339,6 @@ const RegisterPage = () => {
                     ),
                   }}
                 />
-
                 <TextField
                   margin="normal"
                   required
@@ -269,8 +363,7 @@ const RegisterPage = () => {
                       </InputAdornment>
                     ),
                   }}
-                />
-
+                />{" "}
                 <TextField
                   margin="normal"
                   required
@@ -309,7 +402,50 @@ const RegisterPage = () => {
                     ),
                   }}
                 />
-
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  name="confirmPassword"
+                  placeholder="Confirm Password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  id="confirmPassword"
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  size="small"
+                  sx={{ mb: 2 }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <img
+                          src={keyIcon}
+                          alt="Confirm Password"
+                          width="16"
+                          height="16"
+                        />
+                      </InputAdornment>
+                    ),
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle confirm password visibility"
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
+                          edge="end"
+                          size="small"
+                        >
+                          {showConfirmPassword ? (
+                            <VisibilityOff />
+                          ) : (
+                            <Visibility />
+                          )}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -334,7 +470,6 @@ const RegisterPage = () => {
                   }
                   sx={{ mb: 2 }}
                 />
-
                 <Button
                   type="submit"
                   fullWidth

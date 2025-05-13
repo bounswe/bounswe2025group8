@@ -28,6 +28,8 @@ import MainLayout from "./layouts/MainLayout.jsx";
 import DevUserPanel from "./components/DevUserPanel.jsx";
 import ProfilePage from "./components/ProfilePage/ProfilePage.jsx";
 import CreateRequestPage from "./components/CreateRequest/CreateRequestPage.jsx";
+// API Testing component
+import ApiTester from "./components/ApiTester.jsx";
 
 import "./App.css";
 
@@ -88,13 +90,13 @@ function App() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/create-request" element={<CreateRequestPage />} />
           </Route>
-
-          {/* Auth Routes (without sidebar) */}
-
+          {/* Auth Routes (without sidebar) */}{" "}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          {/* API Tester - remove in production */}
+          <Route path="/api-test" element={<ApiTester />} />
         </Routes>
         {/* Dev User Panel - Only shown in development mode */}
         {/*isDevelopment && <DevUserPanel />*/}

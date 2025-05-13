@@ -3,15 +3,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { 
   loginAsync, 
-  registerAsync, 
-  login, 
-  logout, 
+  registerAsync,
+  forgotPassword,
+  verifyToken, 
+  resetPassword, 
+  logout,
   selectIsAuthenticated, 
   selectCurrentUser, 
   selectUserRole, 
   selectAuthLoading,
   selectAuthError 
 } from '../store/slices/authSlice';
+import { authAPI } from '../utils/api';
 
 /**
  * Hook for handling authentication in the application
@@ -39,55 +42,105 @@ const useAuth = (redirectTo = null) => {
   
   // Handle login submission
   const handleLogin = async ({ email, password }) => {
-    const result = await dispatch(loginAsync({ email, password }));
-    return result.meta.requestStatus === 'fulfilled';
+    console.log('Attempting login with:', { email });
+    
+    try {
+      const result = await dispatch(loginAsync({ email, password }));
+      console.log('Login result:', result);
+      return result.meta.requestStatus === 'fulfilled';
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    }
   };
   
-  // Handle signup submission
-  const handleSignup = async ({ email, password, firstName, lastName }) => {
-    const name = `${firstName} ${lastName}`;
-    const result = await dispatch(registerAsync({ email, password, name }));
-    return result.meta.requestStatus === 'fulfilled';
+  // Handle register submission
+  const register = async (
+        firstName,
+        lastName,
+        username,
+        email,
+        phone,
+        password,
+        confirmPassword) => {
+    const result = await dispatch(registerAsync({ 
+        firstName,
+        lastName,
+        username,
+        email,
+        phone,
+        password,
+        confirmPassword
+    }));
+    
+    if (result.meta.requestStatus !== 'fulfilled') {
+      throw new Error(result.payload || 'Registration failed');
+    }
+    
+    return result.payload;
+  };
+  
+  // Handle forgot password
+  const handleForgotPassword = async (email) => {
+    const result = await dispatch(forgotPassword(email));
+    
+    if (result.meta.requestStatus !== 'fulfilled') {
+      throw new Error(result.payload || 'Password reset request failed');
+    }
+    
+    return result.payload;
+  };
+  
+  // Handle verify token
+  const handleVerifyToken = async (token) => {
+    const result = await dispatch(verifyToken(token));
+    
+    if (result.meta.requestStatus !== 'fulfilled') {
+      throw new Error(result.payload || 'Token verification failed');
+    }
+    
+    return result.payload;
+  };
+  
+  // Handle reset password
+  const handleResetPassword = async (password, token) => {
+    const result = await dispatch(resetPassword({ password, token }));
+    
+    if (result.meta.requestStatus !== 'fulfilled') {
+      throw new Error(result.payload || 'Password reset failed');
+    }
+    
+    return result.payload;
   };
   
   // Handle logout
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate('/'); // Always redirect to home on logout
+  const handleLogout = async () => {
+    try {
+      await authAPI.logout();
+      dispatch(logout());
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if server logout fails, clear local state
+      dispatch(logout());
+      navigate('/login');
+    }
+  };
+    // Check email availability
+  const checkEmailAvailability = async (email) => {
+    try {
+      return await authAPI.checkEmailAvailability(email);
+    } catch (error) {
+      throw error;
+    }
   };
   
-  // Quick login with mock data (for development)
-  const quickLogin = (role = 'user') => {
-    let userData;
-    
-    if (role === 'admin') {
-      userData = {
-        user: {
-          id: 'admin-789',
-          name: 'Admin User',
-          email: 'admin@example.com',
-          avatar: 'https://randomuser.me/api/portraits/women/65.jpg'
-        },
-        role: 'admin',
-        token: `mock-token-admin-${Date.now()}`
-      };
-    } else {
-      userData = {
-        user: {
-          id: 'user-123',
-          name: 'Regular User',
-          email: 'user@example.com',
-          avatar: null
-        },
-        role: 'user',
-        token: `mock-token-user-${Date.now()}`
-      };
-    }
-    
-    dispatch(login(userData));
-    // Only navigate if redirectTo is provided
-    if (redirectTo) {
-      navigate(redirectTo);
+  // Check phone availability
+  const checkPhoneAvailability = async (phoneNumber) => {
+    try {
+      return await authAPI.checkPhoneAvailability(phoneNumber);
+    } catch (error) {
+      throw error;
     }
   };
   
@@ -100,10 +153,14 @@ const useAuth = (redirectTo = null) => {
     error,
     
     // Auth methods
-    handleLogin,
-    handleSignup,
-    handleLogout,
-    quickLogin
+    login: handleLogin,
+    register,
+    logout: handleLogout,
+    forgotPassword: handleForgotPassword,
+    verifyToken: handleVerifyToken,
+    resetPassword: handleResetPassword,
+    checkEmailAvailability,
+    checkPhoneAvailability
   };
 };
 
