@@ -13,6 +13,9 @@ import SearchResults from "./pages/SearchResults.jsx";
 // Request related pages
 import Requests from "./pages/Requests.jsx";
 import RequestDetail from "./pages/RequestDetail.jsx";
+// User account pages
+import Settings from "./pages/Settings.jsx";
+import Notifications from "./pages/Notifications.jsx";
 // Task related pages
 import TaskPage from "./pages/TaskPage.jsx";
 import TaskPageVolunteer from "./pages/TaskPageVolunteer.jsx";
@@ -108,10 +111,12 @@ function App() {
             />
 
             {/* Review Routes */}
-            <Route path="/rate-review/:taskId" element={<RateReviewPage />} />
-
-            {/* Search Routes */}
+            <Route path="/rate-review/:taskId" element={<RateReviewPage />} />            {/* Search Routes */}
             <Route path="/search" element={<SearchResults />} />
+            
+            {/* User Routes */}
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/notifications" element={<Notifications />} />
 
             {/* Theme Demo */}
             <Route path="/theme" element={<ThemeDemo />} />
