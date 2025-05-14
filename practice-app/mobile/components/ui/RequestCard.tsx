@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, Image, StyleSheet, useColorScheme, TouchableOpacity } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,12 +12,14 @@ export interface RequestCardProps {
   category: string;
   urgencyLevel: string;
   status: string;
+  onPress?: () => void;
 }
 
 const backgroundColors: Record<string, string> = {
   High: '#de3b40', // High Urhgency background color
   Medium: '#efb034', // Medium Urgency background color
   Low: '#1dd75b', // Low Urgency background color
+  Past: '#9095a0', // Past background color
   Accepted: '#636AE8', // Accepted background color
   Pending: 'transparent', // Pending background color
   Rejected: 'transparent', // Rejected background color
@@ -36,12 +38,13 @@ const borderColors: Record<string, string> = {
   High: '#de3b40', // High Urgency border color
   Medium: '#efb034', // Medium Urgency border color
   Low: '#1dd75b', // Low Urgency border color
+  Past: '#9095a0', // Past border color
   Accepted: '#636AE8', // Accepted border color
   Pending: '#636AE8', // Pending border color
   Rejected: '#E8618C', // Rejected border color
 };
 
-const RequestCard: React.FC<RequestCardProps> = ({ title, imageUrl, category, urgencyLevel, status, distance, time }) => {
+const RequestCard: React.FC<RequestCardProps> = ({ title, imageUrl, category, urgencyLevel, status, distance, time, onPress }) => {
   const { colors } = useTheme();
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme || 'light'];
@@ -55,7 +58,9 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, imageUrl, category, ur
           <Text style={[styles.distanceTimeText, { color: colors.text }]}>{distance} • {time}</Text>
           <Text style={[styles.categoryLabel, { color: colors.primary, backgroundColor: themeColors.lightPurple }]}>{category}</Text>
         </View>
-        <Ionicons name="chevron-forward-outline" size={25} color={colors.primary} style={styles.icon} />
+        <TouchableOpacity onPress={onPress} disabled={!onPress}>
+          <Ionicons name="chevron-forward-outline" size={25} color={colors.primary} style={styles.icon} />
+        </TouchableOpacity>
       </View>
       <View style={styles.bottomContainer}>
         {/* Urgency Label */}
@@ -144,7 +149,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   icon: {
-
   },
   bottomContainer: {
     flexDirection: 'row',
