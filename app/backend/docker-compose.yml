@@ -16,12 +16,11 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-
   web:
     build: .
     command: >
-      bash -c "
-      sleep 10 &&
+      sh -c "
+      python manage.py wait_for_db &&
       python manage.py migrate && 
       python manage.py runserver 0.0.0.0:8000
       "
@@ -30,7 +29,8 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       - DEBUG=1
       - DATABASE_HOST=db
@@ -38,6 +38,18 @@ services:
       - DATABASE_USER=postgres
       - DATABASE_PASSWORD=postgres
       - DATABASE_PORT=5432
+
+  frontend:
+    build: ../frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../frontend:/app
+      - /app/node_modules
+    depends_on:
+      - web
+    environment:
+      - VITE_API_URL=http://localhost:8000
 
 volumes:
   postgres_data:
