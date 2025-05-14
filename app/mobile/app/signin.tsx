@@ -17,7 +17,7 @@ import {
   ScrollView,
   Platform
 } from 'react-native';
-import { login } from '../lib/api';
+import { login, getUserProfile } from '../lib/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SignIn() {
@@ -40,6 +40,15 @@ export default function SignIn() {
       console.log('Attempting login with:', { email });
       const response = await login(email, password);
       console.log('Login successful:', response);
+      
+      // Fetch user profile after successful login
+      if (response.data?.user_id) {
+        const profileResponse = await getUserProfile(response.data.user_id);
+        console.log('User profile:', profileResponse);
+        
+        // Store user profile data
+        await AsyncStorage.setItem('userProfile', JSON.stringify(profileResponse.data));
+      }
       
       // Navigate to feed
       router.replace('/feed');

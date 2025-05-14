@@ -19,6 +19,7 @@ import { useRouter } from 'expo-router';
 import { Category, Request, Profile } from '../components/ui/SearchBarWithResults';
 import { getTasks, getUserProfile, type Task, type UserProfile } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Feed() {
   const { colors } = useTheme();
@@ -29,17 +30,6 @@ export default function Feed() {
   const [refreshing, setRefreshing] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const scrollRef = useRef<ScrollView>(null);
-
-  const fetchUserProfile = async () => {
-    try {
-      if (user?.id) {
-        const response = await getUserProfile(user.id);
-        setUserProfile(response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-    }
-  };
 
   const fetchTasks = async () => {
     try {
@@ -55,14 +45,33 @@ export default function Feed() {
   };
 
   useEffect(() => {
+    const loadUserProfile = async () => {
+      try {
+        const profileData = await AsyncStorage.getItem('userProfile');
+        if (profileData) {
+          setUserProfile(JSON.parse(profileData));
+        } else if (user?.id) {
+          // If no profile in storage, fetch from API
+          const response = await getUserProfile(user.id);
+          setUserProfile(response.data);
+          // Store for future use
+          await AsyncStorage.setItem('userProfile', JSON.stringify(response.data));
+        }
+      } catch (error) {
+        console.error('Error loading user profile:', error);
+      }
+    };
+
+    loadUserProfile();
+  }, [user?.id]); // Add user.id as dependency
+
+  useEffect(() => {
     fetchTasks();
-    fetchUserProfile();
   }, []);
 
   const onRefresh = () => {
     setRefreshing(true);
     fetchTasks();
-    fetchUserProfile();
   };
 
   // Get unique categories from tasks
@@ -92,24 +101,22 @@ export default function Feed() {
       >
         {/* — Header — */}
         <View style={styles.header}>
-          <Image source={require('../assets/images/logo.png')} style={styles.logo} />
-          <View style={styles.headerText}>
-            <Text style={[styles.greeting, { color: colors.text }]}>
-              Good morning!
+          <View style={styles.headerContent}>
+            <Text style={[styles.welcomeText, { color: colors.text }]}>
+              Welcome back,
             </Text>
-            <Text style={[styles.username, { color: colors.text }]}>
+            <Text style={[styles.nameText, { color: colors.text }]}>
               {userProfile ? `${userProfile.name} ${userProfile.surname}` : 'User'}
             </Text>
+            {userProfile?.username && (
+              <Text style={[styles.usernameText, { color: colors.text + '99' }]}>
+                @{userProfile.username}
+              </Text>
+            )}
           </View>
-          <Image source={require('../assets/images/empty_profile_photo.png')} style={styles.profileImage} />
-          <View style={styles.icons}>
-            <TouchableOpacity onPress={() => {/* bell action */}}>
-              <Ionicons name="notifications-outline" size={24} color={colors.text} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/settings')}>
-              <Ionicons name="settings-outline" size={24} color={colors.text} />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity onPress={() => router.push('/notifications')}>
+            <Ionicons name="notifications-outline" size={24} color={colors.text} />
+          </TouchableOpacity>
         </View>
 
         {/* — Search bar — */}
@@ -232,13 +239,10 @@ export default function Feed() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  logo: { width: 32, height: 32, marginRight: 8 },
-  headerText: { flex: 1 },
-  greeting: { fontSize: 14 },
-  username: { fontSize: 18, fontWeight: '600' },
-  profileImage: { width: 32, height: 32, borderRadius: 16, marginLeft: 8 },
-  icons: { flexDirection: 'row', width: 60, justifyContent: 'space-between' },
-
+  headerContent: { flex: 1 },
+  welcomeText: { fontSize: 14 },
+  nameText: { fontSize: 18, fontWeight: '600' },
+  usernameText: { fontSize: 12, fontWeight: '400' },
   searchWrapper: {
     flexDirection: 'row',
     alignItems: 'center',

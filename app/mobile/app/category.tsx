@@ -1,69 +1,90 @@
-import React from 'react';
-import { SafeAreaView, View, Text, TouchableOpacity, ScrollView, Image, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView, View, Text, TouchableOpacity, ScrollView, Image, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { Request } from '../components/ui/SearchBarWithResults';
 import { Ionicons } from '@expo/vector-icons';
-
-const requests: Request[] = [
-  { id: 'a', title: 'Help for my math exam', urgency: 'Medium', meta: '550 m • 10 hours ago', category: 'Tutoring', image: require('../assets/images/help.png') },
-  { id: 'b', title: 'Help me see a doctor', urgency: 'High', meta: '2 km • 3 hours ago', category: 'Healthcare', image: require('../assets/images/help.png') },
-  { id: 'c', title: 'I need to clean my house', urgency: 'Low', meta: '750 m • 22 hours ago', category: 'House Cleaning', image: require('../assets/images/help.png') },
-  { id: 'd', title: 'Grocery shopping', urgency: 'Medium', meta: '900 m • 18 hours ago', category: 'Shopping', image: require('../assets/images/help.png') },
-  { id: 'e', title: 'Need help with yard work', urgency: 'Medium', meta: '2.5 km • 1 day ago', category: 'Uncategorized', image: require('../assets/images/help.png') },
-  { id: 'f', title: 'I need to wash my car', urgency: 'Low', meta: '650 m • 2 days ago', category: 'Uncategorized', image: require('../assets/images/help.png') },
-];
-
-const categoryNames: Record<string, string> = {
-  '1': 'House Cleaning',
-  '2': 'Healthcare',
-  '3': 'Tutoring',
-  '4': 'Shopping',
-  '5': 'Car Driver',
-  '6': 'Home Repair',
-  '7': 'Car Repair',
-};
+import { useTheme } from '@react-navigation/native';
+import { getTasks, type Task } from '../lib/api';
 
 export default function CategoryPage() {
+  const { colors } = useTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
   const categoryId = params.id as string;
-  const categoryName = categoryNames[categoryId] || 'Category';
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [categoryName, setCategoryName] = useState('');
 
-  // Filter requests by category name
-  const filteredRequests = requests.filter(r => r.category === categoryName);
+  useEffect(() => {
+    fetchTasks();
+  }, [categoryId]);
+
+  const fetchTasks = async () => {
+    try {
+      const response = await getTasks();
+      console.log('All tasks:', response.results);
+      console.log('Category ID from URL:', categoryId);
+      
+      // Filter tasks by exact category match
+      const categoryTasks = response.results?.filter(task => {
+        console.log('Task category:', task.category, 'Category ID:', categoryId);
+        return task.category === categoryId;
+      }) || [];
+      
+      console.log('Filtered tasks:', categoryTasks);
+      setTasks(categoryTasks);
+      if (categoryTasks.length > 0) {
+        setCategoryName(categoryTasks[0].category_display || categoryTasks[0].category);
+      }
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      Alert.alert('Error', 'Failed to load tasks. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </SafeAreaView>
+    );
+  }
 
   return (
-    <SafeAreaView style={{ flex: 1, paddingTop: 36 }}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.title}>{categoryName}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>{categoryName}</Text>
       </View>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 80 }}>
-        {filteredRequests.length === 0 ? (
-          <Text style={{ color: '#888', marginTop: 32, textAlign: 'center' }}>No requests found for this category.</Text>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 80 }]}>
+        {tasks.length === 0 ? (
+          <Text style={[styles.noTasks, { color: colors.text }]}>No requests found for this category.</Text>
         ) : (
-          filteredRequests.map((r) => (
+          tasks.map((task) => (
             <TouchableOpacity
-              key={r.id}
-              style={styles.card}
-              onPress={() => router.push('/request/' + r.id as any)}
+              key={task.id}
+              style={[styles.card, { backgroundColor: colors.card }]}
+              onPress={() => router.push('/request/' + task.id as any)}
             >
-              <Image source={typeof r.image === 'number' ? r.image : require('../assets/images/help.png')} style={styles.cardImage} />
+              <Image source={require('../assets/images/help.png')} style={styles.cardImage} />
               <View style={styles.cardContent}>
-                <Text style={styles.cardTitle}>{r.title}</Text>
-                <Text style={styles.cardMeta}>{r.meta}</Text>
+                <Text style={[styles.cardTitle, { color: colors.text }]}>{task.title}</Text>
+                <Text style={[styles.cardMeta, { color: colors.text + '99' }]}>{task.location}</Text>
                 <View style={styles.pillRow}>
-                  <View style={[styles.urgencyBadge, { backgroundColor: r.urgency === 'High' ? '#e74c3c' : r.urgency === 'Medium' ? '#f1c40f' : '#2ecc71' }]}> 
-                    <Text style={styles.urgencyText}>{r.urgency}</Text>
+                  <View style={[styles.urgencyBadge, { backgroundColor: task.urgency_level === 3 ? '#e74c3c' : task.urgency_level === 2 ? '#f1c40f' : '#2ecc71' }]}> 
+                    <Text style={styles.urgencyText}>
+                      {task.urgency_level === 3 ? 'High' : task.urgency_level === 2 ? 'Medium' : 'Low'}
+                    </Text>
                   </View>
-                  <View style={styles.categoryPill}>
-                    <Text style={styles.categoryText}>{r.category}</Text>
+                  <View style={[styles.categoryPill, { backgroundColor: colors.primary }]}>
+                    <Text style={styles.categoryText}>{task.category_display || task.category}</Text>
                   </View>
                 </View>
               </View>
-              <Ionicons name="chevron-forward" size={20} color="#333" />
+              <Ionicons name="chevron-forward" size={20} color={colors.text} />
             </TouchableOpacity>
           ))
         )}
@@ -73,28 +94,84 @@ export default function CategoryPage() {
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, marginBottom: 12 },
-  backBtn: { marginRight: 12 },
-  title: { fontSize: 22, fontWeight: 'bold', color: '#333' },
+  container: {
+    flex: 1,
+    paddingTop: 36,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
+  backBtn: {
+    marginRight: 12,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+  },
+  content: {
+    padding: 16,
+  },
+  noTasks: {
+    textAlign: 'center',
+    marginTop: 32,
+    fontSize: 16,
+  },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
-    backgroundColor: '#fff',
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 4,
     elevation: 1,
   },
-  cardImage: { width: 60, height: 60, borderRadius: 8, marginRight: 12 },
-  cardContent: { flex: 1, paddingRight: 32 },
-  cardTitle: { fontWeight: '600', fontSize: 16 },
-  cardMeta: { color: '#888', fontSize: 12, marginTop: 4 },
-  pillRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
-  urgencyBadge: { borderRadius: 8, paddingHorizontal: 12, paddingVertical: 2, marginRight: 8 },
-  urgencyText: { fontSize: 12, color: '#fff', fontWeight: 'bold' },
-  categoryPill: { borderRadius: 8, paddingHorizontal: 12, paddingVertical: 2, backgroundColor: '#6c63ff' },
-  categoryText: { fontSize: 12, color: '#fff', fontWeight: 'bold' },
+  cardImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 12,
+  },
+  cardContent: {
+    flex: 1,
+    paddingRight: 32,
+  },
+  cardTitle: {
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  cardMeta: {
+    fontSize: 12,
+    marginTop: 4,
+  },
+  pillRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  urgencyBadge: {
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 2,
+    marginRight: 8,
+  },
+  urgencyText: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  categoryPill: {
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 2,
+  },
+  categoryText: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
 }); 
