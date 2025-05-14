@@ -39,11 +39,11 @@ const RequestCard = ({ request, onClick, sx = {} }) => {
     event.stopPropagation();
 
     navigate(`/requests?category=${category}`);
-  };
-  const handleUrgencyClick = (urgencyLevel, event) => {
+  };  const handleUrgencyClick = (urgencyLevel, event) => {
     // Prevent triggering the card's onClick
     event.stopPropagation();
     // Navigate to filtered requests by urgency using query params
+    // Use urgency_level in URL to match our component state, will be converted to 'urgency' in the API call
     navigate(`/requests?urgency_level=${urgencyLevel}`);
   };
 
@@ -208,20 +208,21 @@ const RequestCard = ({ request, onClick, sx = {} }) => {
                 },
               }}
             />
-          )}          {/* Urgency chip/label */}
+          )}
+
+          {/* Urgency chip/label */}
           <Chip
-            label={"Urgency: " + (request.urgency_level && urgencyLevels[request.urgency_level] 
-              ? urgencyLevels[request.urgency_level].name 
-              : request.urgency || "Unknown")}
+            label={"Urgency: " + urgencyLevels[request.urgency_level].name}
             size="small"
-            onClick={(e) => handleUrgencyClick(request.urgency_level || request.urgency || "3", e)}
+            onClick={(e) => handleUrgencyClick(request.urgency_level, e)}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
                 e.preventDefault();
                 e.stopPropagation(); // Prevent card's keyboard handler
-                handleUrgencyClick(request.urgency_level || request.urgency || "3", e);
+                handleUrgencyClick(request.urgency_level, e);
               }
-            }}            tabIndex={0}
+            }}
+            tabIndex={0}
             sx={{
               borderRadius: "16px",
               color: "white",
