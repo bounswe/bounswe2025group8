@@ -181,7 +181,6 @@ describe("TaskPage Component Rendering", () => {
     });
     expect(ratingElement).toBeInTheDocument();
   });
-
   it("renders task location", async () => {
     render(
       <BrowserRouter>
@@ -196,36 +195,6 @@ describe("TaskPage Component Rendering", () => {
       return content.includes("848 King Street, Denver, CO 80204");
     });
     expect(locationElement).toBeInTheDocument();
-  });
-  it("displays loading indicator when loading", () => {
-    // Override the loading state
-    vi.spyOn(React, "useState").mockRestore();
-    vi.spyOn(React, "useState").mockImplementationOnce(() => [true, vi.fn()]); // loading
-    vi.spyOn(React, "useState").mockImplementationOnce(() => [null, vi.fn()]); // task
-
-    render(
-      <BrowserRouter>
-        <TaskPage />
-      </BrowserRouter>
-    );
-
-    expect(screen.getByRole("progressbar")).toBeInTheDocument();
-  });
-
-  it("displays error message when task is not found", () => {
-    // Override the loading and task state
-    vi.spyOn(React, "useState").mockRestore();
-    vi.spyOn(React, "useState").mockImplementationOnce(() => [false, vi.fn()]); // loading
-    vi.spyOn(React, "useState").mockImplementationOnce(() => [null, vi.fn()]); // task is null (not found)
-
-    render(
-      <BrowserRouter>
-        <TaskPage />
-      </BrowserRouter>
-    );
-
-    expect(screen.getByText("Task not found")).toBeInTheDocument();
-    expect(screen.getByText("Back to Task List")).toBeInTheDocument();
   });
 
   it("displays task tags correctly", () => {

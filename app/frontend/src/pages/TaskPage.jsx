@@ -55,10 +55,10 @@ const TaskPage = () => {
   const handleBackClick = () => {
     navigate("/tasks");
   };
-
   if (loading) {
     return (
       <Box
+        data-testid="loading-indicator"
         sx={{
           display: "flex",
           justifyContent: "center",
@@ -70,10 +70,9 @@ const TaskPage = () => {
       </Box>
     );
   }
-
   if (!task) {
     return (
-      <Box sx={{ textAlign: "center", py: 4 }}>
+      <Box data-testid="no-task-found" sx={{ textAlign: "center", py: 4 }}>
         <Typography variant="h5">Task not found</Typography>
         <Button
           variant="contained"
