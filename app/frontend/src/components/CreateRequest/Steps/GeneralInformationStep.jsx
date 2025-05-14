@@ -182,7 +182,7 @@ const GeneralInformationStep = () => {
         
         {/* Required number of people - Full width */}
         <Box sx={{ mb: 3 }}>
-          <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+          <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ textAlign: 'left'}}>
             Required number of people
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>

@@ -1,5 +1,5 @@
 import { isPlainObject } from '@reduxjs/toolkit';
-import { isValidDate, serializeDate } from '../utils/dateUtils';
+import { serializeDate } from '../utils/dateUtils';
 
 /**
  * Check if a value is serializable
@@ -15,6 +15,9 @@ const isSerializable = (value) => {
   
   // Handle Date objects specially
   if (value instanceof Date) return true;
+  
+  // Skip File objects - they're not serializable but we'll handle them separately
+  if (typeof File !== 'undefined' && value instanceof File) return true;
   
   if (isPlainObject(value)) {
     return Object.values(value).every(isSerializable);
@@ -32,9 +35,9 @@ export const createSerializableCheckMiddleware = () => {
     if (!isSerializable(action)) {
       console.warn('Non-serializable action detected:', action);
       
-      // Try to fix Date objects in action payload
+      // Try to fix non-serializable values in action payload
       if (action.payload) {
-        const fixDatesInObject = (obj) => {
+        const fixNonSerializableValues = (obj) => {
           if (!obj || typeof obj !== 'object') return obj;
           
           const newObj = { ...obj };
@@ -44,19 +47,44 @@ export const createSerializableCheckMiddleware = () => {
             if (value instanceof Date) {
               newObj[key] = serializeDate(value);
             } 
+            // Handle File objects by extracting metadata
+            else if (typeof File !== 'undefined' && value instanceof File) {
+              newObj[key] = {
+                _type: 'File',
+                name: value.name,
+                lastModified: value.lastModified,
+                size: value.size,
+                type: value.type
+              };
+            }
+            // Handle arrays containing File objects
+            else if (Array.isArray(value)) {
+              newObj[key] = value.map(item => {
+                if (typeof File !== 'undefined' && item instanceof File) {
+                  return {
+                    _type: 'File',
+                    name: item.name,
+                    lastModified: item.lastModified,
+                    size: item.size,
+                    type: item.type
+                  };
+                }
+                return item;
+              });
+            }
             // Handle other objects recursively
             else if (value && typeof value === 'object') {
-              newObj[key] = fixDatesInObject(value);
+              newObj[key] = fixNonSerializableValues(value);
             }
           });
           
           return newObj;
         };
         
-        // Create a fixed action with serialized dates
+        // Create a fixed action with serialized dates and file metadata
         const fixedAction = {
           ...action,
-          payload: fixDatesInObject(action.payload)
+          payload: fixNonSerializableValues(action.payload)
         };
         
         return next(fixedAction);

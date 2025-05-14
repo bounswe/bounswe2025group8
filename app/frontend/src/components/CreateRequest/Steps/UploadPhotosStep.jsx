@@ -144,7 +144,7 @@ const UploadPhotosStep = () => {
                 <Box
                   component="img"
                   src={photo.url}
-                  alt={photo.name}
+                  alt={photo.fileMetadata?.name || photo.name || 'Uploaded image'}
                   sx={{
                     width: '100%',
                     height: 200,
@@ -170,7 +170,7 @@ const UploadPhotosStep = () => {
                       maxWidth: '80%',
                     }}
                   >
-                    ✓ {photo.name}
+                    ✓ {photo.fileMetadata?.name || photo.name || 'Image'}
                   </Typography>
                   
                   <IconButton

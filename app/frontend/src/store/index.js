@@ -55,10 +55,21 @@ export const store = configureStore({
           'payload.timestamp', 
           'payload.date', 
           'reviews.timestamp',
-          'createRequest.formData.deadlineDate'
+          'createRequest.formData.deadlineDate',
+          'payload.file',
+          'payload.0.file',
+          'payload.1.file',
+          'payload.2.file',
+          'payload.3.file'
         ],
         // Ignore these action types
-        ignoredActions: ['profile/fetchUserReviews/fulfilled']
+        ignoredActions: [
+          'profile/fetchUserReviews/fulfilled',
+          'createRequest/uploadPhotos',
+          'createRequest/uploadPhotos/pending',
+          'createRequest/uploadPhotos/fulfilled',
+          'createRequest/uploadPhotos/rejected'
+        ]
       },
     }).concat(createSerializableCheckMiddleware())
 });

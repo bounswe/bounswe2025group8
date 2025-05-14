@@ -98,11 +98,6 @@ function App() {
               path="/requests/filter/urgency/:urgency"
               element={<Requests />}
             />
-            <Route
-              path="/create-request"
-              element={<div>Create Request Form</div>}
-            />
-
             {/* Task Routes */}
             <Route path="/tasks" element={<TaskListPage />} />
             <Route path="/tasks/:taskId" element={<TaskPage />} />
