@@ -14,10 +14,8 @@ export const submitRequest = createAsyncThunk(
       // Create the task in the backend
       const createdTask = await createRequestService.createTask(taskData);
       
-      // If we have photos to upload, do that too
-      if (formData.photos && formData.photos.length > 0) {
-        await createRequestService.uploadTaskPhotos(createdTask.id, formData.photos);
-      }
+      // Photo upload functionality is temporarily disabled
+      // (Previously attempted to upload photos here)
       
       return {
         success: true,
@@ -48,9 +46,12 @@ export const uploadPhotos = createAsyncThunk(
   'createRequest/uploadPhotos',
   async (photos, { rejectWithValue }) => {
     try {
+      // Ensure photos is always an array
+      const photoArray = Array.isArray(photos) ? photos : [photos];
+      
       // Generate temporary URLs for previewing photos in the UI
       // The actual upload happens later in submitRequest
-      return photos.map(photo => {
+      return photoArray.map(photo => {
         const previewUrl = URL.createObjectURL(photo);
         return { 
           id: 'photo_' + Math.random().toString(36).substr(2, 9),
@@ -58,22 +59,20 @@ export const uploadPhotos = createAsyncThunk(
           name: photo.name,
           file: photo // Store the file object for later upload
         };
-      });
-    } catch (error) {
-      return rejectWithValue(error.response?.data || 'Error processing photos');
+      });    } catch (error) {
+      console.error('Error in uploadPhotos:', error);
+      return rejectWithValue(error.message || 'Error processing photos');
     }
   }
 );
 
 // Initial state of the form
 const initialState = {
-  currentStep: 0,
-  formData: {
-    // General Information step
+  currentStep: 0,  formData: {    // General Information step
     title: '',
     description: '',
-    category: 'Uncategorized',
-    urgency: 'Low',
+    category: 'OTHER',  // Default to OTHER category value
+    urgency: '2',  // '2' represents "Low" urgency
     requiredPeople: 1,
     
     // Upload Photos step
@@ -188,15 +187,16 @@ const createRequestSlice = createSlice({
       // Upload photos cases
       .addCase(uploadPhotos.pending, (state) => {
         state.loading = true;
-      })
-      .addCase(uploadPhotos.fulfilled, (state, action) => {
+      })      .addCase(uploadPhotos.fulfilled, (state, action) => {
         state.loading = false;
-        state.uploadedPhotos = [...state.uploadedPhotos, ...action.payload];
+        // Ensure action.payload is always treated as an array
+        const payloadArray = Array.isArray(action.payload) ? action.payload : [action.payload];
+        state.uploadedPhotos = [...state.uploadedPhotos, ...payloadArray];
         state.error = null;
-      })
-      .addCase(uploadPhotos.rejected, (state, action) => {
+      })      .addCase(uploadPhotos.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        // Handle the error message safely
+        state.error = action.payload || 'Failed to upload photos';
       });
   },
 });

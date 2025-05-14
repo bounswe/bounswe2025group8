@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Box, Container, Typography, Button, Stepper, Step, StepLabel, Paper } from '@mui/material';
-import { fetchCategories, nextStep, prevStep, setStep, submitRequest } from '../../store/slices/createRequestSlice';
+import { fetchCategories, nextStep, prevStep, setStep, submitRequest, resetForm } from '../../store/slices/createRequestSlice';
 import GeneralInformationStep from './Steps/GeneralInformationStep';
 import UploadPhotosStep from './Steps/UploadPhotosStep';
 import DetermineDeadlineStep from './Steps/DetermineDeadlineStep';
 import SetupAddressStep from './Steps/SetupAddressStep';
-import styles from './CreateRequestPage.module.css';
+// CSS styles are imported in the main CSS file
 
 const steps = [
   'General Information',
@@ -25,15 +25,14 @@ const CreateRequestPage = () => {
     // Fetch categories when component mounts
     dispatch(fetchCategories());
   }, [dispatch]);
-  
-  // Handle form submission
+    // Get form data from redux store
+  const { formData } = useSelector((state) => state.createRequest);// Handle form submission
   const handleSubmit = () => {
-    const { formData, uploadedPhotos } = useSelector((state) => state.createRequest);
-    
     // Prepare data for submission
+    // Note: Photo upload functionality is temporarily disabled
     const requestData = {
       ...formData,
-      photos: uploadedPhotos.map(photo => photo.url)
+      photos: [] // Photo upload is disabled, so we pass an empty array
     };
     
     dispatch(submitRequest(requestData));
@@ -55,11 +54,15 @@ const CreateRequestPage = () => {
   // Navigate to home page if submission was successful
   useEffect(() => {
     if (success) {
+      // Reset the form data immediately when the submission is successful
+      dispatch(resetForm());
+      
+      // Navigate to home page after a short delay to show success message
       setTimeout(() => {
         navigate('/');
-      }, 2000);
+      }, 1000);
     }
-  }, [success, navigate]);
+  }, [success, navigate, dispatch]);
   
   // Render the current step
   const renderStep = () => {

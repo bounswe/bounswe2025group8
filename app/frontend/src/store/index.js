@@ -2,6 +2,8 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice.js';
 import createRequestReducer from './slices/createRequestSlice.js';
 import ProfileReducer from './slices/profileSlice.js';
+import categoryReducer from './slices/categorySlice.js';
+import requestReducer from './slices/requestSlice.js';
 
 // Don't worry about the 'store is defined but never used' error - it's being exported
 // and used in other files
@@ -47,6 +49,7 @@ export const store = configureStore({
     profile: ProfileReducer,
     categories: categoryReducer,
     requests: requestReducer,
+    
   },
   preloadedState: getPreloadedState(),
   middleware: (getDefaultMiddleware) => 

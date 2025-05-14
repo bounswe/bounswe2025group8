@@ -1,4 +1,4 @@
-import api from "../utils/api";
+import api from "./api";
 
 /**
  * Submit a new task/request to the backend
@@ -139,11 +139,11 @@ export const updateTaskStatus = async (taskId, status) => {
 /**
  * Fetch available task categories
  * 
- * @returns {Promise<Array>} List of categories with id and name
+ * @returns {Promise<Array>} List of categories with name, value and task count
  */
 export const fetchCategories = async () => {
   try {
-    const response = await api.get('/categories/');
+    const response = await api.get('/tasks/categories');
     
     if (response.data && response.data.data) {
       return response.data.data;
@@ -156,6 +156,137 @@ export const fetchCategories = async () => {
   }
 };
 
+/**
+ * Fetch countries from REST Countries API
+ * 
+ * @returns {Promise<Array>} List of countries with name, code, and flag
+ */
+export const fetchCountries = async () => {
+  try {
+    const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2,flags');
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    // Sort countries alphabetically by name
+    return data
+      .map(country => ({
+        name: country.name.common,
+        code: country.cca2,
+        flag: country.flags.svg
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+      
+  } catch (error) {
+    console.error('Error fetching countries:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch states/provinces from CountriesNow API
+ * 
+ * @param {string} country - The country code (ISO 3166-1 alpha-2)
+ * @returns {Promise<Array>} List of states/provinces for the specified country
+ */
+export const fetchStates = async (country) => {
+  try {
+    const response = await fetch('https://countriesnow.space/api/v0.1/countries/states', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ country })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(data.msg || 'Failed to fetch states');
+    }
+    
+    return data.data.states.map(state => ({
+      name: state.name,
+      code: state.state_code
+    }));
+      
+  } catch (error) {
+    console.error(`Error fetching states for ${country}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch cities from CountriesNow API
+ * 
+ * @param {string} country - The country name
+ * @param {string} state - The state/province name
+ * @returns {Promise<Array>} List of cities for the specified state and country
+ */
+export const fetchCities = async (country, state) => {
+  try {
+    const response = await fetch('https://countriesnow.space/api/v0.1/countries/state/cities', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ country, state })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(data.msg || 'Failed to fetch cities');
+    }
+    
+    return data.data.map(city => ({
+      name: city
+    }));
+      
+  } catch (error) {
+    console.error(`Error fetching cities for ${state}, ${country}:`, error);
+    throw error;
+  }
+};
+
+/**
+ * Temporary implementation for fetchDistricts to maintain backward compatibility
+ * @deprecated Use the new country/state/city API methods instead
+ */
+export const fetchDistricts = async () => {
+  // Dummy implementation to maintain compatibility with existing code
+  return [];
+};
+
+/**
+ * Temporary implementation for fetchNeighborhoods to maintain backward compatibility
+ * @deprecated Use the new country/state/city API methods instead
+ */
+export const fetchNeighborhoods = async () => {
+  // Dummy implementation to maintain compatibility with existing code
+  return [];
+};
+
+/**
+ * Temporary implementation for fetchStreets to maintain backward compatibility
+ * @deprecated Use the new country/state/city API methods instead
+ */
+export const fetchStreets = async () => {
+  // Dummy implementation to maintain compatibility with existing code
+  return [];
+};
+
 export default {
   createTask,
   uploadTaskPhotos,
@@ -163,5 +294,11 @@ export default {
   cancelTask,
   completeTask,
   updateTaskStatus,
-  fetchCategories
+  fetchCategories,
+  fetchCountries,
+  fetchStates,
+  fetchCities,
+  fetchDistricts,
+  fetchNeighborhoods,
+  fetchStreets
 };

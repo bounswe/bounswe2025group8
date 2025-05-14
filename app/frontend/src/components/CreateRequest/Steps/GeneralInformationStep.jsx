@@ -19,6 +19,9 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import CreateIcon from '@mui/icons-material/Create';
+import {urgencyLevels} from '../../../constants/urgency_level';
+
+
 
 const GeneralInformationStep = () => {
   const dispatch = useDispatch();
@@ -88,8 +91,7 @@ const GeneralInformationStep = () => {
                 )}
               />
             </Box>
-            
-            {/* Category */}
+              {/* Category */}
             <Box sx={{ mb: 3 }}>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
                 Category
@@ -107,8 +109,10 @@ const GeneralInformationStep = () => {
                         handleFieldChange('category', e.target.value);
                       }}
                     >
+                      {/* Add "Other" as a fallback option even if API doesn't return it */}
+                      <MenuItem value="OTHER">Other Services</MenuItem>
                       {categories.map((category) => (
-                        <MenuItem key={category.id} value={category.name}>
+                        <MenuItem key={category.value} value={category.value}>
                           {category.name}
                         </MenuItem>
                       ))}
@@ -163,24 +167,21 @@ const GeneralInformationStep = () => {
                   <FormControl fullWidth variant="outlined">
                     <Select
                       {...field}
-                      displayEmpty
-                      onChange={(e) => {
+                      displayEmpty                        onChange={(e) => {
                         field.onChange(e);
                         handleFieldChange('urgency', e.target.value);
-                      }}
-                    >
-                      <MenuItem value="Low">Low</MenuItem>
-                      <MenuItem value="Medium">Medium</MenuItem>
-                      <MenuItem value="High">High</MenuItem>
-                    </Select>
-                  </FormControl>
-                )}
-              />
-            </Box>
-          </Box>
-        </Box>
-        
-        {/* Required number of people - Full width */}
+                        }}                      >                        {Object.entries(urgencyLevels).map(([key, value]) => (
+                        <MenuItem key={key} value={String(key)}>{value.name}</MenuItem>
+                        ))}
+                      </Select>
+                      </FormControl>
+                    )}
+                    />
+                  </Box>
+                  </Box>
+                </Box>
+                
+                {/* Required number of people - Full width */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle1" fontWeight="bold" gutterBottom sx={{ textAlign: 'left'}}>
             Required number of people
