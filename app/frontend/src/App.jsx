@@ -1,5 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Box } from "@mui/material";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { loadUserFromStorage } from "./store/slices/authSlice";
 import ThemeDemo from "./components/ThemeDemo";
 // Home pages
 import Home from "./pages/Home.jsx";
@@ -36,6 +39,40 @@ import "./App.css";
 function App() {
   // Check if we're in development mode
   const _isDevelopment = import.meta.env.DEV;
+  const dispatch = useDispatch();
+  
+  // Load user data from localStorage when the app starts
+  useEffect(() => {
+    // Check if user data exists in localStorage but userId is missing
+    const fixUserDataIfNeeded = () => {
+      const userData = localStorage.getItem('user');
+      const userId = localStorage.getItem('userId');
+      
+      if (userData && !userId) {
+        try {
+          const parsedUser = JSON.parse(userData);
+          if (parsedUser && parsedUser.id) {
+            console.log('Found user ID in user object, setting userId in localStorage:', parsedUser.id);
+            localStorage.setItem('userId', parsedUser.id);
+          } else {
+            console.warn('User object exists but has no ID:', parsedUser);
+          }
+        } catch (err) {
+          console.error('Error parsing user data from localStorage:', err);
+        }
+      }
+    };
+    
+    fixUserDataIfNeeded();
+    dispatch(loadUserFromStorage());
+    
+    // Log authentication state after loading
+    console.log('Auth state initialized with:', {
+      userId: localStorage.getItem('userId'),
+      user: localStorage.getItem('user'),
+      isAuthenticated: !!localStorage.getItem('token')
+    });
+  }, [dispatch]);
 
   return (
     <Router>
@@ -87,7 +124,7 @@ function App() {
             {/* Theme Demo */}
             <Route path="/theme" element={<ThemeDemo />} />
 
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/:userId" element={<ProfilePage />} />
             <Route path="/create-request" element={<CreateRequestPage />} />
           </Route>
           {/* Auth Routes (without sidebar) */}{" "}

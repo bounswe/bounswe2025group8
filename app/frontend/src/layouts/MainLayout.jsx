@@ -1,13 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { Box, Container, AppBar, Toolbar } from '@mui/material';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Searchbar from '../components/Searchbar';
+import { loadUserFromStorage } from '../store/slices/authSlice';
 
 const SIDEBAR_WIDTH = 260;
 
 const MainLayout = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  // Load user data from localStorage when the app starts
+  useEffect(() => {
+    dispatch(loadUserFromStorage());
+  }, [dispatch]);
 
   const handleSearch = (query) => {
     console.log('Search query:', query);

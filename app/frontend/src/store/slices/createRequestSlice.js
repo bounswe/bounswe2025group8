@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { serializeDate } from '../../utils/dateUtils';
 
 // Mock API base URL - this will be replaced with real API endpoint
 const API_BASE_URL = 'https://api.neighborhoodassistance.org';
@@ -95,7 +96,7 @@ const initialState = {
     photos: [],
     
     // Determine Deadline step
-    deadlineDate: new Date(),
+    deadlineDate: serializeDate(new Date()),
     deadlineTime: '09:00 AM',
     
     // Setup Address step
@@ -134,9 +135,16 @@ const createRequestSlice = createSlice({
       }
     },
     updateFormData: (state, action) => {
+      const payload = { ...action.payload };
+      
+      // Check if deadlineDate exists and needs serialization
+      if (payload.deadlineDate instanceof Date) {
+        payload.deadlineDate = serializeDate(payload.deadlineDate);
+      }
+      
       state.formData = {
         ...state.formData,
-        ...action.payload
+        ...payload
       };
     },
     incrementRequiredPeople: (state) => {
@@ -147,8 +155,15 @@ const createRequestSlice = createSlice({
         state.formData.requiredPeople -= 1;
       }
     },
-    resetForm: (state) => {
-      return initialState;
+    resetForm: () => {
+      // Make sure we use serialized dates when resetting
+      return {
+        ...initialState,
+        formData: {
+          ...initialState.formData,
+          deadlineDate: serializeDate(new Date())
+        }
+      };
     },
     removePhoto: (state, action) => {
       state.uploadedPhotos = state.uploadedPhotos.filter(

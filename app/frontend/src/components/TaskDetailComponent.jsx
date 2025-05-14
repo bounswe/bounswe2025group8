@@ -28,6 +28,7 @@ import {
   setAssignedVolunteers,
   setTask,
 } from "../store/slices/taskDetailSlice";
+import { serializeDate } from "../utils/dateUtils";
 import { openReviewDialog } from "../store/slices/reviewSlice";
 import {
   TaskDetailCompleted,
@@ -286,11 +287,8 @@ const TaskDetailComponent = () => {
       // Create a copy of task data with completed date
       const updatedTaskData = {
         ...taskData,
-        completedDate: new Date().toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }),
+        // Store as ISO string for consistency with other dates in Redux
+        completedDate: serializeDate(new Date()),
       };
 
       // You might want to dispatch this to Redux or handle it in another way
