@@ -1,27 +1,29 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
 import { serializeDate } from '../../utils/dateUtils';
-
-// Mock API base URL - this will be replaced with real API endpoint
-const API_BASE_URL = 'https://api.neighborhoodassistance.org';
+import * as createRequestService from '../../services/createRequestService';
+import { mapFormToTaskApiFormat } from '../../utils/taskUtils';
 
 // Async thunk for submitting a request
 export const submitRequest = createAsyncThunk(
   'createRequest/submitRequest',
-  async (requestData, { rejectWithValue }) => {
+  async (formData, { rejectWithValue }) => {
     try {
-      // For now, we'll simulate a successful submission
-      console.log('Submitting request:', requestData);
+      // Transform the form data to match the API's expected format
+      const taskData = mapFormToTaskApiFormat(formData);
       
-      // In a real implementation, you would use axios:
-      // const response = await axios.post(`${API_BASE_URL}/requests`, requestData);
-      // return response.data;
+      // Create the task in the backend
+      const createdTask = await createRequestService.createTask(taskData);
       
-      // Mock response
+      // If we have photos to upload, do that too
+      if (formData.photos && formData.photos.length > 0) {
+        await createRequestService.uploadTaskPhotos(createdTask.id, formData.photos);
+      }
+      
       return {
         success: true,
-        requestId: 'req_' + Math.random().toString(36).substr(2, 9),
-        message: 'Request created successfully'
+        requestId: createdTask.id,
+        message: 'Request created successfully',
+        task: createdTask
       };
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Error submitting request');
@@ -34,49 +36,31 @@ export const fetchCategories = createAsyncThunk(
   'createRequest/fetchCategories',
   async (_, { rejectWithValue }) => {
     try {
-      // Mock categories data
-      return [
-        { id: '1', name: 'Healthcare' },
-        { id: '2', name: 'House Cleaning' },
-        { id: '3', name: 'Tutoring' },
-        { id: '4', name: 'Groceries' },
-        { id: '5', name: 'Gardening' },
-        { id: '6', name: 'Moving' },
-        { id: '7', name: 'Pet Care' },
-        { id: '8', name: 'Technical Help' },
-        { id: '9', name: 'Transportation' },
-        { id: '10', name: 'Uncategorized' }
-      ];
+      return await createRequestService.fetchCategories();
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Error fetching categories');
     }
   }
 );
 
-// Async thunk for uploading photos
+// Async thunk for processing photos for preview
 export const uploadPhotos = createAsyncThunk(
   'createRequest/uploadPhotos',
   async (photos, { rejectWithValue }) => {
     try {
-      // In a real implementation, you would upload photos to server
-      // const formData = new FormData();
-      // photos.forEach((photo, index) => {
-      //   formData.append(`photo${index}`, photo);
-      // });
-      // const response = await axios.post(`${API_BASE_URL}/upload`, formData);
-      // return response.data;
-      
-      // Mock response - create URLs for the uploaded photos
+      // Generate temporary URLs for previewing photos in the UI
+      // The actual upload happens later in submitRequest
       return photos.map(photo => {
-        const mockUrl = URL.createObjectURL(photo);
+        const previewUrl = URL.createObjectURL(photo);
         return { 
           id: 'photo_' + Math.random().toString(36).substr(2, 9),
-          url: mockUrl,
-          name: photo.name
+          url: previewUrl,
+          name: photo.name,
+          file: photo // Store the file object for later upload
         };
       });
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Error uploading photos');
+      return rejectWithValue(error.response?.data || 'Error processing photos');
     }
   }
 );

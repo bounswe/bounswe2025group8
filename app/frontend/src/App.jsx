@@ -85,19 +85,17 @@ function App() {
           <Route element={<MainLayout />}>
             {/* Home Routes */}
             <Route path="/" element={<Home />} />
-            <Route path="/dashboard" element={<HomeDashboard />} />
+            
 
             {/* Categories Routes */}
             <Route path="/categories" element={<Categories />} />
-            <Route path="/categories/:categoryId" element={<Categories />} />
+            
 
             {/* Request Routes */}
             <Route path="/requests" element={<Requests />} />
             <Route path="/requests/:requestId" element={<RequestDetail />} />
-            <Route
-              path="/requests/filter/urgency/:urgency"
-              element={<Requests />}
-            />
+            
+            
             {/* Task Routes */}
             <Route path="/tasks" element={<TaskListPage />} />
             <Route path="/tasks/:taskId" element={<TaskPage />} />
