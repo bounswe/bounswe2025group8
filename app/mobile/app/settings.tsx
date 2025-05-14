@@ -7,11 +7,13 @@ import { useNavigation } from 'expo-router';
 import { CommonActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { logout as apiLogout } from '../lib/api';
+import { useAuth } from '../lib/auth';
 
 export default function Settings() {
   const { colors } = useTheme();
   const router = useRouter();
   const navigation = useNavigation();
+  const { user } = useAuth();
 
   const resetToLaunch = () => {
     navigation.dispatch(
@@ -58,13 +60,15 @@ export default function Settings() {
         <Text style={[styles.backText, { color: colors.primary }]}>Back</Text>
       </TouchableOpacity>
       <Text style={[styles.title, { color: colors.primary }]}>Settings</Text>
-      <TouchableOpacity 
-        style={styles.logoutButton} 
-        onPress={handleLogout}
-      >
-        <Ionicons name="log-out-outline" size={22} color="#FF3B30" />
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
+      {user && (
+        <TouchableOpacity 
+          style={styles.logoutButton} 
+          onPress={handleLogout}
+        >
+          <Ionicons name="log-out-outline" size={22} color="#FF3B30" />
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+      )}
     </SafeAreaView>
   );
 }
@@ -126,10 +130,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderWidth: 2,
     borderColor: '#FF3B30',
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
   },
   logoutText: {
     color: '#FF3B30',

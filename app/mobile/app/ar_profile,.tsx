@@ -15,16 +15,26 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // If user is not logged in, show guest prompt immediately
+  const backButton = (
+    <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+      <Ionicons name="arrow-back" size={24} color={colors.primary} />
+      <Text style={[styles.backText, { color: colors.primary }]}>Back</Text>
+    </TouchableOpacity>
+  );
+
   if (!user) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        {backButton}
         <Text style={[styles.text, { color: colors.text }]}>You are browsing as a guest.</Text>
         <Text style={[styles.info, { color: colors.text, textAlign: 'center', marginBottom: 24 }]}>
           Sign up to create requests, volunteer, and access your profile!
         </Text>
         <TouchableOpacity style={[styles.signupBtn, { backgroundColor: colors.primary }]} onPress={() => router.push('/signup')}>
           <Text style={{ color: colors.background, fontWeight: 'bold', fontSize: 16 }}>Sign Up</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.signinBtn, { borderColor: colors.primary }]} onPress={() => router.push('/signin')}>
+          <Text style={{ color: colors.primary, fontWeight: 'bold', fontSize: 16 }}>Sign In</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -67,32 +77,32 @@ export default function Profile() {
 
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        {backButton}
         <ActivityIndicator size="large" color={colors.primary} />
       </SafeAreaView>
     );
   }
   if (error) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        {backButton}
         <Text style={[styles.text, { color: colors.text }]}>{error}</Text>
       </SafeAreaView>
     );
   }
   if (!profile) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        {backButton}
         <Text style={[styles.text, { color: colors.text }]}>No profile data found.</Text>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={24} color={colors.primary} />
-        <Text style={[styles.backText, { color: colors.primary }]}>Back</Text>
-      </TouchableOpacity>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+      {backButton}
       <Text style={[styles.text, { color: colors.text }]}>Profile</Text>
       <Text style={[styles.info, { color: colors.text }]}>Name: {profile.name} {profile.surname}</Text>
       <Text style={[styles.info, { color: colors.text }]}>Username: {profile.username}</Text>
@@ -127,6 +137,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 24,
     marginTop: 8,
+  },
+  signinBtn: {
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 24,
+    marginTop: 8,
+    borderWidth: 2,
+    backgroundColor: 'transparent',
   },
   backButton: {
     flexDirection: 'row',
