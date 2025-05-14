@@ -13,12 +13,15 @@ import {
   Paper,
   Grid,
 } from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import {
+  Visibility,
+  VisibilityOff,
+  Email as EmailIcon,
+  Lock as LockIcon,
+} from "@mui/icons-material";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth"; // Updated import path
 import logoImage from "../../assets/logo.png";
-import lockIcon from "../../assets/lock.svg";
-import mailIcon from "../../assets/mail.svg";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -183,11 +186,9 @@ const LoginPage = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <img
-                          src={mailIcon}
-                          alt="Email"
-                          width="16"
-                          height="16"
+                        <EmailIcon
+                          fontSize="small"
+                          sx={{ color: "text.secondary", fontSize: "1.2rem" }}
                         />
                       </InputAdornment>
                     ),
@@ -210,11 +211,9 @@ const LoginPage = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <img
-                          src={lockIcon}
-                          alt="Password"
-                          width="16"
-                          height="16"
+                        <LockIcon
+                          fontSize="small"
+                          sx={{ color: "text.secondary", fontSize: "1.2rem" }}
                         />
                       </InputAdornment>
                     ),

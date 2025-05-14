@@ -11,9 +11,9 @@ import {
   InputAdornment,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
+import { Email as EmailIcon } from "@mui/icons-material";
 import { useAuth } from "../../hooks/useAuth";
 import logoImage from "../../assets/logo.png";
-import mailIcon from "../../assets/mail.svg";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -122,11 +122,9 @@ const ForgotPassword = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <img
-                          src={mailIcon}
-                          alt="Email"
-                          width="16"
-                          height="16"
+                        <EmailIcon
+                          fontSize="small"
+                          sx={{ color: "text.secondary", fontSize: "1.2rem" }}
                         />
                       </InputAdornment>
                     ),

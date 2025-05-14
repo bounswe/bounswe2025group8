@@ -13,14 +13,17 @@ import {
   Paper,
   Grid,
 } from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import {
+  Visibility,
+  VisibilityOff,
+  Person as PersonIcon,
+  Lock as LockIcon,
+  Phone as PhoneIcon,
+  Email as EmailIcon,
+} from "@mui/icons-material";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth"; // Updated import path
 import logoImage from "../../assets/logo.png";
-import userIcon from "../../assets/user.svg";
-import keyIcon from "../../assets/key_for_register.svg";
-import phoneIcon from "../../assets/phone.svg";
-import mailIcon from "../../assets/mail.svg";
 
 const RegisterPage = () => {
   const [fullName, setFullName] = useState("");
@@ -191,7 +194,10 @@ const RegisterPage = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <img src={userIcon} alt="Name" width="16" height="16" />
+                        <PersonIcon
+                          fontSize="small"
+                          sx={{ color: "text.secondary", fontSize: "1.2rem" }}
+                        />
                       </InputAdornment>
                     ),
                   }}
@@ -211,11 +217,9 @@ const RegisterPage = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <img
-                          src={userIcon}
-                          alt="Username"
-                          width="16"
-                          height="16"
+                        <PersonIcon
+                          fontSize="small"
+                          sx={{ color: "text.secondary", fontSize: "1.2rem" }}
                         />
                       </InputAdornment>
                     ),
@@ -236,11 +240,9 @@ const RegisterPage = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <img
-                          src={phoneIcon}
-                          alt="Phone"
-                          width="16"
-                          height="16"
+                        <PhoneIcon
+                          fontSize="small"
+                          sx={{ color: "text.secondary", fontSize: "1.2rem" }}
                         />
                       </InputAdornment>
                     ),
@@ -262,11 +264,9 @@ const RegisterPage = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <img
-                          src={mailIcon}
-                          alt="Email"
-                          width="16"
-                          height="16"
+                        <EmailIcon
+                          fontSize="small"
+                          sx={{ color: "text.secondary", fontSize: "1.2rem" }}
                         />
                       </InputAdornment>
                     ),
@@ -289,11 +289,9 @@ const RegisterPage = () => {
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <img
-                          src={keyIcon}
-                          alt="Password"
-                          width="16"
-                          height="16"
+                        <LockIcon
+                          fontSize="small"
+                          sx={{ color: "text.secondary", fontSize: "1.2rem" }}
                         />
                       </InputAdornment>
                     ),
