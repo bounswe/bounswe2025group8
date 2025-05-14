@@ -16,12 +16,12 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-
   web:
     build: .
     command: >
       bash -c "
       sleep 10 &&
+      pip install django-filter &&
       python manage.py migrate && 
       python manage.py runserver 0.0.0.0:8000
       "

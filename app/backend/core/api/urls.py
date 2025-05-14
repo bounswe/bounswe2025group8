@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from core.api.views import (
     user_views, auth_views, task_views, volunteer_views, 
     review_views, bookmark_views, notification_views, 
-    photo_views, admin_views, comment_views
+    photo_views, admin_views, comment_views, search_views
 )
 
 router = DefaultRouter()
@@ -17,6 +17,9 @@ router.register(r'comments', comment_views.CommentViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    
+    # Search endpoints
+    path('search/users/', search_views.UserSearchView.as_view(), name='search-users'),
     
     # Auth endpoints
     path('auth/register/', auth_views.RegisterView.as_view(), name='register'),

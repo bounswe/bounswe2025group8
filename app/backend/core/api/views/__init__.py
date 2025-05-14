@@ -9,3 +9,4 @@ from .notification_views import *
 from .photo_views import *
 from .comment_views import *
 from .admin_views import *
+from .search_views import *
