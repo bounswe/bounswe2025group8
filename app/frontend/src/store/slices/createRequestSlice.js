@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
 import { serializeDate } from '../../utils/dateUtils';
 
 // Mock API base URL - this will be replaced with real API endpoint
@@ -10,20 +9,95 @@ export const submitRequest = createAsyncThunk(
   'createRequest/submitRequest',
   async (requestData, { rejectWithValue }) => {
     try {
-      // For now, we'll simulate a successful submission
       console.log('Submitting request:', requestData);
       
-      // In a real implementation, you would use axios:
-      // const response = await axios.post(`${API_BASE_URL}/requests`, requestData);
-      // return response.data;
-      
-      // Mock response
-      return {
-        success: true,
-        requestId: 'req_' + Math.random().toString(36).substr(2, 9),
-        message: 'Request created successfully'
+      // Format data that would be sent to the backend in a real implementation
+      // This is kept for reference for when the API is implemented
+      /* 
+      const taskData = {
+        title: requestData.title,
+        description: requestData.description,
+        category: requestData.category,
+        location: `${requestData.city}, ${requestData.district}`,
+        deadline: new Date().toISOString(),
+        requirements: requestData.requirements || '',
+        urgency_level: requestData.urgency === 'High' ? 3 : (requestData.urgency === 'Medium' ? 2 : 1),
+        volunteer_number: requestData.requiredPeople
       };
+      */
+      
+      // In a real implementation, you would use axios:
+      // const response = await axios.post(`${API_BASE_URL}/tasks`, taskData);
+      
+      // Generate a random ID for the mock request
+      const requestId = 'req_' + Math.random().toString(36).substr(2, 9);
+      
+      // Mock task creation response
+      const mockResponse = {
+        success: true,
+        requestId: requestId,
+        message: 'Request created successfully',
+        // Add request data for the profile slice to use
+        requestData: {
+          id: requestId,
+          title: requestData.title,
+          description: requestData.description,
+          category: requestData.category,
+          urgency: requestData.urgency,
+          location: `${requestData.city}, ${requestData.district}`,
+          completed: false,
+          distance: '0.5 km away', // Mock value
+          timeAgo: 'just now',
+          volunteersCount: 0
+        }
+      };
+      
+      // If we have uploaded photos, simulate uploading them
+      if (requestData.uploadedPhotos && requestData.uploadedPhotos.length > 0) {
+        console.log('Uploading photos for task:', mockResponse.requestId);
+        console.log('Photos to upload:', requestData.uploadedPhotos.length);
+        
+        // Get the valid photos with available file references
+        const validPhotos = requestData.uploadedPhotos.filter(photo => 
+          photo && photo.id && window._photoFiles && window._photoFiles[photo.id]
+        );
+        
+        if (validPhotos.length !== requestData.uploadedPhotos.length) {
+          console.warn(`Found ${validPhotos.length} valid photos out of ${requestData.uploadedPhotos.length}`);
+        }
+        
+        // Simulate uploading each photo
+        for (const photo of validPhotos) {
+          console.log('Would upload photo:', photo.fileMetadata.name, 'File type:', photo.fileMetadata.type);
+          
+          // In real implementation:
+          // const formData = new FormData();
+          // formData.append('photo', fileObject);
+          // await axios.post(`${API_BASE_URL}/tasks/${mockResponse.requestId}/photos`, formData);
+        }
+      }
+      
+      // Create a formatted request object for the profile state
+      const newRequest = {
+        id: mockResponse.requestId,
+        title: requestData.title,
+        description: requestData.description,
+        category: requestData.category || 'Uncategorized', 
+        urgency: requestData.urgency || 'Medium',
+        location: `${requestData.city || 'Unknown'}, ${requestData.district || 'Location'}`,
+        completed: false,
+        distance: '0.5 km away', // Mock value
+        timeAgo: 'just now',
+        volunteersCount: 0
+      };
+      
+      // Store the new request in localStorage for the profile page to pick up
+      localStorage.setItem('pendingNewRequest', JSON.stringify(newRequest));
+      localStorage.setItem('refreshProfileData', 'true');
+      
+      return mockResponse;
     } catch (error) {
+      console.error('Error submitting request:', error);
       return rejectWithValue(error.response?.data || 'Error submitting request');
     }
   }
@@ -32,10 +106,11 @@ export const submitRequest = createAsyncThunk(
 // Async thunk for fetching categories
 export const fetchCategories = createAsyncThunk(
   'createRequest/fetchCategories',
-  async (_, { rejectWithValue }) => {
+  async (_arg, { rejectWithValue }) => {
+    // Mock categories data - in a real app this would be fetched from an API
     try {
-      // Mock categories data
-      return [
+      // Simulate API call
+      const mockCategories = [
         { id: '1', name: 'Healthcare' },
         { id: '2', name: 'House Cleaning' },
         { id: '3', name: 'Tutoring' },
@@ -47,8 +122,10 @@ export const fetchCategories = createAsyncThunk(
         { id: '9', name: 'Transportation' },
         { id: '10', name: 'Uncategorized' }
       ];
+      return mockCategories;
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Error fetching categories');
+      console.error('Error fetching categories:', error);
+      return rejectWithValue('Error fetching categories');
     }
   }
 );
@@ -58,23 +135,49 @@ export const uploadPhotos = createAsyncThunk(
   'createRequest/uploadPhotos',
   async (photos, { rejectWithValue }) => {
     try {
-      // In a real implementation, you would upload photos to server
-      // const formData = new FormData();
-      // photos.forEach((photo, index) => {
-      //   formData.append(`photo${index}`, photo);
-      // });
-      // const response = await axios.post(`${API_BASE_URL}/upload`, formData);
-      // return response.data;
+      // Process photos to create temporary URLs and store file metadata for later upload
+      const processedPhotos = [];
       
-      // Mock response - create URLs for the uploaded photos
-      return photos.map(photo => {
-        const mockUrl = URL.createObjectURL(photo);
-        return { 
-          id: 'photo_' + Math.random().toString(36).substr(2, 9),
-          url: mockUrl,
-          name: photo.name
-        };
-      });
+      // Ensure photos is iterable (convert to array if it's a single item)
+      const photosArray = Array.isArray(photos) ? photos : [photos];
+      
+      // Make sure our global storage exists
+      window._photoFiles = window._photoFiles || {};
+      
+      for (const photo of photosArray) {
+        try {
+          if (!photo) {
+            console.warn("Skipping invalid photo object:", photo);
+            continue;
+          }
+          
+          // Create a temporary URL for preview
+          const tempUrl = URL.createObjectURL(photo);
+          
+          // Generate a unique ID for this photo
+          const photoId = 'photo_' + Math.random().toString(36).substr(2, 9);
+          
+          // Save a reference to the file outside of Redux
+          window._photoFiles[photoId] = photo;
+          
+          // Only store serializable data in Redux
+          processedPhotos.push({
+            id: photoId,
+            url: tempUrl, // This is a string, so it's serializable
+            fileMetadata: {
+              name: photo.name || 'unnamed-photo',
+              size: photo.size,
+              type: photo.type,
+              lastModified: photo.lastModified
+            }
+          });
+        } catch (e) {
+          console.error("Error processing photo:", e, photo);
+        }
+      }
+      
+      console.log("Processed photos:", processedPhotos.length);
+      return processedPhotos;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Error uploading photos');
     }
@@ -156,18 +259,54 @@ const createRequestSlice = createSlice({
       }
     },
     resetForm: () => {
+      // Clean up any uploaded photo references and object URLs
+      if (window._photoFiles) {
+        // We'll clean up object URLs in the next render cycle to avoid React state issues
+        setTimeout(() => {
+          Object.keys(window._photoFiles).forEach(id => {
+            try {
+              delete window._photoFiles[id];
+            } catch (e) {
+              console.warn('Error cleaning up photo reference:', e);
+            }
+          });
+          window._photoFiles = {};
+        }, 0);
+      }
+      
       // Make sure we use serialized dates when resetting
       return {
         ...initialState,
         formData: {
           ...initialState.formData,
           deadlineDate: serializeDate(new Date())
-        }
+        },
+        uploadedPhotos: [] // Explicitly clear the uploaded photos array
       };
     },
     removePhoto: (state, action) => {
+      // Get the photo ID to remove
+      const photoId = action.payload;
+      
+      // First, clean up the file reference from window._photoFiles if it exists
+      if (window._photoFiles && window._photoFiles[photoId]) {
+        // Release the URL object to prevent memory leaks
+        const photo = state.uploadedPhotos.find(p => p.id === photoId);
+        if (photo && photo.url) {
+          try {
+            URL.revokeObjectURL(photo.url);
+          } catch (e) {
+            console.warn('Error revoking object URL:', e);
+          }
+        }
+        
+        // Remove from our global file storage
+        delete window._photoFiles[photoId];
+      }
+      
+      // Remove from state
       state.uploadedPhotos = state.uploadedPhotos.filter(
-        photo => photo.id !== action.payload
+        photo => photo.id !== photoId
       );
     }
   },
@@ -181,6 +320,46 @@ const createRequestSlice = createSlice({
         state.loading = false;
         state.success = action.payload;
         state.error = null;
+        
+        // Add a new mock request to be displayed in the profile page
+        try {
+          const newRequestObj = {
+            id: action.payload.requestId || `req_${Date.now()}`,
+            title: state.formData.title || 'New Request',
+            category: state.formData.category || 'Uncategorized',
+            urgency: state.formData.urgency || 'Medium',
+            distance: '0.5 km away',
+            timeAgo: 'just now',
+            volunteersCount: 0,
+            completed: false // This is an active request
+          };
+          
+          // Store this in localStorage so it can be retrieved by the profile page
+          localStorage.setItem('pendingNewRequest', JSON.stringify(newRequestObj));
+        } catch (err) {
+          console.error('Error saving pending request:', err);
+        }
+        
+        // Clean up photo references after successful submission
+        if (window._photoFiles) {
+          // Clean up in the next render cycle
+          setTimeout(() => {
+            Object.keys(window._photoFiles).forEach(id => {
+              delete window._photoFiles[id];
+            });
+          }, 0);
+        }
+        
+        // Clean up object URLs to prevent memory leaks
+        state.uploadedPhotos.forEach(photo => {
+          if (photo.url) {
+            try {
+              URL.revokeObjectURL(photo.url);
+            } catch (e) {
+              console.warn('Error revoking URL:', e);
+            }
+          }
+        });
       })
       .addCase(submitRequest.rejected, (state, action) => {
         state.loading = false;
@@ -207,7 +386,21 @@ const createRequestSlice = createSlice({
       })
       .addCase(uploadPhotos.fulfilled, (state, action) => {
         state.loading = false;
-        state.uploadedPhotos = [...state.uploadedPhotos, ...action.payload];
+        // Ensure uploadedPhotos is initialized as an array
+        state.uploadedPhotos = state.uploadedPhotos || [];
+        
+        // Check if payload exists and is an array
+        if (action.payload) {
+          // Normalize the payload to always be an array
+          const photoArray = Array.isArray(action.payload) ? action.payload : [action.payload];
+          
+          // Only add valid photos with an ID
+          const validPhotos = photoArray.filter(photo => photo && photo.id);
+          
+          if (validPhotos.length > 0) {
+            state.uploadedPhotos = [...state.uploadedPhotos, ...validPhotos];
+          }
+        }
         state.error = null;
       })
       .addCase(uploadPhotos.rejected, (state, action) => {

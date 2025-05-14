@@ -20,8 +20,15 @@ const UploadPhotosStep = () => {
   
   // Handle file upload
   const handleFileUpload = (files) => {
-    if (files.length > 0) {
-      dispatch(uploadPhotos(Array.from(files)));
+    if (files && files.length > 0) {
+      // Convert FileList to Array and filter out invalid files
+      const validFiles = Array.from(files).filter(file => 
+        file && file instanceof File && file.type.startsWith('image/')
+      );
+      
+      if (validFiles.length > 0) {
+        dispatch(uploadPhotos(validFiles));
+      }
     }
   };
   
@@ -127,10 +134,10 @@ const UploadPhotosStep = () => {
       </Box>
       
       {/* Uploaded photos preview */}
-      {uploadedPhotos.length > 0 && (
+      {uploadedPhotos && uploadedPhotos.length > 0 && (
         <Grid container spacing={2}>
-          {uploadedPhotos.map((photo) => (
-            <Grid item xs={12} sm={6} key={photo.id}>
+          {uploadedPhotos.map((photo, index) => (
+            <Grid item xs={12} sm={6} key={photo?.id || `photo-${index}`}>
               <Paper
                 elevation={0}
                 sx={{
@@ -143,8 +150,8 @@ const UploadPhotosStep = () => {
               >
                 <Box
                   component="img"
-                  src={photo.url}
-                  alt={photo.name}
+                  src={photo?.url}
+                  alt={photo?.fileMetadata?.name || "Uploaded photo"}
                   sx={{
                     width: '100%',
                     height: 200,
@@ -170,13 +177,14 @@ const UploadPhotosStep = () => {
                       maxWidth: '80%',
                     }}
                   >
-                    ✓ {photo.name}
+                    ✓ {photo?.fileMetadata?.name || 'Uploaded photo'}
                   </Typography>
                   
                   <IconButton
                     size="small"
                     color="error"
-                    onClick={() => handleRemovePhoto(photo.id)}
+                    onClick={() => handleRemovePhoto(photo?.id)}
+                    disabled={!photo?.id}
                   >
                     <DeleteOutlineIcon fontSize="small" />
                   </IconButton>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Box, Container, Typography, Button, Stepper, Step, StepLabel, Paper } from '@mui/material';
@@ -7,7 +7,6 @@ import GeneralInformationStep from './Steps/GeneralInformationStep';
 import UploadPhotosStep from './Steps/UploadPhotosStep';
 import DetermineDeadlineStep from './Steps/DetermineDeadlineStep';
 import SetupAddressStep from './Steps/SetupAddressStep';
-import styles from './CreateRequestPage.module.css';
 
 const steps = [
   'General Information',
@@ -26,14 +25,15 @@ const CreateRequestPage = () => {
     dispatch(fetchCategories());
   }, [dispatch]);
   
+  // Get form data from Redux store
+  const { formData, uploadedPhotos } = useSelector((state) => state.createRequest);
+    
   // Handle form submission
   const handleSubmit = () => {
-    const { formData, uploadedPhotos } = useSelector((state) => state.createRequest);
-    
     // Prepare data for submission
     const requestData = {
       ...formData,
-      photos: uploadedPhotos.map(photo => photo.url)
+      uploadedPhotos: uploadedPhotos
     };
     
     dispatch(submitRequest(requestData));
@@ -52,11 +52,18 @@ const CreateRequestPage = () => {
     dispatch(prevStep());
   };
   
-  // Navigate to home page if submission was successful
+  // Navigate to profile page if submission was successful
   useEffect(() => {
     if (success) {
+      // Give some time for the user to see the success message
       setTimeout(() => {
-        navigate('/');
+        // Force a refresh of profile data before navigating by setting local storage flag
+        localStorage.setItem('refreshProfileData', 'true');
+        
+        console.log('Request created successfully, navigating to profile page...');
+        
+        // Navigate to current user's profile page with "Requester" tab activated
+        navigate('/profile/current?role=requester');
       }, 2000);
     }
   }, [success, navigate]);

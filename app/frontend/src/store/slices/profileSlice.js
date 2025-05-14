@@ -137,6 +137,16 @@ const profileSlice = createSlice({
     },
     clearUploadSuccess: (state) => {
       state.uploadSuccess = false;
+    },
+    // Add a new request to the createdRequests array
+    addCreatedRequest: (state, action) => {
+      // Check if createdRequests is an array
+      if (!Array.isArray(state.createdRequests)) {
+        state.createdRequests = [];
+      }
+      
+      // Add the new request to the beginning of the array
+      state.createdRequests = [action.payload, ...state.createdRequests];
     }
   },
   extraReducers: (builder) => {
@@ -252,6 +262,6 @@ const profileSlice = createSlice({
   },
 });
 
-export const { clearProfileErrors, clearUpdateSuccess, clearUploadSuccess } = profileSlice.actions;
+export const { clearProfileErrors, clearUpdateSuccess, clearUploadSuccess, addCreatedRequest } = profileSlice.actions;
 
 export default profileSlice.reducer;

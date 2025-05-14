@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Box, Container, Typography, Button, Tab, Tabs, Avatar, 
          Paper, Grid, Rating, Chip, IconButton, Badge as MuiBadge, 
          Divider, CircularProgress, Pagination } from '@mui/material';
@@ -12,7 +12,8 @@ import {
   fetchUserVolunteeredRequests,
   fetchUserBadges,
   uploadProfilePicture,
-  clearUpdateSuccess
+  clearUpdateSuccess,
+  addCreatedRequest
 } from '../../store/slices/profileSlice';
 import RequestCard from '../RequestCard/RequestCard';
 import ReviewCard from '../ReviewCard/ReviewCard';
@@ -22,6 +23,7 @@ import EditProfileDialog from '../EditProfileDialog/EditProfileDialog';
 
 const ProfilePage = () => {
   const { userId } = useParams();
+  const [searchParams] = useSearchParams();
   
   // Get logged-in user data from localStorage and Redux store
   const loggedInUserId = localStorage.getItem('userId');
@@ -148,12 +150,14 @@ const loadProfileData = useCallback(async () => {
       limit: reviewsPerPage
     })).unwrap();
     
-    // Use object parameter for tasks
+    // Use object parameter for tasks      
     await dispatch(fetchUserCreatedRequests({
       userId: currentId,
       page: 1,
       limit: 10
     })).unwrap();
+    
+    // We'll process any pending requests in the dedicated useEffect hook
     
     // Use object parameter for volunteered tasks
     await dispatch(fetchUserVolunteeredRequests({
@@ -171,6 +175,35 @@ const loadProfileData = useCallback(async () => {
   useEffect(() => {
     loadProfileData();
   }, [loadProfileData, refreshData, reviewPage, reviewsPerPage]);
+  
+  // Check for refresh flag from request creation and handle pending requests
+  useEffect(() => {
+    const shouldRefreshData = localStorage.getItem('refreshProfileData');
+    const pendingRequest = localStorage.getItem('pendingNewRequest');
+    
+    if (shouldRefreshData === 'true') {
+      // Clear the flag
+      localStorage.removeItem('refreshProfileData');
+      // Set refresh trigger
+      setRefreshData(true);
+    }
+    
+    // Add any pending new requests
+    if (pendingRequest) {
+      try {
+        // Parse the saved request data
+        const newRequestData = JSON.parse(pendingRequest);
+        
+        // Dispatch the action to add the new request
+        dispatch(addCreatedRequest(newRequestData));
+        
+        // Clear the pending request data
+        localStorage.removeItem('pendingNewRequest');
+      } catch (err) {
+        console.error('Failed to process pending request:', err);
+      }
+    }
+  }, [dispatch]);
   
   // Reset data refresh flag after loading completes
   useEffect(() => {
@@ -195,6 +228,15 @@ const loadProfileData = useCallback(async () => {
       setReviewPage(1); // Reset to first page when user changes
     }
   }, [userId]);
+  
+  // Check URL params to see if we should auto-select the requester tab
+  useEffect(() => {
+    const role = searchParams.get('role');
+    if (role === 'requester') {
+      setRoleTab(1); // Switch to requester tab (index 1)
+      setRequestsTab(0); // Show active requests
+    }
+  }, [searchParams]);
 
   const handleRoleChange = (event, newValue) => {
     setRoleTab(newValue);
@@ -242,6 +284,30 @@ const loadProfileData = useCallback(async () => {
   // Filter requests based on active status and current role
   const activeRequests = getCurrentRequests().filter((request) => !request.completed);
   const pastRequests = getCurrentRequests().filter((request) => request.completed);
+  
+  // Check for pending new requests in localStorage
+  useEffect(() => {
+    const pendingRequest = localStorage.getItem('pendingNewRequest');
+    if (pendingRequest && roleTab === 1) { // Only add to requester tab
+      try {
+        // Parse the saved request data
+        const newRequestData = JSON.parse(pendingRequest);
+        
+        // Add the new request directly to the current display array
+        if (Array.isArray(createdRequests)) {
+          dispatch({ 
+            type: 'profile/addCreatedRequest', 
+            payload: newRequestData 
+          });
+        }
+        
+        // Clear the pending request data
+        localStorage.removeItem('pendingNewRequest');
+      } catch (err) {
+        console.error('Failed to process pending request:', err);
+      }
+    }
+  }, [dispatch, roleTab, createdRequests]);
   
   // No need for client-side pagination since we're using server pagination now
 
@@ -498,15 +564,54 @@ const loadProfileData = useCallback(async () => {
             {roleTab === 1 && activeRequests.length === 0 && requestsTab === 0 && (
               <Box sx={{ textAlign: 'center', py: 4, mb: 2 }}>
                 <Typography variant="h6" color="text.secondary" gutterBottom>
-                  You haven't made any requests yet
+                  {(() => {
+                    // Get logged-in user ID with fallback to user object if direct ID is not available
+                    const loggedInUserId = localStorage.getItem('userId');
+                    const loggedInUserObj = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
+                    const loggedInUserIdFromObj = loggedInUserObj?.id;
+                    const effectiveLoggedInUserId = loggedInUserId || loggedInUserIdFromObj;
+                    
+                    // Check if viewing own profile through multiple possible conditions
+                    const isOwnProfile = (
+                      userId === 'current' || 
+                      userId === 'me' || 
+                      !userId || 
+                      (effectiveLoggedInUserId && userId === effectiveLoggedInUserId) ||
+                      // Also handle the case where no userId is directly available but user is authenticated
+                      (!effectiveLoggedInUserId && authState?.isAuthenticated)
+                    );
+                    
+                    return isOwnProfile ? "You haven't made any requests yet" : "No active requests";
+                  })()}
                 </Typography>
-                <Button
-                  variant="contained"
-                  sx={{ mt: 2, borderRadius: '20px', px: 3, py: 1 }}
-                  href="/create-request"
-                >
-                  Create New Request
-                </Button>
+                {(() => {
+                  // Get logged-in user ID with fallback to user object if direct ID is not available
+                  const loggedInUserId = localStorage.getItem('userId');
+                  const loggedInUserObj = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
+                  const loggedInUserIdFromObj = loggedInUserObj?.id;
+                  const effectiveLoggedInUserId = loggedInUserId || loggedInUserIdFromObj;
+                  
+                  // Check if viewing own profile through multiple possible conditions
+                  const isOwnProfile = (
+                    userId === 'current' || 
+                    userId === 'me' || 
+                    !userId || 
+                    (effectiveLoggedInUserId && userId === effectiveLoggedInUserId) ||
+                    // Also handle the case where no userId is directly available but user is authenticated
+                    (!effectiveLoggedInUserId && authState?.isAuthenticated)
+                  );
+                  
+                  // Only show the button if it's the user's own profile
+                  return isOwnProfile ? (
+                    <Button
+                      variant="contained"
+                      sx={{ mt: 2, borderRadius: '20px', px: 3, py: 1 }}
+                      href="/create-request"
+                    >
+                      Create New Request
+                    </Button>
+                  ) : null;
+                })()}
               </Box>
             )}
 
@@ -514,15 +619,54 @@ const loadProfileData = useCallback(async () => {
             {roleTab === 0 && activeRequests.length === 0 && requestsTab === 0 && (
               <Box sx={{ textAlign: 'center', py: 4, mb: 2 }}>
                 <Typography variant="h6" color="text.secondary" gutterBottom>
-                  You're not volunteering for any tasks yet
+                  {(() => {
+                    // Get logged-in user ID with fallback to user object if direct ID is not available
+                    const loggedInUserId = localStorage.getItem('userId');
+                    const loggedInUserObj = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
+                    const loggedInUserIdFromObj = loggedInUserObj?.id;
+                    const effectiveLoggedInUserId = loggedInUserId || loggedInUserIdFromObj;
+                    
+                    // Check if viewing own profile through multiple possible conditions
+                    const isOwnProfile = (
+                      userId === 'current' || 
+                      userId === 'me' || 
+                      !userId || 
+                      (effectiveLoggedInUserId && userId === effectiveLoggedInUserId) ||
+                      // Also handle the case where no userId is directly available but user is authenticated
+                      (!effectiveLoggedInUserId && authState?.isAuthenticated)
+                    );
+                    
+                    return isOwnProfile ? "You're not volunteering for any tasks yet" : "No active volunteering";
+                  })()}
                 </Typography>
-                <Button
-                  variant="contained"
-                  sx={{ mt: 2, borderRadius: '20px', px: 3, py: 1 }}
-                  href="/requests"
-                >
-                  Find Tasks to Help With
-                </Button>
+                {(() => {
+                  // Get logged-in user ID with fallback to user object if direct ID is not available
+                  const loggedInUserId = localStorage.getItem('userId');
+                  const loggedInUserObj = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')) : null;
+                  const loggedInUserIdFromObj = loggedInUserObj?.id;
+                  const effectiveLoggedInUserId = loggedInUserId || loggedInUserIdFromObj;
+                  
+                  // Check if viewing own profile through multiple possible conditions
+                  const isOwnProfile = (
+                    userId === 'current' || 
+                    userId === 'me' || 
+                    !userId || 
+                    (effectiveLoggedInUserId && userId === effectiveLoggedInUserId) ||
+                    // Also handle the case where no userId is directly available but user is authenticated
+                    (!effectiveLoggedInUserId && authState?.isAuthenticated)
+                  );
+                  
+                  // Only show the button if it's the user's own profile
+                  return isOwnProfile ? (
+                    <Button
+                      variant="contained"
+                      sx={{ mt: 2, borderRadius: '20px', px: 3, py: 1 }}
+                      href="/requests"
+                    >
+                      Find Tasks to Help With
+                    </Button>
+                  ) : null;
+                })()}
               </Box>
             )}
 
@@ -545,7 +689,10 @@ const loadProfileData = useCallback(async () => {
                   )}
                 </Grid>
               ) : (
-                <Grid container spacing={2}>
+                <Grid container spacing={2}
+                  justifyContent="center"
+                  alignItems="center"
+                >
                   {pastRequests.length > 0 ? (
                     pastRequests.map((request) => (
                       <Grid sx={{ gridColumn: {xs: "span 12", sm: "span 6"} }} key={request.id}>
@@ -558,9 +705,11 @@ const loadProfileData = useCallback(async () => {
                     ))
                   ) : (
                     <Grid item xs={12}>
-                      <Typography align="center" color="text.secondary" sx={{ mb: 4, mt:2}}>
-                        No past {roleTab === 0 ? 'volunteering' : 'requests'}.
-                      </Typography>
+                      <Box sx={{ textAlign: 'center', py: 4, mb: 2 }}>
+                        <Typography variant="h6" color="text.secondary" gutterBottom>
+                          No past {roleTab === 0 ? 'volunteering' : 'requests'}
+                        </Typography>
+                      </Box>
                     </Grid>
                   )}
                 </Grid>
