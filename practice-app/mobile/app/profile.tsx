@@ -23,7 +23,12 @@ export const MOCK_USER = {
 
 export const MOCK_V_ACTIVE_REQUESTS = [
   {
+    requester: MOCK_USER,
     title: 'Help me to see a doctor',
+    desc: 'I need help to see a doctor. I have a headache and I need someone to take me to the hospital.',
+    datetime: 'May 16, 2025 - 16.30 PM',
+    location: '848 King Street, Denver, CO 80204',
+    requiredPerson: 1,
     distance: '2 km away',
     time: '3 hours ago',
     imageUrl: 'https://images.pexels.com/photos/2324837/pexels-photo-2324837.jpeg?auto=compress&cs=tinysrgb&h=350',
@@ -32,7 +37,12 @@ export const MOCK_V_ACTIVE_REQUESTS = [
     status: 'Accepted',
   },
   {
+    requester: MOCK_USER,
     title: 'I need to clean my house',
+    desc: 'I need help to clean my house. I have a lot of things to do and I need someone to help me.',
+    datetime: 'May 16, 2025 - 16.30 PM',
+    location: '848 King Street, Denver, CO 80204',
+    requiredPerson: 1,
     distance: '750 m away',
     time: '22 hours ago',
     imageUrl: 'https://images.pexels.com/photos/3787027/pexels-photo-3787027.jpeg?auto=compress&cs=tinysrgb&h=350',
@@ -41,7 +51,12 @@ export const MOCK_V_ACTIVE_REQUESTS = [
     status: 'Pending',
   },
   {
+    requester: MOCK_USER,
     title: 'Help for my math exam',
+    desc: 'I need help for my math exam. I have a lot of things to do and I need someone to help me.',
+    datetime: 'May 16, 2025 - 16.30 PM',
+    location: '848 King Street, Denver, CO 80204',
+    requiredPerson: 1,
     distance: '550 m away',
     time: '10 hours ago',
     imageUrl: 'https://images.pexels.com/photos/8472944/pexels-photo-8472944.jpeg?auto=compress&cs=tinysrgb&h=350',
@@ -53,12 +68,18 @@ export const MOCK_V_ACTIVE_REQUESTS = [
 
 export const MOCK_V_PAST_REQUESTS = [
   {
+    requester: MOCK_USER,
     title: 'Grocery shopping',
+    desc: 'I need help with grocery shopping. I have a lot of things to do and I need someone to help me.',
+    datetime: 'May 16, 2025 - 16.30 PM',
+    location: '848 King Street, Denver, CO 80204',
+    requiredPerson: 1,
     distance: '900 m away',
     time: '18 hours ago',
     imageUrl: 'https://images.pexels.com/photos/6508357/pexels-photo-6508357.jpeg?auto=compress&cs=tinysrgb&h=350',
     category: 'Shopping',
-    score: 4.0,
+    urgencyLevel: 'Past',
+    status: 4.0,
   },
 ];
 
@@ -88,7 +109,12 @@ const MOCK_V_REVIEWS = [
 
 export const MOCK_R_ACTIVE_REQUESTS = [
   {
+    requester: MOCK_USER,
     title: 'I need to clean my house',
+    desc: 'I need help to clean my house. I have a lot of things to do and I need someone to help me.',
+    datetime: 'May 16, 2025 - 16.30 PM',
+    location: '848 King Street, Denver, CO 80204',
+    requiredPerson: 1,
     distance: '750 m away',
     time: '22 hours ago',
     imageUrl: 'https://images.pexels.com/photos/3787027/pexels-photo-3787027.jpeg?auto=compress&cs=tinysrgb&h=350',
@@ -100,20 +126,32 @@ export const MOCK_R_ACTIVE_REQUESTS = [
 
 export const MOCK_R_PAST_REQUESTS = [
   {
+    requester: MOCK_USER,
     title: 'Need help with yard work',
+    desc: 'I need help with yard work. I have a lot of things to do and I need someone to help me.',
+    datetime: 'May 16, 2025 - 16.30 PM',
+    location: '848 King Street, Denver, CO 80204',
+    requiredPerson: 1,
     distance: '2.5 km away',
     time: '1 day ago',
     imageUrl: 'https://images.pexels.com/photos/1023234/pexels-photo-1023234.jpeg?auto=compress&cs=tinysrgb&h=350',
     category: 'Uncategorized',
-    score: 5.0,
+    urgencyLevel: 'Past',
+    status: 5.0,
   },
   {
+    requester: MOCK_USER,
     title: 'I need to wash my car',
+    desc: 'I need help to wash my car. I have a lot of things to do and I need someone to help me.',
+    datetime: 'May 16, 2025 - 16.30 PM',
+    location: '848 King Street, Denver, CO 80204',
+    requiredPerson: 1,
     distance: '650 m away',
     time: '2 days ago',
     imageUrl: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wyMzM4Mzh8MHwxfHNlYXJjaHwxOXx8Y2FyfGVufDB8fHx8MTc0MjgxODM5OXww&ixlib=rb-4.0.3&q=80&w=400',
     category: 'Uncategorized',
-    score: 4.5,
+    urgencyLevel: 'Past',
+    status: 4.5,
   },
 ];
 
