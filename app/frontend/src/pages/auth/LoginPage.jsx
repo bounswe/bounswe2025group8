@@ -20,6 +20,7 @@ import useAuth from "../../hooks/useAuth"; // Updated import path
 import logoImage from "../../assets/logo.png";
 import lockIcon from "../../assets/lock.svg";
 import mailIcon from "../../assets/mail.svg";
+import WeatherWidget from "../../components/weather/WeatherWidget";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -64,6 +65,18 @@ const LoginPage = () => {
         justifyContent: "center",
       }}
     >
+      {/* Weather widget positioned at the top right */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: 16,
+          right: 16,
+          zIndex: 10,
+        }}
+      >
+        <WeatherWidget />
+      </Box>
+
       <Container maxWidth="sm">
         {/* Logo and Title updated to be side by side */}
         <Box
