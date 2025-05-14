@@ -22,8 +22,7 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { updateFormData } from '../../../store/slices/createRequestSlice';
 import { deserializeDate, serializeDate } from '../../../utils/dateUtils';
 
-const DetermineDeadlineStep = () => {
-  const dispatch = useDispatch();
+const DetermineDeadlineStep = () => {  const dispatch = useDispatch();
   const { formData } = useSelector((state) => state.createRequest);
   
   const [currentMonth, setCurrentMonth] = useState(new Date());

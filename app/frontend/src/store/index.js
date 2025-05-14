@@ -45,6 +45,8 @@ export const store = configureStore({
     auth: authReducer,
     createRequest: createRequestReducer,
     profile: ProfileReducer,
+    categories: categoryReducer,
+    requests: requestReducer,
   },
   preloadedState: getPreloadedState(),
   middleware: (getDefaultMiddleware) => 

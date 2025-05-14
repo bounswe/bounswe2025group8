@@ -3,9 +3,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, Count
 
-from core.models import Task, TaskStatus
+from core.models import Task, TaskStatus, TaskCategory
 from core.api.serializers.task_serializers import (
     TaskSerializer, TaskCreateSerializer, TaskUpdateSerializer, TaskStatusUpdateSerializer
 )
@@ -17,7 +17,6 @@ class TaskViewSet(viewsets.ModelViewSet):
     """ViewSet for managing tasks"""
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    
     def get_permissions(self):
         """
         Return appropriate permissions based on action.
@@ -25,10 +24,16 @@ class TaskViewSet(viewsets.ModelViewSet):
         - Only authenticated users can create tasks
         - Only task creators can update, partial_update, or delete their tasks
         """
-        if self.action in ['update', 'partial_update', 'destroy']:
+        # Make 'list', 'retrieve', 'categories', and 'popular' public
+        if self.action in ['list', 'retrieve', 'categories', 'popular']:
+            return [permissions.AllowAny()]
+        # Keep security for update/delete actions    
+        elif self.action in ['update', 'partial_update', 'destroy']:
             return [permissions.IsAuthenticated(), IsTaskCreator()]
-        elif self.action in ['create']:
+        # Keep security for create action
+        elif self.action == 'create':
             return [permissions.IsAuthenticated()]
+        # Default to authenticated
         else:
             return [permissions.IsAuthenticated()]
     
@@ -165,6 +170,65 @@ class TaskViewSet(viewsets.ModelViewSet):
             status='success',
             message=f"Task status updated to '{dict(TaskStatus.choices)[task.status]}'.",
             data=response_serializer.data
+        ))
+    @action(detail=False, methods=['get'], url_path='categories')
+    def categories(self, request):
+        """
+        Return all task categories with their popularity metrics
+        """
+        # Get counts of tasks for each category
+        category_counts = Task.objects.values('category').annotate(
+            task_count=Count('category')
+        ).order_by('-task_count')
+        
+        # Map to full category data with name, value and count
+        categories = []
+        for count_data in category_counts:
+            category_value = count_data['category']
+            category_name = dict(TaskCategory.choices).get(category_value, category_value)
+            categories.append({
+                'name': category_name,
+                'value': category_value,
+                'task_count': count_data['task_count']
+            })
+        
+        # Add any categories with zero tasks
+        existing_categories = set(c['value'] for c in categories)
+        for category_choice in TaskCategory.choices:
+            value, name = category_choice
+            if value not in existing_categories:
+                categories.append({
+                    'name': name,
+                    'value': value,
+                    'task_count': 0
+                })
+        
+        return Response(format_response(
+            status='success',
+            message='Categories retrieved successfully',
+            data=categories
+        ))
+            
+    @action(detail=False, methods=['get'], url_path='popular')
+    def popular(self, request):
+        """
+        Return popular tasks based on various metrics
+        """
+        # Determine how many tasks to return
+        limit = int(request.query_params.get('limit', 6))
+        
+        # Define what makes a task "popular"
+        # Current definition: Open tasks with highest urgency and most recently created
+        popular_tasks = Task.objects.filter(
+            status=TaskStatus.POSTED  # Only show open tasks
+        ).order_by('-urgency_level', '-created_at')[:limit]
+        
+        serializer = TaskSerializer(popular_tasks, many=True)
+        
+        return Response(format_response(
+            status='success',
+            message='Popular tasks retrieved successfully',
+            data=serializer.data
         ))
 
 

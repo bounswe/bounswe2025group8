@@ -119,7 +119,7 @@ export const isValidDate = (value) => {
     try {
       const date = parseISO(value);
       return isValid(date);
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }

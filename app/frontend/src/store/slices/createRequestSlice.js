@@ -80,7 +80,7 @@ const initialState = {
     photos: [],
     
     // Determine Deadline step
-    deadlineDate: serializeDate(new Date()),
+    deadlineDate: new Date().toISOString(), // Serializable format
     deadlineTime: '09:00 AM',
     
     // Setup Address step
