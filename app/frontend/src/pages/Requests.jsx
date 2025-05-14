@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
-  Container,
   Grid,
   Typography,
   Box,
   Chip,
-  Divider,
   FormControl,
   InputLabel,
   Select,
@@ -15,179 +13,178 @@ import {
   InputAdornment,
   IconButton,
   Paper,
+  CircularProgress,
 } from '@mui/material';
 import RequestCard from '../components/RequestCard';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchRequests, setPage } from '../store/slices/requestSlice';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import TuneIcon from '@mui/icons-material/Tune';
 import ClearIcon from '@mui/icons-material/Clear';
 import { categoryMapping } from '../constants/categories.js';
-// Sample request data - in a real app this would come from an API
-// Sample request data - in a real app this would come from an API
-const sampleRequests = [
-  {
-    id: '1',
-    title: 'Help me to see a doctor',
-    categories: ['HEALTHCARE'],
-    urgency: 'High',
-    distance: '2 km away',
-    postedTime: '3 hours ago',
-    imageUrl:
-      'https://images.unsplash.com/photo-1631815588090-d1bcbe9b4b22?q=80&w=1632&auto=format&fit=crop',
-  },
-  {
-    id: '2',
-    title: 'Need help moving furniture to my new apartment',
-    categories: ['MOVING_HELP', 'HEAVY_LIFTING'],
-    urgency: 'Medium',
-    distance: '1.5 km away',
-    postedTime: '5 hours ago',
-    imageUrl:
-      'https://images.unsplash.com/photo-1600566752355-35792bedcfea?q=80&w=1374&auto=format&fit=crop',
-  },
-  {
-    id: '3',
-    title: 'Looking for someone to help clean my house before guests arrive',
-    categories: ['HOUSE_CLEANING', 'HOME_MAINTENANCE'],
-    urgency: 'High',
-    distance: '0.8 km away',
-    postedTime: '2 hours ago',
-  },
-  {
-    id: '4',
-    title: 'Need help with grocery shopping for elderly parents',
-    categories: ['GROCERY_SHOPPING', 'ELDERLY_CARE'],
-    urgency: 'Medium',
-    distance: '3 km away',
-    postedTime: '1 day ago',
-    imageUrl:
-      'https://images.unsplash.com/photo-1579113800032-c38bd7635818?q=80&w=1374&auto=format&fit=crop',
-  },
-  {
-    id: '5',
-    title: 'Math tutor needed for high school student',
-    categories: ['TUTORING', 'EDUCATION'],
-    urgency: 'Low',
-    distance: '5 km away',
-    postedTime: '2 days ago',
-  },
-  {
-    id: '6',
-    title: 'Need help fixing a leaky faucet and clogged drain',
-    categories: ['HOME_REPAIR', 'PLUMBING'],
-    urgency: 'Medium',
-    distance: '1 km away',
-    postedTime: '6 hours ago',
-    imageUrl:
-      'https://images.unsplash.com/photo-1615266508370-7778b0065abb?q=80&w=1470&auto=format&fit=crop',
-  },
-];
+import { urgencyLevels } from '../constants/urgency_level.js';
 
 
 const Requests = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [filteredRequests, setFilteredRequests] = useState(sampleRequests);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState({
+  
+  // Get all required state from Redux store at once to avoid conditional hook calls
+  const { 
+    filteredRequests,
+    loading,
+    error,
+    pagination
+  } = useSelector(state => state.requests);
+  
+  // Extract pagination values for use in render
+  const { page, totalPages } = pagination;
+    // Get filter values directly from URL parameters
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  
+  // Local filter state to match URL parameters
+  const [filters, setLocalFilters] = useState({
     category: searchParams.get('category') || '',
-    urgency: '',
-    distance: '',
+    urgency: searchParams.get('urgency') || '',
+    urgency_level: searchParams.get('urgency_level') || '',
+    distance: searchParams.get('distance') || '',
   });
-
-  // Apply filters based on URL parameters and state
+      // Initial data fetch and setup - only uses URL parameters
+  useEffect(() => {
+    // Get current page from URL or default to 1
+    const currentPage = parseInt(searchParams.get('page') || '1', 10);
+    
+    // Build filters object from URL parameters
+    const urlFilters = {
+      category: searchParams.get('category') || undefined,
+      urgency: searchParams.get('urgency') || undefined,
+      urgency_level: searchParams.get('urgency_level') || undefined,
+      search: searchParams.get('search') || undefined,
+      distance: searchParams.get('distance') || undefined,
+    };
+    
+    // Clean up undefined values
+    Object.keys(urlFilters).forEach(key => {
+      if (urlFilters[key] === undefined) {
+        delete urlFilters[key];
+      }
+    });
+    
+    // Fetch data from API with URL filters
+    dispatch(fetchRequests({
+      filters: urlFilters,
+      page: currentPage
+    }));
+  }, [dispatch, searchParams]);// Update local filters when URL parameters change
   useEffect(() => {
     // Get updated parameters from URL whenever they change
     const currentCategoryParam = searchParams.get('category') || '';
     const currentUrgencyParam = searchParams.get('urgency') || '';
+    const currentUrgencyLevelParam = searchParams.get('urgency_level') || '';
+    const currentSearchParam = searchParams.get('search') || '';
+    const currentDistanceParam = searchParams.get('distance') || '';
 
-    // Update our filter state if URL parameters change
-    if (currentCategoryParam !== filters.category || currentUrgencyParam !== filters.urgency) {
-      setFilters((prev) => ({
-        ...prev,
-        category: currentCategoryParam,
-        urgency: currentUrgencyParam,
-      }));
+    // Update our local filter state to match URL parameters
+    setLocalFilters({
+      category: currentCategoryParam,
+      urgency: currentUrgencyParam,
+      urgency_level: currentUrgencyLevelParam,
+      distance: currentDistanceParam,
+    });
+    
+    // Update search term state if it changed in the URL
+    if (currentSearchParam !== searchTerm) {
+      setSearchTerm(currentSearchParam);
     }
-
-    // Filter requests based on all current filters
-    let results = [...sampleRequests];
-
-    // Apply category filter using current URL parameter
-    if (currentCategoryParam) {
-      results = results.filter((request) =>
-        request.categories.some(
-          (cat) => cat === currentCategoryParam
-        )
-      );
+  }, [searchParams, searchTerm]);
+  
+  // Apply search term filter with debounce
+  useEffect(() => {
+    // Skip the initial render or when searchTerm is coming from URL
+    if (searchTerm === searchParams.get('search')) {
+      return;
     }
+    
+    const debouncedSearch = setTimeout(() => {
+      // Update URL with search term
+      const newSearchParams = new URLSearchParams(searchParams);
+      
+      if (searchTerm.trim()) {
+        newSearchParams.set('search', searchTerm.trim());
+      } else {
+        newSearchParams.delete('search');
+      }
+      
+      // Reset to page 1 when search changes
+      if (searchParams.has('page')) {
+        newSearchParams.set('page', '1');
+      }
+      
+      setSearchParams(newSearchParams);
+    }, 300);
 
-    // Apply urgency filter using current URL parameter
-    if (currentUrgencyParam) {
-      results = results.filter(
-        (request) => request.urgency.toLowerCase() === currentUrgencyParam.toLowerCase()
-      );
-    }
-
-    // Apply search term if present
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      results = results.filter(
-        (request) =>
-          request.title.toLowerCase().includes(term) ||
-          request.categories.some((cat) => cat.toLowerCase().includes(term))
-      );
-    }
-
-    setFilteredRequests(results);
-  }, [searchParams, filters, searchTerm]);
+    return () => clearTimeout(debouncedSearch);
+  }, [searchTerm, searchParams, setSearchParams]);
 
   const handleRequestClick = (requestId) => {
     navigate(`/requests/${requestId}`);
   };
-
   const handleFilterChange = (event) => {
     const { name, value } = event.target;
 
-    // Update our filter state
-    setFilters((prev) => ({
+    // Update local filter state
+    setLocalFilters(prev => ({
       ...prev,
       [name]: value,
     }));
 
-    // Update URL parameters for the category and urgency filters
+    // Update URL parameters
     const newSearchParams = new URLSearchParams(searchParams);
 
     if (value) {
-      // Add or update the parameter
       newSearchParams.set(name, value);
     } else {
-      // If value is empty, remove the parameter
       newSearchParams.delete(name);
+    }
+    
+    // Reset to page 1 when filters change
+    if (newSearchParams.has('page')) {
+      newSearchParams.set('page', '1');
     }
 
     setSearchParams(newSearchParams);
   };
 
   const handleClearFilters = () => {
-    setFilters({
+    // Clear local filters
+    setLocalFilters({
       category: '',
       urgency: '',
       distance: '',
     });
     setSearchTerm('');
+    
+    // Clear URL parameters - but keep any non-filter params if needed
     setSearchParams({});
   };
 
-  const hasActiveFilters = React.useMemo(() => {
-    return filters.category || filters.urgency || filters.distance || searchTerm;
-  }, [filters.category, filters.urgency, filters.distance, searchTerm]);
+  const handlePageChange = (newPage) => {
+    // Update URL with new page number
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('page', newPage.toString());
+    setSearchParams(newSearchParams);
+    
+    // Update Redux page state
+    dispatch(setPage(newPage));
+  };  const hasActiveFilters = useMemo(() => {
+    return filters.category || filters.urgency || filters.urgency_level || filters.distance || searchTerm;
+  }, [filters.category, filters.urgency, filters.urgency_level, filters.distance, searchTerm]);
 
   const getCategoryDisplayName = (categoryId) => {
     return categoryMapping[categoryId] || categoryId;
   };
-
   return (
     <>
       <Box sx={{ my: 4 }}>
@@ -265,22 +262,22 @@ const Requests = () => {
                 ))}
               </Select>
             </FormControl>
-          </Grid>
-
-          {/* Urgency Filter */}
+          </Grid>          {/* Urgency Level Filter */}
           <Grid item xs={12} sm={6} md={2} sx={{ display: 'flex' }}>
             <FormControl sx={{ minWidth: 180, width: 'auto' }} size="small">
               <InputLabel>Urgency</InputLabel>
               <Select
-                name="urgency"
-                value={filters.urgency}
+                name="urgency_level"
+                value={filters.urgency_level}
                 onChange={handleFilterChange}
                 label="Urgency"
               >
                 <MenuItem value="">Any</MenuItem>
-                <MenuItem value="High">High</MenuItem>
-                <MenuItem value="Medium">Medium</MenuItem>
-                <MenuItem value="Low">Low</MenuItem>
+                <MenuItem value="1">Very Low</MenuItem>
+                <MenuItem value="2">Low</MenuItem>
+                <MenuItem value="3">Medium</MenuItem>
+                <MenuItem value="4">High</MenuItem>
+                <MenuItem value="5">Critical</MenuItem>
               </Select>
             </FormControl>
           </Grid>
@@ -318,13 +315,11 @@ const Requests = () => {
                 size="small"
                 onDelete={() => handleFilterChange({ target: { name: 'category', value: '' } })}
               />
-            )}
-
-            {filters.urgency && (
+            )}            {filters.urgency_level && (
               <Chip
-                label={`Urgency: ${filters.urgency}`}
+                label={`Urgency: ${filters.urgency_level ? urgencyLevels[filters.urgency_level]?.name || filters.urgency_level : ''}`}
                 size="small"
-                onDelete={() => handleFilterChange({ target: { name: 'urgency', value: '' } })}
+                onDelete={() => handleFilterChange({ target: { name: 'urgency_level', value: '' } })}
               />
             )}
 
@@ -337,61 +332,113 @@ const Requests = () => {
             )}
           </Box>
         )}
-      </Paper>
-
-      {/* Results section */}
-      <Box sx={{ mb: 2 }}>
-        <Typography variant="subtitle1" component="div" sx={{ fontWeight: 'medium', mb: 1 }}>
-          {filteredRequests.length} {filteredRequests.length === 1 ? 'request' : 'requests'} found
-        </Typography>
-      </Box>
-
-      {/* Request Cards */}
-      {filteredRequests.length > 0 ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-          <Box sx={{ width: '100%', maxWidth: '1200px' }}>
-            {' '}
-            {/* Same max width as filters section */}
-            <Grid
-              container
-              spacing={3}
-              sx={{
-                mb: 4,
-                justifyContent: 'center', // Centers grid items when they don't fill the row
-              }}
-            >
-              {filteredRequests.map((request) => (
-                <Grid
-                  item
-                  xs={12}
-                  sm={12}
-                  md={6}
-                  lg={4}
-                  key={request.id}
-                  sx={{ display: 'flex', justifyContent: 'center' }} // Centers each card
-                >
-                  <Box sx={{ width: '100%', maxWidth: '400px' }}>
-                    {' '}
-                    {/* Constrains card width */}
-                    <RequestCard request={request} onClick={() => handleRequestClick(request.id)} />
-                  </Box>
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
+      </Paper>      
+      {/* Loading State */}
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+          <CircularProgress />
         </Box>
-      ) : (
+      ) : error ? (
         <Box sx={{ textAlign: 'center', py: 8 }}>
-          <Typography variant="h6" color="text.secondary">
-            No requests found matching your criteria
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            Try adjusting your filters or search term
-          </Typography>
-          <Button variant="contained" color="primary" sx={{ mt: 3 }} onClick={handleClearFilters}>
-            Clear All Filters
+          <Typography variant="h6" color="error">
+            {error}
+          </Typography>          <Button 
+            variant="contained" 
+            color="primary" 
+            sx={{ mt: 3 }} 
+            onClick={() => {
+              // Rebuild URL with current filters
+              const newSearchParams = new URLSearchParams();
+              
+              // Add current filters to URL if they exist
+              if (filters.category) newSearchParams.set('category', filters.category);
+              if (filters.urgency_level) newSearchParams.set('urgency_level', filters.urgency_level);
+              if (searchTerm) newSearchParams.set('search', searchTerm);
+              
+              // Set page to 1
+              newSearchParams.set('page', '1');
+              
+              // Update URL - this will trigger fetch via the useEffect
+              setSearchParams(newSearchParams);
+            }}
+          >
+            Try Again
           </Button>
         </Box>
+      ) : (
+        <>
+          {/* Results section */}
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle1" component="div" sx={{ fontWeight: 'medium', mb: 1 }}>
+              {filteredRequests.length} {filteredRequests.length === 1 ? 'request' : 'requests'} found
+            </Typography>
+          </Box>
+
+          {/* Request Cards */}
+          {filteredRequests.length > 0 ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+              <Box sx={{ width: '100%', maxWidth: '1200px' }}>
+                <Grid
+                  container
+                  spacing={3}
+                  sx={{
+                    mb: 4,
+                    justifyContent: 'center', // Centers grid items when they don't fill the row
+                  }}
+                >
+                  {filteredRequests.map((request) => (
+                    <Grid
+                      item
+                      xs={12}
+                      sm={12}
+                      md={6}
+                      lg={4}
+                      key={request.id}
+                      sx={{ display: 'flex', justifyContent: 'center' }} // Centers each card
+                    >
+                      <Box sx={{ width: '100%', maxWidth: '400px' }}>
+                        <RequestCard request={request} onClick={() => handleRequestClick(request.id)} />
+                      </Box>
+                    </Grid>
+                  ))}
+                </Grid>                {/* Pagination */}
+                {totalPages > 1 && (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
+                    <Button 
+                      disabled={page <= 1}
+                      onClick={() => handlePageChange(page - 1)}
+                      sx={{ mx: 1 }}
+                    >
+                      Previous
+                    </Button>
+                    <Typography sx={{ mx: 2, display: 'flex', alignItems: 'center' }}>
+                      Page {page} of {totalPages}
+                    </Typography>
+                    <Button 
+                      disabled={page >= totalPages}
+                      onClick={() => handlePageChange(page + 1)}
+                      sx={{ mx: 1 }}
+                    >
+                      Next
+                    </Button>
+                  </Box>
+                )}
+              </Box>
+            </Box>
+          ) : (
+            <Box sx={{ textAlign: 'center', py: 8 }}>
+              <Typography variant="h6" color="text.secondary">
+                No requests found matching your criteria
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                Try adjusting your filters or search term
+              </Typography>
+              <Button variant="contained" color="primary" sx={{ mt: 3 }} onClick={handleClearFilters}>
+                Clear All Filters
+              </Button>
+            </Box>
+          )}
+        </>
       )}
     </>
   );

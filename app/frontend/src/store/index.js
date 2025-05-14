@@ -2,6 +2,8 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice.js';
 import createRequestReducer from './slices/createRequestSlice.js';
 import ProfileReducer from './slices/profileSlice.js';
+import categoryReducer from './slices/categorySlice.js';
+import requestReducer from './slices/requestSlice.js';
 
 // Check for stored auth data
 const getPreloadedState = () => {
@@ -40,6 +42,17 @@ export const store = configureStore({
     auth: authReducer,
     createRequest: createRequestReducer,
     profile: ProfileReducer,
+    categories: categoryReducer,
+    requests: requestReducer,
   },
-  preloadedState: getPreloadedState()
+  preloadedState: getPreloadedState(),
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        // Ignore these action types (if needed)
+        ignoredActions: [],
+        // Ignore these field paths in the state (if needed)
+        ignoredPaths: [],
+      },
+    }),
 });

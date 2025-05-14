@@ -20,19 +20,21 @@ import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterv
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { updateFormData } from '../../../store/slices/createRequestSlice';
+import { serializableDate, deserializeDate } from '../../../utils/dateUtils';
 
-const DetermineDeadlineStep = () => {
-  const dispatch = useDispatch();
+const DetermineDeadlineStep = () => {  const dispatch = useDispatch();
   const { formData } = useSelector((state) => state.createRequest);
   
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(new Date(formData.deadlineDate));
+  // Use the utility function to safely convert from serialized date to Date object
+  const [selectedDate, setSelectedDate] = useState(() => deserializeDate(formData.deadlineDate));
   const [selectedTime, setSelectedTime] = useState(formData.deadlineTime);
   
   // Handle date selection
   const handleDateChange = (date) => {
     setSelectedDate(date);
-    dispatch(updateFormData({ deadlineDate: date }));
+    // Convert to serializable format before storing in Redux
+    dispatch(updateFormData({ deadlineDate: serializableDate(date) }));
   };
   
   // Handle time selection

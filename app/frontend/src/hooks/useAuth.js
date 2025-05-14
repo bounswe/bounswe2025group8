@@ -14,7 +14,7 @@ import {
   selectAuthLoading,
   selectAuthError 
 } from '../store/slices/authSlice';
-import { authAPI } from '../utils/api';
+import { authAPI } from '../services/api';
 
 /**
  * Hook for handling authentication in the application
@@ -31,30 +31,35 @@ const useAuth = (redirectTo = null) => {
   const userRole = useSelector(selectUserRole);
   const loading = useSelector(selectAuthLoading);
   const error = useSelector(selectAuthError);
-  
   // Redirect only on successful auth actions, not on every component mount
   useEffect(() => {
-    // Only redirect if redirectTo is provided and we didn't create this effect just for state
-    if (isAuthenticated && redirectTo && redirectTo !== window.location.pathname) {
+    // Only redirect if redirectTo is provided, user is authenticated, and we're not already on that page
+    const currentPath = window.location.pathname;
+    if (isAuthenticated && redirectTo && redirectTo !== currentPath) {
+      console.log(`Auth redirect: Redirecting to ${redirectTo} from ${currentPath}`);
       navigate(redirectTo, { replace: true });
     }
   }, [isAuthenticated, navigate, redirectTo]);
-  
-  // Handle login submission
+    // Handle login submission
   const handleLogin = async ({ email, password }) => {
     console.log('Attempting login with:', { email });
     
     try {
       const result = await dispatch(loginAsync({ email, password }));
       console.log('Login result:', result);
-      return result.meta.requestStatus === 'fulfilled';
+      
+      if (result.meta.requestStatus !== 'fulfilled') {
+        console.error('Login failed:', result.payload);
+        return false;
+      }
+      
+      return true;
     } catch (error) {
       console.error('Login error:', error);
       return false;
     }
   };
-  
-  // Handle register submission
+    // Handle register submission
   const register = async (
         firstName,
         lastName,
@@ -63,54 +68,84 @@ const useAuth = (redirectTo = null) => {
         phone,
         password,
         confirmPassword) => {
-    const result = await dispatch(registerAsync({ 
-        firstName,
-        lastName,
-        username,
-        email,
-        phone,
-        password,
-        confirmPassword
-    }));
-    
-    if (result.meta.requestStatus !== 'fulfilled') {
-      throw new Error(result.payload || 'Registration failed');
+    try {
+      const result = await dispatch(registerAsync({ 
+          firstName,
+          lastName,
+          username,
+          email,
+          phone,
+          password,
+          confirmPassword
+      }));
+      
+      console.log('Register result:', result);
+      
+      if (result.meta.requestStatus !== 'fulfilled') {
+        throw new Error(result.payload || 'Registration failed');
+      }
+      
+      return result.payload;
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
     }
-    
-    return result.payload;
   };
-  
-  // Handle forgot password
+    // Handle forgot password
   const handleForgotPassword = async (email) => {
-    const result = await dispatch(forgotPassword(email));
+    console.log('Requesting password reset for:', email);
     
-    if (result.meta.requestStatus !== 'fulfilled') {
-      throw new Error(result.payload || 'Password reset request failed');
+    try {
+      const result = await dispatch(forgotPassword(email));
+      console.log('Forgot password result:', result);
+      
+      if (result.meta.requestStatus !== 'fulfilled') {
+        throw new Error(result.payload || 'Password reset request failed');
+      }
+      
+      return result.payload;
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      throw error;
     }
-    
-    return result.payload;
   };
   
   // Handle verify token
   const handleVerifyToken = async (token) => {
-    const result = await dispatch(verifyToken(token));
+    console.log('Verifying token');
     
-    if (result.meta.requestStatus !== 'fulfilled') {
-      throw new Error(result.payload || 'Token verification failed');
+    try {
+      const result = await dispatch(verifyToken(token));
+      console.log('Token verification result:', result);
+      
+      if (result.meta.requestStatus !== 'fulfilled') {
+        throw new Error(result.payload || 'Token verification failed');
+      }
+      
+      return result.payload;
+    } catch (error) {
+      console.error('Token verification error:', error);
+      throw error;
     }
-    
-    return result.payload;
   };
   
   // Handle reset password
   const handleResetPassword = async (password, token) => {
-    const result = await dispatch(resetPassword({ password, token }));
+    console.log('Resetting password with token');
     
-    if (result.meta.requestStatus !== 'fulfilled') {
-      throw new Error(result.payload || 'Password reset failed');
+    try {
+      const result = await dispatch(resetPassword({ password, token }));
+      console.log('Reset password result:', result);
+      
+      if (result.meta.requestStatus !== 'fulfilled') {
+        throw new Error(result.payload || 'Password reset failed');
+      }
+      
+      return result.payload;
+    } catch (error) {
+      console.error('Password reset error:', error);
+      throw error;
     }
-    
-    return result.payload;
   };
   
   // Handle logout
@@ -126,25 +161,34 @@ const useAuth = (redirectTo = null) => {
       navigate('/login');
     }
   };
-    // Check email availability
+  // Check email availability
   const checkEmailAvailability = async (email) => {
+    console.log('Checking email availability for:', email);
+    
     try {
-      return await authAPI.checkEmailAvailability(email);
+      const result = await authAPI.checkEmailAvailability(email);
+      console.log('Email availability result:', result);
+      return result;
     } catch (error) {
+      console.error('Email availability check error:', error);
       throw error;
     }
   };
   
   // Check phone availability
   const checkPhoneAvailability = async (phoneNumber) => {
+    console.log('Checking phone availability for:', phoneNumber);
+    
     try {
-      return await authAPI.checkPhoneAvailability(phoneNumber);
+      const result = await authAPI.checkPhoneAvailability(phoneNumber);
+      console.log('Phone availability result:', result);
+      return result;
     } catch (error) {
+      console.error('Phone availability check error:', error);
       throw error;
     }
   };
-  
-  return {
+    return {
     // Current auth state
     isAuthenticated,
     currentUser,

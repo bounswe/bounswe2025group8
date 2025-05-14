@@ -1,36 +1,44 @@
-import React from 'react';
-import { Grid, Typography, Box, Divider } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Grid, Typography, Box, Divider, CircularProgress, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import CategoryCardDetailed from '../components/CategoryCardDetailed';
-
-// Sample category images - in a real app these would likely come from an API
-const CATEGORY_IMAGES = {
-  GROCERY_SHOPPING:
-    'https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1374&auto=format&fit=crop',
-  TUTORING:
-    'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=1470&auto=format&fit=crop',
-  HOME_REPAIR:
-    '',
-  MOVING_HELP:
-    '',
-  HOUSE_CLEANING:
-    'https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?q=80&w=1374&auto=format&fit=crop',
-  OTHER:
-    'https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=1374&auto=format&fit=crop',
-};
-
-// Categories data - in a real app, this would come from an API
-const categories = [
-  { id: 'GROCERY_SHOPPING', title: 'Grocery Shopping', image: CATEGORY_IMAGES.GROCERY_SHOPPING },
-  { id: 'TUTORING', title: 'Tutoring', image: CATEGORY_IMAGES.TUTORING },
-  { id: 'HOME_REPAIR', title: 'Home Repair', image: CATEGORY_IMAGES.HOME_REPAIR },
-  { id: 'MOVING_HELP', title: 'Moving Help', image: CATEGORY_IMAGES.MOVING_HELP },
-  { id: 'HOUSE_CLEANING', title: 'House Cleaning', image: CATEGORY_IMAGES.HOUSE_CLEANING },
-  { id: 'OTHER', title: 'Other Services', image: CATEGORY_IMAGES.OTHER },
-];
+import * as categoryService from '../services/categoryService';
+import { getCategoryImage, categoryMapping } from '../constants/categories';
 
 const Categories = () => {
   const navigate = useNavigate();
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setLoading(true);
+      try {
+        const categoriesData = await categoryService.getCategories();
+        
+        // Transform API response to match UI component expectations
+        const formattedCategories = categoriesData.map((category) => ({
+          id: category.value,
+          title: categoryMapping[category.value] || category.name,
+          image: getCategoryImage(category.value),
+          requestCount: category.task_count || 0,
+        }));
+        
+        setCategories(formattedCategories);
+        setError(null);
+      } catch (err) {
+        console.error("Failed to fetch categories:", err);
+        setError("Failed to load categories. Please try again later.");
+        // Clear categories on error
+        setCategories([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleCategoryClick = (categoryId) => {
     // Navigate to requests filtered by this category
@@ -50,20 +58,36 @@ const Categories = () => {
 
       <Divider sx={{ my: 4 }} />
 
-      {/* All Categories in Detailed Format */}
-      <Grid container spacing={4} sx={{ mt: 2 }} justifyContent="center">
-        {categories.map((category) => (
-          <Grid item xs={12} sm={12} md={6} lg={6} key={category.id}>
-            <CategoryCardDetailed
-              title={category.title}
-              imageUrl={category.image}
-              requestCount={Math.floor(Math.random() * 30) + 5} // Random number for demo
-              categoryId={category.id}
-              onClick={() => handleCategoryClick(category.id)}
-            />
-          </Grid>
-        ))}
-      </Grid>
+      {loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+          <CircularProgress />
+        </Box>
+      ) : error ? (
+        <Box sx={{ mt: 4 }}>
+          <Alert severity="error">{error}</Alert>
+        </Box>
+      ) : (
+        /* All Categories in Detailed Format */
+        <Grid container spacing={4} sx={{ mt: 2 }} justifyContent="center">
+          {categories.length > 0 ? (
+            categories.map((category) => (
+              <Grid item xs={12} sm={12} md={6} lg={6} key={category.id}>
+                <CategoryCardDetailed
+                  title={category.title}
+                  imageUrl={category.image}
+                  requestCount={category.requestCount}
+                  categoryId={category.id}
+                  onClick={() => handleCategoryClick(category.id)}
+                />
+              </Grid>
+            ))
+          ) : (
+            <Box sx={{ width: "100%", textAlign: "center", py: 6 }}>
+              <Typography color="text.secondary">No categories available</Typography>
+            </Box>
+          )}
+        </Grid>
+      )}
     </>
   );
 };
