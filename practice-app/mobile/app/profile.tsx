@@ -24,6 +24,20 @@ export const MOCK_USER = {
 export const MOCK_V_ACTIVE_REQUESTS = [
   {
     requester: MOCK_USER,
+    title: 'Help me to open a bank account',
+    desc: 'I need help to open a bank account. I have a lot of things to do and I need someone to help me.',
+    datetime: 'May 16, 2025 - 16.30 PM',
+    location: '848 King Street, Denver, CO 80204',
+    requiredPerson: 1,
+    distance: '1 km away',
+    time: '1 day ago',
+    imageUrl: 'https://images.pexels.com/photos/2988232/pexels-photo-2988232.jpeg?auto=compress&cs=tinysrgb&h=350',
+    category: 'Healthcare',
+    urgencyLevel: 'High',
+    status: 'Completed',
+  },
+  {
+    requester: MOCK_USER,
     title: 'Help me to see a doctor',
     desc: 'I need help to see a doctor. I have a headache and I need someone to take me to the hospital.',
     datetime: 'May 16, 2025 - 16.30 PM',
@@ -108,6 +122,20 @@ const MOCK_V_REVIEWS = [
 ]
 
 export const MOCK_R_ACTIVE_REQUESTS = [
+  {
+    requester: MOCK_USER,
+    title: 'Help for my science course',
+    desc: 'I need help for my science course. I have a lot of things to do and I need someone to help me.',
+    datetime: 'May 16, 2025 - 16.30 PM',
+    location: '848 King Street, Denver, CO 80204',
+    requiredPerson: 1,
+    distance: '850 m away',
+    time: '1 day ago',
+    imageUrl: 'https://images.pexels.com/photos/8472944/pexels-photo-8472944.jpeg?auto=compress&cs=tinysrgb&h=350',
+    category: 'Tutoring',
+    urgencyLevel: 'Medium',
+    status: 'Completed',
+  },
   {
     requester: MOCK_USER,
     title: 'I need to clean my house',

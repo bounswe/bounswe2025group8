@@ -20,6 +20,7 @@ const backgroundColors: Record<string, string> = {
   Medium: '#efb034', // Medium Urgency background color
   Low: '#1dd75b', // Low Urgency background color
   Past: '#9095a0', // Past background color
+  Completed: '#379ae6', // Completed background color
   Accepted: '#636AE8', // Accepted background color
   Pending: 'transparent', // Pending background color
   Rejected: 'transparent', // Rejected background color
@@ -29,6 +30,7 @@ const textColors: Record<string, string> = {
   High: '#fff', // High Urgency text color
   Medium: '#5d4108', // Medium Urgency text color  
   Low: '#0a4d20', // Low Urgency text color
+  Completed: '#fff', // Completed text color
   Accepted: '#fff', // Accepted text color
   Pending: '#636AE8', // Pending text color
   Rejected: '#E8618C', // Rejected text color
@@ -39,6 +41,7 @@ const borderColors: Record<string, string> = {
   Medium: '#efb034', // Medium Urgency border color
   Low: '#1dd75b', // Low Urgency border color
   Past: '#9095a0', // Past border color
+  Completed: '#379ae6', // Completed border color
   Accepted: '#636AE8', // Accepted border color
   Pending: '#636AE8', // Pending border color
   Rejected: '#E8618C', // Rejected border color
@@ -90,11 +93,11 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, imageUrl, category, ur
               backgroundColor: backgroundColors[status] || 'transparent',
               borderColor: borderColors[status] || '#efb034',
               borderWidth: 1,
-              marginRight: !['Accepted', 'Pending', 'Rejected'].includes(status) ? 4 : 0,
+              marginRight: urgencyLevel === 'Past' ? 4 : 0,
             },
           ]}
         >
-          {['Accepted', 'Pending', 'Rejected'].includes(status) ? status : `☆ ${Number(status).toFixed(1)}`}
+            {urgencyLevel === 'Past' ? `☆ ${Number(status).toFixed(1)}` : status}
         </Text>
       </View>
     </View>
@@ -128,7 +131,7 @@ const styles = StyleSheet.create({
   infoContainer: {
     flex: 1,
     justifyContent: 'center',
-    marginRight: 60,
+    marginRight: 40,
   },
   title: {
     fontWeight: '600',

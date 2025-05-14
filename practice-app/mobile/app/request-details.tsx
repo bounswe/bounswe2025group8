@@ -18,6 +18,8 @@ const backgroundColors: Record<string, string> = {
   High: '#de3b40', // High Urhgency background color
   Medium: '#efb034', // Medium Urgency background color
   Low: '#1dd75b', // Low Urgency background color
+  Past: '#9095a0', // Past background color
+  Completed: '#379ae6', // Completed background color
   Accepted: '#636AE8', // Accepted background color
   Pending: 'transparent', // Pending background color
   Rejected: 'transparent', // Rejected background color
@@ -27,6 +29,7 @@ const textColors: Record<string, string> = {
   High: '#fff', // High Urgency text color
   Medium: '#5d4108', // Medium Urgency text color  
   Low: '#0a4d20', // Low Urgency text color
+  Completed: '#fff', // Completed text color
   Accepted: '#fff', // Accepted text color
   Pending: '#636AE8', // Pending text color
   Rejected: '#E8618C', // Rejected text color
@@ -36,6 +39,8 @@ const borderColors: Record<string, string> = {
   High: '#de3b40', // High Urgency border color
   Medium: '#efb034', // Medium Urgency border color
   Low: '#1dd75b', // Low Urgency border color
+  Past: '#9095a0', // Past border color
+  Completed: '#379ae6', // Completed border color
   Accepted: '#636AE8', // Accepted border color
   Pending: '#636AE8', // Pending border color
   Rejected: '#E8618C', // Rejected border color
@@ -52,10 +57,6 @@ export default function RequestDetails() {
   const index = typeof params.index === 'string' ? parseInt(params.index, 10) : Number(params.index);
   const requestsArray = MOCK_MAP[arrayName];
   const request = requestsArray && !isNaN(index) ? requestsArray[index] : null;
-
-  // Add state for volunteer button
-  // We can change this according to the request status
-  const [isVolunteered, setIsVolunteered] = useState(true);
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: themeColors.gray }]}>
@@ -126,19 +127,48 @@ export default function RequestDetails() {
         </View>
       </View>
 
-      {/* Show statusText if volunteered */}
-      {isVolunteered && (
-        <Text style={[styles.statusText, { color: colors.text }]}>{request.status}</Text>
+      {/* Show statusText always */}
+      <Text style={[
+        styles.statusText, 
+        { color: request.urgencyLevel === 'Past' ? '#efb034' : borderColors[request.status] }
+      ]}>{
+        request.urgencyLevel === 'Past' 
+          ? `☆ ${parseFloat(request.status).toFixed(1)}` 
+          : request.status
+      }</Text>
+
+      {/* Button logic based on request status */}
+      {request && request.status !== 'Rejected' && (
+        request.status === 'Completed' ? (
+          <TouchableOpacity
+            style={[styles.volunteerButton, { backgroundColor: themeColors.pink }]}
+            onPress={() => {/* TODO: Implement Rate & Review navigation */}}
+          >
+            <Text style={styles.buttonText}>Rate & Review</Text>
+          </TouchableOpacity>
+        ) : request.urgencyLevel === 'Past' ? (
+          <TouchableOpacity
+            style={[styles.volunteerButton, { backgroundColor: themeColors.pink }]}
+            onPress={() => {/* TODO: Implement Edit Rate & Review navigation */}}
+          >
+            <Text style={styles.buttonText}>Edit Rate & Review</Text>
+          </TouchableOpacity>
+        ) : ['Accepted', 'Pending'].includes(request.status) ? (
+          <TouchableOpacity
+            style={[styles.volunteerButton, { backgroundColor: '#de3b40' }]}
+            onPress={() => {/* TODO: Implement Cancel Volunteering logic */}}
+          >
+            <Text style={styles.buttonText}>Cancel Volunteering</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={[styles.volunteerButton, { backgroundColor: colors.primary }]}
+            onPress={() => {/* TODO: Implement Be Volunteer logic */}}
+          >
+            <Text style={styles.buttonText}>Be Volunteer</Text>
+          </TouchableOpacity>
+        )
       )}
-
-      {/* Volunteer Button */}
-      <TouchableOpacity
-        style={[styles.volunteerButton, { backgroundColor: isVolunteered ? '#de3b40' : colors.primary }]}
-        onPress={() => setIsVolunteered((prev) => !prev)}
-      >
-        <Text style={styles.buttonText}>{isVolunteered ? 'Cancel Volunteering' : 'Be Volunteer'}</Text>
-      </TouchableOpacity>
-
 
       {!request && (
         <Text style={{ color: 'red', textAlign: 'center', marginTop: 24 }}>Request not found.</Text>
@@ -237,7 +267,15 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 15,
+    lineHeight: 20,
     fontWeight: '300',
+  },
+  statusText: {
+    fontSize: 17,
+    fontWeight: '500',
+    textAlign: 'center',
+    marginTop: 24,
+    marginBottom: 24,
   },
   volunteerButton: {
     alignItems: 'center',
@@ -245,15 +283,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     padding: 12,
     borderRadius: 32,
-    marginTop: 16,
     marginBottom: 16,
-  },
-  statusText: {
-    fontSize: 17,
-    fontWeight: '500',
-    textAlign: 'center',
-    marginTop: 24,
-    marginBottom: 8,
   },
   buttonText: {
     color: '#fff',
