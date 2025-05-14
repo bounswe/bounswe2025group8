@@ -12,6 +12,24 @@ vi.mock("react-router-dom", async () => {
   };
 });
 
+// Mock React's useEffect to bypass the API call but avoid infinite loops
+vi.mock("react", async () => {
+  const original = await vi.importActual("react");
+  return {
+    ...original,
+    useEffect: (callback, deps) => {
+      // Only execute the callback once to avoid infinite loops
+      if (deps && deps.length === 0) {
+        // Only run once for empty dependency arrays
+        callback();
+      } else {
+        // For non-empty deps, use the original behavior
+        original.useEffect(callback, deps);
+      }
+    },
+  };
+});
+
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { BrowserRouter } from "react-router-dom";
@@ -49,20 +67,20 @@ describe("TaskPageVolunteer Navigation", () => {
     tags: ["Cleaning", "House", "Assistance"],
   };
 
-  // Setup for mocking state
   beforeEach(() => {
     mockNavigate.mockReset();
 
-    // Mock the useState to bypass fetching
-    vi.spyOn(React, "useState").mockImplementationOnce(() => [false, vi.fn()]); // loading
-    vi.spyOn(React, "useState").mockImplementationOnce(() => [
-      mockTask,
-      vi.fn(),
-    ]); // task
+    // Mock setTimeout to run immediately
+    vi.useFakeTimers();
+    vi.spyOn(global, "setTimeout").mockImplementation((cb) => {
+      cb();
+      return 999;
+    });
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   it("navigates back when back button is clicked", () => {
