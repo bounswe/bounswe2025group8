@@ -2,7 +2,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Image,
   Pressable,
@@ -10,16 +10,50 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
+  Alert,
+  SafeAreaView,
+  BackHandler
 } from 'react-native';
+import { api } from '../services/api';
 
 export default function SignIn() {
   const router = useRouter();
-  const [email, setEmail]       = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { colors } = useTheme();
   const [showPwd, setShowPwd] = useState(false);
   const [remember, setRemember] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      router.back();
+      return true;
+    });
+
+    return () => backHandler.remove();
+  }, []);
+
+  const handleSignIn = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await api.login({ email, password });
+      router.replace({
+        pathname: '/feed',
+        params: { reset: 'true' }
+      });
+    } catch (error) {
+      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to sign in');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -34,79 +68,84 @@ export default function SignIn() {
         style={styles.logo}
       />
 
-    <View style={styles.header}>
-      <Text style={[styles.title, {color : colors.text}]}>Welcome back</Text>
-      <Text style={styles.subtitle}>Enter your details to sign in{'\n'}to your account
-      </Text>
-    </View>
+      <View style={styles.header}>
+        <Text style={[styles.title, {color : colors.text}]}>Welcome back</Text>
+        <Text style={styles.subtitle}>Enter your details to sign in{'\n'}to your account
+        </Text>
+      </View>
 
-    {/* Email Input */}
-        <View style={styles.inputWrapper}>
-          <Ionicons name="mail-outline" size={20} color="#666" />
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </View>
+      {/* Email Input */}
+      <View style={styles.inputWrapper}>
+        <Ionicons name="mail-outline" size={20} color="#666" />
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          editable={!isLoading}
+        />
+      </View>
 
-        {/* Password Input */}
-        <View style={styles.inputWrapper}>
-          <Ionicons name="lock-closed-outline" size={20} color="#666" />
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            secureTextEntry={!showPwd}
-            value={password}
-            onChangeText={setPassword}
-          />
-          <Pressable onPress={() => setShowPwd(v => !v)}>
-            <Ionicons
-              name={showPwd ? 'eye' : 'eye-off'}
-              size={20}
-              color="#666"
-            />
-          </Pressable>
-        </View>
-
-      
-        {/* Remember Me */}
-        <Pressable
-          style={styles.rememberWrapper}
-          onPress={() => setRemember(r => !r)}
-        >
+      {/* Password Input */}
+      <View style={styles.inputWrapper}>
+        <Ionicons name="lock-closed-outline" size={20} color="#666" />
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          secureTextEntry={!showPwd}
+          value={password}
+          onChangeText={setPassword}
+          editable={!isLoading}
+        />
+        <Pressable onPress={() => setShowPwd(v => !v)}>
           <Ionicons
-            name={remember ? 'checkbox' : 'square-outline'}
+            name={showPwd ? 'eye' : 'eye-off'}
             size={20}
             color="#666"
           />
-          <Text style={styles.rememberText}>Remember me</Text>
         </Pressable>
+      </View>
+
+      {/* Remember Me */}
+      <Pressable
+        style={styles.rememberWrapper}
+        onPress={() => setRemember(r => !r)}
+      >
+        <Ionicons
+          name={remember ? 'checkbox' : 'square-outline'}
+          size={20}
+          color="#666"
+        />
+        <Text style={styles.rememberText}>Remember me</Text>
+      </Pressable>
 
       <TouchableOpacity
-        style={[styles.button, { backgroundColor: colors.primary }]}
-        onPress={() => {
-          // TODO: authenticate
-          router.replace('/');
-        }}
+        style={[
+          styles.button,
+          { backgroundColor: colors.primary },
+          isLoading && styles.buttonDisabled
+        ]}
+        onPress={handleSignIn}
+        disabled={isLoading}
       >
-        <Text style={styles.buttonText}>Submit</Text>
+        <Text style={styles.buttonText}>
+          {isLoading ? 'Signing in...' : 'Sign In'}
+        </Text>
       </TouchableOpacity>
 
-         {/* Forgot Password */}
+      {/* Forgot Password */}
       <TouchableOpacity onPress={() => router.push('/')}>
         <Text style={[styles.forgotText, { color: colors.primary }]}>
           Forgot my password
         </Text>
       </TouchableOpacity>
 
-          {/* Sign‑Up Prompt */}
+      {/* Sign‑Up Prompt */}
       <View style={styles.signupPrompt}>
         <Text style={[styles.promptText, { color: colors.text }]}>
-          Don’t have an account?
+          Don't have an account?
         </Text>
         <TouchableOpacity onPress={() => router.replace('/signup')}>
           <Text style={[styles.promptLink, { color: colors.primary }]}>
@@ -129,20 +168,20 @@ const styles = StyleSheet.create({
     padding: 8,
     zIndex: 1
   },
-   logo: {
-      width: 140,
-      height: 140,
-      resizeMode: 'contain',
-      marginBottom: 12,
-      alignSelf: 'flex-start', // aligns the logo to the left edge
-    },
+  logo: {
+    width: 140,
+    height: 140,
+    resizeMode: 'contain',
+    marginBottom: 12,
+    alignSelf: 'flex-start',
+  },
   backText: {
     fontSize: 16,
   },
   header: {
     marginBottom: 20, textAlign: 'auto'
   },
-    title: {
+  title: {
     fontSize: 32,
     fontWeight: '700',
   },
@@ -160,43 +199,49 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingBottom: 4,
   },
-    input: {
+  input: {
     flex: 1,
     marginLeft: 8,
     height: 40,
     color: '#333',
   },
-    rememberWrapper: {
+  rememberWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 24,
   },
-    rememberText: {
+  rememberText: {
     marginLeft: 8,
     color: '#666',
     fontSize: 14,
   },
   button: {
     padding: 14,
-    borderRadius: 36, alignItems: 'center',
+    borderRadius: 36,
+    alignItems: 'center',
     marginBottom: 24
   },
-  buttonText: {
-    color: '#fff', fontWeight: 'bold', fontSize: 16
+  buttonDisabled: {
+    opacity: 0.7,
   },
-    forgotText: {
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16
+  },
+  forgotText: {
     textAlign: 'center',
     fontSize: 14,
     marginBottom: 144,
   },
-    signupPrompt: {
+  signupPrompt: {
     flexDirection: 'row',
     justifyContent: 'center',
   },
-    promptText: {
+  promptText: {
     fontSize: 14,
   },
-    promptLink: {
+  promptLink: {
     fontSize: 14,
     fontWeight: '500',
   },

@@ -14,10 +14,15 @@ import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Category, Request, Profile } from '../components/ui/SearchBarWithResults';
+import { BottomBar } from '../components/ui/BottomBar';
+import { useBackHandler } from '../hooks/useBackHandler';
 
 export default function Categories() {
   const { colors } = useTheme();
   const router = useRouter();
+
+  // Use the back handler hook
+  useBackHandler();
 
   const categories: Category[] = [
     { id: '1', title: 'House Cleaning', image: require('../assets/images/house_cleaning.png'), count: 21 },
@@ -38,7 +43,9 @@ export default function Categories() {
         <Image source={require('../assets/images/logo.png')} style={styles.logo} />
         <View style={styles.icons}>
           <TouchableOpacity><Ionicons name="notifications-outline" size={24} color={colors.text} /></TouchableOpacity>
-          <TouchableOpacity><Ionicons name="settings-outline"     size={24} color={colors.text} /></TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/settings')}>
+            <Ionicons name="settings-outline" size={24} color={colors.text} />
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -61,29 +68,7 @@ export default function Categories() {
         ))}
       </ScrollView>
 
-      {/* Bottom navigation bar */}
-      <View style={[styles.bottomBar, { backgroundColor: colors.card, borderTopColor: '#ddd' }]}>
-        <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/feed')}>
-          <Ionicons name="home" size={24} color={colors.text} />
-          <Text style={[styles.tabLabel, { color: colors.text }]}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem}>
-          <Ionicons name="pricetag-outline" size={24} color={colors.primary} />
-          <Text style={[styles.tabLabel, { color: colors.primary }]}>Categories</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem} onPress={() => {/* TODO: router.push('/create') */}}>
-          <Ionicons name="add-circle-outline" size={24} color={colors.text} />
-          <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem} onPress={() => {router.push('/requests') }}>
-          <Ionicons name="list-outline" size={24} color={colors.text} />
-          <Text style={[styles.tabLabel, { color: colors.text }]}>Requests</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem} onPress={() => {/* TODO: router.push('/profile') */}}>
-          <Ionicons name="person-outline" size={24} color={colors.text} />
-          <Text style={[styles.tabLabel, { color: colors.text }]}>Profile</Text>
-        </TouchableOpacity>
-      </View>
+      <BottomBar />
     </SafeAreaView>
   );
 }
@@ -134,14 +119,4 @@ const styles = StyleSheet.create({
   catImage: { width: 60, height: 60, borderRadius: 8, marginRight: 12 },
   catTitle: { fontSize: 15, fontWeight: '500', marginBottom: 4 },
   catCount: { fontSize: 12 },
-
-  bottomBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    height: 60,
-    borderTopWidth: 1,
-  },
-  tabItem: { alignItems: 'center' },
-  tabLabel: { fontSize: 10, marginTop: 2 },
 });

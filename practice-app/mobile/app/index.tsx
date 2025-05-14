@@ -1,12 +1,22 @@
 // app/index.tsx
 import { useTheme } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { Image, StyleSheet, Text, TouchableOpacity, View, BackHandler } from 'react-native';
 
 export default function Index() {
   const router = useRouter();
   const { colors } = useTheme();
+
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      // Exit the app when back is pressed on the index page
+      BackHandler.exitApp();
+      return true;
+    });
+
+    return () => backHandler.remove();
+  }, []);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

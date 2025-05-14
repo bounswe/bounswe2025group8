@@ -56,6 +56,8 @@ class RegisteredUser(AbstractBaseUser, PermissionsMixin):
     completed_task_count = models.IntegerField(default=0)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    reset_token = models.CharField(max_length=100, null=True, blank=True)
+    reset_token_expiry = models.DateTimeField(null=True, blank=True)
     
     objects = UserManager()
     

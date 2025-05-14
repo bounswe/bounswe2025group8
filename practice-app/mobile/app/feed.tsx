@@ -1,5 +1,5 @@
 // app/feed.tsx
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   SafeAreaView,
   View,
@@ -12,15 +12,53 @@ import {
 } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Category, Request, Profile } from '../components/ui/SearchBarWithResults';
+import { BottomBar } from '../components/ui/BottomBar';
+import { api } from '../services/api';
+import { useBackHandler } from '../hooks/useBackHandler';
 
 export default function Feed() {
   const { colors } = useTheme();
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const [userName, setUserName] = useState('');
+  const [greeting, setGreeting] = useState('');
+
+  // Use the back handler hook
+  useBackHandler();
 
   // ref for ScrollView
   const scrollRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const userData = await api.getCurrentUser();
+        setUserName(userData.name);
+      } catch (error) {
+        console.error('Failed to load user data:', error);
+        setUserName('Guest');
+      }
+    };
+
+    const updateGreeting = () => {
+      const hour = new Date().getHours();
+      if (hour < 12) {
+        setGreeting('Good morning');
+      } else if (hour < 18) {
+        setGreeting('Good afternoon');
+      } else {
+        setGreeting('Good evening');
+      }
+    };
+
+    loadUserData();
+    updateGreeting();
+    // Update greeting every minute
+    const interval = setInterval(updateGreeting, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   // alphabetic categories
   const categories: Category[] = [
@@ -39,6 +77,10 @@ export default function Feed() {
 
   const profiles: Profile[] = [];
 
+  const scrollToTop = () => {
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background, paddingTop: 36 }]}>
       <ScrollView
@@ -50,10 +92,10 @@ export default function Feed() {
           <Image source={require('../assets/images/logo.png')} style={styles.logo} />
           <View style={styles.headerText}>
             <Text style={[styles.greeting, { color: colors.text }]}>
-              Good morning!
+              {greeting}!
             </Text>
             <Text style={[styles.username, { color: colors.text }]}>
-              Batuhan Buber
+              {userName || 'Loading...'}
             </Text>
           </View>
           <Image source={require('../assets/images/empty_profile_photo.png')} style={styles.profileImage} />
@@ -61,7 +103,7 @@ export default function Feed() {
             <TouchableOpacity onPress={() => {/* bell action */}}>
               <Ionicons name="notifications-outline" size={24} color={colors.text} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {/* settings action */}}>
+            <TouchableOpacity onPress={() => router.push('/settings')}>
               <Ionicons name="settings-outline" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
@@ -134,53 +176,7 @@ export default function Feed() {
         </TouchableOpacity>
       </ScrollView>
 
-      {/* — Bottom Navigation Bar — */}
-      <View style={[styles.bottomBar, { backgroundColor: colors.card }]}>
-        <TouchableOpacity
-          style={styles.tabItem}
-          onPress={() => {
-            // scroll to top instead of re-navigating
-            scrollRef.current?.scrollTo({ y: 0, animated: true });
-          }}
-        >
-          <Ionicons name="home" size={24} color={colors.primary} />
-          <Text style={[styles.tabLabel, { color: colors.primary }]}>Home</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.tabItem}
-          onPress={() => router.push('/categories')}
-        >
-          <Ionicons name="pricetag-outline" size={24} color={colors.text} />
-          <Text style={[styles.tabLabel, { color: colors.text }]}>
-            Categories
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.tabItem}
-          onPress={() => {/* TODO: router.push('/create') */}}
-        >
-          <Ionicons name="add-circle-outline" size={24} color={colors.text} />
-          <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.tabItem}
-          onPress={() => router.push('/requests')}
-        >
-          <Ionicons name="list-outline" size={24} color={colors.text} />
-          <Text style={[styles.tabLabel, { color: colors.text }]}>Requests</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.tabItem}
-          onPress={() => {/* TODO: router.push('/profile') */}}
-        >
-          <Ionicons name="person-outline" size={24} color={colors.text} />
-          <Text style={[styles.tabLabel, { color: colors.text }]}>Profile</Text>
-        </TouchableOpacity>
-      </View>
+      <BottomBar scrollToTop={scrollToTop} />
     </SafeAreaView>
   );
 }
@@ -236,17 +232,6 @@ const styles = StyleSheet.create({
   requestMeta: { fontSize: 12, marginBottom: 6 },
   requestCategory: { alignSelf: 'flex-start', borderRadius: 8, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 2, marginLeft: 4 },
   requestCategoryText: { fontSize: 12, fontWeight: 'bold' },
-
-  bottomBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    height: 60,
-    borderTopWidth: 1,
-    borderTopColor: '#ddd',
-  },
-  tabItem: { alignItems: 'center' },
-  tabLabel: { fontSize: 10, marginTop: 2 },
 
   seeAllLink: { alignSelf: 'flex-end', marginBottom: 16 },
   seeAllText: { fontSize: 13, fontWeight: '500' },
