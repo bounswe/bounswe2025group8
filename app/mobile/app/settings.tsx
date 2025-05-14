@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from 'expo-router';
 import { CommonActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logout as apiLogout } from '../lib/api';
 
 export default function Settings() {
   const { colors } = useTheme();
@@ -35,7 +36,10 @@ export default function Settings() {
           style: 'destructive',
           onPress: async () => {
             try {
+              await apiLogout();
               await AsyncStorage.removeItem('token');
+              await AsyncStorage.removeItem('user');
+              await AsyncStorage.removeItem('userProfile');
               resetToLaunch();
             } catch (error) {
               console.error('Error during logout:', error);
@@ -53,17 +57,14 @@ export default function Settings() {
         <Ionicons name="arrow-back" size={24} color={colors.primary} />
         <Text style={[styles.backText, { color: colors.primary }]}>Back</Text>
       </TouchableOpacity>
-      <Text style={[styles.title, { color: colors.primary }]}>  Settings</Text>
-      
-      <View style={styles.settingsContainer}>
-        <TouchableOpacity 
-          style={[styles.logoutButton, { backgroundColor: colors.card }]} 
-          onPress={handleLogout}
-        >
-          <Ionicons name="log-out-outline" size={24} color="#FF3B30" />
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
-      </View>
+      <Text style={[styles.title, { color: colors.primary }]}>Settings</Text>
+      <TouchableOpacity 
+        style={styles.logoutButton} 
+        onPress={handleLogout}
+      >
+        <Ionicons name="log-out-outline" size={22} color="#FF3B30" />
+        <Text style={styles.logoutText}>Logout</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -71,14 +72,17 @@ export default function Settings() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
+    paddingHorizontal: 32,
+    paddingTop: 40,
+    alignItems: 'flex-start',
+    backgroundColor: '#fff',
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    position: 'absolute',
-    top: 40,
-    left: 20,
+    alignSelf: 'flex-start',
+    marginBottom: 16,
+    marginLeft: 0,
   },
   backText: {
     marginLeft: 6,
@@ -89,23 +93,48 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 16,
-    marginTop: 60,
+    marginTop: 0,
+    alignSelf: 'center',
+    textAlign: 'center',
   },
   settingsContainer: {
     width: '100%',
     marginTop: 24,
   },
+  card: {
+    width: '100%',
+    maxWidth: 340,
+    borderRadius: 16,
+    padding: 24,
+    marginTop: 32,
+    alignItems: 'center',
+    alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginTop: 32,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#FF3B30',
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
   },
   logoutText: {
     color: '#FF3B30',
     fontSize: 16,
-    fontWeight: '500',
-    marginLeft: 12,
+    fontWeight: 'bold',
+    marginLeft: 10,
   },
 });

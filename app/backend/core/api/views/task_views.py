@@ -30,7 +30,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         elif self.action in ['create']:
             return [permissions.IsAuthenticated()]
         else:
-            return [permissions.IsAuthenticated()]
+            return []
     
     def get_queryset(self):
         """Return appropriate queryset based on filters"""

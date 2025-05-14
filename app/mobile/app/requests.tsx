@@ -17,10 +17,12 @@ import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { getTasks, type Task } from '../lib/api';
+import { useAuth } from '../lib/auth';
 
 export default function Requests() {
   const { colors } = useTheme();
   const router = useRouter();
+  const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -167,10 +169,17 @@ export default function Requests() {
           <Ionicons name="pricetag-outline" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Categories</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem} onPress={() => { router.push('/create_request') }}>
-          <Ionicons name="add-circle-outline" size={24} color={colors.text} />
-          <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
-        </TouchableOpacity>
+        {user ? (
+          <TouchableOpacity style={styles.tabItem} onPress={() => { router.push('/create_request') }}>
+            <Ionicons name="add-circle-outline" size={24} color={colors.text} />
+            <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={[styles.tabItem, { opacity: 0.5 }]}> 
+            <Ionicons name="add-circle-outline" size={24} color={colors.text} />
+            <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
+          </View>
+        )}
         <TouchableOpacity style={styles.tabItem} onPress={() => { /* already here */ }}>
           <Ionicons name="list-outline" size={24} color={colors.primary} />
           <Text style={[styles.tabLabel, { color: colors.primary }]}>Requests</Text>

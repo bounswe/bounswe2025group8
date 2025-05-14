@@ -17,7 +17,7 @@ import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Category, Request, Profile } from '../components/ui/SearchBarWithResults';
-import { getTasks, getUserProfile, type Task, type UserProfile } from '../lib/api';
+import { getTasks, getUserProfile, getCategories, type Task, type UserProfile, type Category as ApiCategory } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -28,7 +28,7 @@ export default function Feed() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [categories, setCategories] = useState<ApiCategory[]>([]);
   const scrollRef = useRef<ScrollView>(null);
 
   const fetchTasks = async () => {
@@ -45,25 +45,16 @@ export default function Feed() {
   };
 
   useEffect(() => {
-    const loadUserProfile = async () => {
+    const fetchCategories = async () => {
       try {
-        const profileData = await AsyncStorage.getItem('userProfile');
-        if (profileData) {
-          setUserProfile(JSON.parse(profileData));
-        } else if (user?.id) {
-          // If no profile in storage, fetch from API
-          const response = await getUserProfile(user.id);
-          setUserProfile(response.data);
-          // Store for future use
-          await AsyncStorage.setItem('userProfile', JSON.stringify(response.data));
-        }
+        const response = await getCategories();
+        setCategories(response.results || []);
       } catch (error) {
-        console.error('Error loading user profile:', error);
+        console.error('Error fetching categories:', error);
       }
     };
-
-    loadUserProfile();
-  }, [user?.id]); // Add user.id as dependency
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     fetchTasks();
@@ -73,14 +64,6 @@ export default function Feed() {
     setRefreshing(true);
     fetchTasks();
   };
-
-  // Get unique categories from tasks
-  const categories = Array.from(new Set(tasks.map(task => task.category))).map((category, index) => ({
-    id: String(index + 1),
-    title: category,
-    count: tasks.filter(task => task.category === category).length,
-    image: require('../assets/images/help.png') // Default image for now
-  }));
 
   if (loading) {
     return (
@@ -101,28 +84,26 @@ export default function Feed() {
       >
         {/* — Header — */}
         <View style={styles.header}>
-          <View style={styles.headerContent}>
-            <Text style={[styles.welcomeText, { color: colors.text }]}>
-              Welcome back,
-            </Text>
-            <Text style={[styles.nameText, { color: colors.text }]}>
-              {userProfile ? `${userProfile.name} ${userProfile.surname}` : 'User'}
-            </Text>
-            {userProfile?.username && (
-              <Text style={[styles.usernameText, { color: colors.text + '99' }]}>
-                @{userProfile.username}
-              </Text>
-            )}
+          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+            <Image source={require('../assets/images/logo.png')} style={{ width: 48, height: 48, marginRight: 12 }} />
+            <View>
+              <Text style={[styles.welcomeText, { color: colors.text }]}>Welcome back</Text>
+            </View>
           </View>
-          <TouchableOpacity onPress={() => router.push('/notifications')}>
-            <Ionicons name="notifications-outline" size={24} color={colors.text} />
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity onPress={() => router.push('/notifications')} style={{ marginRight: 12 }}>
+              <Ionicons name="notifications-outline" size={24} color={colors.text} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/settings')}>
+              <Ionicons name="settings-outline" size={24} color={colors.text} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* — Search bar — */}
         <TouchableOpacity style={[styles.searchWrapper, { borderColor: '#CCC' }]} onPress={() => router.push('/search')}>
           <Ionicons name="search-outline" size={20} color="#888" />
-          <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>What do you need help with</Text>
+          <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>What are you looking for?</Text>
         </TouchableOpacity>
 
         {/* — Categories — */}
@@ -136,10 +117,8 @@ export default function Feed() {
               style={[styles.card, { backgroundColor: colors.card }]}
               onPress={() => router.push('/category/' + cat.id as any)}
             >
-              <Image source={cat.image} style={styles.cardImage} />
-              <Text style={[styles.cardTitle, { color: colors.text }]}>
-                {cat.title}
-              </Text>
+              <Image source={require('../assets/images/help.png')} style={styles.cardImage} />
+              <Text style={[styles.cardTitle, { color: colors.text }]}> {cat.name} </Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -208,13 +187,20 @@ export default function Feed() {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.tabItem}
-          onPress={() => {router.push('/create_request')}}
-        >
-          <Ionicons name="add-circle-outline" size={24} color={colors.text} />
-          <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
-        </TouchableOpacity>
+        {user ? (
+          <TouchableOpacity
+            style={styles.tabItem}
+            onPress={() => {router.push('/create_request')}}
+          >
+            <Ionicons name="add-circle-outline" size={24} color={colors.text} />
+            <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
+          </TouchableOpacity>
+        ) : (
+          <View style={[styles.tabItem, { opacity: 0.5 }]}> 
+            <Ionicons name="add-circle-outline" size={24} color={colors.text} />
+            <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
+          </View>
+        )}
 
         <TouchableOpacity
           style={styles.tabItem}

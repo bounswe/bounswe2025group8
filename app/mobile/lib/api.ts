@@ -111,6 +111,8 @@ api.interceptors.request.use(
     const token = await AsyncStorage.getItem('token');
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
+    } else if (config.headers && 'Authorization' in config.headers) {
+      delete config.headers.Authorization;
     }
     return config;
   },
@@ -286,7 +288,11 @@ export const login = async (email: string, password: string): Promise<LoginRespo
       // Fetch and store user profile
       if (response.data.data?.user_id) {
         const profileResponse = await getUserProfile(response.data.data.user_id);
-        await AsyncStorage.setItem('userProfile', JSON.stringify(profileResponse.data));
+        if (profileResponse && profileResponse.data) {
+          await AsyncStorage.setItem('userProfile', JSON.stringify(profileResponse.data));
+        } else {
+          await AsyncStorage.removeItem('userProfile');
+        }
       }
     }
     
@@ -429,6 +435,23 @@ export const createTask = async (taskData: {
   } catch (error) {
     if (error instanceof AxiosError) {
       console.error('Create task error details:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+    }
+    throw error;
+  }
+};
+
+export const logout = async (): Promise<void> => {
+  try {
+    await api.post('/auth/logout/');
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Logout error details:', {
         error: error.message,
         request: error.config,
         response: error.response?.data,

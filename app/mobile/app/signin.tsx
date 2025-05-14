@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { login, getUserProfile } from '../lib/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '../lib/auth';
 
 export default function SignIn() {
   const router = useRouter();
@@ -28,6 +29,7 @@ export default function SignIn() {
   const [showPwd, setShowPwd] = useState(false);
   const [remember, setRemember] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { setUser } = useAuth();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -45,9 +47,14 @@ export default function SignIn() {
       if (response.data?.user_id) {
         const profileResponse = await getUserProfile(response.data.user_id);
         console.log('User profile:', profileResponse);
-        
-        // Store user profile data
-        await AsyncStorage.setItem('userProfile', JSON.stringify(profileResponse.data));
+        // Store user profile data only if defined
+        if (profileResponse && profileResponse.data) {
+          await AsyncStorage.setItem('userProfile', JSON.stringify(profileResponse.data));
+        } else {
+          await AsyncStorage.removeItem('userProfile');
+        }
+        // Store user object for useAuth context
+        await setUser({ id: response.data.user_id, email });
       }
       
       // Navigate to feed
