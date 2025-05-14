@@ -26,9 +26,12 @@ vi.mock("../components/TaskDetailVolunteer", () => ({
       <div>Location: {task.location}</div>
       <div>Created: {task.createdAt}</div>
       <button>Volunteer</button>
-      {task.tags && task.tags.map((tag, index) => (
-        <div key={index} className="task-tag">{tag}</div>
-      ))}
+      {task.tags &&
+        task.tags.map((tag, index) => (
+          <div key={index} className="task-tag">
+            {tag}
+          </div>
+        ))}
     </div>
   ),
 }));
@@ -189,11 +192,6 @@ describe("TaskPageVolunteer Component Rendering", () => {
     });
     expect(locationElement).toBeInTheDocument();
   });
-  // Let's skip this test for now since mocking useState is tricky
-  it.skip("displays loading indicator when loading", () => {
-    // This test requires proper mocking of React's useState
-    expect(true).toBe(true);
-  });
 
   it("renders volunteer button when task is open", () => {
     render(
@@ -229,11 +227,7 @@ describe("TaskPageVolunteer Component Rendering", () => {
     expect(screen.getByText("House")).toBeInTheDocument();
     expect(screen.getByText("Assistance")).toBeInTheDocument();
   });
-  // Let's skip this test for now since mocking useState is tricky
-  it.skip("displays error message when task is not found", () => {
-    // This test requires proper mocking of React's useState
-    expect(true).toBe(true);
-  });
+
   it("formats created date correctly", () => {
     // Simplified test that just checks if the date is shown
     render(
