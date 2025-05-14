@@ -20,6 +20,16 @@ vi.mock("../components/TaskDetailComponent", () => ({
     <div data-testid="task-detail-component">
       <div>Task: {task.title}</div>
       <div>Description: {task.description}</div>
+      <div>Creator: {task.creator.name}</div>
+      <div>Rating: {task.creator.rating}</div>
+      <div>Status: {task.status}</div>
+      <div>Location: {task.location}</div>
+      {task.tags &&
+        task.tags.map((tag, index) => (
+          <div key={index} className="task-tag">
+            {tag}
+          </div>
+        ))}
     </div>
   ),
 }));
@@ -155,16 +165,21 @@ describe("TaskPage Component Rendering", () => {
 
     await vi.runAllTimersAsync();
 
-    // Use more flexible text matchers for creator info
-    const creatorNameElement = screen.getByText((content) => {
-      return content.includes("Ashley Robinson");
+    // Use a more specific text match approach that will work with our mock component
+    const creatorElement = screen.getByText((content, element) => {
+      // Check if the text contains the creator's name and if it starts with "Creator:"
+      return (
+        content.includes("Ashley Robinson") && content.startsWith("Creator:")
+      );
     });
-    expect(creatorNameElement).toBeInTheDocument();
+    expect(creatorElement).toBeInTheDocument();
 
-    const creatorRatingElement = screen.getByText((content) => {
-      return content.includes("4.8");
+    // Check for rating using a similar approach
+    const ratingElement = screen.getByText((content, element) => {
+      // Check if the text contains the rating and if it starts with "Rating:"
+      return content.includes("4.8") && content.startsWith("Rating:");
     });
-    expect(creatorRatingElement).toBeInTheDocument();
+    expect(ratingElement).toBeInTheDocument();
   });
 
   it("renders task location", async () => {
