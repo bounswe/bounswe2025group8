@@ -61,13 +61,9 @@ export default function VPastRequestsScreen() {
         {MOCK_V_PAST_REQUESTS.map((req, idx) => (
           <RequestCard
             key={idx}
-            title={req.title}
-            distance={req.distance}
-            time={req.time}
-            imageUrl={req.imageUrl}
-            category={req.category}
-            urgencyLevel={'Past'}
-            status={req.score.toString()}
+            {...req}
+            status={req.status.toString()}
+            onPress={() => router.push({ pathname: './request-details', params: { arrayName: 'MOCK_V_PAST_REQUESTS', index: idx } })}
           />
         ))}
       </View>

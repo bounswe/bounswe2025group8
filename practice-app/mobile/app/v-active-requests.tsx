@@ -59,16 +59,11 @@ export default function VActiveRequestsScreen() {
       </View>
 
       <View style={styles.content}>
-        {MOCK_V_ACTIVE_REQUESTS.map((req, idx) => (
+        {MOCK_V_ACTIVE_REQUESTS.map((req: import('../components/ui/RequestCard').RequestCardProps, idx: number) => (
           <RequestCard
             key={idx}
-            title={req.title}
-            distance={req.distance}
-            time={req.time}
-            imageUrl={req.imageUrl}
-            category={req.category}
-            urgencyLevel={req.urgencyLevel}
-            status={req.status}
+            {...req}
+            onPress={() => router.push({ pathname: './request-details', params: { arrayName: 'MOCK_V_ACTIVE_REQUESTS', index: idx } })}
           />
         ))}
       </View>
