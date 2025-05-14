@@ -62,7 +62,7 @@ export default function RActiveRequestsScreen() {
           <RequestCard
             key={idx}
             {...req}
-            onPress={() => router.push({ pathname: './request-details', params: { arrayName: 'MOCK_R_ACTIVE_REQUESTS', index: idx } })}
+            onPress={() => router.push({ pathname: './r-request-details', params: { arrayName: 'MOCK_R_ACTIVE_REQUESTS', index: idx } })}
           />
         ))}
       </View>

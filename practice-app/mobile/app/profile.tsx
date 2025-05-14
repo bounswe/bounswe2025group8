@@ -21,6 +21,7 @@ export const MOCK_USER = {
   requesterReviewCount: 3,
 };
 
+// Volunteers
 export const MOCK_V_ACTIVE_REQUESTS = [
   {
     requester: MOCK_USER,
@@ -31,6 +32,7 @@ export const MOCK_V_ACTIVE_REQUESTS = [
     requiredPerson: 1,
     distance: '1 km away',
     time: '1 day ago',
+    phoneNumber: '+1 121 542 593',
     imageUrl: 'https://images.pexels.com/photos/2988232/pexels-photo-2988232.jpeg?auto=compress&cs=tinysrgb&h=350',
     category: 'Healthcare',
     urgencyLevel: 'High',
@@ -45,6 +47,7 @@ export const MOCK_V_ACTIVE_REQUESTS = [
     requiredPerson: 1,
     distance: '2 km away',
     time: '3 hours ago',
+    phoneNumber: '+1 121 542 593',
     imageUrl: 'https://images.pexels.com/photos/2324837/pexels-photo-2324837.jpeg?auto=compress&cs=tinysrgb&h=350',
     category: 'Healthcare',
     urgencyLevel: 'High',
@@ -59,6 +62,7 @@ export const MOCK_V_ACTIVE_REQUESTS = [
     requiredPerson: 1,
     distance: '750 m away',
     time: '22 hours ago',
+    phoneNumber: '+1 121 542 593',
     imageUrl: 'https://images.pexels.com/photos/3787027/pexels-photo-3787027.jpeg?auto=compress&cs=tinysrgb&h=350',
     category: 'House Cleaning',
     urgencyLevel: 'Low',
@@ -73,6 +77,7 @@ export const MOCK_V_ACTIVE_REQUESTS = [
     requiredPerson: 1,
     distance: '550 m away',
     time: '10 hours ago',
+    phoneNumber: '+1 121 542 593',
     imageUrl: 'https://images.pexels.com/photos/8472944/pexels-photo-8472944.jpeg?auto=compress&cs=tinysrgb&h=350',
     category: 'Tutoring',
     urgencyLevel: 'Medium',
@@ -90,6 +95,7 @@ export const MOCK_V_PAST_REQUESTS = [
     requiredPerson: 1,
     distance: '900 m away',
     time: '18 hours ago',
+    phoneNumber: '+1 121 542 593',
     imageUrl: 'https://images.pexels.com/photos/6508357/pexels-photo-6508357.jpeg?auto=compress&cs=tinysrgb&h=350',
     category: 'Shopping',
     urgencyLevel: 'Past',
@@ -121,6 +127,22 @@ const MOCK_V_REVIEWS = [
   },
 ]
 
+// Requesters
+export const MOCK_R_ACTIVE_REQUESTS_VOLUNTEERS = [
+  {
+    name: 'Anthony Moore',
+    profileImageUrl: 'https://cdn.visily.ai/app/avatars/v1/big-size/B.png',
+  },
+  {
+    name: 'Elizabeth Bailey',
+    profileImageUrl: 'https://cdn.visily.ai/app/avatars/v1/big-size/A.png',
+  },
+  {
+    name: 'John Doe',
+    profileImageUrl: 'https://cdn.visily.ai/app/avatars/v1/big-size/J.png',
+  },
+];
+
 export const MOCK_R_ACTIVE_REQUESTS = [
   {
     requester: MOCK_USER,
@@ -131,10 +153,12 @@ export const MOCK_R_ACTIVE_REQUESTS = [
     requiredPerson: 1,
     distance: '850 m away',
     time: '1 day ago',
+    phoneNumber: '+1 121 542 593',
     imageUrl: 'https://images.pexels.com/photos/8472944/pexels-photo-8472944.jpeg?auto=compress&cs=tinysrgb&h=350',
     category: 'Tutoring',
     urgencyLevel: 'Medium',
     status: 'Completed',
+    volunteers: MOCK_R_ACTIVE_REQUESTS_VOLUNTEERS,
   },
   {
     requester: MOCK_USER,
@@ -145,10 +169,28 @@ export const MOCK_R_ACTIVE_REQUESTS = [
     requiredPerson: 1,
     distance: '750 m away',
     time: '22 hours ago',
+    phoneNumber: '+1 121 542 593',
     imageUrl: 'https://images.pexels.com/photos/3787027/pexels-photo-3787027.jpeg?auto=compress&cs=tinysrgb&h=350',
     category: 'House Cleaning',
     urgencyLevel: 'Low',
     status: 'Pending',
+    volunteers: MOCK_R_ACTIVE_REQUESTS_VOLUNTEERS,
+  },
+  {
+    requester: MOCK_USER,
+    title: 'I need to fix my car',
+    desc: 'I need help to fix my car. I have a lot of things to do and I need someone to help me.',
+    datetime: 'May 16, 2025 - 16.30 PM',
+    location: '848 King Street, Denver, CO 80204',
+    requiredPerson: 1,
+    distance: '450 m away',
+    time: '16 hours ago',
+    phoneNumber: '+1 121 542 593',
+    imageUrl: 'https://images.pexels.com/photos/3807277/pexels-photo-3807277.jpeg?auto=compress&cs=tinysrgb&h=350',
+    category: 'Car Repair',
+    urgencyLevel: 'Medium',
+    status: 'Accepted',
+    volunteers: MOCK_R_ACTIVE_REQUESTS_VOLUNTEERS,
   },
 ];
 
@@ -162,6 +204,7 @@ export const MOCK_R_PAST_REQUESTS = [
     requiredPerson: 1,
     distance: '2.5 km away',
     time: '1 day ago',
+    phoneNumber: '+1 121 542 593',
     imageUrl: 'https://images.pexels.com/photos/1023234/pexels-photo-1023234.jpeg?auto=compress&cs=tinysrgb&h=350',
     category: 'Uncategorized',
     urgencyLevel: 'Past',
@@ -176,6 +219,7 @@ export const MOCK_R_PAST_REQUESTS = [
     requiredPerson: 1,
     distance: '650 m away',
     time: '2 days ago',
+    phoneNumber: '+1 121 542 593',
     imageUrl: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wyMzM4Mzh8MHwxfHNlYXJjaHwxOXx8Y2FyfGVufDB8fHx8MTc0MjgxODM5OXww&ixlib=rb-4.0.3&q=80&w=400',
     category: 'Uncategorized',
     urgencyLevel: 'Past',

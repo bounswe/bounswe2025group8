@@ -63,7 +63,7 @@ export default function RPastRequestsScreen() {
             key={idx}
             {...req}
             status={req.status.toString()}
-            onPress={() => router.push({ pathname: './request-details', params: { arrayName: 'MOCK_R_PAST_REQUESTS', index: idx } })}
+            onPress={() => router.push({ pathname: './r-request-details', params: { arrayName: 'MOCK_R_PAST_REQUESTS', index: idx } })}
           />
         ))}
       </View>

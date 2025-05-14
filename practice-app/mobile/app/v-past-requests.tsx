@@ -63,7 +63,7 @@ export default function VPastRequestsScreen() {
             key={idx}
             {...req}
             status={req.status.toString()}
-            onPress={() => router.push({ pathname: './request-details', params: { arrayName: 'MOCK_V_PAST_REQUESTS', index: idx } })}
+            onPress={() => router.push({ pathname: './v-request-details', params: { arrayName: 'MOCK_V_PAST_REQUESTS', index: idx } })}
           />
         ))}
       </View>

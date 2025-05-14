@@ -63,7 +63,7 @@ export default function VActiveRequestsScreen() {
           <RequestCard
             key={idx}
             {...req}
-            onPress={() => router.push({ pathname: './request-details', params: { arrayName: 'MOCK_V_ACTIVE_REQUESTS', index: idx } })}
+            onPress={() => router.push({ pathname: './v-request-details', params: { arrayName: 'MOCK_V_ACTIVE_REQUESTS', index: idx } })}
           />
         ))}
       </View>
