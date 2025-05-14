@@ -19,7 +19,7 @@ const steps = [
 const CreateRequestPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { currentStep, formData, uploadedPhotos, loading, success, error } = useSelector((state) => state.createRequest);
+  const { currentStep, loading, success, error } = useSelector((state) => state.createRequest);
   
   useEffect(() => {
     // Fetch categories when component mounts
@@ -28,10 +28,12 @@ const CreateRequestPage = () => {
   
   // Handle form submission
   const handleSubmit = () => {
+    const { formData, uploadedPhotos } = useSelector((state) => state.createRequest);
+    
     // Prepare data for submission
     const requestData = {
       ...formData,
-      uploadedPhotos: uploadedPhotos // Pass the full photo objects for upload
+      photos: uploadedPhotos.map(photo => photo.url)
     };
     
     dispatch(submitRequest(requestData));
