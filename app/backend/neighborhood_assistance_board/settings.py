@@ -26,8 +26,9 @@ SECRET_KEY = 'django-insecure-slxa^gdo!g*y9r7)2_)#fg=zzjif2i3&=$u%n-wv20d&jlptzi
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(int(os.environ.get('DEBUG', 1)))
+DEBUG = bool(int(os.environ.get('DEBUG', 1)))
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0', '*']  # '*' allows all hosts in development
 
 
 # Application definition
@@ -162,3 +163,4 @@ AUTH_USER_MODEL = 'core.RegisteredUser'
 # Email settings (for password reset functionality)
 # For development, use the console backend
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
