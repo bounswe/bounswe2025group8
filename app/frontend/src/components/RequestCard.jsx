@@ -16,6 +16,7 @@ import PriorityHighIcon from "@mui/icons-material/PriorityHigh";
 import { categoryMapping } from "../constants/categories";
 import { formatRelativeTime } from "../utils/dateUtils";
 import { urgencyLevels } from "../constants/urgency_level";
+import {extractRegionFromLocation} from "../utils/taskUtils";
 /**
  * RequestCard component that displays a request with category, urgency, and other details.
  * @param {Object} props
@@ -185,24 +186,35 @@ const RequestCard = ({ request, onClick, sx = {} }) => {
         sx={{ pt: 0, px: 2, pb: 2, display: "flex", flexDirection: "column" }}
       >
         <Divider sx={{ mt: 1, mb: 2 }} />
-        {/* Category and Urgency */}
-        <Box
+        {/* Category and Urgency */}        <Box
           sx={{
             display: "flex",
-            justifyContent: "space-between",
+            justifyContent: "space-evenly",
             alignItems: "center",
             mb: 1.5,
           }}
-        >
-          {/* Single Category chip */}
+        >{/* Single Category chip */}
           {request.category && (
             <Chip
               label={categoryMapping[request.category] || request.category}
               size="small"
               onClick={(e) => handleCategoryClick(request.category, e)}
-              sx={{
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+                  e.preventDefault();
+                  e.stopPropagation(); // Prevent card's keyboard handler
+                  handleCategoryClick(request.category, e);
+                }
+              }}
+              tabIndex={0}              sx={{
                 borderRadius: "16px",
                 bgcolor: theme.palette.action.hover,
+                height: "24px", // Consistent height with urgency chip
+                fontSize: "0.75rem", // Consistent font size
+                fontWeight: "medium",
+                px: 1.5, // Wider horizontal padding
+                width: "50%", // Auto width to fit text
+                
                 "&:hover": {
                   bgcolor: theme.palette.action.selected,
                 },
@@ -222,36 +234,46 @@ const RequestCard = ({ request, onClick, sx = {} }) => {
                 handleUrgencyClick(request.urgency_level, e);
               }
             }}
-            tabIndex={0}
-            sx={{
+            tabIndex={0}              sx={{
               borderRadius: "16px",
               color: "white",
+              height: "24px", // Consistent height with category chip
+              fontSize: "0.75rem", // Consistent font size
+              fontWeight: "medium",
+              px: 1.5, // Wider horizontal padding
+              width: "50%", // Auto width to fit text
+              
               bgcolor: (request.urgency_level && urgencyLevels[request.urgency_level]) 
                 ? urgencyLevels[request.urgency_level].color
                 : theme.palette.grey[500],
-              fontWeight: "medium",
               "&:hover": {
                 opacity: 0.9,
               },
-              // Make high urgency chips slightly more prominent
+              // Special styling only for "Critical" urgency
               ...(request.urgency_level && urgencyLevels[request.urgency_level] && 
                 urgencyLevels[request.urgency_level].name === "Critical" && {
                 fontWeight: "bold",
-                px: 0.5, // Slightly more padding for high urgency
               }),
             }}
           />
-        </Box>
-
-        {/* Location if available */}
+        </Box>        {/* Location if available */}
         {request.location && (
           <Box sx={{ display: "flex", alignItems: "center", mt: 0.5 }}>
             <LocationOnIcon
               fontSize="small"
               sx={{ color: "text.secondary", mr: 0.5 }}
             />
-            <Typography variant="body2" color="text.secondary">
-              {request.location}
+            <Typography 
+              variant="body2" 
+              color="text.secondary"
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                maxWidth: "85%" // Ensure text doesn't overflow the card
+              }}
+            >
+              {extractRegionFromLocation(request.location)}
             </Typography>
           </Box>
         )}

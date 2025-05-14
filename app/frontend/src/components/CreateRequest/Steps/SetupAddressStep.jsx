@@ -258,7 +258,7 @@ const SetupAddressStep = () => {
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, mb: 3 }}>
           <Box sx={{ flex: 1 }}>
             <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-              City
+              City/District
             </Typography>
             <Controller
               name="city"

@@ -16,6 +16,7 @@ export const categoryMapping = {
   HEALTHCARE: 'Healthcare',
   HEAVY_LIFTING: 'Heavy Lifting',
   HOME_MAINTENANCE: 'Home Maintenance',
+
 };
 
 export const categoryImages = {
