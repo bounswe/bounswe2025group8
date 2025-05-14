@@ -1,5 +1,5 @@
 // app/categories.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   View,
@@ -9,27 +9,51 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
+  RefreshControl,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Category, Request, Profile } from '../components/ui/SearchBarWithResults';
+import { getCategories, type Category as ApiCategory } from '../lib/api';
 
 export default function Categories() {
   const { colors } = useTheme();
   const router = useRouter();
+  const [categories, setCategories] = useState<ApiCategory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const categories: Category[] = [
-    { id: '1', title: 'House Cleaning', image: require('../assets/images/house_cleaning.png'), count: 21 },
-    { id: '2', title: 'Healthcare',     image: require('../assets/images/healthcare.png'), count: 15 },
-    { id: '3', title: 'Tutoring',       image: require('../assets/images/tutoring.png'), count: 12 },
-    { id: '4', title: 'Shopping',       image: require('../assets/images/shopping.png'), count: 9  },
-    { id: '5', title: 'Car Driver',     image: require('../assets/images/car_driver.png'), count: 8  },
-    { id: '6', title: 'Home Repair',    image: require('../assets/images/home_repair.png'), count: 5  },
-    { id: '7', title: 'Car Repair',     image: require('../assets/images/car_repair.png'), count: 3  },
-  ];
-  const requests: Request[] = [];
-  const profiles: Profile[] = [];
+  const fetchCategories = async () => {
+    try {
+      const response = await getCategories();
+      setCategories(response.results || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      Alert.alert('Error', 'Failed to load categories. Please try again.');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchCategories();
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background, paddingTop: 36 }]}>
@@ -53,13 +77,23 @@ export default function Categories() {
       </TouchableOpacity>
 
       {/* Category list */}
-      <ScrollView style={styles.list} contentContainerStyle={{ paddingBottom: 80 }}>
+      <ScrollView 
+        style={styles.list} 
+        contentContainerStyle={{ paddingBottom: 80 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {categories.map((cat) => (
-          <TouchableOpacity key={cat.id} style={[styles.catRow, { backgroundColor: colors.card }]} onPress={() => router.push('/category/' + cat.id as any)}>
-            <Image source={cat.image} style={styles.catImage} />
+          <TouchableOpacity 
+            key={cat.id} 
+            style={[styles.catRow, { backgroundColor: colors.card }]} 
+            onPress={() => router.push('/category/' + cat.id as any)}
+          >
+            <Image source={require('../assets/images/help.png')} style={styles.catImage} />
             <View>
-              <Text style={[styles.catTitle, { color: colors.text }]}>{cat.title}</Text>
-              <Text style={[styles.catCount, { color: colors.text }]}>{`${cat.count} requests`}</Text>
+              <Text style={[styles.catTitle, { color: colors.text }]}>{cat.name}</Text>
+              <Text style={[styles.catCount, { color: colors.text }]}>{`${cat.task_count} requests`}</Text>
             </View>
           </TouchableOpacity>
         ))}

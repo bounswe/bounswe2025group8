@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Image, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '@react-navigation/native';
 
 export default function CRUploadPhoto() {
   const { colors } = useTheme();
   const router = useRouter();
+  const params = useLocalSearchParams();
   const [photos, setPhotos] = useState<{ uri: string; name: string }[]>([]);
   const MAX_PHOTOS = 5;
 
@@ -97,7 +98,15 @@ export default function CRUploadPhoto() {
         ))}
 
         {/* Next Button */}
-        <TouchableOpacity style={[styles.nextBtn, { backgroundColor: colors.primary }]} onPress={() => router.push('/cr_deadline')}>
+        <TouchableOpacity 
+          style={[styles.nextBtn, { backgroundColor: colors.primary }]} 
+          onPress={() => {
+            router.push({
+              pathname: '/cr_address',
+              params
+            });
+          }}
+        >
           <Text style={styles.nextBtnText}>Next</Text>
         </TouchableOpacity>
       </ScrollView>

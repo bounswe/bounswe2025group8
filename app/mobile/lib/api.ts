@@ -60,16 +60,15 @@ export interface Task {
   id: number;
   title: string;
   description: string;
-  category: string;
   location: string;
-  price: number;
-  created_at: string;
   status: string;
-  user: {
-    id: number;
-    name: string;
-    surname: string;
-  };
+  category: string;
+  category_id: number;
+  created_at: string;
+  updated_at: string;
+  creator: number;
+  volunteer?: number;
+  photo?: string;
 }
 
 export interface TasksResponse {
@@ -238,13 +237,65 @@ export const getTasks = async (): Promise<TasksResponse> => {
 
 export const getCategories = async (): Promise<CategoriesResponse> => {
   try {
-    console.log('Fetching categories');
-    const response = await api.get<CategoriesResponse>('/categories/');
-    console.log('Categories response:', response.data);
-    return response.data;
+    console.log('Fetching categories from tasks');
+    const response = await api.get<TasksResponse>('/tasks/');
+    console.log('Tasks response:', response.data);
+    
+    // Extract unique categories from tasks
+    const categoryMap = new Map<number, Category>();
+    response.data.results.forEach(task => {
+      if (!categoryMap.has(task.category_id)) {
+        categoryMap.set(task.category_id, {
+          id: task.category_id,
+          name: task.category,
+          description: task.category,
+          task_count: 1
+        });
+      } else {
+        const category = categoryMap.get(task.category_id)!;
+        category.task_count += 1;
+      }
+    });
+
+    return {
+      count: categoryMap.size,
+      next: null,
+      previous: null,
+      results: Array.from(categoryMap.values())
+    };
   } catch (error) {
     if (error instanceof AxiosError) {
       console.error('Get categories error details:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+    }
+    throw error;
+  }
+};
+
+export const createTask = async (taskData: {
+  title: string;
+  description: string;
+  category: string;
+  location: string;
+  deadline: string;
+  requirements: string;
+  urgency_level: number;
+  volunteer_number: number;
+  is_recurring: boolean;
+}): Promise<Task> => {
+  try {
+    console.log('Creating task:', taskData);
+    const response = await api.post<Task>('/tasks/', taskData);
+    console.log('Create task response:', response.data);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Create task error details:', {
         error: error.message,
         request: error.config,
         response: error.response?.data,

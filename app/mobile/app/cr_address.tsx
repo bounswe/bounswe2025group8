@@ -1,10 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Modal, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Modal, Image, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
 import * as turkeyData from 'turkey-neighbourhoods';
+import { createTask } from '../lib/api';
 
+interface TaskParams {
+  title: string;
+  description: string;
+  category: string;
+  urgency: string;
+  people: number;
+}
 
 const cityList = turkeyData.getCityNames();
 // Build a cityNameToCode map
@@ -17,6 +25,7 @@ Object.entries(cityNamesByCode).forEach(([code, name]) => {
 export default function CRAddress() {
   const { colors } = useTheme();
   const router = useRouter();
+  const params = useLocalSearchParams();
   const [city, setCity] = useState('');
   const [district, setDistrict] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
@@ -47,6 +56,45 @@ export default function CRAddress() {
   };
 
   const closeModal = () => setModal({ ...modal, visible: false });
+
+  const handleCreateRequest = async () => {
+    try {
+      // Get task data from route params
+      const title = params.title as string;
+      const taskDescription = params.description as string;
+      const category = params.category as string;
+      const urgency = params.urgency as string;
+      const people = parseInt(params.people as string) || 1;
+      
+      if (!title || !taskDescription || !category) {
+        Alert.alert('Error', 'Missing task data. Please go back and try again.');
+        return;
+      }
+
+      // Combine address fields
+      const location = `${buildingNo} ${doorNo}, ${district}, ${city}`;
+
+      // Create task
+      await createTask({
+        title,
+        description: taskDescription,
+        category,
+        location,
+        requirements: description,
+        deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
+        urgency_level: urgency === 'High' ? 3 : urgency === 'Medium' ? 2 : 1,
+        volunteer_number: people,
+        is_recurring: false
+      });
+
+      Alert.alert('Success', 'Task created successfully!', [
+        { text: 'OK', onPress: () => router.replace('/requests') }
+      ]);
+    } catch (error) {
+      console.error('Error creating task:', error);
+      Alert.alert('Error', 'Failed to create task. Please try again.');
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}> 
@@ -138,7 +186,10 @@ export default function CRAddress() {
           multiline
         />
         {/* Create Request Button */}
-        <TouchableOpacity style={[styles.nextBtn, { backgroundColor: colors.primary }]} onPress={() => router.push('/')}> 
+        <TouchableOpacity 
+          style={[styles.nextBtn, { backgroundColor: colors.primary }]} 
+          onPress={handleCreateRequest}
+        > 
           <Text style={styles.nextBtnText}>Create Request</Text>
         </TouchableOpacity>
         {/* Modal Picker */}

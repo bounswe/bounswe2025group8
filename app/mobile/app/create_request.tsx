@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Modal, Pressable, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Modal, Pressable, Image, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
 
-const categories = ['Uncategorized', 'Health', 'Education', 'Transport'];
+const categories = [
+  { value: 'GROCERY_SHOPPING', label: 'Grocery Shopping' },
+  { value: 'TUTORING', label: 'Tutoring' },
+  { value: 'HOME_REPAIR', label: 'Home Repair' },
+  { value: 'MOVING_HELP', label: 'Moving Help' },
+  { value: 'HOUSE_CLEANING', label: 'House Cleaning' },
+  { value: 'OTHER', label: 'Other' }
+];
 const urgencies = ['Low', 'Medium', 'High'];
 
 export default function CreateRequest() {
@@ -12,7 +19,7 @@ export default function CreateRequest() {
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState(categories[0]);
+  const [category, setCategory] = useState(categories[0].value);
   const [urgency, setUrgency] = useState(urgencies[0]);
   const [people, setPeople] = useState(1);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -21,7 +28,7 @@ export default function CreateRequest() {
   const renderPickerModal = (
     visible: boolean,
     setVisible: (visible: boolean) => void,
-    options: string[],
+    options: { value: string; label: string }[] | string[],
     selectedValue: string,
     onSelect: (value: string) => void
   ) => {
@@ -41,28 +48,32 @@ export default function CreateRequest() {
                 <Ionicons name="close" size={24} color={colors.primary} />
               </TouchableOpacity>
             </View>
-            {options.map((option: string) => (
-              <TouchableOpacity
-                key={option}
-                style={[
-                  styles.modalOption,
-                  { borderBottomColor: colors.border },
-                  selectedValue === option && { backgroundColor: colors.primary + '22' }
-                ]}
-                onPress={() => {
-                  onSelect(option);
-                  setVisible(false);
-                }}
-              >
-                <Text style={[
-                  styles.modalOptionText,
-                  { color: colors.text },
-                  selectedValue === option && { color: colors.primary, fontWeight: 'bold' }
-                ]}>
-                  {option}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            {options.map((option) => {
+              const value = typeof option === 'string' ? option : option.value;
+              const label = typeof option === 'string' ? option : option.label;
+              return (
+                <TouchableOpacity
+                  key={value}
+                  style={[
+                    styles.modalOption,
+                    { borderBottomColor: colors.border },
+                    selectedValue === value && { backgroundColor: colors.primary + '22' }
+                  ]}
+                  onPress={() => {
+                    onSelect(value);
+                    setVisible(false);
+                  }}
+                >
+                  <Text style={[
+                    styles.modalOptionText,
+                    { color: colors.text },
+                    selectedValue === value && { color: colors.primary, fontWeight: 'bold' }
+                  ]}>
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
       </Modal>
@@ -130,7 +141,9 @@ export default function CreateRequest() {
           style={[styles.pickerButton, { backgroundColor: colors.card }]}
           onPress={() => setShowCategoryModal(true)}
         >
-          <Text style={[styles.pickerButtonText, { color: colors.text }]}>{category}</Text>
+          <Text style={[styles.pickerButtonText, { color: colors.text }]}>
+            {categories.find(c => c.value === category)?.label || category}
+          </Text>
           <Ionicons name="chevron-down" size={20} color={colors.border} />
         </TouchableOpacity>
 
@@ -161,7 +174,25 @@ export default function CreateRequest() {
         </View>
 
         {/* Next Button */}
-        <TouchableOpacity style={[styles.nextBtn, { backgroundColor: colors.primary }]} onPress={() => router.push('/cr_upload_photo')}>
+        <TouchableOpacity 
+          style={[styles.nextBtn, { backgroundColor: colors.primary }]} 
+          onPress={() => {
+            if (!title || !description) {
+              Alert.alert('Error', 'Please fill in all required fields');
+              return;
+            }
+            router.push({
+              pathname: '/cr_upload_photo',
+              params: {
+                title,
+                description,
+                category,
+                urgency,
+                people
+              }
+            });
+          }}
+        >
           <Text style={styles.nextBtnText}>Next</Text>
         </TouchableOpacity>
 

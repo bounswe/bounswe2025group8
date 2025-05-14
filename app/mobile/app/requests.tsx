@@ -1,5 +1,5 @@
 // app/requests.tsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   View,
@@ -9,74 +9,77 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
+  RefreshControl,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Category, Request, Profile } from '../components/ui/SearchBarWithResults';
+import { getTasks, type Task } from '../lib/api';
 
 export default function Requests() {
   const { colors } = useTheme();
   const router = useRouter();
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const requests: Request[] = [
-    {
-      id: '1',
-      title: 'Help me to see a doctor',
-      meta: '2 km away • 3 hours ago',
-      category: 'Healthcare',
-      urgency: 'High',
-      color: '#e74c3c',
-      image: require('../assets/images/help.png'),
-    },
-    {
-      id: '2',
-      title: 'I need to clean my house',
-      meta: '750 m away • 22 hours ago',
-      category: 'House Cleaning',
-      urgency: 'Low',
-      color: '#2ecc71',
-      image: require('../assets/images/help.png'),
-    },
-    {
-      id: '3',
-      title: 'Help for my math exam',
-      meta: '550 m away • 10 hours ago',
-      category: 'Tutoring',
-      urgency: 'Medium',
-      color: '#f1c40f',
-      image: require('../assets/images/help.png'),
-    },
-    {
-      id: '4',
-      title: 'Grocery shopping',
-      meta: '900 m away • 18 hours ago',
-      category: 'Shopping',
-      urgency: 'Medium',
-      color: '#f1c40f',
-      image: require('../assets/images/help.png'),
-    },
-    {
-      id: '5',
-      title: 'Need help with yard work',
-      meta: '2.5 km away • 1 day ago',
-      category: 'Uncategorized',
-      urgency: 'Medium',
-      color: '#f1c40f',
-      image: require('../assets/images/help.png'),
-    },
-    {
-      id: '6',
-      title: 'I need to wash my car',
-      meta: '650 m away • 2 days ago',
-      category: 'Uncategorized',
-      urgency: 'Low',
-      color: '#2ecc71',
-      image: require('../assets/images/help.png'),
-    },
-  ];
-  const categories: Category[] = [];
-  const profiles: Profile[] = [];
+  const fetchTasks = async () => {
+    try {
+      const response = await getTasks();
+      setTasks(response.results || []);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      Alert.alert('Error', 'Failed to load tasks. Please try again.');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchTasks();
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </SafeAreaView>
+    );
+  }
+
+  const getUrgencyColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'urgent':
+        return '#e74c3c';
+      case 'medium':
+        return '#f1c40f';
+      case 'low':
+        return '#2ecc71';
+      default:
+        return '#f1c40f';
+    }
+  };
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 24) {
+      return `${diffInHours} hours ago`;
+    } else {
+      const diffInDays = Math.floor(diffInHours / 24);
+      return `${diffInDays} days ago`;
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background, paddingTop: 36 }]}>
@@ -116,26 +119,35 @@ export default function Requests() {
       <ScrollView
         style={styles.list}
         contentContainerStyle={{ paddingBottom: 80 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
-        {requests.map((r) => (
+        {tasks.map((task) => (
           <TouchableOpacity
-            key={r.id}
+            key={task.id}
             style={[styles.card, { backgroundColor: colors.card }]}
-            onPress={() => router.push('/request/' + r.id as any)}
+            onPress={() => router.push('/request/' + task.id as any)}
           >
-            <Image source={typeof r.image === 'number' ? r.image : require('../assets/images/help.png')} style={styles.cardImage} />
+            <Image source={require('../assets/images/help.png')} style={styles.cardImage} />
 
             <View style={styles.cardContent}>
-              <Text style={[styles.cardTitle, { color: colors.text }]}>{r.title}</Text>
-              <Text style={[styles.cardMeta, { color: colors.text }]}>{r.meta}</Text>
+              <Text style={[styles.cardTitle, { color: colors.text }]}>{task.title}</Text>
+              <Text style={[styles.cardMeta, { color: colors.text }]}>
+                {task.location} • {formatTimeAgo(task.created_at)}
+              </Text>
 
               {/* pills row */}
               <View style={styles.pillRow}>
-                <View style={[styles.urgencyBadge, { backgroundColor: r.color }]}>
-                  <Text style={styles.urgencyText} numberOfLines={1} ellipsizeMode="tail">{r.urgency}</Text>
+                <View style={[styles.urgencyBadge, { backgroundColor: getUrgencyColor(task.status) }]}>
+                  <Text style={styles.urgencyText} numberOfLines={1} ellipsizeMode="tail">
+                    {task.status}
+                  </Text>
                 </View>
                 <View style={[styles.categoryPill, { backgroundColor: colors.primary }]}>
-                  <Text style={styles.categoryText} numberOfLines={1} ellipsizeMode="tail">{r.category}</Text>
+                  <Text style={styles.categoryText} numberOfLines={1} ellipsizeMode="tail">
+                    {task.category}
+                  </Text>
                 </View>
               </View>
             </View>
