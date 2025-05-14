@@ -1,26 +1,27 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-
-// Mock API base URL - this will be replaced with real API endpoint
-const API_BASE_URL = 'https://api.neighborhoodassistance.org';
+import { serializeDate } from '../../utils/dateUtils';
+import * as createRequestService from '../../services/createRequestService';
+import { mapFormToTaskApiFormat } from '../../utils/taskUtils';
 
 // Async thunk for submitting a request
 export const submitRequest = createAsyncThunk(
   'createRequest/submitRequest',
-  async (requestData, { rejectWithValue }) => {
+  async (formData, { rejectWithValue }) => {
     try {
-      // For now, we'll simulate a successful submission
-      console.log('Submitting request:', requestData);
+      // Transform the form data to match the API's expected format
+      const taskData = mapFormToTaskApiFormat(formData);
       
-      // In a real implementation, you would use axios:
-      // const response = await axios.post(`${API_BASE_URL}/requests`, requestData);
-      // return response.data;
+      // Create the task in the backend
+      const createdTask = await createRequestService.createTask(taskData);
       
-      // Mock response
+      // Photo upload functionality is temporarily disabled
+      // (Previously attempted to upload photos here)
+      
       return {
         success: true,
-        requestId: 'req_' + Math.random().toString(36).substr(2, 9),
-        message: 'Request created successfully'
+        requestId: createdTask.id,
+        message: 'Request created successfully',
+        task: createdTask
       };
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Error submitting request');
@@ -33,69 +34,52 @@ export const fetchCategories = createAsyncThunk(
   'createRequest/fetchCategories',
   async (_, { rejectWithValue }) => {
     try {
-      // Mock categories data
-      return [
-        { id: '1', name: 'Healthcare' },
-        { id: '2', name: 'House Cleaning' },
-        { id: '3', name: 'Tutoring' },
-        { id: '4', name: 'Groceries' },
-        { id: '5', name: 'Gardening' },
-        { id: '6', name: 'Moving' },
-        { id: '7', name: 'Pet Care' },
-        { id: '8', name: 'Technical Help' },
-        { id: '9', name: 'Transportation' },
-        { id: '10', name: 'Uncategorized' }
-      ];
+      return await createRequestService.fetchCategories();
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Error fetching categories');
     }
   }
 );
 
-// Async thunk for uploading photos
+// Async thunk for processing photos for preview
 export const uploadPhotos = createAsyncThunk(
   'createRequest/uploadPhotos',
   async (photos, { rejectWithValue }) => {
     try {
-      // In a real implementation, you would upload photos to server
-      // const formData = new FormData();
-      // photos.forEach((photo, index) => {
-      //   formData.append(`photo${index}`, photo);
-      // });
-      // const response = await axios.post(`${API_BASE_URL}/upload`, formData);
-      // return response.data;
+      // Ensure photos is always an array
+      const photoArray = Array.isArray(photos) ? photos : [photos];
       
-      // Mock response - create URLs for the uploaded photos
-      return photos.map(photo => {
-        const mockUrl = URL.createObjectURL(photo);
+      // Generate temporary URLs for previewing photos in the UI
+      // The actual upload happens later in submitRequest
+      return photoArray.map(photo => {
+        const previewUrl = URL.createObjectURL(photo);
         return { 
           id: 'photo_' + Math.random().toString(36).substr(2, 9),
-          url: mockUrl,
-          name: photo.name
+          url: previewUrl,
+          name: photo.name,
+          file: photo // Store the file object for later upload
         };
-      });
-    } catch (error) {
-      return rejectWithValue(error.response?.data || 'Error uploading photos');
+      });    } catch (error) {
+      console.error('Error in uploadPhotos:', error);
+      return rejectWithValue(error.message || 'Error processing photos');
     }
   }
 );
 
 // Initial state of the form
 const initialState = {
-  currentStep: 0,
-  formData: {
-    // General Information step
+  currentStep: 0,  formData: {    // General Information step
     title: '',
     description: '',
-    category: 'Uncategorized',
-    urgency: 'Low',
+    category: 'OTHER',  // Default to OTHER category value
+    urgency: '2',  // '2' represents "Low" urgency
     requiredPeople: 1,
     
     // Upload Photos step
     photos: [],
     
     // Determine Deadline step
-    deadlineDate: new Date(),
+    deadlineDate: new Date().toISOString(), // Serializable format
     deadlineTime: '09:00 AM',
     
     // Setup Address step
@@ -134,9 +118,16 @@ const createRequestSlice = createSlice({
       }
     },
     updateFormData: (state, action) => {
+      const payload = { ...action.payload };
+      
+      // Check if deadlineDate exists and needs serialization
+      if (payload.deadlineDate instanceof Date) {
+        payload.deadlineDate = serializeDate(payload.deadlineDate);
+      }
+      
       state.formData = {
         ...state.formData,
-        ...action.payload
+        ...payload
       };
     },
     incrementRequiredPeople: (state) => {
@@ -147,8 +138,15 @@ const createRequestSlice = createSlice({
         state.formData.requiredPeople -= 1;
       }
     },
-    resetForm: (state) => {
-      return initialState;
+    resetForm: () => {
+      // Make sure we use serialized dates when resetting
+      return {
+        ...initialState,
+        formData: {
+          ...initialState.formData,
+          deadlineDate: serializeDate(new Date())
+        }
+      };
     },
     removePhoto: (state, action) => {
       state.uploadedPhotos = state.uploadedPhotos.filter(
@@ -189,15 +187,16 @@ const createRequestSlice = createSlice({
       // Upload photos cases
       .addCase(uploadPhotos.pending, (state) => {
         state.loading = true;
-      })
-      .addCase(uploadPhotos.fulfilled, (state, action) => {
+      })      .addCase(uploadPhotos.fulfilled, (state, action) => {
         state.loading = false;
-        state.uploadedPhotos = [...state.uploadedPhotos, ...action.payload];
+        // Ensure action.payload is always treated as an array
+        const payloadArray = Array.isArray(action.payload) ? action.payload : [action.payload];
+        state.uploadedPhotos = [...state.uploadedPhotos, ...payloadArray];
         state.error = null;
-      })
-      .addCase(uploadPhotos.rejected, (state, action) => {
+      })      .addCase(uploadPhotos.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        // Handle the error message safely
+        state.error = action.payload || 'Failed to upload photos';
       });
   },
 });

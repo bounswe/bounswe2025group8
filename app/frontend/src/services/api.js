@@ -124,4 +124,78 @@ export const authAPI = {
   }
 };
 
+// Task/Request API service
+export const taskAPI = {
+  // Create a new task/request
+  createTask: async (taskData) => {
+    try {
+      const response = await api.post('/tasks/', taskData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to create task' };
+    }
+  },
+
+  // Get all tasks
+  getTasks: async (filters = {}) => {
+    try {
+      const response = await api.get('/tasks/', { params: filters });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch tasks' };
+    }
+  },
+
+  // Get a specific task
+  getTask: async (taskId) => {
+    try {
+      const response = await api.get(`/tasks/${taskId}/`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to fetch task' };
+    }
+  },
+
+  // Update a task
+  updateTask: async (taskId, taskData) => {
+    try {
+      const response = await api.patch(`/tasks/${taskId}/`, taskData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Failed to update task' };
+    }
+  },
+
+  // Upload a photo for a task
+  uploadTaskPhoto: async (taskId, photoFile) => {
+    try {
+      // Validate inputs
+      if (!taskId) {
+        throw new Error('Task ID is required for photo upload');
+      }
+      
+      if (!photoFile || typeof photoFile !== 'object' || !(photoFile instanceof File)) {
+        throw new Error('Invalid photo file object');
+      }
+      
+      const formData = new FormData();
+      // Backend expects 'photo' field name in the request, not 'url'
+      formData.append('photo', photoFile);
+      
+      console.log(`Uploading photo ${photoFile.name} (${photoFile.size} bytes) to tasks/${taskId}/photo/ endpoint`);
+      
+      const response = await api.post(`/tasks/${taskId}/photo/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      console.log('Photo upload API response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Photo upload API error:', error.response?.data || error.message);
+      throw error.response?.data || { message: `Failed to upload photo: ${error.message}` };
+    }
+  }
+};
+
 export default api;

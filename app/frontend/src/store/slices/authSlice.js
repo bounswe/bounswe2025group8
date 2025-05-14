@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { authAPI } from '../../utils/api';
+import { authAPI } from '../../services/api';
 
 // Load user from localStorage
 const getUserFromStorage = () => {
@@ -49,6 +49,7 @@ export const loginAsync = createAsyncThunk(
         const role = 'user'; // Default role, modify as needed based on your backend
         
         localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('userId', userData.id); // Also store userId separately
         localStorage.setItem('token', token);
         localStorage.setItem('role', role);
         
@@ -176,6 +177,25 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
+    // Load user data from localStorage
+    loadUserFromStorage(state) {
+      const stored = getUserFromStorage();
+      state.isAuthenticated = stored.isAuthenticated;
+      state.user = stored.user;
+      state.role = stored.role;
+      state.token = stored.token;
+      
+      // If user exists, ensure userName and userId are stored separately for easy access
+      if (stored.user) {
+        if (stored.user.name) {
+          localStorage.setItem('userName', stored.user.name);
+        }
+        if (stored.user.id) {
+          localStorage.setItem('userId', stored.user.id);
+        }
+      }
+    },
+    
     // Login action (synchronous for DevUserPanel)
     login(state, action) {
       state.isAuthenticated = true;
@@ -187,6 +207,11 @@ const authSlice = createSlice({
       localStorage.setItem('user', JSON.stringify(action.payload.user));
       localStorage.setItem('token', action.payload.token);
       localStorage.setItem('role', action.payload.role);
+      
+      // Store username separately for easy access
+      if (action.payload.user && action.payload.user.name) {
+        localStorage.setItem('userName', action.payload.user.name);
+      }
     },
     
     // Logout action
@@ -201,6 +226,7 @@ const authSlice = createSlice({
       localStorage.removeItem('user');
       localStorage.removeItem('token');
       localStorage.removeItem('role');
+      localStorage.removeItem('userName');
     },
     
     // Update user profile
@@ -209,6 +235,11 @@ const authSlice = createSlice({
       
       // Update localStorage
       localStorage.setItem('user', JSON.stringify(state.user));
+      
+      // Update userName if name is being updated
+      if (action.payload.name) {
+        localStorage.setItem('userName', action.payload.name);
+      }
     },
     
     // Clear error state
@@ -281,7 +312,7 @@ const authSlice = createSlice({
 });
 
 // Export actions
-export const { login, logout, updateUserProfile, clearError } = authSlice.actions;
+export const { login, logout, updateUserProfile, clearError, loadUserFromStorage } = authSlice.actions;
 
 // Selectors for easy access to auth state
 export const selectIsAuthenticated = (state) => state.auth.isAuthenticated;
