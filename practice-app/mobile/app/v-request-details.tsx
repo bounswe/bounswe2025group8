@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, Modal, TextInput } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
@@ -57,6 +57,13 @@ export default function RequestDetails() {
   const index = typeof params.index === 'string' ? parseInt(params.index, 10) : Number(params.index);
   const requestsArray = MOCK_MAP[arrayName];
   const request = requestsArray && !isNaN(index) ? requestsArray[index] : null;
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [reviewText, setReviewText] = useState('');
+
+  const handleStarPress = (star: number) => setRating(star);
 
   return (
     <View style={{ flex: 1, backgroundColor: themeColors.gray }}>
@@ -121,6 +128,12 @@ export default function RequestDetails() {
               <Ionicons name="people-outline" size={25} color={colors.text} style={styles.icon} />
               <Text style={[styles.infoText, { color: colors.text }]}>{request.requiredPerson} person required</Text>
             </View>
+            {['Accepted', 'Completed'].includes(request.status) && (
+              <View style={styles.infoRow}>
+                <Ionicons name="call-outline" size={25} color={colors.text} style={styles.icon} />
+                <Text style={[styles.infoText, { color: colors.text }]}>{request.phoneNumber}</Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -139,14 +152,14 @@ export default function RequestDetails() {
           request.status === 'Completed' ? (
             <TouchableOpacity
               style={[styles.volunteerButton, { backgroundColor: themeColors.pink }]}
-              onPress={() => {/* TODO: Implement Rate & Review navigation */}}
+              onPress={() => { setIsEdit(false); setModalVisible(true); }}
             >
               <Text style={styles.buttonText}>Rate & Review</Text>
             </TouchableOpacity>
           ) : request.urgencyLevel === 'Past' ? (
             <TouchableOpacity
               style={[styles.volunteerButton, { backgroundColor: themeColors.pink }]}
-              onPress={() => {/* TODO: Implement Edit Rate & Review navigation */}}
+              onPress={() => { setIsEdit(true); setModalVisible(true); }}
             >
               <Text style={styles.buttonText}>Edit Rate & Review</Text>
             </TouchableOpacity>
@@ -171,6 +184,66 @@ export default function RequestDetails() {
           <Text style={{ color: 'red', textAlign: 'center', marginTop: 24 }}>Request not found.</Text>
         )}
       </ScrollView>
+
+      {/* Place the popup just above the Rate & Review button by using absolute positioning and measuring the button's position */}
+      {modalVisible && (
+        <View style={{
+          position: 'absolute',
+          left: '5%',
+          right: '5%',
+          // Place the popup above the button
+          bottom: 10, // Adjust as needed to be just above the button
+          zIndex: 100,
+        }}>
+          <View style={{
+            backgroundColor: '#fff',
+            borderRadius: 20,
+            padding: 24,
+            alignItems: 'center',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.2,
+            shadowRadius: 8,
+            elevation: 5,
+          }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 16 }}>Rate & Review</Text>
+            <View style={{ flexDirection: 'row', marginBottom: 16 }}>
+              {[1,2,3,4,5].map((star) => (
+                <TouchableOpacity key={star} onPress={() => handleStarPress(star)}>
+                  <Ionicons
+                    name={rating >= star ? 'star' : 'star-outline'}
+                    size={32}
+                    color={themeColors.pink}
+                    style={{ marginHorizontal: 2 }}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TextInput
+              style={{
+                width: '100%',
+                minHeight: 260,
+                borderColor: '#eee',
+                borderWidth: 1,
+                borderRadius: 10,
+                padding: 10,
+                marginBottom: 16,
+                textAlignVertical: 'top',
+              }}
+              placeholder="Write your review..."
+              multiline
+              value={reviewText}
+              onChangeText={setReviewText}
+            />
+            <TouchableOpacity
+              style={{ backgroundColor: themeColors.lightPink, padding: 12, borderRadius: 32, width: '100%', alignItems: 'center' }}
+              onPress={() => { setModalVisible(false); /* handle submit here */ }}
+            >
+              <Text style={{ color: themeColors.pink, fontWeight: 'bold', fontSize: 17 }}>Submit</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </View>
   );
 }

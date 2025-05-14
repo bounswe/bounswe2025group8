@@ -26,7 +26,7 @@ export const MOCK_V_ACTIVE_REQUESTS = [
   {
     requester: MOCK_USER,
     title: 'Help me to open a bank account',
-    desc: 'I need help to open a bank account. I have a lot of things to do and I need someone to help me.',
+    desc: 'I need help to open a bank account. I have a lot of things to do and I need someone to help me. I need help to open a bank account. I have a lot of things to do and I need someone to help me.',
     datetime: 'May 16, 2025 - 16.30 PM',
     location: '848 King Street, Denver, CO 80204',
     requiredPerson: 1,
@@ -41,7 +41,7 @@ export const MOCK_V_ACTIVE_REQUESTS = [
   {
     requester: MOCK_USER,
     title: 'Help me to see a doctor',
-    desc: 'I need help to see a doctor. I have a headache and I need someone to take me to the hospital.',
+    desc: 'I need help to see a doctor. I have a headache and I need someone to take me to the hospital. I need help to see a doctor. I have a headache and I need someone to take me to the hospital.',
     datetime: 'May 16, 2025 - 16.30 PM',
     location: '848 King Street, Denver, CO 80204',
     requiredPerson: 1,
@@ -56,7 +56,7 @@ export const MOCK_V_ACTIVE_REQUESTS = [
   {
     requester: MOCK_USER,
     title: 'I need to clean my house',
-    desc: 'I need help to clean my house. I have a lot of things to do and I need someone to help me.',
+    desc: 'I need help to clean my house. I have a lot of things to do and I need someone to help me. I need help to clean my house. I have a lot of things to do and I need someone to help me.',
     datetime: 'May 16, 2025 - 16.30 PM',
     location: '848 King Street, Denver, CO 80204',
     requiredPerson: 1,
@@ -71,7 +71,7 @@ export const MOCK_V_ACTIVE_REQUESTS = [
   {
     requester: MOCK_USER,
     title: 'Help for my math exam',
-    desc: 'I need help for my math exam. I have a lot of things to do and I need someone to help me.',
+    desc: 'I need help for my math exam. I have a lot of things to do and I need someone to help me. I need help for my math exam. I have a lot of things to do and I need someone to help me.',
     datetime: 'May 16, 2025 - 16.30 PM',
     location: '848 King Street, Denver, CO 80204',
     requiredPerson: 1,
@@ -89,7 +89,7 @@ export const MOCK_V_PAST_REQUESTS = [
   {
     requester: MOCK_USER,
     title: 'Grocery shopping',
-    desc: 'I need help with grocery shopping. I have a lot of things to do and I need someone to help me.',
+    desc: 'I need help with grocery shopping. I have a lot of things to do and I need someone to help me. I need help with grocery shopping. I have a lot of things to do and I need someone to help me.',
     datetime: 'May 16, 2025 - 16.30 PM',
     location: '848 King Street, Denver, CO 80204',
     requiredPerson: 1,
@@ -147,7 +147,7 @@ export const MOCK_R_ACTIVE_REQUESTS = [
   {
     requester: MOCK_USER,
     title: 'Help for my science course',
-    desc: 'I need help for my science course. I have a lot of things to do and I need someone to help me.',
+    desc: 'I need help for my science course. I have a lot of things to do and I need someone to help me. I need help for my science course. I have a lot of things to do and I need someone to help me.',
     datetime: 'May 16, 2025 - 16.30 PM',
     location: '848 King Street, Denver, CO 80204',
     requiredPerson: 1,
@@ -163,7 +163,7 @@ export const MOCK_R_ACTIVE_REQUESTS = [
   {
     requester: MOCK_USER,
     title: 'I need to clean my house',
-    desc: 'I need help to clean my house. I have a lot of things to do and I need someone to help me.',
+    desc: 'I need help to clean my house. I have a lot of things to do and I need someone to help me. I need help to clean my house. I have a lot of things to do and I need someone to help me.',
     datetime: 'May 16, 2025 - 16.30 PM',
     location: '848 King Street, Denver, CO 80204',
     requiredPerson: 1,
@@ -179,7 +179,7 @@ export const MOCK_R_ACTIVE_REQUESTS = [
   {
     requester: MOCK_USER,
     title: 'I need to fix my car',
-    desc: 'I need help to fix my car. I have a lot of things to do and I need someone to help me.',
+    desc: 'I need help to fix my car. I have a lot of things to do and I need someone to help me. I need help to fix my car. I have a lot of things to do and I need someone to help me.',
     datetime: 'May 16, 2025 - 16.30 PM',
     location: '848 King Street, Denver, CO 80204',
     requiredPerson: 1,
@@ -198,7 +198,7 @@ export const MOCK_R_PAST_REQUESTS = [
   {
     requester: MOCK_USER,
     title: 'Need help with yard work',
-    desc: 'I need help with yard work. I have a lot of things to do and I need someone to help me.',
+    desc: 'I need help with yard work. I have a lot of things to do and I need someone to help me. I need help with yard work. I have a lot of things to do and I need someone to help me.',
     datetime: 'May 16, 2025 - 16.30 PM',
     location: '848 King Street, Denver, CO 80204',
     requiredPerson: 1,
@@ -213,7 +213,7 @@ export const MOCK_R_PAST_REQUESTS = [
   {
     requester: MOCK_USER,
     title: 'I need to wash my car',
-    desc: 'I need help to wash my car. I have a lot of things to do and I need someone to help me.',
+    desc: 'I need help to wash my car. I have a lot of things to do and I need someone to help me. I need help to wash my car. I have a lot of things to do and I need someone to help me.',
     datetime: 'May 16, 2025 - 16.30 PM',
     location: '848 King Street, Denver, CO 80204',
     requiredPerson: 1,
