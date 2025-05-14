@@ -14,7 +14,7 @@ import {
   uploadProfilePicture,
   clearUpdateSuccess
 } from '../../store/slices/profileSlice';
-import RequestCard from '../RequestCard/RequestCard';
+import RequestCard from '../RequestCard';
 import ReviewCard from '../ReviewCard/ReviewCard';
 import Badge from '../Badge/Badge';
 import EditProfileDialog from '../EditProfileDialog/EditProfileDialog';
@@ -64,58 +64,8 @@ const ProfilePage = () => {
   const [reviewPage, setReviewPage] = useState(1);
   const [reviewsPerPage] = useState(5);
   const [refreshData, setRefreshData] = useState(false);
-  const [editProfileOpen, setEditProfileOpen] = useState(false);
-
-  // Temporary mock badges with images for testing when API fails
-  const [mockBadges] = useState([
-      {
-        id: 'badge1',
-        title: 'First Steps',
-        description: 'Completed 5 tasks',
-        image: 'https://cdn-icons-png.flaticon.com/128/8382/8382248.png', // Minimalist badge
-        color: '#FF9800',
-        earned: true,
-        earnedDate: '2025-02-15T00:00:00Z' // ISO string format for dates
-      },
-      {
-        id: 'badge2',
-        title: 'Helping Hand',
-        description: 'Completed 10 tasks',
-        image: 'https://cdn-icons-png.flaticon.com/128/1067/1067357.png', // Handshake icon
-        color: '#4CAF50',
-        earned: true,
-        earnedDate: '2025-03-22T00:00:00Z' // ISO string format for dates
-      },
-      {
-        id: 'badge3',
-        title: 'Community Pillar',
-        description: 'Completed 25 tasks',
-        image: 'https://cdn-icons-png.flaticon.com/128/3588/3588611.png', // Community icon
-        color: '#5C69FF',
-        earned: false,
-        progress: 68,
-        requiredAmount: 25
-      },
-      {
-        id: 'badge4',
-        title: 'Neighborhood Hero',
-        description: 'Completed 50 tasks',
-        image: 'https://cdn-icons-png.flaticon.com/128/1756/1756636.png', // Medal icon
-        color: '#F06292',
-        earned: false,
-        progress: 34,
-        requiredAmount: 50
-      },
-      {
-        id: 'badge5',
-        title: 'Excellent Rating',
-        description: 'Maintained 4.5+ rating for 3 months',
-        image: 'https://cdn-icons-png.flaticon.com/128/992/992001.png', // Star icon
-        color: '#FFD700',
-        earned: true,
-        earnedDate: '2025-04-18T00:00:00Z' // ISO string format for dates
-      }
-  ]);
+  const [editProfileOpen, setEditProfileOpen] = useState(false);  // Empty array for badges since we'll use API data
+  const [mockBadges] = useState([]);
   
 const loadProfileData = useCallback(async () => {
   try {
@@ -147,30 +97,41 @@ const loadProfileData = useCallback(async () => {
       page: reviewPage,
       limit: reviewsPerPage
     })).unwrap();
+      // For requester tab (roleTab = 1), fetch created tasks with appropriate status
+    if (roleTab === 1) {
+      // Determine which status to request based on the active/past tab
+      const status = requestsTab === 0 ? 'active' : 'COMPLETED';
+      
+      await dispatch(fetchUserCreatedRequests({
+        userId: currentId,
+        page: 1,
+        limit: 10,
+        status: status
+      })).unwrap();
+    }
     
-    // Use object parameter for tasks
-    await dispatch(fetchUserCreatedRequests({
-      userId: currentId,
-      page: 1,
-      limit: 10
-    })).unwrap();
-    
-    // Use object parameter for volunteered tasks
-    await dispatch(fetchUserVolunteeredRequests({
-      userId: currentId,
-      page: 1,
-      limit: 10
-    })).unwrap();
+    // For volunteer tab (roleTab = 0), fetch volunteered tasks
+    // For volunteer tab, we also need to handle active vs completed tasks
+    if (roleTab === 0) {
+      // If the API supports status parameter for volunteered tasks
+      const status = requestsTab === 0 ? 'active' : 'COMPLETED';
+      
+      await dispatch(fetchUserVolunteeredRequests({
+        userId: currentId,
+        page: 1,
+        limit: 10,
+        status: status // Pass the status parameter for volunteered tasks too
+      })).unwrap();
+    }
     
     await dispatch(fetchUserBadges(currentId)).unwrap();
   } catch (err) {
     console.error('Failed to fetch profile data:', err);
   }
-}, [dispatch, userId, reviewPage, reviewsPerPage]);
-
+}, [dispatch, userId, reviewPage, reviewsPerPage, roleTab, requestsTab]);
   useEffect(() => {
     loadProfileData();
-  }, [loadProfileData, refreshData, reviewPage, reviewsPerPage]);
+  }, [loadProfileData, refreshData, reviewPage, reviewsPerPage, roleTab, requestsTab]);
   
   // Reset data refresh flag after loading completes
   useEffect(() => {
@@ -195,10 +156,15 @@ const loadProfileData = useCallback(async () => {
       setReviewPage(1); // Reset to first page when user changes
     }
   }, [userId]);
-
   const handleRoleChange = (event, newValue) => {
     setRoleTab(newValue);
     setRequestsTab(0); // Reset to active requests whenever role changes
+    // No need to trigger data reload here, as the effect hook will handle it
+  };
+  
+  const handleRequestTabChange = (tabIndex) => {
+    setRequestsTab(tabIndex);
+    // Data reload will be handled by the effect hook
   };
   
   const handleReviewPageChange = (event, value) => {
@@ -217,7 +183,6 @@ const loadProfileData = useCallback(async () => {
       console.error('No user ID available for fetching reviews');
     }
   };
-
   const getCurrentRequests = () => {
     // Check if response contains items list (pagination structure) or is an array directly
     const requests = roleTab === 0 ? volunteeredRequests : createdRequests;
@@ -227,6 +192,9 @@ const loadProfileData = useCallback(async () => {
     
     // If it's an array, use it directly
     if (Array.isArray(requests)) return requests;
+    
+    // If it's a paginated response with 'tasks' field (from the API), return the tasks array
+    if (requests.tasks && Array.isArray(requests.tasks)) return requests.tasks;
     
     // If it's a paginated response with 'items' field, return the items array
     if (requests.items && Array.isArray(requests.items)) return requests.items;
@@ -238,10 +206,12 @@ const loadProfileData = useCallback(async () => {
     console.warn('Unknown structure for requests:', requests);
     return [];
   };
-
-  // Filter requests based on active status and current role
-  const activeRequests = getCurrentRequests().filter((request) => !request.completed);
-  const pastRequests = getCurrentRequests().filter((request) => request.completed);
+  // Get active and past requests for the current role tab
+  // We're now fetching requests directly from the API with appropriate status
+  const activeRequests = getCurrentRequests();
+  
+  // Past requests are now also fetched from the API with status=COMPLETED
+  const pastRequests = requestsTab === 1 ? getCurrentRequests() : [];
   
   // No need for client-side pagination since we're using server pagination now
 
@@ -470,16 +440,15 @@ const loadProfileData = useCallback(async () => {
 
           {/* Requests section */}
           <Box sx={{ mb: 4 }}>
-            {/* Active/Past Requests Header */}
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            {/* Active/Past Requests Header */}            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               {requestsTab === 1 && (
-                <IconButton onClick={() => setRequestsTab(0)} sx={{ mr: -1 }}>
+                <IconButton onClick={() => handleRequestTabChange(0)} sx={{ mr: -1 }}>
                 </IconButton>
               )}
               <Typography
                 variant="h6"
                 component="h2"
-                onClick={() => setRequestsTab(0)}
+                onClick={() => handleRequestTabChange(0)}
                 sx={{ cursor: 'pointer', fontWeight: requestsTab === 0 ? 'bold' : 'normal', mr: 4 }}
               >
                 {roleTab === 0 ? 'Active Volunteering' : 'Active Requests'}
@@ -487,7 +456,7 @@ const loadProfileData = useCallback(async () => {
               <Typography
                 variant="h6"
                 component="h2"
-                onClick={() => setRequestsTab(1)}
+                onClick={() => handleRequestTabChange(1)}
                 sx={{ cursor: 'pointer', fontWeight: requestsTab === 1 ? 'bold' : 'normal' }}
               >
                 {roleTab === 0 ? 'Past Volunteering' : 'Past Requests'}
@@ -529,7 +498,7 @@ const loadProfileData = useCallback(async () => {
             {/* Active/Past Requests Grid Layout */}
             <Box sx={{ mb: 4 }}>
               {requestsTab === 0 ? (
-                <Grid container spacing={2}>
+                <Grid container spacing={2} sx={{justifyContent: 'center'}}>
                   {activeRequests.length > 0 ? (
                     activeRequests.map((request) => (
                       <Grid sx={{ gridColumn: {xs: "span 12", sm: "span 6"} }} key={request.id}>
