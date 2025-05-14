@@ -1,12 +1,10 @@
 import React from 'react';
 import { Box, Typography, Button, Paper } from '@mui/material';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import ConstructionIcon from '@mui/icons-material/Construction';
+import { useNavigate } from 'react-router-dom';
+import SettingsIcon from '@mui/icons-material/Settings';
 
-const SearchResults = () => {
-  const [searchParams] = useSearchParams();
+const Settings = () => {
   const navigate = useNavigate();
-  const query = searchParams.get('q') || '';
   
   const goToHome = () => {
     navigate('/');
@@ -32,14 +30,14 @@ const SearchResults = () => {
           width: '100%' 
         }}
       >
-        <ConstructionIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
+        <SettingsIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
         
         <Typography variant="h4" component="h1" gutterBottom>
-          Search Feature Coming Soon
+          Settings Coming Soon
         </Typography>
         
         <Typography variant="body1" color="text.secondary" paragraph>
-          {query ? `We found your search for "${query}"` : 'Search'} is currently under development. 
+          The settings page is currently under development. 
           Our team is working hard to implement this feature.
         </Typography>
         
@@ -60,4 +58,4 @@ const SearchResults = () => {
   );
 };
 
-export default SearchResults;
+export default Settings;

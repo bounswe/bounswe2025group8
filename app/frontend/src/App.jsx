@@ -1,5 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Box } from "@mui/material";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { loadUserFromStorage } from "./store/slices/authSlice";
 import ThemeDemo from "./components/ThemeDemo";
 // Home pages
 import Home from "./pages/Home.jsx";
@@ -10,6 +13,9 @@ import SearchResults from "./pages/SearchResults.jsx";
 // Request related pages
 import Requests from "./pages/Requests.jsx";
 import RequestDetail from "./pages/RequestDetail.jsx";
+// User account pages
+import Settings from "./pages/Settings.jsx";
+import Notifications from "./pages/Notifications.jsx";
 // Task related pages
 import TaskPage from "./pages/TaskPage.jsx";
 import TaskPageVolunteer from "./pages/TaskPageVolunteer.jsx";
@@ -28,14 +34,47 @@ import MainLayout from "./layouts/MainLayout.jsx";
 import DevUserPanel from "./components/DevUserPanel.jsx";
 import ProfilePage from "./components/ProfilePage/ProfilePage.jsx";
 import CreateRequestPage from "./components/CreateRequest/CreateRequestPage.jsx";
-// API Testing component
-import ApiTester from "./components/ApiTester.jsx";
+
 
 import "./App.css";
 
 function App() {
   // Check if we're in development mode
   const _isDevelopment = import.meta.env.DEV;
+  const dispatch = useDispatch();
+  
+  // Load user data from localStorage when the app starts
+  useEffect(() => {
+    // Check if user data exists in localStorage but userId is missing
+    const fixUserDataIfNeeded = () => {
+      const userData = localStorage.getItem('user');
+      const userId = localStorage.getItem('userId');
+      
+      if (userData && !userId) {
+        try {
+          const parsedUser = JSON.parse(userData);
+          if (parsedUser && parsedUser.id) {
+            console.log('Found user ID in user object, setting userId in localStorage:', parsedUser.id);
+            localStorage.setItem('userId', parsedUser.id);
+          } else {
+            console.warn('User object exists but has no ID:', parsedUser);
+          }
+        } catch (err) {
+          console.error('Error parsing user data from localStorage:', err);
+        }
+      }
+    };
+    
+    fixUserDataIfNeeded();
+    dispatch(loadUserFromStorage());
+    
+    // Log authentication state after loading
+    console.log('Auth state initialized with:', {
+      userId: localStorage.getItem('userId'),
+      user: localStorage.getItem('user'),
+      isAuthenticated: !!localStorage.getItem('token')
+    });
+  }, [dispatch]);
 
   return (
     <Router>
@@ -48,24 +87,17 @@ function App() {
           <Route element={<MainLayout />}>
             {/* Home Routes */}
             <Route path="/" element={<Home />} />
-            <Route path="/dashboard" element={<HomeDashboard />} />
+            
 
             {/* Categories Routes */}
             <Route path="/categories" element={<Categories />} />
-            <Route path="/categories/:categoryId" element={<Categories />} />
+            
 
             {/* Request Routes */}
             <Route path="/requests" element={<Requests />} />
             <Route path="/requests/:requestId" element={<RequestDetail />} />
-            <Route
-              path="/requests/filter/urgency/:urgency"
-              element={<Requests />}
-            />
-            <Route
-              path="/create-request"
-              element={<div>Create Request Form</div>}
-            />
-
+            
+            
             {/* Task Routes */}
             <Route path="/tasks" element={<TaskListPage />} />
             <Route path="/tasks/:taskId" element={<TaskPage />} />
@@ -79,15 +111,17 @@ function App() {
             />
 
             {/* Review Routes */}
-            <Route path="/rate-review/:taskId" element={<RateReviewPage />} />
-
-            {/* Search Routes */}
+            <Route path="/rate-review/:taskId" element={<RateReviewPage />} />            {/* Search Routes */}
             <Route path="/search" element={<SearchResults />} />
+            
+            {/* User Routes */}
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/notifications" element={<Notifications />} />
 
             {/* Theme Demo */}
             <Route path="/theme" element={<ThemeDemo />} />
 
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/:userId" element={<ProfilePage />} />
             <Route path="/create-request" element={<CreateRequestPage />} />
           </Route>
           {/* Auth Routes (without sidebar) */}{" "}
@@ -95,8 +129,8 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          {/* API Tester - remove in production */}
-          <Route path="/api-test" element={<ApiTester />} />
+          
+          
         </Routes>
         {/* Dev User Panel - Only shown in development mode */}
         {/*isDevelopment && <DevUserPanel />*/}

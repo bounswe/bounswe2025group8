@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import { Box, List, ListItem, ListItemIcon, ListItemText, Button, Typography } from '@mui/material';
 import { Home, Category, List as ListIcon, Add, Notifications, Settings } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
@@ -6,6 +7,7 @@ import styles from './Sidebar.module.css';
 
 const Sidebar = () => {
   const navigate = useNavigate();
+  const { user } = useSelector(state => state.auth);
   
   // Handle navigation to user profile
   const handleProfileClick = () => {
@@ -87,7 +89,7 @@ const Sidebar = () => {
       >
         <Box
           component="img"
-          src="https://randomuser.me/api/portraits/men/32.jpg"
+          src={user?.avatar || user?.profilePicture || "https://randomuser.me/api/portraits/men/32.jpg"}
           alt="User"
           sx={{ 
             width: 40, 
@@ -97,7 +99,14 @@ const Sidebar = () => {
           }}
         />
         <Box>
-          <Typography variant="subtitle2">Batuhan Buber</Typography>
+          <Typography variant="subtitle2">
+            {user?.name || localStorage.getItem('userName') || "Guest"}
+          </Typography>
+          {user?.email && (
+            <Typography variant="caption" color="text.secondary">
+              {user.email}
+            </Typography>
+          )}
         </Box>
         <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
           <Notifications 

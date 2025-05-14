@@ -1,9 +1,9 @@
 import React from 'react';
 import { Box, Typography, Avatar, Rating, Paper } from '@mui/material';
-import { format } from 'date-fns';
-import styles from './ReviewCard.module.css';
+import { formatDate, formatRelativeTime } from '../../utils/dateUtils';
 
 const ReviewCard = ({ review }) => {
+
   return (
     <Paper 
       elevation={0}
@@ -17,22 +17,22 @@ const ReviewCard = ({ review }) => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Avatar 
-            src={review.reviewer.profilePicture || `https://randomuser.me/api/portraits/men/${Math.floor(Math.random() * 100)}.jpg`} 
-            alt={review.reviewer.name} 
+            src={review.reviewer?.profilePicture || `https://randomuser.me/api/portraits/men/${Math.floor(Math.random() * 100)}.jpg`} 
+            alt={review.reviewer?.name || 'User'} 
           />
           <Box>
             <Typography variant="subtitle2" fontWeight="bold">
-              {review.reviewer.name}
+              {review.reviewer?.name || 'Anonymous User'}
             </Typography>
-            <Rating value={review.rating} readOnly size="small" />
+            <Rating value={review.score || 0} readOnly size="small" />
           </Box>
         </Box>
         <Typography variant="caption" color="text.secondary">
-          {format(new Date(review.date), 'dd/MM/yyyy')}
+          {review.timestamp ? formatDate(review.timestamp) : 'N/A'}
         </Typography>
       </Box>
       <Typography variant="body2" sx={{ mt: 1 }}>
-        {review.comment}
+        {review.comment || 'No comment provided'}
       </Typography>
     </Paper>
   );

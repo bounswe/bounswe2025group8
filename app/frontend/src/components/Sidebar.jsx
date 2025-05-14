@@ -19,18 +19,41 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import LoginIcon from "@mui/icons-material/Login";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import SettingsIcon from "@mui/icons-material/Settings";
+import LogoutIcon from "@mui/icons-material/Logout";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Tooltip, IconButton } from "@mui/material";
 import UserAvatar from "./UserAvatar.jsx";
 import logo from "../assets/logo.png";
 import { useAuth } from "../hooks";
+import { useDispatch } from "react-redux";
+import { logout } from "../store/slices/authSlice";
+import { logout as logoutService } from "../services/authService";
 
 const Sidebar = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
 
   const { isAuthenticated, currentUser, userRole } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      // Call the logout service from authService
+      await logoutService();
+      
+      // Dispatch the logout action to update Redux state
+      dispatch(logout());
+      
+      // Navigate to the home page or login page
+      navigate('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Even if the API call fails, still logout locally
+      dispatch(logout());
+      navigate('/');
+    }
+  };
 
   const menuItems = [
     { text: "Home", icon: <HomeIcon />, path: "/" },
@@ -238,8 +261,7 @@ const Sidebar = () => {
               {currentUser?.name || "User"}
             </Typography>
 
-            {/* Buttons below username */}
-            <Box
+            {/* Buttons below username */}            <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
@@ -257,10 +279,19 @@ const Sidebar = () => {
               <Tooltip title="Settings">
                 <IconButton
                   size="small"
-                  sx={{ p: 0.5 }}
+                  sx={{ p: 0.5, mr: 1 }}
                   onClick={() => navigate("/settings")}
                 >
                   <SettingsIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Logout">
+                <IconButton
+                  size="small"
+                  sx={{ p: 0.5, color: theme.palette.error.main }}
+                  onClick={handleLogout}
+                >
+                  <LogoutIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
             </Box>

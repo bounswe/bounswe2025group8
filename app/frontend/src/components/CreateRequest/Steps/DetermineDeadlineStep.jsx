@@ -20,19 +20,20 @@ import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterv
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { updateFormData } from '../../../store/slices/createRequestSlice';
+import { deserializeDate, serializeDate } from '../../../utils/dateUtils';
 
-const DetermineDeadlineStep = () => {
-  const dispatch = useDispatch();
+const DetermineDeadlineStep = () => {  const dispatch = useDispatch();
   const { formData } = useSelector((state) => state.createRequest);
   
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState(new Date(formData.deadlineDate));
+  const [selectedDate, setSelectedDate] = useState(deserializeDate(formData.deadlineDate));
   const [selectedTime, setSelectedTime] = useState(formData.deadlineTime);
   
   // Handle date selection
   const handleDateChange = (date) => {
     setSelectedDate(date);
-    dispatch(updateFormData({ deadlineDate: date }));
+    // Serialize the date before dispatching to Redux
+    dispatch(updateFormData({ deadlineDate: serializeDate(date) }));
   };
   
   // Handle time selection
@@ -212,7 +213,15 @@ const DetermineDeadlineStep = () => {
           
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <TimePicker
-              value={new Date(`2025-01-01 ${selectedTime}`)}
+              value={(() => {
+                try {
+                  // Safely parse time string
+                  return new Date(`2025-01-01 ${selectedTime}`);
+                } catch (error) {
+                  console.error('Invalid time format:', error);
+                  return new Date();
+                }
+              })()}
               onChange={handleTimeChange}
               renderInput={(params) => (
                 <TextField 
