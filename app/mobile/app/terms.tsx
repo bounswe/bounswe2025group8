@@ -11,7 +11,7 @@ export default function Terms() {
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.replace('/signup')}>
+      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={24} color={colors.primary} />
         <Text style={[styles.backText, { color: colors.primary }]}>Back</Text>
       </TouchableOpacity>
