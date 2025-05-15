@@ -55,7 +55,7 @@ services:
     depends_on:
       - web
     environment:
-      - VITE_API_URL=http://web:8000/api  
+      - VITE_API_URL=165.227.152.202:8000/api 
     command: npm run dev
     networks:
       - app-network
