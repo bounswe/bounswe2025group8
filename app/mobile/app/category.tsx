@@ -4,6 +4,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
 import { getTasks, type Task } from '../lib/api';
+import { useAuth } from '../lib/auth';
 
 export default function CategoryPage() {
   const { colors } = useTheme();
@@ -13,6 +14,7 @@ export default function CategoryPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [categoryName, setCategoryName] = useState('');
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchTasks();
@@ -67,7 +69,10 @@ export default function CategoryPage() {
             <TouchableOpacity
               key={task.id}
               style={[styles.card, { backgroundColor: colors.card }]}
-              onPress={() => router.push('/request/' + task.id as any)}
+              onPress={() => router.push({
+                pathname: (task.creator && task.creator.id === user?.id) ? '/r-request-details' : '/v-request-details',
+                params: { id: task.id }
+              })}
             >
               <Image source={require('../assets/images/help.png')} style={styles.cardImage} />
               <View style={styles.cardContent}>

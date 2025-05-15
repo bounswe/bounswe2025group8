@@ -177,7 +177,11 @@ export default function CreateRequest() {
         <TouchableOpacity 
           style={[styles.nextBtn, { backgroundColor: colors.primary }]} 
           onPress={() => {
-            if (!title || !description) {
+            if (!description) {
+              Alert.alert('Error', 'Description cannot be empty.');
+              return;
+            }
+            if (!title) {
               Alert.alert('Error', 'Please fill in all required fields');
               return;
             }

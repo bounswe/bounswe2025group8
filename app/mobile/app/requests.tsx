@@ -129,7 +129,10 @@ export default function Requests() {
           <TouchableOpacity
             key={task.id}
             style={[styles.card, { backgroundColor: colors.card }]}
-            onPress={() => router.push('/request/' + task.id as any)}
+            onPress={() => router.push({
+              pathname: (task.creator && task.creator.id === user?.id) ? '/r-request-details' : '/v-request-details',
+              params: { id: task.id }
+            })}
           >
             <Image source={require('../assets/images/help.png')} style={styles.cardImage} />
 

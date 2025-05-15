@@ -4,19 +4,23 @@ import { useRouter } from 'expo-router';
 import SearchBarWithResults, { Category, Request, Profile } from '../components/ui/SearchBarWithResults';
 import { getTasks, getCategories, getUserProfile, type Task, type Category as ApiCategory, type UserProfile } from '../lib/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '../lib/auth';
 
 export default function SearchPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [requests, setRequests] = useState<Request[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [allTasks, setAllTasks] = useState<Task[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Fetch tasks
         const tasksResponse = await getTasks();
+        setAllTasks(tasksResponse.results);
         setRequests(tasksResponse.results.map(task => ({
           id: String(task.id),
           title: task.title,
@@ -69,7 +73,14 @@ export default function SearchPage() {
         profiles={profiles}
         onSelect={(item, tab) => {
           if (tab === 'Categories') router.push('/category/' + item.id as any);
-          else if (tab === 'Requests') router.push('/request/' + item.id as any);
+          else if (tab === 'Requests') {
+            const task = allTasks.find((t) => String(t.id) === String(item.id));
+            if (task && task.creator && task.creator.id === user?.id) {
+              router.push({ pathname: '/r-request-details', params: { id: item.id } });
+            } else {
+              router.push({ pathname: '/v-request-details', params: { id: item.id } });
+            }
+          }
           else if (tab === 'Profiles') router.push('/profile/' + item.id as any);
         }}
       />

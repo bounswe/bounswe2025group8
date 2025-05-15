@@ -66,16 +66,7 @@ export default function RActiveRequestsScreen() {
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: themeColors.gray }]}> 
       {/* Top Profile */}
       {profile && (
-        <ProfileTop MOCK_USER={{
-          name: profile.name + ' ' + profile.surname,
-          profileImageUrl: '', // Add real photo if available
-          totalRating: profile.rating,
-          totalReviewCount: profile.completed_task_count,
-          volunteerRating: profile.rating,
-          volunteerReviewCount: profile.completed_task_count,
-          requesterRating: profile.rating,
-          requesterReviewCount: profile.completed_task_count,
-        }} />
+        <ProfileTop user={profile} />
       )}
 
       {/* Tab Selector */}

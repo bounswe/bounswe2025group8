@@ -98,6 +98,24 @@ export interface CategoriesResponse {
   results: Category[];
 }
 
+export interface Review {
+  id: number;
+  score: number;
+  comment: string;
+  timestamp: string;
+  reviewer: UserProfile;
+  reviewee: UserProfile;
+  task: number;
+}
+
+export interface UserReviewsResponse {
+  status: string;
+  data: {
+    reviews: Review[];
+    pagination: any;
+  };
+}
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -452,6 +470,26 @@ export const logout = async (): Promise<void> => {
   } catch (error) {
     if (error instanceof AxiosError) {
       console.error('Logout error details:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+    }
+    throw error;
+  }
+};
+
+export const getUserReviews = async (userId: number, page = 1, limit = 10): Promise<UserReviewsResponse> => {
+  try {
+    const response = await api.get<UserReviewsResponse>(`/users/${userId}/reviews/`, {
+      params: { page, limit }
+    });
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get user reviews error details:', {
         error: error.message,
         request: error.config,
         response: error.response?.data,

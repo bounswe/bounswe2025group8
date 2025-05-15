@@ -5,24 +5,18 @@ import { useTheme } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
 import TabButton from './TabButton';
 import RatingPill from './RatingPill';
+import { UserProfile } from '../../lib/api';
+import { useRouter } from 'expo-router';
 
 type ProfileTopProps = {
-    MOCK_USER: {
-        name: string;
-        profileImageUrl: string;
-        totalRating: number;
-        totalReviewCount: number;
-        volunteerRating: number;
-        volunteerReviewCount: number;
-        requesterRating: number;
-        requesterReviewCount: number;
-    };
+    user: UserProfile & { profileImageUrl?: string };
 };
 
-export default function ProfileTop({ MOCK_USER }: ProfileTopProps) {
+export default function ProfileTop({ user }: ProfileTopProps) {
     const { colors } = useTheme();
     const colorScheme = useColorScheme();
     const themeColors = Colors[colorScheme || 'light']; 
+    const router = useRouter();
     return (
         <View style={[styles.container, { backgroundColor: themeColors.background }]}>
 
@@ -35,8 +29,12 @@ export default function ProfileTop({ MOCK_USER }: ProfileTopProps) {
                 />
 
                 <View style={{ flexDirection: 'row' }}>
-                    <Ionicons name="notifications-outline" size={25} color={colors.text} style={styles.icon} />
-                    <Ionicons name="settings-outline" size={25} color={colors.text} style={styles.icon} />
+                    <TouchableOpacity onPress={() => router.push('/notifications')}>
+                        <Ionicons name="notifications-outline" size={25} color={colors.text} style={styles.icon} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => router.push('/settings')}>
+                        <Ionicons name="settings-outline" size={25} color={colors.text} style={styles.icon} />
+                    </TouchableOpacity>
                 </View>
             </View>
 
@@ -51,7 +49,7 @@ export default function ProfileTop({ MOCK_USER }: ProfileTopProps) {
                 {/* Avatar */}
 
                 <Image
-                    source={{uri: MOCK_USER.profileImageUrl}}
+                    source={user.profileImageUrl ? { uri: user.profileImageUrl } : require('../../assets/images/empty_profile_photo.png')}
                     style={styles.avatar}
                 />
 
@@ -59,25 +57,18 @@ export default function ProfileTop({ MOCK_USER }: ProfileTopProps) {
                 <View style={styles.infoColumn}>
 
                     {/* Name */}
-                    <Text style={[styles.name, { color: colors.text }]}> {MOCK_USER.name} </Text>
+                    <Text style={[styles.name, { color: colors.text }]}> {user.name} {user.surname} </Text>
 
                     {/* Rating row */}
                     <View style={styles.ratingRow}>
-
                         {/* Rating pill */}
                         <RatingPill
-                          rating={MOCK_USER.totalRating}
-                          reviewCount={MOCK_USER.totalReviewCount}
+                          rating={user.rating}
+                          reviewCount={user.completed_task_count}
                           backgroundColor={themeColors.pink}
                           textColor="#fff"
                           iconColor="#fff"
                         />
-
-                        {/* Edit button */}
-                        <TouchableOpacity style={[styles.editButton, { borderColor: colors.text }]}>
-                            <Text style={[styles.editButtonText, { color: colors.text }]}>Edit Profile</Text>
-                        </TouchableOpacity>
-
                     </View>
 
                 </View>

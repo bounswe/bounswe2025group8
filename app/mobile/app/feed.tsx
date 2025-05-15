@@ -134,7 +134,10 @@ export default function Feed() {
           <TouchableOpacity
             key={task.id}
             style={[styles.requestRow, { backgroundColor: colors.card }]}
-            onPress={() => router.push('/request/' + task.id as any)}
+            onPress={() => router.push({
+              pathname: (task.creator && task.creator.id === user?.id) ? '/r-request-details' : '/v-request-details',
+              params: { id: task.id }
+            })}
           >
             <Image source={require('../assets/images/help.png')} style={styles.requestImage} />
             <View style={styles.requestInfo}>

@@ -5,10 +5,8 @@ import { useTheme } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
 import ProfileTop from '../components/ui/ProfileTop';
 import TabButton from '../components/ui/TabButton';
-import { MOCK_USER } from './profile';
 import { Ionicons } from '@expo/vector-icons';
 import RequestCard, { RequestCardProps } from '../components/ui/RequestCard';
-import { MOCK_R_PAST_REQUESTS } from './profile';
 
 export default function RPastRequestsScreen() {
   const router = useRouter();
@@ -20,7 +18,7 @@ export default function RPastRequestsScreen() {
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: themeColors.gray }]}> 
       {/* Top Profile */}
-      <ProfileTop MOCK_USER={MOCK_USER} />
+      {/* <ProfileTop user={userObject} /> */}
 
       {/* Tab Selector */}
       <View style={styles.tabSelectorContainer}>
@@ -58,14 +56,7 @@ export default function RPastRequestsScreen() {
       </View>
 
       <View style={styles.content}>
-        {MOCK_R_PAST_REQUESTS.map((req, idx) => (
-          <RequestCard
-            key={idx}
-            {...req}
-            status={req.status.toString()}
-            onPress={() => router.push({ pathname: './r-request-details', params: { arrayName: 'MOCK_R_PAST_REQUESTS', index: idx } })}
-          />
-        ))}
+        {/* Render real requests here if available */}
       </View>
     </ScrollView>
   );

@@ -4,14 +4,13 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
 import { useColorScheme } from 'react-native';
-import { MOCK_V_ACTIVE_REQUESTS, MOCK_V_PAST_REQUESTS, MOCK_R_ACTIVE_REQUESTS, MOCK_R_PAST_REQUESTS } from './profile';
 import { Ionicons } from '@expo/vector-icons';
 
 const MOCK_MAP: Record<string, any[]> = {
-  MOCK_V_ACTIVE_REQUESTS,
-  MOCK_V_PAST_REQUESTS,
-  MOCK_R_ACTIVE_REQUESTS,
-  MOCK_R_PAST_REQUESTS,
+  // MOCK_V_ACTIVE_REQUESTS,
+  // MOCK_V_PAST_REQUESTS,
+  // MOCK_R_ACTIVE_REQUESTS,
+  // MOCK_R_PAST_REQUESTS,
 };
 
 const backgroundColors: Record<string, string> = {
