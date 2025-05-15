@@ -102,16 +102,15 @@ export default function Feed() {
               <Text style={[styles.welcomeText, { color: colors.text }]}>{user ? 'Welcome back' : 'Welcome Guest'}</Text>
             </View>
           </View>
-          {user && (
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <TouchableOpacity onPress={() => router.push('/notifications')} style={{ marginRight: 12 }}>
-                <Ionicons name="notifications-outline" size={24} color={colors.text} />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => router.push('/settings')}>
-                <Ionicons name="settings-outline" size={24} color={colors.text} />
-              </TouchableOpacity>
-            </View>
-          )}
+          {/* Always show notifications and settings buttons */}
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity onPress={() => router.push('/notifications')} style={{ marginRight: 12 }}>
+              <Ionicons name="notifications-outline" size={24} color={colors.text} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/settings')}>
+              <Ionicons name="settings-outline" size={24} color={colors.text} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* — Search bar — */}
