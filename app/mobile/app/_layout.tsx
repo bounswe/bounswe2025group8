@@ -44,7 +44,13 @@ function RootNavigator() {
   const router = useRouter();
 
   useEffect(() => {
-    const currentRoute = segments[0] || 'index'; 
+    if (!segments || (segments.length as number) === 0) {
+      // Segments not yet available, or navigating to root.
+      // This can happen during initial load or aggressive navigation resets like logout.
+      // Returning early can prevent errors from trying to access segments[0] too soon.
+      return;
+    }
+    const currentRoute = segments[0] || 'index';
     const inAuthGroup = authRoutes.includes(currentRoute);
     const inPublicAppGroup = publicAppRoutes.includes(currentRoute);
 
