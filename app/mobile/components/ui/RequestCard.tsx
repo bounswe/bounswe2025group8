@@ -16,6 +16,9 @@ export interface RequestCardProps {
 }
 
 const RequestCard: React.FC<RequestCardProps> = ({ title, imageUrl, category, urgencyLevel, status, distance, time, onPress }) => {
+  if (typeof title === 'object') {
+    console.error('RequestCard: TITLE IS AN OBJECT!', title);
+  }
   // Debug: Log if any prop is not a string
   if (
     typeof title !== 'string' ||
@@ -73,7 +76,7 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, imageUrl, category, ur
           style={styles.cardImage} 
         />
         <View style={styles.infoContainer}>
-          <Text style={[styles.title, { color: themeColors.text }]} numberOfLines={1}>{String(title || '')}</Text>
+          <Text style={[styles.title, { color: themeColors.text }]} numberOfLines={1}>{typeof title === 'string' ? title : 'INVALID_TITLE_TYPE'}</Text>
           <Text style={[styles.distanceTimeText, { color: themeColors.textMuted }]} numberOfLines={1}>{`${String(distance || '')} • ${String(time || '')}`}</Text>
           <Text 
             style={[
