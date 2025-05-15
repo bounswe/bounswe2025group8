@@ -3,11 +3,24 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { useTheme } from '@react-navigation/native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Terms() {
   const { colors } = useTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
+
+  const handleAgree = async () => {
+    try {
+      await AsyncStorage.setItem('termsAgreedV1', 'true');
+      router.back();
+    } catch (e) {
+      // saving error
+      console.error("Failed to save agreement to AsyncStorage", e);
+      // Optionally, still try to go back or show an error to the user
+      router.back(); // Or router.replace('/signup') as a fallback if AsyncStorage fails critically
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
@@ -95,12 +108,7 @@ export default function Terms() {
 
       <TouchableOpacity 
         style={[styles.agreeButton, { backgroundColor: colors.primary }]} 
-        onPress={() => {
-          router.replace({
-            pathname: '/signup',
-            params: { agreed: 'true' }
-          });
-        }}
+        onPress={handleAgree}
       >
         <Text style={styles.agreeButtonText}>I Agree</Text>
       </TouchableOpacity>

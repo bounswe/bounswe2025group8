@@ -1,8 +1,8 @@
 // app/signup.tsx
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@react-navigation/native';
+import { useTheme, useFocusEffect } from '@react-navigation/native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Image,
   Pressable,
@@ -18,6 +18,7 @@ import {
   Keyboard,
   SafeAreaView
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { register } from '../lib/api';
 
 const validatePassword = (password: string) => {
@@ -41,7 +42,6 @@ const validatePassword = (password: string) => {
 
 export default function SignUp() {
   const router = useRouter();
-  const params = useLocalSearchParams();
   const { colors } = useTheme();
   const [fullName, setFullName]   = useState('');
   const [username, setUsername]   = useState('');
@@ -53,13 +53,22 @@ export default function SignUp() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
 
-  useEffect(() => {
-    if (params.agreed === 'true') {
-      setAgree(true);
-      // Optionally clear the param
-      router.setParams({ agreed: undefined });
-    }
-  }, [params.agreed]);
+  useFocusEffect(
+    useCallback(() => {
+      const checkTermsAgreement = async () => {
+        try {
+          const agreed = await AsyncStorage.getItem('termsAgreedV1');
+          if (agreed === 'true') {
+            setAgree(true);
+            await AsyncStorage.removeItem('termsAgreedV1');
+          }
+        } catch (e) {
+          console.error("Failed to read terms agreement from AsyncStorage", e);
+        }
+      };
+      checkTermsAgreement();
+    }, [])
+  );
 
   const handleSignUp = async () => {
     if (!fullName || !username || !phone || !email || !password) {
@@ -228,7 +237,7 @@ export default function SignUp() {
             </Text>
 
             <Pressable 
-              onPress={() => router.push({ pathname: '/terms', params: { fromSignup: 'true' } })} 
+              onPress={() => router.push({ pathname: '/terms' })}
               hitSlop={8}
               disabled={isLoading}
             >
