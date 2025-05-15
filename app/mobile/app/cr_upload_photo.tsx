@@ -102,7 +102,7 @@ export default function CRUploadPhoto() {
           style={[styles.nextBtn, { backgroundColor: colors.primary }]} 
           onPress={() => {
             router.push({
-              pathname: '/cr_address',
+              pathname: '/cr_deadline',
               params
             });
           }}

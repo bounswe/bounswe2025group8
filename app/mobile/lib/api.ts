@@ -5,9 +5,9 @@ import { Platform } from 'react-native';
 
 // Use different base URLs for iOS and Android
 const API_BASE_URL = Platform.select({
-  ios: 'http://192.168.1.106:8000/api',     // For iOS simulator and Expo Go
-  android: 'http://10.0.2.2:8000/api',  // For Android emulator
-  default: 'http://10.0.2.2:8000/api'
+  ios: 'http://172.20.10.2:8000/api',     // For iOS simulator and Expo Go
+  android: 'http://172.20.10.2:8000/api',  // For Android emulator
+  default: 'http://172.20.10.2:8000/api'
 });
 
 interface LoginResponse {
