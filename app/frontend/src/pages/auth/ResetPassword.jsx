@@ -22,10 +22,35 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [resetError, setResetError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [isTokenValid, setIsTokenValid] = useState(false);
+  const [tokenChecked, setTokenChecked] = useState(false);
 
-  const { resetPassword, loading, error } = useAuth(); // Now using Redux state
+  const { resetPassword, verifyToken, loading, error } = useAuth(); // Now using Redux state
   const navigate = useNavigate();
   const { token } = useParams(); // Get the token from the URL
+  
+  // Verify token on component mount
+  useEffect(() => {
+    const checkToken = async () => {
+      if (token) {
+        try {
+          const result = await verifyToken(token);
+          setIsTokenValid(true);
+          setTokenChecked(true);
+        } catch (error) {
+          setIsTokenValid(false);
+          setTokenChecked(true);
+          setResetError("Invalid or expired token. Please request a new password reset link.");
+        }
+      } else {
+        setIsTokenValid(false);
+        setTokenChecked(true);
+        setResetError("No reset token provided. Please request a password reset from the login page.");
+      }
+    };
+    
+    checkToken();
+  }, [token, verifyToken]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,16 +58,24 @@ const ResetPassword = () => {
     if (password !== confirmPassword) {
       return setResetError("Passwords don't match");
     }
+    
+    if (!isTokenValid) {
+      return setResetError("Invalid or expired token. Please request a new password reset.");
+    }
+    
     try {
       setResetError("");
       setSuccessMessage("");
-      await resetPassword({ password, token });
-      setSuccessMessage("Password has been reset successfully!");
-      setTimeout(() => {
-        navigate("/login");
-      }, 3000);
+      const result = await resetPassword(password, token);
+      
+      if (result && result.success) {
+        setSuccessMessage("Password has been reset successfully!");
+        setTimeout(() => {
+          navigate("/login");
+        }, 3000);
+      }
     } catch (error) {
-      setResetError("Failed to reset password: " + error.message);
+      setResetError("Failed to reset password: " + (error.message || "Reset failed"));
     }
   };
 

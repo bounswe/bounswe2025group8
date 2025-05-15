@@ -7,3 +7,4 @@ from .bookmark_serializers import *
 from .notification_serializers import *
 from .photo_serializers import *
 from .comment_serializers import *
+from .category_serializers import *

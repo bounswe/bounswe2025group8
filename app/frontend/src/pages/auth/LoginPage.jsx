@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   TextField,
@@ -12,13 +12,15 @@ import {
   IconButton,
   Paper,
   Grid,
+  Alert,
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
-import  useAuth  from "../../hooks/useAuth"; // Updated import path
+import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
+import useAuth from "../../hooks/useAuth"; // Updated import path
 import logoImage from "../../assets/logo.png";
 import lockIcon from "../../assets/lock.svg";
 import mailIcon from "../../assets/mail.svg";
+import WeatherWidget from "../../components/weather/WeatherWidget";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -26,18 +28,29 @@ const LoginPage = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState(""); // Renamed to avoid conflict
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   const { login, loading, error } = useAuth(); // Now getting loading and error from Redux
   const navigate = useNavigate();
+  const location = useLocation();
 
+  // Check if user just registered
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("registered") === "true") {
+      setRegistrationSuccess(true);
+    }
+  }, [location]);
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setLoginError("");
-      await login(email, password);
+      await login({ email, password });
       navigate("/"); // Redirect to home dashboard after login
     } catch (error) {
-      setLoginError("Failed to sign in: " + error.message);
+      setLoginError(
+        "Failed to sign in: " + (error.message || "Invalid credentials")
+      );
     }
   };
 
@@ -52,6 +65,18 @@ const LoginPage = () => {
         justifyContent: "center",
       }}
     >
+      {/* Weather widget positioned at the top right */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: 16,
+          right: 16,
+          zIndex: 10,
+        }}
+      >
+        <WeatherWidget />
+      </Box>
+
       <Container maxWidth="sm">
         {/* Logo and Title updated to be side by side */}
         <Box
@@ -151,6 +176,14 @@ const LoginPage = () => {
               <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
                 Enter your details to sign in to your account
               </Typography>
+
+              {/* Show registration success message if applicable */}
+              {registrationSuccess && (
+                <Alert severity="success" sx={{ mb: 2, width: "100%" }}>
+                  Registration successful! You can now log in with your
+                  credentials.
+                </Alert>
+              )}
 
               {/* Show either the login error or the Redux error */}
               {(loginError || error) && (

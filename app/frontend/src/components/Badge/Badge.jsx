@@ -1,8 +1,7 @@
 import React from 'react';
 import { Box, Typography, Tooltip, CircularProgress } from '@mui/material';
 import { Icon } from '@mui/material';
-import { format } from 'date-fns';
-import styles from './Badge.module.css';
+import { formatDate } from '../../utils/dateUtils';
 
 const Badge = ({ badge }) => {
   const { title, description, icon, image, color, earned, earnedDate, progress } = badge;
@@ -16,9 +15,9 @@ const Badge = ({ badge }) => {
         <Box>
           <Typography variant="subtitle2">{title}</Typography>
           <Typography variant="body2">{description}</Typography>
-          {earned && (
+          {earned && earnedDate && (
             <Typography variant="caption">
-              Earned on {format(new Date(earnedDate), 'MMM d, yyyy')}
+              Earned on {formatDate(earnedDate, 'MMM d, yyyy')}
             </Typography>
           )}
           {!earned && progress !== undefined && (

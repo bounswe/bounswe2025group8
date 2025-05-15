@@ -1,151 +1,105 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Box, Typography, Button, Grid, Paper } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import CategoryCard from '../components/CategoryCard';
-import RequestCard from '../components/RequestCard'; // Import the RequestCard component
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Typography,
+  Button,
+  Grid,
+  Paper,
+  CircularProgress,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import CategoryCard from "../components/CategoryCard";
+import RequestCard from "../components/RequestCard"; // Import the RequestCard component
+import * as categoryService from "../services/categoryService";
+import * as taskService from "../services/taskService";
+import { getCategoryImage } from "../constants/categories";
 
 const Home = () => {
   const navigate = useNavigate();
   const handleCategoryClick = (categoryId) => {
     // Navigate to requests filtered by this category
     navigate(`/requests?category=${categoryId}`);
-  };
-
-  // Mock popular categories data - in a real app, this would come from an API
-  const popularCategories = useMemo(
-    () => [
-      {
-        id: 'HOME_CLEANING',
-        title: 'Home Cleaning',
-        image: 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf',
-        requestCount: 24,
-      },
-      {
-        id: 'TECHNICAL_SUPPORT',
-        title: 'Technical Support',
-        image:
-          'https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&w=500&q=80',
-        requestCount: 18,
-      },
-      {
-        id: 'HOME_REPAIR',
-        title: 'Home Repairs',
-        image: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39',
-        requestCount: 32,
-      },
-      {
-        id: 'PLUMBING',
-        title: 'Professional Advice',
-        image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40',
-        requestCount: 15,
-      },
-    ],
-    []
-  );
-
-  // Mock popular requests data
-  const popularRequests = useMemo(
-    () => [
-      {
-        id: 101,
-        title: 'Need help with plumbing repairs',
-        description: 'Leaking sink that needs immediate attention',
-        categories: ['HOME_REPAIR', 'PLUMBING'],
-        imageUrl: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a',
-        urgency: 'High',
-        location: 'Downtown',
-        date: '2023-06-15',
-        status: 'Open',
-        postedTime: '2 days ago',
-        distance: '1.2 km away',
-      },
-      {
-        id: 102,
-        title: 'Computer not starting after update',
-        description: "My laptop won't boot after the latest Windows update",
-        categories: ['TECHNICAL_SUPPORT'],
-        urgency: 'Medium',
-        location: 'Remote',
-        date: '2023-06-14',
-        status: 'Open',
-        postedTime: '3 days ago',
-        distance: '3.5 km away',
-      },
-      {
-        id: 103,
-        title: 'Deep cleaning for 2-bedroom apartment',
-        description: 'Need thorough cleaning of my apartment including carpets',
-        categories: ['HOME_CLEANING'],
-        urgency: 'Low',
-        location: 'North Side',
-        date: '2023-06-18',
-        status: 'Open',
-        postedTime: '1 day ago',
-        distance: '2.1 km away',
-      },
-      {
-        id: 104,
-        title: 'Tax advice for small business',
-        description: 'Need consultation about tax deductions for my new business',
-        categories: ['PROFESSIONAL_ADVICE'],
-        urgency: 'Medium',
-        location: 'Remote',
-        date: '2023-06-16',
-        status: 'Open',
-        postedTime: '5 hours ago',
-        distance: 'Remote',
-      },
-      {
-        id: 105,
-        title: 'Kitchen cabinet installation',
-        description: 'Need help installing new kitchen cabinets and countertop',
-        categories: ['HOME_REPAIR'],
-        urgency: 'Medium',
-        location: 'West End',
-        date: '2023-06-20',
-        status: 'Open',
-        postedTime: '12 hours ago',
-        distance: '4.7 km away',
-      },
-      {
-        id: 106,
-        title: 'WiFi network setup for home office',
-        description: 'Need help setting up a secure network for remote work',
-        categories: ['TECHNICAL_SUPPORT'],
-        urgency: 'Low',
-        location: 'Southside',
-        date: '2023-06-19',
-        status: 'Open',
-        postedTime: '1 day ago',
-        distance: '3.0 km away',
-      },
-    ],
-    []
-  );
-
+  }; // We're now fetching categories and requests from the API
   const [categories, setCategories] = useState([]);
   const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState({
+    categories: false,
+    requests: false,
+  });
+  const [error, setError] = useState({
+    categories: null,
+    requests: null,
+  });
 
-  // Simulate fetching categories and requests from an API
+  // Fetch data from API
   useEffect(() => {
-    // In a real app, these would be API calls
-    setCategories(popularCategories);
-    setRequests(popularRequests);
-  }, [popularCategories, popularRequests]);
+    const fetchData = async () => {
+      // Fetch categories
+      setLoading((prev) => ({ ...prev, categories: true }));
+      try {
+        const popularCategories = await categoryService.getPopularCategories(4);
+        // Transform API response to match UI component expectations
+        const formattedCategories = popularCategories.map((category) => ({
+          id: category.value,
+          title: category.name,
+          image: getCategoryImage(category.value),
+          requestCount: category.task_count,
+        }));
+        setCategories(formattedCategories);
+        setError((prev) => ({ ...prev, categories: null }));
+      } catch (err) {
+        console.error("Failed to fetch categories:", err);
+        setError((prev) => ({
+          ...prev,
+          categories: "Failed to load categories",
+        }));
+      } finally {
+        setLoading((prev) => ({ ...prev, categories: false }));
+      }
+
+      // Fetch popular requests
+      setLoading((prev) => ({ ...prev, requests: true }));
+      try {
+        const popularTasks = await taskService.getPopularTasks(6);
+        setRequests(popularTasks);
+        setError((prev) => ({ ...prev, requests: null }));
+      } catch (err) {
+        console.error("Failed to fetch popular requests:", err);
+        setError((prev) => ({
+          ...prev,
+          requests: "Failed to load popular requests",
+        }));
+        // Clear requests on error
+        setRequests([]);
+      } finally {
+        setLoading((prev) => ({ ...prev, requests: false }));
+      }
+    };
+    fetchData();
+  }, []);
+  // Using the centralized getCategoryImage function from constants/categories.js
 
   return (
     <>
+      {" "}
       {/* Popular Categories Section */}
       <Box sx={{ mb: 6 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h5" component="h2" sx={{ fontWeight: 'medium' }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
+          <Typography variant="h5" component="h2" sx={{ fontWeight: "medium" }}>
             Popular Categories
           </Typography>
           {categories.length > 4 && (
             <Button
               variant="text"
               color="primary"
-              onClick={() => navigate('/categories')}
+              onClick={() => navigate("/categories")}
               size="small"
             >
               See All
@@ -153,31 +107,86 @@ const Home = () => {
           )}
         </Box>
 
-        <Grid container spacing={2} sx={{ mt: 2, justifyContent: 'center' }}>
-          {categories.slice(0, 4).map((category) => (
-            <Grid item xs={6} sm={6} md={3} lg={3} key={category.id}>
-              <CategoryCard
-                title={category.title}
-                image={category.image}
-                categoryId={category.id}
-                onClick={() => handleCategoryClick(category.id)}
-              />
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-
+        {loading.categories ? (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+            <CircularProgress />
+          </Box>
+        ) : error.categories ? (
+          <Box sx={{ textAlign: "center", py: 4 }}>
+            <Typography color="error">{error.categories}</Typography>
+            <Button
+              variant="contained"
+              sx={{ mt: 2 }}
+              onClick={() => {
+                setLoading((prev) => ({ ...prev, categories: true }));
+                categoryService
+                  .getPopularCategories(4)
+                  .then((data) => {
+                    const formattedCategories = data.map((category) => ({
+                      id: category.value,
+                      title: category.name,
+                      image: getCategoryImage(category.value),
+                      requestCount: category.task_count,
+                    }));
+                    setCategories(formattedCategories);
+                    setError((prev) => ({ ...prev, categories: null }));
+                  })
+                  .catch((err) => {
+                    console.error("Failed to fetch categories:", err);
+                    setError((prev) => ({
+                      ...prev,
+                      categories: "Failed to load categories",
+                    }));
+                  })
+                  .finally(() => {
+                    setLoading((prev) => ({ ...prev, categories: false }));
+                  });
+              }}
+            >
+              Try Again
+            </Button>
+          </Box>
+        ) : (
+          <Grid container spacing={2} sx={{ mt: 2, justifyContent: "center" }}>
+            {categories.length > 0 ? (
+              categories.slice(0, 4).map((category) => (
+                <Grid item xs={6} sm={6} md={3} lg={3} key={category.id}>
+                  <CategoryCard
+                    title={category.title}
+                    image={category.image}
+                    categoryId={category.id}
+                    onClick={() => handleCategoryClick(category.id)}
+                  />
+                </Grid>
+              ))
+            ) : (
+              <Box sx={{ textAlign: "center", py: 4, width: "100%" }}>
+                <Typography color="text.secondary">
+                  No categories available
+                </Typography>
+              </Box>
+            )}
+          </Grid>
+        )}
+      </Box>{" "}
       {/* Popular Requests Section */}
       <Box sx={{ mb: 6 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h5" component="h2" sx={{ fontWeight: 'medium' }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
+          <Typography variant="h5" component="h2" sx={{ fontWeight: "medium" }}>
             Popular Requests
           </Typography>
           {requests.length > 6 && (
             <Button
               variant="text"
               color="primary"
-              onClick={() => navigate('/requests')}
+              onClick={() => navigate("/requests")}
               size="small"
             >
               See All
@@ -185,13 +194,60 @@ const Home = () => {
           )}
         </Box>
 
-        <Grid container spacing={3} sx={{ mt: 2, justifyContent: 'center' }}>
-          {requests.slice(0, 6).map((request) => (
-            <Grid item xs={12} sm={6} key={request.id}>
-              <RequestCard request={request} onClick={() => navigate(`/requests/${request.id}`)} />
-            </Grid>
-          ))}
-        </Grid>
+        {loading.requests ? (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+            <CircularProgress />
+          </Box>
+        ) : error.requests ? (
+          <Box sx={{ textAlign: "center", py: 4 }}>
+            <Typography color="error">{error.requests}</Typography>
+            <Button
+              variant="contained"
+              sx={{ mt: 2 }}
+              onClick={() => {
+                setLoading((prev) => ({ ...prev, requests: true }));
+                taskService
+                  .getPopularTasks(6)
+                  .then((data) => {
+                    setRequests(data);
+                    setError((prev) => ({ ...prev, requests: null }));
+                  })
+                  .catch((err) => {
+                    console.error("Failed to fetch popular requests:", err);
+                    setError((prev) => ({
+                      ...prev,
+                      requests: "Failed to load popular requests",
+                    }));
+                    setRequests([]); // Clear requests on error
+                  })
+                  .finally(() => {
+                    setLoading((prev) => ({ ...prev, requests: false }));
+                  });
+              }}
+            >
+              Try Again
+            </Button>
+          </Box>
+        ) : (
+          <Grid container spacing={3} sx={{ mt: 2, justifyContent: "center" }}>
+            {requests.length > 0 ? (
+              requests.slice(0, 6).map((request) => (
+                <Grid item xs={12} sm={6} key={request.id}>
+                  <RequestCard
+                    request={request}
+                    onClick={() => navigate(`/requests/${request.id}`)}
+                  />
+                </Grid>
+              ))
+            ) : (
+              <Box sx={{ textAlign: "center", py: 4, width: "100%" }}>
+                <Typography color="text.secondary">
+                  No requests available
+                </Typography>
+              </Box>
+            )}
+          </Grid>
+        )}
       </Box>
     </>
   );

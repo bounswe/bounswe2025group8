@@ -27,7 +27,8 @@ SECRET_KEY = 'django-insecure-slxa^gdo!g*y9r7)2_)#fg=zzjif2i3&=$u%n-wv20d&jlptzi
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(int(os.environ.get('DEBUG', 1)))
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+# Make sure this is how you're handling ALLOWED_HOSTS
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
 
 
 # Application definition
@@ -41,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',  # Add this for token authentication
+    'corsheaders',  # Add CORS headers support
     'core',  # Add core app
 ]
 
@@ -62,10 +64,11 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
 }
 
-# Modify middleware to disable CSRF
+# Modify middleware to disable CSRF and add CORS middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Add CORS middleware before CommonMiddleware
     'django.middleware.common.CommonMiddleware',
     # Comment out CSRF middleware to disable CSRF protection for API endpoints
     # 'django.middleware.csrf.CsrfViewMiddleware',
@@ -162,3 +165,31 @@ AUTH_USER_MODEL = 'core.RegisteredUser'
 # Email settings (for password reset functionality)
 # For development, use the console backend
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# CORS settings
+CORS_ALLOW_ALL_ORIGINS = True  # In development, allow all origins
+#For production, specify allowed origins:
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # Vite default port
+    "http://165.227.152.202:5173",
+]
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+CORS_ALLOW_CREDENTIALS = True  # Allow cookies in cross-origin requests

@@ -14,9 +14,16 @@ const RequestCard = ({ request, userRole = 'requester' }) => {
   const handleClick = () => {
     navigate(`/requests/${request.id}`);
   };
-  
-  // Style based on urgency
+    // Style based on urgency
   const getUrgencyStyle = (urgency) => {
+    // Check if urgency is defined before using toLowerCase()
+    if (!urgency) {
+      return {
+        bgcolor: '#9E9E9E',
+        color: 'white'
+      };
+    }
+    
     switch (urgency.toLowerCase()) {
       case 'high':
         return {
@@ -119,21 +126,19 @@ const RequestCard = ({ request, userRole = 'requester' }) => {
               <Typography variant="body2" color="text.secondary">
                 {request.distance}
               </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            </Box>            <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <AccessTimeIcon fontSize="small" sx={{ color: '#9E9E9E', mr: 0.5 }} />
               <Typography variant="body2" color="text.secondary">
-                {request.timeAgo}
+                {request.timeAgo || 'Recently'}
               </Typography>
             </Box>
           </Box>
-          
-          {/* Requester info (only shown when user is a volunteer) */}
+            {/* Requester info (only shown when user is a volunteer) */}
           {userRole === 'volunteer' && request.requesterName && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
               <PersonIcon fontSize="small" sx={{ color: '#9E9E9E' }} />
               <Typography variant="body2" color="text.secondary">
-                {request.requesterName} ({request.requesterRating}★)
+                {request.requesterName} ({request.requesterRating || 'N/A'}★)
               </Typography>
             </Box>
           )}
@@ -151,12 +156,10 @@ const RequestCard = ({ request, userRole = 'requester' }) => {
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <ArrowForwardIosIcon sx={{ color: '#9E9E9E' }} />
         </Box>
-      </Box>
-      
-      {/* Category */}
+      </Box>        {/* Category */}
       <Box sx={{ mb: 1, display: 'flex', justifyContent: 'center' }}>
         <Chip
-          label={request.category}
+          label={request.category || 'Uncategorized'}
           size="small"
           sx={{ 
             bgcolor: '#EFF1FF', 
@@ -167,10 +170,9 @@ const RequestCard = ({ request, userRole = 'requester' }) => {
         />
       </Box>
       
-      {/* Status and Urgency */}
-      <Box sx={{ display: 'flex', gap: 1, mt: 'auto' }}>
+      {/* Status and Urgency */}      <Box sx={{ display: 'flex', gap: 1, mt: 'auto' }}>
         <Chip
-          label={request.urgency + ' Urgency'}
+          label={(request.urgency || 'Unknown') + ' Urgency'}
           size="small"
           sx={{ 
             ...getUrgencyStyle(request.urgency), 
@@ -179,7 +181,7 @@ const RequestCard = ({ request, userRole = 'requester' }) => {
           }}
         />
         <Chip
-          label={request.status}
+          label={request.status || 'Unknown'}
           size="small"
           sx={{ 
             ...getStatusStyle(request.status), 

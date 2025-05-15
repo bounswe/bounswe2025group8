@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { authAPI } from '../../services/api';
 
 // Load user from localStorage
 const getUserFromStorage = () => {
@@ -31,25 +32,30 @@ export const loginAsync = createAsyncThunk(
   'auth/loginAsync',
   async ({ email, password }, { rejectWithValue }) => {
     try {
-      // In a real app, this would be an API call to your backend
-      if (email && password) {
-        // Simulate successful login
-        const userData = { 
-          id: 'user-' + Date.now(),
-          email, 
-          name: email.split('@')[0] 
+      const response = await authAPI.login({ email, password });
+      
+      if (response.status === 'success') {
+        const userData = response.data.user_id ? {
+          id: response.data.user_id,
+          email: email,
+          name: response.data.name || email.split('@')[0]
+        } : {
+          id: 'temp-user-id',
+          email: email,
+          name: email.split('@')[0]
         };
         
-        const token = 'mock-token-' + Date.now();
-        const role = email.includes('admin') ? 'admin' : 'user';
+        const token = response.data.token;
+        const role = 'user'; // Default role, modify as needed based on your backend
         
         localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('userId', userData.id); // Also store userId separately
         localStorage.setItem('token', token);
         localStorage.setItem('role', role);
         
         return { user: userData, token, role };
       } else {
-        return rejectWithValue('Invalid email or password');
+        return rejectWithValue(response.message || 'Login failed');
       }
     } catch (error) {
       return rejectWithValue(error.message || 'Login failed');
@@ -59,27 +65,41 @@ export const loginAsync = createAsyncThunk(
 
 export const registerAsync = createAsyncThunk(
   'auth/registerAsync',
-  async ({ email, password, name }, { rejectWithValue }) => {
+  async ({firstName,
+        lastName,
+        username,
+        email,
+        phone,
+        password,
+        confirmPassword }, { rejectWithValue }) => {
     try {
-      // In a real app, this would be an API call to your backend
-      if (email && password && name) {
-        // Simulate successful registration
+      const userData = {
+        name: firstName,
+        surname: lastName,
+        username,
+        email,
+        phone_number: phone,
+        password,
+        confirm_password: confirmPassword
+      };
+      
+      const response = await authAPI.register(userData);
+      
+      if (response.status === 'success') {
         const userData = {
-          id: 'user-' + Date.now(),
-          email,
-          name
+          id: response.data.user_id,
+          email: email,
+          name: response.data.name || name
         };
         
-        const token = 'mock-token-' + Date.now();
-        const role = 'user'; // Default role for new users
-        
-        localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('token', token);
-        localStorage.setItem('role', role);
-        
-        return { user: userData, token, role };
+        // After registration, user needs to login
+        return { 
+          registered: true, 
+          user: userData,
+          message: response.message || 'Registration successful. Please login.'
+        };
       } else {
-        return rejectWithValue('Invalid registration data');
+        return rejectWithValue(response.message || 'Registration failed');
       }
     } catch (error) {
       return rejectWithValue(error.message || 'Registration failed');
@@ -91,15 +111,41 @@ export const forgotPassword = createAsyncThunk(
   'auth/forgotPassword',
   async (email, { rejectWithValue }) => {
     try {
-      // In a real app, this would be an API call to your backend
-      if (email) {
-        // Simulate sending reset password email
-        return { success: true, message: 'Password reset email sent' };
+      const response = await authAPI.requestPasswordReset(email);
+      
+      if (response.status === 'success') {
+        return { 
+          success: true, 
+          message: response.message || 'Password reset email sent',
+          token: response.data?.token // This will only be available in DEBUG mode
+        };
       } else {
-        return rejectWithValue('Email is required');
+        return rejectWithValue(response.message || 'Password reset request failed');
       }
     } catch (error) {
       return rejectWithValue(error.message || 'Forgot password request failed');
+    }
+  }
+);
+
+export const verifyToken = createAsyncThunk(
+  'auth/verifyToken',
+  async (token, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.verifyResetToken(token);
+      
+      if (response.status === 'success') {
+        return {
+          valid: true,
+          message: response.message || 'Token is valid',
+          email: response.data?.email,
+          expiry: response.data?.token_expiry
+        };
+      } else {
+        return rejectWithValue(response.message || 'Invalid or expired token');
+      }
+    } catch (error) {
+      return rejectWithValue(error.message || 'Token verification failed');
     }
   }
 );
@@ -108,12 +154,18 @@ export const resetPassword = createAsyncThunk(
   'auth/resetPassword',
   async ({ password, token }, { rejectWithValue }) => {
     try {
-      // In a real app, this would be an API call to your backend
-      if (password && token) {
-        // Simulate password reset
-        return { success: true, message: 'Password reset successful' };
+      const response = await authAPI.resetPassword({ 
+        token: token, 
+        new_password: password 
+      });
+      
+      if (response.status === 'success') {
+        return { 
+          success: true, 
+          message: response.message || 'Password reset successful' 
+        };
       } else {
-        return rejectWithValue('Password and token are required');
+        return rejectWithValue(response.message || 'Password reset failed');
       }
     } catch (error) {
       return rejectWithValue(error.message || 'Password reset failed');
@@ -125,6 +177,25 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
+    // Load user data from localStorage
+    loadUserFromStorage(state) {
+      const stored = getUserFromStorage();
+      state.isAuthenticated = stored.isAuthenticated;
+      state.user = stored.user;
+      state.role = stored.role;
+      state.token = stored.token;
+      
+      // If user exists, ensure userName and userId are stored separately for easy access
+      if (stored.user) {
+        if (stored.user.name) {
+          localStorage.setItem('userName', stored.user.name);
+        }
+        if (stored.user.id) {
+          localStorage.setItem('userId', stored.user.id);
+        }
+      }
+    },
+    
     // Login action (synchronous for DevUserPanel)
     login(state, action) {
       state.isAuthenticated = true;
@@ -136,6 +207,11 @@ const authSlice = createSlice({
       localStorage.setItem('user', JSON.stringify(action.payload.user));
       localStorage.setItem('token', action.payload.token);
       localStorage.setItem('role', action.payload.role);
+      
+      // Store username separately for easy access
+      if (action.payload.user && action.payload.user.name) {
+        localStorage.setItem('userName', action.payload.user.name);
+      }
     },
     
     // Logout action
@@ -150,6 +226,7 @@ const authSlice = createSlice({
       localStorage.removeItem('user');
       localStorage.removeItem('token');
       localStorage.removeItem('role');
+      localStorage.removeItem('userName');
     },
     
     // Update user profile
@@ -158,6 +235,11 @@ const authSlice = createSlice({
       
       // Update localStorage
       localStorage.setItem('user', JSON.stringify(state.user));
+      
+      // Update userName if name is being updated
+      if (action.payload.name) {
+        localStorage.setItem('userName', action.payload.name);
+      }
     },
     
     // Clear error state
@@ -230,7 +312,7 @@ const authSlice = createSlice({
 });
 
 // Export actions
-export const { login, logout, updateUserProfile, clearError } = authSlice.actions;
+export const { login, logout, updateUserProfile, clearError, loadUserFromStorage } = authSlice.actions;
 
 // Selectors for easy access to auth state
 export const selectIsAuthenticated = (state) => state.auth.isAuthenticated;
