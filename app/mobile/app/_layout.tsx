@@ -57,7 +57,7 @@ function RootNavigator() {
     if (!user && !inAuthGroup && !inPublicAppGroup) {
       // User is not signed in, not in an auth screen, AND not in a public app screen.
       // Redirect to the initial screen.
-      router.replace('/index' as any);
+      router.replace('/' as any);
     } else if (user && inAuthGroup) {
       // User is signed in and IS in an auth screen (e.g. /signin).
       // Redirect to the main app screen (e.g., feed).
