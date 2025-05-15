@@ -1,0 +1,82 @@
+.container {
+    display: flex;
+    height: 100vh;
+  }
+  
+  .mainContent {
+    flex-grow: 1;
+    padding: 24px;
+    overflow: auto;
+  }
+  
+  .searchInput {
+    width: 100%;
+    max-width: 700px;
+    margin-bottom: 32px;
+    border-radius: 25px;
+    background-color: #f5f5f5;
+    padding: 2px 4px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .profileHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+  }
+  
+  .profileInfo {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .profileAvatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+  }
+  
+  .ratingContainer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .editButton {
+    border-radius: 20px;
+    border-color: #ccc;
+    color: #333;
+  }
+  
+  .roleTabs {
+    width: 100%;
+    margin-bottom: 32px;
+  }
+  
+  .requestsHeader {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  .tabText {
+    cursor: pointer;
+    margin-right: 24px;
+  }
+  
+  .requestsList {
+    margin-bottom: 32px;
+  }
+  
+  .reviewsHeader {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  .reviewsList {
+    margin-bottom: 16px;
+  }

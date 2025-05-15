@@ -1,0 +1,142 @@
+.container {
+  display: flex;
+  height: 100vh;
+}
+
+.mainContent {
+  flex-grow: 1;
+  padding: 24px;
+  overflow: auto;
+}
+
+.searchInput {
+  width: 100%;
+  max-width: 700px;
+  margin-bottom: 32px;
+  border-radius: 25px;
+  background-color: #f5f5f5;
+  padding: 2px 4px;
+  display: flex;
+  align-items: center;
+}
+
+.formHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.stepIndicator {
+  display: flex;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.stepLine {
+  flex: 1;
+  height: 4px;
+  background-color: #e0e0e0;
+}
+
+.stepLineActive {
+  background-color: #5C69FF;
+}
+
+.formContent {
+  margin-bottom: 32px;
+}
+
+.nextButton {
+  border-radius: 20px;
+  padding: 8px 30px;
+  background-color: #5C69FF;
+  color: white;
+  text-transform: none;
+  box-shadow: 0 2px 4px rgba(92, 105, 255, 0.25);
+}
+
+.inputField {
+  margin-bottom: 24px;
+}
+
+.labelText {
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.selectField {
+  width: 100%;
+  height: 56px;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  padding: 0 12px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M7 10l5 5 5-5H7z' fill='%23757575'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.textField {
+  width: 100%;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  padding: 16px 12px;
+  font-size: 16px;
+}
+
+.textareaField {
+  width: 100%;
+  min-height: 120px;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  padding: 16px 12px;
+  font-size: 16px;
+  resize: vertical;
+}
+
+.counterContainer {
+  display: flex;
+  align-items: center;
+}
+
+.counterButton {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.decrementButton {
+  background-color: #f5f5f5;
+}
+
+.incrementButton {
+  background-color: #5C69FF;
+  color: white;
+}
+
+.counterValue {
+  margin: 0 16px;
+  font-weight: bold;
+  text-align: center;
+  width: 30px;
+}
+
+.errorMessage {
+  color: #f44336;
+  margin-top: 8px;
+  font-size: 0.75rem;
+}
+
+.successMessage {
+  text-align: center;
+  padding: 24px;
+  margin-bottom: 24px;
+  border-radius: 8px;
+  background-color: #e8f5e9;
+}
