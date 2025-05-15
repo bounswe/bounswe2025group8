@@ -20,6 +20,7 @@ import LoginIcon from "@mui/icons-material/Login";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
+import DataObjectIcon from "@mui/icons-material/DataObject";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Tooltip, IconButton } from "@mui/material";
 import UserAvatar from "./UserAvatar.jsx";
@@ -60,13 +61,21 @@ const Sidebar = () => {
     { text: "Categories", icon: <CategoryIcon />, path: "/categories" },
     { text: "Requests", icon: <AssignmentIcon />, path: "/requests" },
   ];
-
   // Add role-based menu items
   if (userRole === "admin") {
     menuItems.push({
       text: "Admin Panel",
       icon: <AdminPanelSettingsIcon />,
       path: "/admin",
+    });
+  }
+  
+  // Add MockDataDemo menu item in development mode
+  if (import.meta.env.DEV) {
+    menuItems.push({
+      text: "Mock Data Demo",
+      icon: <DataObjectIcon />,
+      path: "/mock-data",
     });
   }
 

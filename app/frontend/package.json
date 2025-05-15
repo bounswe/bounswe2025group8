@@ -12,8 +12,7 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage"
-  },
-  "dependencies": {
+  },  "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.1.0",
@@ -29,6 +28,7 @@
     "react-hook-form": "^7.56.2",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.5.3",
+    "uuid": "^9.0.1",
     "yup": "^1.6.1"
   },
   "devDependencies": {

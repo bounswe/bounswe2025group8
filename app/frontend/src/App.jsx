@@ -10,6 +10,8 @@ import HomeDashboard from "./pages/HomeDashboard.jsx";
 // Categories and Search
 import Categories from "./pages/Categories.jsx";
 import SearchResults from "./pages/SearchResults.jsx";
+// Mock Data Demo
+import MockDataDemo from "./pages/MockDataDemo.jsx";
 // Request related pages
 import Requests from "./pages/Requests.jsx";
 import RequestDetail from "./pages/RequestDetail.jsx";
@@ -116,10 +118,11 @@ function App() {
             
             {/* User Routes */}
             <Route path="/settings" element={<Settings />} />
-            <Route path="/notifications" element={<Notifications />} />
-
-            {/* Theme Demo */}
+            <Route path="/notifications" element={<Notifications />} />            {/* Theme Demo */}
             <Route path="/theme" element={<ThemeDemo />} />
+            
+            {/* Mock Data Demo */}
+            <Route path="/mock-data" element={<MockDataDemo />} />
 
             <Route path="/profile/:userId" element={<ProfilePage />} />
             <Route path="/create-request" element={<CreateRequestPage />} />
