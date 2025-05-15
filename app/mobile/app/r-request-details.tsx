@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, Modal, TextInput, ActivityIndicator, Alert, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useTheme } from '@react-navigation/native';
+import { useTheme, useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
 import { useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -62,6 +62,7 @@ export default function RequestDetails() {
       setAssigneesLoading(false);
       return;
     }
+    console.log("Fetching task data in r-request-details for task:", id);
     setLoading(true);
     setAssigneesLoading(true);
     setError(null);
@@ -95,8 +96,25 @@ export default function RequestDetails() {
   }, [id]);
 
   useEffect(() => {
-    fetchTaskData();
-  }, [id, refreshParam, fetchTaskData]); // Re-fetch if id or refreshParam changes
+    // Initial fetch when component mounts or ID changes
+    if (id) { // Ensure ID is present before initial fetch
+        fetchTaskData();
+    }
+  }, [id]); // Only re-run if ID changes
+
+  useFocusEffect(
+    useCallback(() => {
+      // This will run when the screen comes into focus
+      console.log("r-request-details screen focused, fetching data for task:", id);
+      if (id) { // Ensure ID is present before fetching
+          fetchTaskData();
+      }
+      return () => {
+        // Optional: Any cleanup if needed when the screen goes out of focus
+        // console.log("r-request-details screen unfocused");
+      };
+    }, [id, fetchTaskData]) // Dependencies for the focus effect
+  );
 
   const handleStarPress = (star: number) => setRating(star);
 

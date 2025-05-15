@@ -22,14 +22,13 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, imageUrl, category, ur
 
   // Helper function to get status/urgency specific colors from themeColors
   const getLabelColors = (type: string, property: 'Background' | 'Text' | 'Border') => {
-    // Capitalize first letter of type for key construction (e.g., High -> StatusHighBackground)
-    const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
+    const sType = String(type || ''); // Ensure type is a string
+    const capitalizedType = sType.charAt(0).toUpperCase() + sType.slice(1);
     const key = `status${capitalizedType}${property}` as keyof typeof themeColors;
     
-    // Fallback if a specific color is not defined (e.g. for numeric status for 'Past' urgency)
-    // For 'Past' urgency, status might be a rating string. We'll use 'Past' colors for it.
-    const effectiveType = urgencyLevel === 'Past' && property !== 'Text' ? 'Past' : capitalizedType;
-    const fallbackKeyBase = `status${urgencyLevel === 'Past' ? 'Past' : effectiveType}`;
+    const sUrgencyLevel = String(urgencyLevel || ''); // Ensure urgencyLevel is a string for fallback logic
+    const effectiveType = sUrgencyLevel === 'Past' && property !== 'Text' ? 'Past' : capitalizedType;
+    const fallbackKeyBase = `status${sUrgencyLevel === 'Past' ? 'Past' : effectiveType}`;
 
     return themeColors[key] || themeColors[`${fallbackKeyBase}${property}` as keyof typeof themeColors] || 
            (property === 'Text' ? themeColors.text : 
@@ -57,8 +56,8 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, imageUrl, category, ur
           style={styles.cardImage} 
         />
         <View style={styles.infoContainer}>
-          <Text style={[styles.title, { color: themeColors.text }]} numberOfLines={1}>{title}</Text>
-          <Text style={[styles.distanceTimeText, { color: themeColors.textMuted }]} numberOfLines={1}>{distance} • {time}</Text>
+          <Text style={[styles.title, { color: themeColors.text }]} numberOfLines={1}>{String(title || '')}</Text>
+          <Text style={[styles.distanceTimeText, { color: themeColors.textMuted }]} numberOfLines={1}>{`${String(distance || '')} • ${String(time || '')}`}</Text>
           <Text 
             style={[
                 styles.categoryLabel,
@@ -66,7 +65,7 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, imageUrl, category, ur
             ]}
             numberOfLines={1}
           >
-            {category || 'Unknown'}
+            {String(category || 'Unknown')}
           </Text>
         </View>
         <TouchableOpacity onPress={onPress} disabled={!onPress}>
@@ -86,12 +85,12 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, imageUrl, category, ur
             },
           ]}
         >
-          {urgencyLevel === 'Past' ? urgencyLevel : `${urgencyLevel} Urgency`}
+          {String(urgencyLevel || '') === 'Past' ? String(urgencyLevel || '') : `${String(urgencyLevel || '')} Urgency`}
         </Text>
 
         {/* Status Label */}
         {/* Only show status label if urgency is not 'Past'. If 'Past', the status is the rating shown in urgency. */}
-        {urgencyLevel !== 'Past' && (
+        {String(urgencyLevel || '') !== 'Past' && (
             <Text
             style={[
                 styles.label,
@@ -103,11 +102,11 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, imageUrl, category, ur
                 },
             ]}
             >
-            {typeof status === 'object' ? JSON.stringify(status) : String(status)} 
+            {typeof status === 'object' ? JSON.stringify(status) : String(status || '')} 
             </Text>
         )}
         {/* If urgency is 'Past', display the rating (status prop) with specific styling */}
-        {urgencyLevel === 'Past' && (
+        {String(urgencyLevel || '') === 'Past' && (
              <Text
              style={[
                styles.label,
@@ -119,7 +118,7 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, imageUrl, category, ur
                },
              ]}
            >
-             {`☆ ${status}`} {/* Assuming status is the rating string when urgency is Past */}
+             {`☆ ${String(status || '')}`} {/* Assuming status is the rating string when urgency is Past */}
            </Text>
         )}
       </View>
