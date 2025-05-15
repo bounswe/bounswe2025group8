@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Base API URL
-const API_URL = 'http://172.19.0.4:8000/api';
+const API_URL = 'http://localhost:8000/api';
 
 /**
  * Handle login response by storing token and user info
