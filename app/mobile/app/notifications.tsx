@@ -11,6 +11,7 @@ import {
   useColorScheme,
   Platform,
   SafeAreaView,
+  Button
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -160,7 +161,8 @@ export default function NotificationsScreen() {
   if (!user) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: colors.text, fontSize: 18 }}>Please sign in to view notifications.</Text>
+        <Text style={{ color: colors.text, fontSize: 18, marginBottom: 16 }}>Please sign in to view notifications.</Text>
+        <Button title="Go to Home" onPress={() => router.replace('/')} />
       </View>
     );
   }

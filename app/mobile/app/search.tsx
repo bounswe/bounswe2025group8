@@ -51,14 +51,17 @@ export default function SearchPage() {
           setCategories([]);
         }
 
-        // Fetch users for profiles search
-        const usersResponse = await searchUsers();
-        setProfiles(usersResponse.results.map(prof => ({
-          id: String(prof.id),
-          name: `${prof.name} ${prof.surname}`,
-          image: prof.photo ? { uri: prof.photo } : require('../assets/images/empty_profile_photo.png'),
-        })));
-
+        // Only fetch users for search if logged in
+        if (user) {
+          const usersResponse = await searchUsers();
+          setProfiles(usersResponse.results.map(prof => ({
+            id: String(prof.id),
+            name: `${prof.name} ${prof.surname}`,
+            image: prof.photo ? { uri: prof.photo } : require('../assets/images/empty_profile_photo.png'),
+          })));
+        } else {
+          setProfiles([]); // No user search for guests
+        }
       } catch (error) {
         console.error('Error loading search data:', error);
         Alert.alert('Error', 'Failed to load search data. Please try again.');
@@ -70,7 +73,7 @@ export default function SearchPage() {
       }
     };
     fetchData();
-  }, []);
+  }, [user]);
 
   if (loading) {
     return (

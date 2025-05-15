@@ -35,7 +35,7 @@ const myDarkTheme = {
 
 // Define your route groups
 const authRoutes = ['index', 'signin', 'signup', 'forgot-password'];
-const publicAppRoutes = ['feed', 'categories', 'category', 'search', 'terms', 'requests', 'v-request-details', 'r-request-details', 'profile']; // NEW - Added 'profile'
+const publicAppRoutes = ['feed', 'categories', 'category', 'search', 'terms', 'requests', 'v-request-details', 'r-request-details', 'profile', 'settings', 'notifications'];
 // Add any other public/auth routes here, ensure 'index' is treated as an auth route if it's a landing page.
 
 function RootNavigator() {

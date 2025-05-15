@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Alert, useColorScheme, Platform } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Alert, useColorScheme, Platform, Button } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,6 +17,15 @@ export default function Settings() {
   const { user, logout: contextLogout } = useAuth();
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme || 'light'];
+
+  if (!user) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background, justifyContent: 'center', alignItems: 'center' }]}> 
+        <Text style={{ color: themeColors.text, fontSize: 18, marginBottom: 16 }}>You must sign in to access settings.</Text>
+        <Button title="Go to Home" onPress={() => router.replace('/')} />
+      </SafeAreaView>
+    );
+  }
 
   const resetToLaunch = () => {
     navigation.dispatch(
@@ -66,18 +75,13 @@ export default function Settings() {
       </View>
       
       <View style={styles.contentContainer}> 
-        {user && (
-          <TouchableOpacity 
-            style={[styles.logoutButton, { backgroundColor: themeColors.error, borderColor: themeColors.error }]} 
-            onPress={handleLogout}
-          >
-            <Ionicons name="log-out-outline" size={22} color={themeColors.card} />
-            <Text style={[styles.logoutText, { color: themeColors.card }]}>Logout</Text>
-          </TouchableOpacity>
-        )}
-        {!user && (
-            <Text style={{color: themeColors.textMuted, textAlign: 'center', marginTop: 40}}>You are not signed in.</Text>
-        )}
+        <TouchableOpacity 
+          style={[styles.logoutButton, { backgroundColor: themeColors.error, borderColor: themeColors.error }]} 
+          onPress={handleLogout}
+        >
+          <Ionicons name="log-out-outline" size={22} color={themeColors.card} />
+          <Text style={[styles.logoutText, { color: themeColors.card }]}>Logout</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
