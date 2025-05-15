@@ -89,10 +89,14 @@ export default function SearchPage() {
         categories={categories}
         requests={requests}
         profiles={profiles}
-        onSelect={(item, type) => {
-          if (type === 'category') router.push('/category/' + item.id as any);
-          else if (type === 'request') router.push({ pathname: '/v-request-details', params: { id: item.id } });
-          else if (type === 'profile') router.push({ pathname: '/profile', params: { userId: item.id } });
+        onSelect={(item, type: string) => {
+          let mappedType: 'category' | 'request' | 'profile' = type as any;
+          if (type === 'Categories') mappedType = 'category';
+          else if (type === 'Requests') mappedType = 'request';
+          else if (type === 'Profiles') mappedType = 'profile';
+          if (mappedType === 'category') router.push('/category/' + item.id as any);
+          else if (mappedType === 'request') router.push({ pathname: '/v-request-details', params: { id: item.id } });
+          else if (mappedType === 'profile') router.push({ pathname: '/profile', params: { userId: item.id } });
         }}
       />
     </SafeAreaView>
