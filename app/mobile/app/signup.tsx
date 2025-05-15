@@ -228,7 +228,7 @@ export default function SignUp() {
             </Text>
 
             <Pressable 
-              onPress={() => router.replace({ pathname: '/terms', params: { fromSignup: 'true' } })} 
+              onPress={() => router.push({ pathname: '/terms', params: { fromSignup: 'true' } })} 
               hitSlop={8}
               disabled={isLoading}
             >
