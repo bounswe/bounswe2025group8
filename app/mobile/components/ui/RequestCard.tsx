@@ -5,26 +5,25 @@ import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 
 export interface RequestCardProps {
-  title: string;
-  distance: string;
-  time: string;
+  title?: any; // Loosen type for debugging, parent should still aim for string
+  distance?: string;
+  time?: string;
   // imageUrl: string | number; // Removed imageUrl
-  category: string;
-  urgencyLevel: string; // e.g., "High", "Medium", "Low", "Past"
-  status: string; // e.g., "Completed", "Accepted", "Pending", "Rejected", or a rating string for "Past"
+  category?: string;
+  urgencyLevel?: string; // e.g., "High", "Medium", "Low", "Past"
+  status?: string; // e.g., "Completed", "Accepted", "Pending", "Rejected", or a rating string for "Past"
   onPress?: () => void;
 }
 
-const RequestCard: React.FC<RequestCardProps> = ({ title, /*imageUrl,*/ category, urgencyLevel, status, distance, time, onPress }) => {
-  if (typeof title !== 'string') {
-    console.error('[RequestCard] RECEIVED NON-STRING TITLE:', title, typeof title);
-    // Forcing it to string here for rendering to see if it prevents the crash,
-    // but the ProfileScreen log should catch the real culprit.
-    return (
-      <View style={styles.cardContainerError}>
-        <Text>Error: Title is not a string! Received: {JSON.stringify(title)}</Text>
-      </View>
-    );
+const RequestCard: React.FC<RequestCardProps> = (props) => {
+  let displayTitle: string;
+
+  if (typeof props.title === 'string' && props.title.trim() !== '') {
+    displayTitle = props.title;
+  } else {
+    // Log if title is not a valid string, then use a default
+    console.warn('[RequestCard] Invalid or missing title prop. Received:', props.title, '(type:', typeof props.title, '). Using default.');
+    displayTitle = "Default Card Title";
   }
 
   const { colors } = useTheme(); // colors from @react-navigation/native theme
@@ -37,7 +36,7 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, /*imageUrl,*/ category
     const capitalizedType = sType.charAt(0).toUpperCase() + sType.slice(1);
     const key = `status${capitalizedType}${property}` as keyof typeof themeColors;
     
-    const sUrgencyLevel = String(urgencyLevel || ''); // Ensure urgencyLevel is a string for fallback logic
+    const sUrgencyLevel = String(props.urgencyLevel || ''); // Ensure urgencyLevel is a string for fallback logic
     const effectiveType = sUrgencyLevel === 'Past' && property !== 'Text' ? 'Past' : capitalizedType;
     const fallbackKeyBase = `status${sUrgencyLevel === 'Past' ? 'Past' : effectiveType}`;
 
@@ -47,14 +46,14 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, /*imageUrl,*/ category
   };
 
   // Determine colors for Urgency Label
-  const urgencyLabelTextColor = getLabelColors(urgencyLevel, 'Text');
-  const urgencyLabelBackgroundColor = getLabelColors(urgencyLevel, 'Background');
-  const urgencyLabelBorderColor = getLabelColors(urgencyLevel, 'Border');
+  const urgencyLabelTextColor = getLabelColors(props.urgencyLevel || '', 'Text');
+  const urgencyLabelBackgroundColor = getLabelColors(props.urgencyLevel || '', 'Background');
+  const urgencyLabelBorderColor = getLabelColors(props.urgencyLevel || '', 'Border');
 
   // Determine colors for Status Label
   // If urgency is 'Past', status is a rating. We use 'Past' styling for its label.
-  const sStatus = String(status || ''); // Ensure status is a string
-  const sUrgencyLevelString = String(urgencyLevel || ''); // Ensure urgencyLevel is a string for comparison
+  const sStatus = String(props.status || ''); // Ensure status is a string
+  const sUrgencyLevelString = String(props.urgencyLevel || ''); // Ensure urgencyLevel is a string for comparison
 
   const statusTypeForColor = sUrgencyLevelString === 'Past' ? 'Past' : sStatus;
   const statusLabelTextColor = getLabelColors(statusTypeForColor, 'Text');
@@ -67,8 +66,8 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, /*imageUrl,*/ category
       <View style={styles.topContainer}>
         {/* Image component removed */}
         <View style={styles.infoContainer}>
-          <Text style={[styles.title, { color: themeColors.text }]} numberOfLines={1}>{String(title || '')}</Text>
-          <Text style={[styles.distanceTimeText, { color: themeColors.textMuted }]} numberOfLines={1}>{`${String(distance || '')} • ${String(time || '')}`}</Text>
+          <Text style={[styles.title, { color: themeColors.text }]} numberOfLines={1}>{displayTitle}</Text>
+          <Text style={[styles.distanceTimeText, { color: themeColors.textMuted }]} numberOfLines={1}>{`${String(props.distance || '')} • ${String(props.time || '')}`}</Text>
           <Text 
             style={[
                 styles.categoryLabel,
@@ -76,10 +75,10 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, /*imageUrl,*/ category
             ]}
             numberOfLines={1}
           >
-            {String(category || 'Unknown')}
+            {String(props.category || 'Unknown')}
           </Text>
         </View>
-        <TouchableOpacity onPress={onPress} disabled={!onPress}>
+        <TouchableOpacity onPress={props.onPress} disabled={!props.onPress}>
           <Ionicons name="chevron-forward-outline" size={25} color={themeColors.primary} style={styles.icon} />
         </TouchableOpacity>
       </View>
@@ -96,12 +95,12 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, /*imageUrl,*/ category
             },
           ]}
         >
-          {String(urgencyLevel || '') === 'Past' ? String(urgencyLevel || '') : `${String(urgencyLevel || '')} Urgency`}
+          {String(props.urgencyLevel || '') === 'Past' ? String(props.urgencyLevel || '') : `${String(props.urgencyLevel || '')} Urgency`}
         </Text>
 
         {/* Status Label */}
         {/* Only show status label if urgency is not 'Past'. If 'Past', the status is the rating shown in urgency. */}
-        {String(urgencyLevel || '') !== 'Past' && (
+        {String(props.urgencyLevel || '') !== 'Past' && (
             <Text
             style={[
                 styles.label,
@@ -113,11 +112,11 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, /*imageUrl,*/ category
                 },
             ]}
             >
-            {typeof status === 'object' ? JSON.stringify(status) : String(status || '')} 
+            {typeof props.status === 'object' ? JSON.stringify(props.status) : String(props.status || '')} 
             </Text>
         )}
         {/* If urgency is 'Past', display the rating (status prop) with specific styling */}
-        {String(urgencyLevel || '') === 'Past' && (
+        {String(props.urgencyLevel || '') === 'Past' && (
              <Text
              style={[
                styles.label,
@@ -129,7 +128,7 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, /*imageUrl,*/ category
                },
              ]}
            >
-             {`☆ ${String(status || '')}`} {/* Assuming status is the rating string when urgency is Past */}
+             {`☆ ${String(props.status || '')}`} {/* Assuming status is the rating string when urgency is Past */}
            </Text>
         )}
       </View>
