@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, Modal, TextInput, ActivityIndicator, Alert, Platform } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, Modal, TextInput, ActivityIndicator, Alert, Platform, SafeAreaView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
@@ -106,7 +106,7 @@ export default function RequestDetails() {
   const canVolunteer = !isCreator && statusDisplay === 'Posted' && !isAlreadyVolunteered;
 
   return (
-    <View style={{ flex: 1, backgroundColor: themeColors.background }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background }}>
       <View style={[styles.header, { backgroundColor: themeColors.card, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10, borderBottomColor: themeColors.border, borderBottomWidth: 1 }]}> 
         <View style={styles.titleContainer}>
           <TouchableOpacity 
@@ -273,21 +273,21 @@ export default function RequestDetails() {
           </View>
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    paddingTop: 105,
+    paddingTop: 85,
   },
   header: {
     flexDirection: 'column',
-    paddingTop: Platform.OS === 'android' ? 25 : 15,
-    paddingBottom: 12,
-    minHeight: 95,
-    paddingHorizontal: 24,
+    paddingTop: Platform.OS === 'android' ? 20 : 5,
+    paddingBottom: 10,
+    minHeight: 80,
+    paddingHorizontal: 15,
     justifyContent: 'space-between',
   },
   titleContainer: {

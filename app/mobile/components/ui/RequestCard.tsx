@@ -42,7 +42,10 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, imageUrl, category, ur
 
   // Determine colors for Status Label
   // If urgency is 'Past', status is a rating. We use 'Past' styling for its label.
-  const statusTypeForColor = urgencyLevel === 'Past' ? 'Past' : status;
+  const sStatus = String(status || ''); // Ensure status is a string
+  const sUrgencyLevelString = String(urgencyLevel || ''); // Ensure urgencyLevel is a string for comparison
+
+  const statusTypeForColor = sUrgencyLevelString === 'Past' ? 'Past' : sStatus;
   const statusLabelTextColor = getLabelColors(statusTypeForColor, 'Text');
   const statusLabelBackgroundColor = getLabelColors(statusTypeForColor, 'Background');
   const statusLabelBorderColor = getLabelColors(statusTypeForColor, 'Border');
