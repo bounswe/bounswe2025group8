@@ -76,7 +76,9 @@ export default function RequestDetails() {
             {request ? request.title : 'Request Details'}
           </Text>
         </View>
-        <Text style={[styles.categoryLabel, { color: colors.primary, backgroundColor: themeColors.lightPurple }]}>{request.category}</Text>
+        <Text style={[styles.categoryLabel, { color: colors.primary, backgroundColor: themeColors.lightPurple }]}>
+          {request.category_display || request.category || 'Unknown'}
+        </Text>
         {/* Urgency Level Label */}
         <Text
           style={[

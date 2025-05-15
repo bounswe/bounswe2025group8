@@ -59,7 +59,7 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, imageUrl, category, ur
         <View style={styles.infoContainer}>
           <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>{title}</Text>
           <Text style={[styles.distanceTimeText, { color: colors.text }]}>{distance} • {time}</Text>
-          <Text style={[styles.categoryLabel, { color: colors.primary, backgroundColor: themeColors.lightPurple }]}>{category}</Text>
+          <Text style={[styles.categoryLabel, { color: colors.primary, backgroundColor: themeColors.lightPurple }]}>{category || 'Unknown'}</Text>
         </View>
         <TouchableOpacity onPress={onPress} disabled={!onPress}>
           <Ionicons name="chevron-forward-outline" size={25} color={colors.primary} style={styles.icon} />

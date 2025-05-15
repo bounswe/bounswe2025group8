@@ -153,9 +153,9 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: themeColors.gray, paddingTop: 36 }]}> 
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: themeColors.gray }]}> 
       {/* Profile Header */}
-      <View style={[styles.profileHeaderRow, { backgroundColor: themeColors.background }]}> 
+      <View style={[styles.profileHeaderRow, { backgroundColor: themeColors.background, marginTop: 32 }]}> 
         {/* Back Button */}
         <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 12 }}>
           <Ionicons name="arrow-back" size={28} color={themeColors.text} />
@@ -356,6 +356,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 24,
     marginBottom: 12,
+    marginTop:36,
   },
   profileAvatar: {
     width: 72,
