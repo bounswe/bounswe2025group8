@@ -16,6 +16,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - app-network
   web:
     build: .
     command: >
@@ -38,6 +40,10 @@ services:
       - DATABASE_USER=postgres
       - DATABASE_PASSWORD=postgres
       - DATABASE_PORT=5432
+      - ALLOWED_HOSTS=localhost,127.0.0.1,web,165.227.152.202
+    networks:
+      - app-network
+
 
   frontend:
     build: ../frontend
@@ -49,7 +55,15 @@ services:
     depends_on:
       - web
     environment:
-      - VITE_API_URL=http://localhost:8000
+      - VITE_API_URL=http://web:8000/api
+    networks:
+      - app-network
 
+
+networks:
+  app-network:
+    driver: bridge
+
+    
 volumes:
   postgres_data:
