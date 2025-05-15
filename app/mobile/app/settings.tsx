@@ -54,6 +54,7 @@ export default function Settings() {
               await AsyncStorage.removeItem('token');
               
               await contextLogout();
+              resetToLaunch()
             } catch (error) {
               console.error('Error during logout:', error);
               Alert.alert('Error', 'Failed to logout. Please try again.');
