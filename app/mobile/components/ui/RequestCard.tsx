@@ -16,6 +16,20 @@ export interface RequestCardProps {
 }
 
 const RequestCard: React.FC<RequestCardProps> = ({ title, imageUrl, category, urgencyLevel, status, distance, time, onPress }) => {
+  // Debug: Log if any prop is not a string
+  if (
+    typeof title !== 'string' ||
+    typeof category !== 'string' ||
+    typeof urgencyLevel !== 'string' ||
+    typeof status !== 'string' ||
+    typeof distance !== 'string' ||
+    typeof time !== 'string'
+  ) {
+    console.error('RequestCard prop type error', {
+      title, category, urgencyLevel, status, distance, time
+    });
+  }
+
   const { colors } = useTheme(); // colors from @react-navigation/native theme
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme || 'light']; // Our comprehensive theme colors
