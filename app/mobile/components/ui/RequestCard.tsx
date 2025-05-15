@@ -16,22 +16,16 @@ export interface RequestCardProps {
 }
 
 const RequestCard: React.FC<RequestCardProps> = ({ title, /*imageUrl,*/ category, urgencyLevel, status, distance, time, onPress }) => {
-  // if (typeof title === 'object') {
-  //   console.error('RequestCard: TITLE IS AN OBJECT!', title);
-  // }
-  // Debug: Log if any prop is not a string
-  // if (
-  //   typeof title !== 'string' ||
-  //   typeof category !== 'string' ||
-  //   typeof urgencyLevel !== 'string' ||
-  //   typeof status !== 'string' ||
-  //   typeof distance !== 'string' ||
-  //   typeof time !== 'string'
-  // ) {
-  //   console.error('RequestCard prop type error', {
-  //     title, category, urgencyLevel, status, distance, time
-  //   });
-  // }
+  if (typeof title !== 'string') {
+    console.error('[RequestCard] RECEIVED NON-STRING TITLE:', title, typeof title);
+    // Forcing it to string here for rendering to see if it prevents the crash,
+    // but the ProfileScreen log should catch the real culprit.
+    return (
+      <View style={styles.cardContainerError}>
+        <Text>Error: Title is not a string! Received: {JSON.stringify(title)}</Text>
+      </View>
+    );
+  }
 
   const { colors } = useTheme(); // colors from @react-navigation/native theme
   const colorScheme = useColorScheme();
@@ -216,6 +210,19 @@ const styles = StyleSheet.create({
   //   fontSize: 12,
   //   fontWeight: '500',
   // },
+  cardContainerError: {
+    padding: 10,
+    marginVertical: 5,
+    backgroundColor: 'pink',
+    borderColor: 'red',
+    borderWidth: 1,
+    width: '90%',
+    alignSelf: 'center',
+  },
+  titleText: {
+    fontSize: 16,
+    color: '#000',
+  }
 });
 
 export default RequestCard; 

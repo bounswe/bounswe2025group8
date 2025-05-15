@@ -35,6 +35,7 @@ const myDarkTheme = {
 
 // Define your route groups
 const authRoutes = ['index', 'signin', 'signup', 'forgot-password'];
+const publicAppRoutes = ['feed', 'categories', 'category/[id]', 'search', 'terms']; // Added terms as it is likely public
 // Add any other public/auth routes here, ensure 'index' is treated as an auth route if it's a landing page.
 
 function RootNavigator() {
@@ -43,19 +44,23 @@ function RootNavigator() {
   const router = useRouter();
 
   useEffect(() => {
-    const inAuthGroup = authRoutes.includes(segments[0] || 'index'); 
-    // segments[0] might be undefined if at the very root, treat as 'index'
+    const currentRoute = segments[0] || 'index'; 
+    const inAuthGroup = authRoutes.includes(currentRoute);
+    const inPublicAppGroup = publicAppRoutes.includes(currentRoute);
 
-    if (!user && !inAuthGroup) {
-      // User is not signed in and is not in an auth screen.
-      // Redirect to the sign-in screen.
-      router.replace('/index' as any); // Or '/signin' as any if you prefer direct login
+    if (!user && !inAuthGroup && !inPublicAppGroup) {
+      // User is not signed in, not in an auth screen, AND not in a public app screen.
+      // Redirect to the initial screen.
+      router.replace('/index' as any);
     } else if (user && inAuthGroup) {
-      // User is signed in and is in an auth screen.
+      // User is signed in and IS in an auth screen (e.g. /signin).
       // Redirect to the main app screen (e.g., feed).
       router.replace('/feed' as any);
     }
-  }, [user, segments, router]); // Add router to dependencies
+    // If user is null and inAuthGroup, they can stay (e.g. on /signin).
+    // If user is null and inPublicAppGroup, they can stay (e.g. on /feed as guest).
+
+  }, [user, segments, router]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
