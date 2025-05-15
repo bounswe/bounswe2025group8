@@ -1,7 +1,6 @@
 // app/_layout.tsx
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack, useRouter, useSegments, useNavigation } from 'expo-router';
-import { CommonActions } from '@react-navigation/native';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import 'react-native-reanimated';
@@ -42,7 +41,7 @@ const publicAppRoutes = ['feed', 'categories', 'category', 'search', 'terms', 'r
 function RootNavigator() {
   const { user } = useAuth();
   const segments = useSegments();
-  const navigation = useNavigation();
+  const router = useRouter();
 
   useEffect(() => {
     if (!segments || (segments.length as number) === 0) {
@@ -57,27 +56,17 @@ function RootNavigator() {
 
     if (!user && !inAuthGroup && !inPublicAppGroup) {
       // User is not signed in, not in an auth screen, AND not in a public app screen.
-      // Reset stack to the initial screen.
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: 'index' as any }], // Target route name
-        })
-      );
+      // Redirect to the initial screen.
+      router.replace('/index' as any);
     } else if (user && inAuthGroup) {
       // User is signed in and IS in an auth screen (e.g. /signin).
-      // Reset stack to the main app screen (e.g., feed).
-      navigation.dispatch(
-        CommonActions.reset({
-          index: 0,
-          routes: [{ name: 'feed' as any }], // Target route name
-        })
-      );
+      // Redirect to the main app screen (e.g., feed).
+      router.replace('/feed' as any);
     }
     // If user is null and inAuthGroup, they can stay (e.g. on /signin).
     // If user is null and inPublicAppGroup, they can stay (e.g. on /feed as guest).
 
-  }, [user, segments, navigation]);
+  }, [user, segments, router]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
