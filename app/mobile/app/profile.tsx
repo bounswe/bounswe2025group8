@@ -284,22 +284,25 @@ export default function ProfileScreen() {
             {activeVolunteerTasks.length === 0 ? (
               <Text style={[styles.emptyListText, { color: themeColors.textMuted }]}>No active volunteer tasks.</Text>
             ) : (
-              activeVolunteerTasks.map(req => (
-                <RequestCard
-                  key={req.id}
-                  title={req.title}
-                  imageUrl={req.photo || require('../assets/images/help.png')}
-                  category={req.category_display || req.category}
-                  urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
-                  status={req.status_display || req.status}
-                  distance={req.location || 'N/A'}
-                  time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
-                  onPress={() => router.push({ 
-                    pathname: '/v-request-details',
-                    params: { id: req.id } 
-                  })}
-                />
-              ))
+              activeVolunteerTasks.map(req => {
+                console.log('[ProfileScreen] Active Volunteer Task Title Type:', typeof req.title, 'Value:', req.title);
+                return (
+                  <RequestCard
+                    key={req.id}
+                    title={req.title}
+                    imageUrl={req.photo || require('../assets/images/help.png')}
+                    category={req.category_display || req.category}
+                    urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
+                    status={req.status_display || req.status}
+                    distance={req.location || 'N/A'}
+                    time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
+                    onPress={() => router.push({ 
+                      pathname: '/v-request-details',
+                      params: { id: req.id } 
+                    })}
+                  />
+                );
+              })
             )}
           </View>
           <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Past Tasks as Volunteer</Text>
@@ -307,22 +310,25 @@ export default function ProfileScreen() {
             {pastVolunteerTasks.length === 0 ? (
               <Text style={[styles.emptyListText, { color: themeColors.textMuted }]}>No past volunteer tasks.</Text>
             ) : (
-              pastVolunteerTasks.map(req => (
-                <RequestCard
-                  key={req.id}
-                  title={req.title}
-                  imageUrl={req.photo || require('../assets/images/help.png')}
-                  category={req.category_display || req.category}
-                  urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
-                  status={req.status_display || req.status}
-                  distance={req.location || 'N/A'}
-                  time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
-                  onPress={() => router.push({ 
-                    pathname: '/v-request-details',
-                    params: { id: req.id } 
-                  })}
-                />
-              ))
+              pastVolunteerTasks.map(req => {
+                console.log('[ProfileScreen] Past Volunteer Task Title Type:', typeof req.title, 'Value:', req.title);
+                return (
+                  <RequestCard
+                    key={req.id}
+                    title={req.title}
+                    imageUrl={req.photo || require('../assets/images/help.png')}
+                    category={req.category_display || req.category}
+                    urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
+                    status={req.status_display || req.status}
+                    distance={req.location || 'N/A'}
+                    time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
+                    onPress={() => router.push({ 
+                      pathname: '/v-request-details',
+                      params: { id: req.id } 
+                    })}
+                  />
+                );
+              })
             )}
           </View>
         </>}
@@ -333,22 +339,25 @@ export default function ProfileScreen() {
             {activeRequesterTasks.length === 0 ? (
               <Text style={[styles.emptyListText, { color: themeColors.textMuted }]}>No active requester tasks.</Text>
             ) : (
-              activeRequesterTasks.map(req => (
-                <RequestCard
-                  key={req.id}
-                  title={req.title}
-                  imageUrl={req.photo || require('../assets/images/help.png')}
-                  category={req.category_display || req.category}
-                  urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
-                  status={req.status_display || req.status}
-                  distance={req.location || 'N/A'}
-                  time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
-                  onPress={() => router.push({ 
-                    pathname: '/r-request-details',
-                    params: { id: req.id } 
-                  })}
-                />
-              ))
+              activeRequesterTasks.map(req => {
+                console.log('[ProfileScreen] Active Requester Task Title Type:', typeof req.title, 'Value:', req.title);
+                return (
+                  <RequestCard
+                    key={req.id}
+                    title={req.title}
+                    imageUrl={req.photo || require('../assets/images/help.png')}
+                    category={req.category_display || req.category}
+                    urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
+                    status={req.status_display || req.status}
+                    distance={req.location || 'N/A'}
+                    time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
+                    onPress={() => router.push({ 
+                      pathname: '/r-request-details',
+                      params: { id: req.id } 
+                    })}
+                  />
+                );
+              })
             )}
           </View>
           <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Past Tasks as Requester</Text>
@@ -356,22 +365,25 @@ export default function ProfileScreen() {
             {pastRequesterTasks.length === 0 ? (
               <Text style={[styles.emptyListText, { color: themeColors.textMuted }]}>No past requester tasks.</Text>
             ) : (
-              pastRequesterTasks.map(req => (
-                <RequestCard
-                  key={req.id}
-                  title={req.title}
-                  imageUrl={req.photo || require('../assets/images/help.png')}
-                  category={req.category_display || req.category}
-                  urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
-                  status={req.status_display || req.status}
-                  distance={req.location || 'N/A'}
-                  time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
-                  onPress={() => router.push({ 
-                    pathname: '/r-request-details',
-                    params: { id: req.id } 
-                  })}
-                />
-              ))
+              pastRequesterTasks.map(req => {
+                console.log('[ProfileScreen] Past Requester Task Title Type:', typeof req.title, 'Value:', req.title);
+                return (
+                  <RequestCard
+                    key={req.id}
+                    title={req.title}
+                    imageUrl={req.photo || require('../assets/images/help.png')}
+                    category={req.category_display || req.category}
+                    urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
+                    status={req.status_display || req.status}
+                    distance={req.location || 'N/A'}
+                    time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
+                    onPress={() => router.push({ 
+                      pathname: '/r-request-details',
+                      params: { id: req.id } 
+                    })}
+                  />
+                );
+              })
             )}
           </View>
         </>}

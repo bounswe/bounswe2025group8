@@ -35,7 +35,7 @@ export default function VActiveRequestsScreen() {
       getTasks()
     ])
       .then(([profileRes, tasksRes]) => {
-        setProfile(profileRes.data);
+        setProfile(profileRes);
         // Filter tasks where the current user is the assignee/volunteer and status is not completed/past
         const activeRequests = tasksRes.results.filter(
           (task) => task.assignee && task.assignee.id === user.id && task.status !== 'completed' && task.status !== 'past'
@@ -112,7 +112,6 @@ export default function VActiveRequestsScreen() {
             <RequestCard
               key={req.id}
               title={req.title}
-              imageUrl={req.photo || 'https://placehold.co/80x80'}
               category={req.category_display || req.category}
               urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
               status={req.status_display || req.status}

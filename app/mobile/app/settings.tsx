@@ -14,7 +14,7 @@ export default function Settings() {
   const { colors } = useTheme();
   const router = useRouter();
   const navigation = useNavigation();
-  const { user } = useAuth();
+  const { user, logout: contextLogout } = useAuth();
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme || 'light'];
 
@@ -43,8 +43,9 @@ export default function Settings() {
             try {
               await apiLogout();
               await AsyncStorage.removeItem('token');
-              await AsyncStorage.removeItem('user');
-              await AsyncStorage.removeItem('userProfile');
+              
+              await contextLogout();
+              
               resetToLaunch();
             } catch (error) {
               console.error('Error during logout:', error);

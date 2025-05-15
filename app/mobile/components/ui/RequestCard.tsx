@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, useColorScheme, TouchableOpacity } from 'react-native';
+import { View, Text, /*Image,*/ StyleSheet, useColorScheme, TouchableOpacity } from 'react-native'; // Commented out Image
 import { useTheme } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,30 +8,30 @@ export interface RequestCardProps {
   title: string;
   distance: string;
   time: string;
-  imageUrl: string | number; // Allow string (URI) or number (require result)
+  // imageUrl: string | number; // Removed imageUrl
   category: string;
   urgencyLevel: string; // e.g., "High", "Medium", "Low", "Past"
   status: string; // e.g., "Completed", "Accepted", "Pending", "Rejected", or a rating string for "Past"
   onPress?: () => void;
 }
 
-const RequestCard: React.FC<RequestCardProps> = ({ title, imageUrl, category, urgencyLevel, status, distance, time, onPress }) => {
-  if (typeof title === 'object') {
-    console.error('RequestCard: TITLE IS AN OBJECT!', title);
-  }
+const RequestCard: React.FC<RequestCardProps> = ({ title, /*imageUrl,*/ category, urgencyLevel, status, distance, time, onPress }) => {
+  // if (typeof title === 'object') {
+  //   console.error('RequestCard: TITLE IS AN OBJECT!', title);
+  // }
   // Debug: Log if any prop is not a string
-  if (
-    typeof title !== 'string' ||
-    typeof category !== 'string' ||
-    typeof urgencyLevel !== 'string' ||
-    typeof status !== 'string' ||
-    typeof distance !== 'string' ||
-    typeof time !== 'string'
-  ) {
-    console.error('RequestCard prop type error', {
-      title, category, urgencyLevel, status, distance, time
-    });
-  }
+  // if (
+  //   typeof title !== 'string' ||
+  //   typeof category !== 'string' ||
+  //   typeof urgencyLevel !== 'string' ||
+  //   typeof status !== 'string' ||
+  //   typeof distance !== 'string' ||
+  //   typeof time !== 'string'
+  // ) {
+  //   console.error('RequestCard prop type error', {
+  //     title, category, urgencyLevel, status, distance, time
+  //   });
+  // }
 
   const { colors } = useTheme(); // colors from @react-navigation/native theme
   const colorScheme = useColorScheme();
@@ -71,12 +71,9 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, imageUrl, category, ur
   return (
     <View style={[styles.cardContainer, { backgroundColor: themeColors.card }]}> {/* Use themeColors.card */}
       <View style={styles.topContainer}>
-        <Image 
-          source={typeof imageUrl === 'string' ? { uri: imageUrl } : imageUrl} 
-          style={styles.cardImage} 
-        />
+        {/* Image component removed */}
         <View style={styles.infoContainer}>
-          <Text style={[styles.title, { color: themeColors.text }]} numberOfLines={1}>{typeof title === 'string' ? title : 'INVALID_TITLE_TYPE'}</Text>
+          <Text style={[styles.title, { color: themeColors.text }]} numberOfLines={1}>{String(title || '')}</Text>
           <Text style={[styles.distanceTimeText, { color: themeColors.textMuted }]} numberOfLines={1}>{`${String(distance || '')} • ${String(time || '')}`}</Text>
           <Text 
             style={[
@@ -162,20 +159,15 @@ const styles = StyleSheet.create({
   topContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12, // Add some padding
-    paddingTop: 12, // Add some padding
+    paddingHorizontal: 12,
+    paddingTop: 12,
+    paddingBottom: 12, // Added for symmetric vertical padding
   },
-  cardImage: {
-    width: 60, // Slightly smaller image
-    height: 60,
-    borderRadius: 8,
-    marginRight: 12,
-    resizeMode: 'cover',
-  },
+  // cardImage style removed
   infoContainer: {
     flex: 1,
     justifyContent: 'center',
-    // marginRight: 40, // Removed to allow chevron to be closer if text is short
+    // marginRight: 40, // Stays commented out or removed
   },
   title: {
     fontWeight: '600',
