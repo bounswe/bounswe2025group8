@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Base API URL - using the Docker container service name for the API
-const API_URL = 'http://165.227.152.202:8000/api';
+const API_URL = 'http://172.19.0.4:8000/api';
 
 // Helper function to get auth headers
 const getAuthHeaders = () => {
