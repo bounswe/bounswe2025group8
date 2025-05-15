@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, useColorScheme, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, useColorScheme, ScrollView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
 import ProfileTop from '../components/ui/ProfileTop';
 import TabButton from '../components/ui/TabButton';
-import { MOCK_USER, MOCK_R_ACTIVE_REQUESTS } from './profile';
 import { Ionicons } from '@expo/vector-icons';
 import RequestCard from '../components/ui/RequestCard';
+import { useAuth } from '../lib/auth';
+import { getUserProfile, getTasks, type UserProfile, type Task } from '../lib/api';
 
 export default function RActiveRequestsScreen() {
   const router = useRouter();
@@ -15,11 +16,67 @@ export default function RActiveRequestsScreen() {
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme || 'light'];
   const [activeTab, setActiveTab] = useState<'volunteer' | 'requester'>('requester');
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [requests, setRequests] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) {
+      setProfile(null);
+      setRequests([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    Promise.all([
+      getUserProfile(user.id),
+      getTasks()
+    ])
+      .then(([profileRes, tasksRes]) => {
+        setProfile(profileRes.data);
+        // Filter tasks where the current user is the creator/requester and status is not completed/past
+        const activeRequests = tasksRes.results.filter(
+          (task) => task.creator && task.creator.id === user.id && task.status !== 'completed' && task.status !== 'past'
+        );
+        setRequests(activeRequests);
+      })
+      .catch(() => setError('Failed to load data'))
+      .finally(() => setLoading(false));
+  }, [user]);
+
+  if (!user) {
+    return (
+      <View style={[styles.container, { backgroundColor: themeColors.gray, flex: 1, justifyContent: 'center', alignItems: 'center' }]}> 
+        <Text style={{ color: colors.text, fontSize: 18 }}>Please sign in to view your active requests.</Text>
+      </View>
+    );
+  }
+
+  if (loading) {
+    return <ActivityIndicator size="large" color={colors.primary} style={{ flex: 1, marginTop: 40 }} />;
+  }
+
+  if (error) {
+    return <Text style={{ color: 'red', marginTop: 40 }}>{error}</Text>;
+  }
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: themeColors.gray }]}> 
       {/* Top Profile */}
-      <ProfileTop MOCK_USER={MOCK_USER} />
+      {profile && (
+        <ProfileTop MOCK_USER={{
+          name: profile.name + ' ' + profile.surname,
+          profileImageUrl: '', // Add real photo if available
+          totalRating: profile.rating,
+          totalReviewCount: profile.completed_task_count,
+          volunteerRating: profile.rating,
+          volunteerReviewCount: profile.completed_task_count,
+          requesterRating: profile.rating,
+          requesterReviewCount: profile.completed_task_count,
+        }} />
+      )}
 
       {/* Tab Selector */}
       <View style={styles.tabSelectorContainer}>
@@ -53,18 +110,27 @@ export default function RActiveRequestsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { backgroundColor: colors.background }]}> 
           <Ionicons name="chevron-back-outline" size={25} color={colors.text} style={styles.icon} />
         </TouchableOpacity>
-
-        <Text style={[styles.headerTitle, {color: colors.text}]}>{'Active Requests'}</Text>
+        <Text style={[styles.headerTitle, {color: colors.text}]}>Active Requests</Text>
       </View>
 
       <View style={styles.content}>
-        {MOCK_R_ACTIVE_REQUESTS.map((req: import('../components/ui/RequestCard').RequestCardProps, idx: number) => (
-          <RequestCard
-            key={idx}
-            {...req}
-            onPress={() => router.push({ pathname: './r-request-details', params: { arrayName: 'MOCK_R_ACTIVE_REQUESTS', index: idx } })}
-          />
-        ))}
+        {requests.length === 0 ? (
+          <Text style={{ color: colors.text, marginTop: 24 }}>No active requests found.</Text>
+        ) : (
+          requests.map((req, idx) => (
+            <RequestCard
+              key={req.id}
+              title={req.title}
+              imageUrl={req.photo || 'https://placehold.co/80x80'}
+              category={req.category_display || req.category}
+              urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
+              status={req.status_display || req.status}
+              distance={req.location || 'N/A'}
+              time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
+              onPress={() => router.push({ pathname: './r-request-details', params: { id: req.id } })}
+            />
+          ))
+        )}
       </View>
     </ScrollView>
   );

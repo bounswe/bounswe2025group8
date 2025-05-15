@@ -14,7 +14,7 @@ export default function Notifications() {
         <Text style={[styles.backText, { color: colors.primary }]}>Back</Text>
       </TouchableOpacity>
       <Text style={[styles.title, { color: colors.primary }]}>Notifications</Text>
-      <Text style={[styles.text, { color: colors.text }]}>You won't have any notifications ever.</Text>
+      <Text style={[styles.text, { color: colors.text }]}>You have 0 new notifications.</Text>
     </SafeAreaView>
   );
 }

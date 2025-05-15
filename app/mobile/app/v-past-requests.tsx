@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, useColorScheme, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, useColorScheme, ScrollView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
 import ProfileTop from '../components/ui/ProfileTop';
 import TabButton from '../components/ui/TabButton';
-import { MOCK_USER } from './profile';
 import { Ionicons } from '@expo/vector-icons';
-import RequestCard, { RequestCardProps } from '../components/ui/RequestCard';
-import { MOCK_V_PAST_REQUESTS } from './profile';
+import RequestCard from '../components/ui/RequestCard';
+import { useAuth } from '../lib/auth';
+import { getUserProfile, getTasks, type UserProfile, type Task } from '../lib/api';
 
 export default function VPastRequestsScreen() {
   const router = useRouter();
@@ -16,11 +16,67 @@ export default function VPastRequestsScreen() {
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme || 'light'];
   const [activeTab, setActiveTab] = useState<'volunteer' | 'requester'>('volunteer');
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [requests, setRequests] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) {
+      setProfile(null);
+      setRequests([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    Promise.all([
+      getUserProfile(user.id),
+      getTasks()
+    ])
+      .then(([profileRes, tasksRes]) => {
+        setProfile(profileRes.data);
+        // Filter tasks where the current user is the assignee/volunteer and status is completed or past
+        const pastRequests = tasksRes.results.filter(
+          (task) => task.assignee && task.assignee.id === user.id && (task.status === 'completed' || task.status === 'past')
+        );
+        setRequests(pastRequests);
+      })
+      .catch(() => setError('Failed to load data'))
+      .finally(() => setLoading(false));
+  }, [user]);
+
+  if (!user) {
+    return (
+      <View style={[styles.container, { backgroundColor: themeColors.gray, flex: 1, justifyContent: 'center', alignItems: 'center' }]}> 
+        <Text style={{ color: colors.text, fontSize: 18 }}>Please sign in to view your past requests.</Text>
+      </View>
+    );
+  }
+
+  if (loading) {
+    return <ActivityIndicator size="large" color={colors.primary} style={{ flex: 1, marginTop: 40 }} />;
+  }
+
+  if (error) {
+    return <Text style={{ color: 'red', marginTop: 40 }}>{error}</Text>;
+  }
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: themeColors.gray }]}> 
       {/* Top Profile */}
-      <ProfileTop MOCK_USER={MOCK_USER} />
+      {profile && (
+        <ProfileTop MOCK_USER={{
+          name: profile.name + ' ' + profile.surname,
+          profileImageUrl: '', // Add real photo if available
+          totalRating: profile.rating,
+          totalReviewCount: profile.completed_task_count,
+          volunteerRating: profile.rating,
+          volunteerReviewCount: profile.completed_task_count,
+          requesterRating: profile.rating,
+          requesterReviewCount: profile.completed_task_count,
+        }} />
+      )}
 
       {/* Tab Selector */}
       <View style={styles.tabSelectorContainer}>
@@ -54,18 +110,27 @@ export default function VPastRequestsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={[styles.backButton, { backgroundColor: colors.background }]}> 
           <Ionicons name="chevron-back-outline" size={25} color={colors.text} style={styles.icon} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, {color: colors.text}]}>{'Past Requests'}</Text>
+        <Text style={[styles.headerTitle, {color: colors.text}]}>Past Requests</Text>
       </View>
 
       <View style={styles.content}>
-        {MOCK_V_PAST_REQUESTS.map((req, idx) => (
-          <RequestCard
-            key={idx}
-            {...req}
-            status={req.status.toString()}
-            onPress={() => router.push({ pathname: './v-request-details', params: { arrayName: 'MOCK_V_PAST_REQUESTS', index: idx } })}
-          />
-        ))}
+        {requests.length === 0 ? (
+          <Text style={{ color: colors.text, marginTop: 24 }}>No past requests found.</Text>
+        ) : (
+          requests.map((req, idx) => (
+            <RequestCard
+              key={req.id}
+              title={req.title}
+              imageUrl={req.photo || 'https://placehold.co/80x80'}
+              category={req.category_display || req.category}
+              urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
+              status={req.status_display || req.status}
+              distance={req.location || 'N/A'}
+              time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
+              onPress={() => router.push({ pathname: './v-request-details', params: { id: req.id } })}
+            />
+          ))
+        )}
       </View>
     </ScrollView>
   );
