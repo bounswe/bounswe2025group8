@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Base API URL - using the Docker container service name for the API
-const API_URL = 'http://localhost:8000/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
 // Helper function to get auth headers
 const getAuthHeaders = () => {

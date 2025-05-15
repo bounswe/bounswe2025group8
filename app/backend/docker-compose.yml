@@ -18,6 +18,7 @@ services:
       retries: 5
     networks:
       - app-network
+
   web:
     build: .
     command: >
@@ -44,7 +45,6 @@ services:
     networks:
       - app-network
 
-
   frontend:
     build: ../frontend
     ports:
@@ -55,15 +55,14 @@ services:
     depends_on:
       - web
     environment:
-      - VITE_API_URL=http://localhost:8000/api
+      - VITE_API_URL=http://web:8000/api  
+    command: npm run dev
     networks:
       - app-network
-
 
 networks:
   app-network:
     driver: bridge
-
 
 volumes:
   postgres_data:
