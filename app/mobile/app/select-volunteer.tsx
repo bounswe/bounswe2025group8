@@ -1,10 +1,27 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, FlatList, ActivityIndicator, Alert, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
 import { useColorScheme } from 'react-native';
+import { getTaskApplicants, Volunteer, updateVolunteerAssignmentStatus, UserProfile } from '../lib/api'; // Assuming UserProfile is also exported if needed for currentVolunteers
+
+// Helper to parse currentVolunteers, assuming it's a JSON string of Volunteer[] or UserProfile[]
+const parseCurrentVolunteers = (param: string | string[] | undefined): Volunteer[] => {
+    if (typeof param === 'string') {
+        try {
+            const parsed = JSON.parse(param);
+            // Basic validation if it's an array (further validation of items might be needed)
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            console.error("Failed to parse currentVolunteers:", e);
+            return [];
+        }
+    }
+    return [];
+};
+
 
 export default function SelectVolunteer() {
     const params = useLocalSearchParams();
@@ -13,153 +30,398 @@ export default function SelectVolunteer() {
     const colorScheme = useColorScheme();
     const themeColors = Colors[colorScheme || 'light'];
 
-    // Get the request from params
-    const arrayName = params.arrayName as string;
-    const index = typeof params.index === 'string' ? parseInt(params.index, 10) : Number(params.index);
-    // Import the mock data map
-    const { MOCK_V_ACTIVE_REQUESTS, MOCK_V_PAST_REQUESTS, MOCK_R_ACTIVE_REQUESTS, MOCK_R_PAST_REQUESTS } = require('./profile');
-    const MOCK_MAP: Record<string, any[]> = { MOCK_V_ACTIVE_REQUESTS, MOCK_V_PAST_REQUESTS, MOCK_R_ACTIVE_REQUESTS, MOCK_R_PAST_REQUESTS };
-    const requestsArray = MOCK_MAP[arrayName];
-    const request = requestsArray && !isNaN(index) ? requestsArray[index] : null;
-    type Volunteer = { name: string; profileImageUrl: string };
-    const volunteers: Volunteer[] = (request?.volunteers || []) as Volunteer[];
+    const taskId = params.taskId ? parseInt(params.taskId as string, 10) : null;
+    const requiredVolunteers = params.requiredVolunteers ? parseInt(params.requiredVolunteers as string, 10) : 1;
+    
+    // Assuming currentVolunteers is passed as a JSON string of Volunteer[]
+    // For simplicity, we'll treat currentVolunteers as those already accepted.
+    // Their user objects will be used to avoid re-listing them if they somehow appear in 'PENDING' list.
+    const initiallyAssignedVolunteers: Volunteer[] = useMemo(() => parseCurrentVolunteers(params.currentVolunteers), [params.currentVolunteers]);
 
-    // State to track which volunteers are selected
-    const [selected, setSelected] = useState<boolean[]>(volunteers.map(() => false));
+    const [applicants, setApplicants] = useState<Volunteer[]>([]);
+    const [selectedApplicants, setSelectedApplicants] = useState<Volunteer[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [isAssigning, setIsAssigning] = useState(false);
 
-    const toggleSelect = (idx: number) => {
-        setSelected(prev => {
-            const updated = [...prev];
-            updated[idx] = !updated[idx];
-            return updated;
+    const maxSelectable = useMemo(() => {
+        return requiredVolunteers - initiallyAssignedVolunteers.length;
+    }, [requiredVolunteers, initiallyAssignedVolunteers]);
+
+    useEffect(() => {
+        if (!taskId) {
+            setError("Task ID is missing.");
+            setIsLoading(false);
+            return;
+        }
+
+        const fetchApplicants = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                // Fetch PENDING applicants
+                const response = await getTaskApplicants(taskId, 'PENDING', 1, 50); // Fetch up to 50 pending applicants
+                if (response.status === 'success') {
+                    // Filter out any users who might already be in initiallyAssignedVolunteers (by user ID)
+                    const assignedUserIds = new Set(initiallyAssignedVolunteers.map(v => v.user.id));
+                    const pendingApplicants = response.data.volunteers.filter(app => !assignedUserIds.has(app.user.id));
+                    setApplicants(pendingApplicants);
+                } else {
+                    setError(response.message || "Failed to fetch applicants.");
+                }
+            } catch (err: any) {
+                setError(err.message || "An unexpected error occurred.");
+                console.error("Fetch applicants error:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchApplicants();
+    }, [taskId, initiallyAssignedVolunteers]);
+
+    const toggleSelectApplicant = (applicant: Volunteer) => {
+        setSelectedApplicants(prevSelected => {
+            const isAlreadySelected = prevSelected.some(v => v.id === applicant.id);
+            if (isAlreadySelected) {
+                return prevSelected.filter(v => v.id !== applicant.id);
+            } else {
+                if (prevSelected.length < maxSelectable) {
+                    return [...prevSelected, applicant];
+                } else {
+                    Alert.alert("Selection Limit", `You can select up to ${maxSelectable} new volunteer(s).`);
+                    return prevSelected;
+                }
+            }
         });
     };
+    
+    const handleConfirmAssignment = async () => {
+        if (selectedApplicants.length === 0) {
+            Alert.alert("No Selection", "Please select at least one volunteer to assign.");
+            return;
+        }
+
+        Alert.alert(
+            "Confirm Assignment", 
+            `Are you sure you want to assign ${selectedApplicants.length} volunteer(s) to this task?`, 
+            [
+                { text: "Cancel", style: "cancel" },
+                { 
+                    text: "Confirm", 
+                    onPress: async () => {
+                        if (!taskId) {
+                            Alert.alert("Error", "Task ID is missing. Cannot assign volunteers.");
+                            return;
+                        }
+                        setIsAssigning(true);
+                        const assignmentPromises = selectedApplicants.map(applicant => 
+                            updateVolunteerAssignmentStatus(taskId, applicant.id, 'accept')
+                        );
+                        try {
+                            const results = await Promise.allSettled(assignmentPromises);
+                            
+                            const successfulAssignments = results.filter(r => r.status === 'fulfilled' && r.value.status === 'success').length;
+                            const failedAssignments = results.length - successfulAssignments;
+
+                            let message = `Successfully assigned ${successfulAssignments} volunteer(s).`;
+                            if (failedAssignments > 0) {
+                                message += `\nFailed to assign ${failedAssignments} volunteer(s).`;
+                                results.forEach(r => {
+                                    if (r.status === 'rejected') {
+                                        console.error("Assignment error:", r.reason);
+                                    } else if (r.status === 'fulfilled' && r.value.status !== 'success') {
+                                        console.error("Assignment API error:", r.value.message);
+                                    }
+                                });
+                            }
+
+                            Alert.alert("Assignment Complete", message, [
+                                {
+                                    text: "OK",
+                                    onPress: () => {
+                                        // Navigate back to request details, potentially with a refresh param
+                                        // router.replace({ pathname: '/r-request-details', params: { taskId: taskId.toString(), refresh: 'true' } });
+                                        // For now, just go back. The refresh logic needs to be handled in r-request-details.
+                                        if (router.canGoBack()) router.back();
+                                        else router.replace(`/r-request-details?taskId=${taskId}`);
+                                    }
+                                }
+                            ]);
+                        } catch (e: any) {
+                            // This catch is for Promise.allSettled itself, which shouldn't really happen
+                            Alert.alert("Error", "An unexpected error occurred during assignment.");
+                            console.error("Unexpected assignment error:", e);
+                        } finally {
+                            setIsAssigning(false);
+                            setSelectedApplicants([]); // Clear selection
+                        }
+                    }
+                }
+            ]
+        );
+    };
+
+    const renderApplicantItem = ({ item }: { item: Volunteer }) => {
+        const isSelected = selectedApplicants.some(v => v.id === item.id);
+        const canSelectMore = selectedApplicants.length < maxSelectable;
+
+        return (
+            <View style={styles.volunteerRow}>
+                <View style={[styles.volunteerInfo, { backgroundColor: themeColors.card }]}>
+                    <Image 
+                        source={item.user.photo ? { uri: item.user.photo } : require('../assets/images/avatar.png')} 
+                        style={styles.avatar} 
+                    />
+                    <View style={styles.volunteerTextContainer}>
+                        <Text style={[styles.volunteerName, { color: themeColors.text }]}>{item.user.name} {item.user.surname}</Text>
+                        <Text style={[styles.volunteerUsername, { color: themeColors.textMuted }]}>@{item.user.username}</Text>
+                        <Text style={[styles.volunteerRating, { color: themeColors.textMuted }]}>
+                            Rating: {item.user.rating ? Number(item.user.rating).toFixed(1) : 'N/A'}
+                        </Text>
+                    </View>
+                </View>
+                <TouchableOpacity
+                    style={[
+                        styles.checkButton,
+                        { 
+                            backgroundColor: isSelected ? themeColors.primary : themeColors.background,
+                            borderColor: themeColors.primary 
+                        }
+                    ]}
+                    onPress={() => toggleSelectApplicant(item)}
+                    disabled={!isSelected && !canSelectMore && selectedApplicants.length >= maxSelectable}
+                >
+                    <Ionicons 
+                        name={isSelected ? "checkmark-circle" : "ellipse-outline"} 
+                        size={28} 
+                        color={isSelected ? themeColors.background : themeColors.primary} 
+                    />
+                </TouchableOpacity>
+            </View>
+        );
+    };
+
+    if (isLoading) {
+        return (
+            <View style={[styles.centered, { backgroundColor: themeColors.background }]}>
+                <ActivityIndicator size="large" color={themeColors.primary} />
+                <Text style={{ color: themeColors.text, marginTop: 10 }}>Loading applicants...</Text>
+            </View>
+        );
+    }
+
+    if (error) {
+        return (
+            <View style={[styles.centered, { backgroundColor: themeColors.background }]}>
+                <Text style={{ color: themeColors.error, marginBottom: 10 }}>Error: {error}</Text>
+                <TouchableOpacity onPress={() => router.back()} style={[styles.actionButton, { backgroundColor: themeColors.primary }]}>
+                    <Text style={styles.buttonText}>Go Back</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
+    
+    const remainingSlots = maxSelectable - selectedApplicants.length;
 
     return (
-        <View style={{ flex: 1, backgroundColor: themeColors.gray }}>
-            {/* Sticky Header */}
-            <View style={[styles.header, { backgroundColor: themeColors.background }]}>
-                <View style={styles.titleContainer}>
-                    <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                        <Ionicons name="arrow-back" size={24} color={colors.text} />
-                    </TouchableOpacity>
-                </View>
-                <Text style={[styles.title, { color: colors.text }]}> {'Select Volunteer'} </Text>
+        <View style={{ flex: 1, backgroundColor: themeColors.background }}>
+            <View style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border, borderBottomWidth: 1 }]}>
+                <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/feed')} style={styles.backButton}>
+                    <Ionicons name="arrow-back" size={24} color={themeColors.text} />
+                </TouchableOpacity>
+                <Text style={[styles.title, { color: themeColors.text }]}>Select Volunteers</Text>
+                <View style={{width: 24}} />{/* Spacer */}
             </View>
 
-            {/* Scrollable Content */}
-            <ScrollView contentContainerStyle={styles.container}>
-                {volunteers.length === 0 && (
-                    <Text style={{ color: colors.text, textAlign: 'center', marginTop: 32 }}>No volunteers available.</Text>
-                )}
-                {volunteers.map((volunteer: Volunteer, idx: number) => (
-                    <View key={idx} style={styles.volunteerRow}>
-                        <View style={[styles.volunteerInfo, { backgroundColor: themeColors.background }]}>
-                            <View style={styles.avatarAndNameContainer}>
-                                <Image source={{ uri: volunteer.profileImageUrl }} style={styles.avatar} />
-                                <Text style={[styles.volunteerName, { color: colors.text }]}>{volunteer.name}</Text>
-                            </View>
-
-                            <TouchableOpacity onPress={() => { }}>
-                                <Ionicons name="chevron-forward-outline" size={25} color={colors.primary} style={styles.icon} />
-                            </TouchableOpacity>
+            {initiallyAssignedVolunteers.length > 0 && (
+                <View style={[styles.assignedSection, { backgroundColor: themeColors.card, margin:10, borderRadius: 8, padding: 10}]}>
+                    <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Already Assigned ({initiallyAssignedVolunteers.length}):</Text>
+                    {initiallyAssignedVolunteers.map(v => (
+                        <View key={v.id} style={[styles.assignedVolunteerItem, { borderBottomColor: themeColors.border}]}>
+                             <Image 
+                                source={v.user.photo ? { uri: v.user.photo } : require('../assets/images/avatar.png')} 
+                                style={styles.assignedAvatar} 
+                            />
+                            <Text style={{color: themeColors.textMuted}}>@{v.user.username} ({v.status_display})</Text>
                         </View>
-                        <TouchableOpacity 
-                            style={[styles.checkButton, { backgroundColor: selected[idx] ? colors.primary : colors.background, borderColor: colors.primary }]} 
-                            onPress={() => toggleSelect(idx)}
-                        >
-                            <Ionicons name="checkmark-outline" size={20} color={selected[idx] ? '#fff' : colors.primary} />
-                        </TouchableOpacity>
+                    ))}
+                </View>
+            )}
+            
+            <Text style={[styles.infoText, { color: themeColors.textMuted, marginHorizontal: 15, marginVertical: 5}]}>
+                Required: {requiredVolunteers}, Assigned: {initiallyAssignedVolunteers.length}, Max New Selections: {maxSelectable}
+            </Text>
+            <Text style={[styles.infoText, { color: themeColors.primary, marginHorizontal: 15, marginBottom: 10}]}>
+                {selectedApplicants.length > 0 ? `${selectedApplicants.length} selected. ${remainingSlots < 0 ? 0 : remainingSlots} slot(s) remaining.` : `Select up to ${maxSelectable} volunteer(s).`}
+            </Text>
 
-                    </View>
-                ))}
-            </ScrollView>
 
-            {/* Button at the bottom */}
-            <TouchableOpacity
-                style={[styles.selectButton, { backgroundColor: colors.primary, position: 'absolute', bottom: 20, left: '5%', right: '5%' }]}
-                onPress={() => router.push({ pathname: '/select-volunteer', params: { arrayName, index } })}
-            >
-                <Text style={styles.buttonText}>Select Volunteer</Text>
-            </TouchableOpacity>
+            {applicants.length === 0 && maxSelectable > 0 && (
+                <Text style={[styles.centeredText, { color: themeColors.textMuted }]}>No pending applicants for this task.</Text>
+            )}
+             {applicants.length === 0 && maxSelectable <= 0 && (
+                <Text style={[styles.centeredText, { color: themeColors.textMuted }]}>All volunteer slots are filled or no new selections possible.</Text>
+            )}
+
+            {maxSelectable > 0 && applicants.length > 0 && (
+                <FlatList
+                    data={applicants}
+                    renderItem={renderApplicantItem}
+                    keyExtractor={(item) => item.id.toString()}
+                    contentContainerStyle={styles.listContainer}
+                    extraData={selectedApplicants} // Ensure re-render on selection change
+                />
+            )}
+
+            {(maxSelectable > 0 || selectedApplicants.length > 0) && (
+                 <TouchableOpacity
+                    style={[
+                        styles.confirmButton, 
+                        { 
+                            backgroundColor: selectedApplicants.length > 0 && !isAssigning ? themeColors.primary : themeColors.border 
+                        }
+                    ]}
+                    onPress={handleConfirmAssignment}
+                    disabled={selectedApplicants.length === 0 || isAssigning}
+                >
+                    {isAssigning ? (
+                        <ActivityIndicator color={themeColors.card} />
+                    ) : (
+                        <Text style={[styles.buttonText, {color: selectedApplicants.length > 0 ? themeColors.card : themeColors.textMuted}]}>
+                            Confirm {selectedApplicants.length > 0 ? `${selectedApplicants.length} Assignment(s)` : 'Assignments'}
+                        </Text>
+                    )}
+                </TouchableOpacity>
+            )}
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flexGrow: 1,
-        paddingTop: 10,
+    centered: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    centeredText: {
+        textAlign: 'center',
+        fontSize: 16,
+        marginVertical: 20,
     },
     header: {
         flexDirection: 'row',
-        paddingTop: 16,
-        paddingBottom: 16,
-        height: 55,
-        paddingHorizontal: 24,
-        justifyContent: 'flex-start',
-    },
-    titleContainer: {
-        flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingTop: Platform.OS === 'android' ? 25 : 10, // Adjust for status bar
+        paddingBottom: 10,
+        paddingHorizontal: 15,
+        height: Platform.OS === 'android' ? 70 : 55,
     },
     backButton: {
-        marginRight: 12,
+        padding: 5,
     },
     title: {
         fontSize: 20,
-        fontWeight: '500',
+        fontWeight: 'bold',
+    },
+    infoText: {
+        fontSize: 14,
+        textAlign: 'center',
+    },
+    listContainer: {
+        paddingHorizontal: 10,
+        paddingBottom: 80, // Space for the confirm button
     },
     volunteerRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 28,
         paddingVertical: 10,
-        borderRadius: 12,
+        marginHorizontal: 5,
+        borderBottomWidth: 1,
+        // borderBottomColor: fetched from themeColors.border dynamically inline
     },
     volunteerInfo: {
-        flex: 2,
         flexDirection: 'row',
         alignItems: 'center',
-        borderRadius: 12,
-        height: 90,
-        marginRight: 48,
-        justifyContent: 'space-between',
-    },
-    avatarAndNameContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        flex: 1, // Allow text to take available space
+        padding: 10, // Padding inside the card-like view
+        borderRadius: 8, // Rounded corners for the card
+        marginRight: 10, // Space before the check button
     },
     avatar: {
-        width: 64,
-        height: 64,
-        borderRadius: 32,
-        margin: 12,
-        backgroundColor: '#f2f2fd',
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        marginRight: 12,
+        backgroundColor: '#e0e0e0', // Placeholder color
+    },
+    volunteerTextContainer: {
+        flex: 1, // Allow text to wrap
     },
     volunteerName: {
         fontSize: 16,
-        fontWeight: '500',
+        fontWeight: '600',
     },
-    icon: {
-        marginRight: 30,
+    volunteerUsername: {
+        fontSize: 14,
+    },
+    volunteerRating: {
+        fontSize: 12,
+        marginTop: 2,
     },
     checkButton: {
-        padding: 8,
-        borderWidth: 1,
-        borderRadius: 20,
+        padding: 5,
+        borderRadius: 20, // Make it circular
+        borderWidth: 2,
     },
-    selectButton: {
+    confirmButton: {
+        position: 'absolute',
+        bottom: 20,
+        left: '5%',
+        right: '5%',
+        paddingVertical: 15,
+        borderRadius: 25,
         alignItems: 'center',
-        width: '90%',
-        alignSelf: 'center',
-        padding: 12,
-        borderRadius: 32,
+        justifyContent: 'center',
     },
     buttonText: {
         color: '#fff',
         fontSize: 17,
-        fontWeight: '500',
+        fontWeight: '600',
     },
+    actionButton: { // For general actions like "Go Back" on error screen
+        paddingVertical: 12,
+        paddingHorizontal: 30,
+        borderRadius: 25,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 10,
+    },
+    assignedSection: {
+      // Styles for the section showing already assigned volunteers
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 5,
+        marginLeft: 5,
+    },
+    assignedVolunteerItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 5,
+        paddingHorizontal: 5,
+        borderBottomWidth: 1,
+        // borderBottomColor set dynamically
+    },
+    assignedAvatar: {
+        width: 30,
+        height: 30,
+        borderRadius: 15,
+        marginRight: 8,
+        backgroundColor: '#e0e0e0',
+    }
 }); 

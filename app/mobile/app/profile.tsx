@@ -55,55 +55,72 @@ export default function ProfileScreen() {
       try {
         setError(null);
         setLoading(true);
+        console.log('[ProfileScreen] Starting loadProfileForTargetUser. ViewedID:', viewedUserId, 'UserID:', user?.id);
 
         if (viewedUserId && viewedUserId !== user?.id) {
-          const response = await getUserProfile(viewedUserId);
-          const profileObj = response?.data;
-          if (profileObj?.id) {
-            setProfile(profileObj);
+          console.log('[ProfileScreen] Fetching profile for OTHER user:', viewedUserId);
+          const fetchedProfile = await getUserProfile(viewedUserId);
+          console.log('[ProfileScreen] API response for other user (direct):', JSON.stringify(fetchedProfile));
+          if (fetchedProfile?.id) {
+            setProfile(fetchedProfile);
+            console.log('[ProfileScreen] Set profile for other user.');
           } else {
             setProfile(null);
             setError('Profile not found for this user.');
+            console.log('[ProfileScreen] Profile not found for other user.');
           }
         } else if (user?.id) {
-          const profileData = await AsyncStorage.getItem('userProfile');
-          if (profileData) {
-            const parsedProfile: UserProfile = JSON.parse(profileData);
+          console.log('[ProfileScreen] Attempting to load OWN profile for user ID:', user.id);
+          const profileDataFromStorage = await AsyncStorage.getItem('userProfile');
+          console.log('[ProfileScreen] AsyncStorage profileData:', profileDataFromStorage ? 'found' : 'not found');
+          if (profileDataFromStorage) {
+            const parsedProfile: UserProfile = JSON.parse(profileDataFromStorage);
+            console.log('[ProfileScreen] Parsed AsyncStorage profile:', JSON.stringify(parsedProfile));
             if (parsedProfile.id === user.id) {
+                console.log('[ProfileScreen] Using profile from AsyncStorage.');
                 setProfile(parsedProfile);
             } else {
-                const response = await getUserProfile(user.id);
-                const profileObj = response?.data;
-                if (profileObj?.id) {
-                    setProfile(profileObj);
-                    await AsyncStorage.setItem('userProfile', JSON.stringify(profileObj));
+                console.log('[ProfileScreen] AsyncStorage profile ID mismatch. Fetching from API.');
+                const fetchedProfile = await getUserProfile(user.id);
+                console.log('[ProfileScreen] API response for own user (after mismatch, direct):', JSON.stringify(fetchedProfile));
+                if (fetchedProfile?.id) {
+                    setProfile(fetchedProfile);
+                    await AsyncStorage.setItem('userProfile', JSON.stringify(fetchedProfile));
+                    console.log('[ProfileScreen] Set profile from API (after mismatch) and updated AsyncStorage.');
                 } else {
                     setProfile(null);
                     await AsyncStorage.removeItem('userProfile');
                     setError('Failed to load your profile.');
+                    console.log('[ProfileScreen] Failed to load own profile from API (after mismatch).');
                 }
             }
           } else {
-            const response = await getUserProfile(user.id);
-            const profileObj = response?.data;
-            if (profileObj?.id) {
-              setProfile(profileObj);
-              await AsyncStorage.setItem('userProfile', JSON.stringify(profileObj));
+            console.log('[ProfileScreen] No profile in AsyncStorage. Fetching from API for own user.');
+            const fetchedProfile = await getUserProfile(user.id);
+            console.log('[ProfileScreen] API response for own user (no AsyncStorage, direct):', JSON.stringify(fetchedProfile));
+            if (fetchedProfile?.id) {
+              setProfile(fetchedProfile);
+              await AsyncStorage.setItem('userProfile', JSON.stringify(fetchedProfile));
+              console.log('[ProfileScreen] Set profile from API (no AsyncStorage) and updated AsyncStorage.');
             } else {
               setProfile(null);
               await AsyncStorage.removeItem('userProfile');
               setError('Failed to load your profile.');
+              console.log('[ProfileScreen] Failed to load own profile from API (no AsyncStorage).');
             }
           }
         } else {
             setError('Cannot determine which profile to load.');
+            console.log('[ProfileScreen] Cannot determine target user ID.');
             setProfile(null);
         }
-      } catch (err) {
-        setError(viewedUserId ? 'Failed to load user profile.' : 'Failed to load your profile.');
+      } catch (err: any) {
+        console.error('[ProfileScreen] CATCH BLOCK ERROR in loadProfileForTargetUser:', err);
+        setError(viewedUserId ? 'Failed to load user profile.' : 'Failed to load your profile. Error: ' + err.message);
         setProfile(null);
       } finally {
         setLoading(false);
+        console.log('[ProfileScreen] Finished loadProfileForTargetUser.');
       }
     };
 
@@ -180,10 +197,10 @@ export default function ProfileScreen() {
                     setLoading(true);
                     setError(null);
                     getUserProfile(targetUserIdForRetry)
-                        .then(res => {
-                            setProfile(res.data);
-                            if (!viewedUserId && res.data) {
-                                AsyncStorage.setItem('userProfile', JSON.stringify(res.data));
+                        .then(fetchedProfile => {
+                            setProfile(fetchedProfile);
+                            if (!viewedUserId && fetchedProfile?.id) {
+                                AsyncStorage.setItem('userProfile', JSON.stringify(fetchedProfile));
                             }
                         })
                         .catch(() => setError(viewedUserId? 'Failed to load user profile.' : 'Failed to load your profile.'))

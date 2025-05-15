@@ -35,7 +35,7 @@ export default function RPastRequestsScreen() {
       getTasks()
     ])
       .then(([profileRes, tasksRes]) => {
-        setProfile(profileRes.data);
+        setProfile(profileRes);
         // Filter tasks where the current user is the creator/requester and status is completed or past
         const pastRequests = tasksRes.results.filter(
           (task) => task.creator && task.creator.id === user.id && (task.status === 'completed' || task.status === 'past')

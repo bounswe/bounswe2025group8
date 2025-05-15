@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import 'react-native-reanimated';
 import { AuthProvider } from '../lib/auth';
+import { Colors } from '../constants/Colors';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -12,7 +13,11 @@ const myLightTheme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    primary: '#636AE8', // purple
+    primary: Colors.light.primary,
+    background: Colors.light.background,
+    card: Colors.light.card,
+    text: Colors.light.text,
+    border: Colors.light.border,
   },
 };
 
@@ -20,7 +25,11 @@ const myDarkTheme = {
   ...DarkTheme,
   colors: {
     ...DarkTheme.colors,
-    primary: '#636AE8', // purple
+    primary: Colors.dark.primary,
+    background: Colors.dark.background,
+    card: Colors.dark.card,
+    text: Colors.dark.text,
+    border: Colors.dark.border,
   },
 };
 

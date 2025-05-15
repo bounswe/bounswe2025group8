@@ -17,7 +17,7 @@ import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Category, Request, Profile } from '../components/ui/SearchBarWithResults';
-import { getTasks, getUserProfile, getCategories, type Task, type UserProfile, type Category as ApiCategory } from '../lib/api';
+import { getTasks, getUserProfile, type Task, type UserProfile, type Category as ApiCategory } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -28,33 +28,45 @@ export default function Feed() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [categories, setCategories] = useState<ApiCategory[]>([]);
+  const [taskDerivedCategories, setTaskDerivedCategories] = useState<ApiCategory[]>([]);
   const scrollRef = useRef<ScrollView>(null);
 
   const fetchTasks = async () => {
     try {
+      setLoading(true);
       const response = await getTasks();
-      setTasks(response.results || []);
+      const fetchedTasks = response.results || [];
+      setTasks(fetchedTasks);
+
+      if (fetchedTasks.length > 0) {
+        const uniqueCategoriesMap = new Map<string, ApiCategory>();
+        fetchedTasks.forEach(task => {
+          if (task.category && task.category_display) {
+            if (!uniqueCategoriesMap.has(task.category)) {
+              uniqueCategoriesMap.set(task.category, {
+                id: task.category,
+                name: task.category_display,
+                description: '',
+                task_count: 0,
+              });
+            }
+          }
+        });
+        setTaskDerivedCategories(Array.from(uniqueCategoriesMap.values()));
+      } else {
+        setTaskDerivedCategories([]);
+      }
+
     } catch (error) {
       console.error('Error fetching tasks:', error);
       Alert.alert('Error', 'Failed to load tasks. Please try again.');
+      setTasks([]);
+      setTaskDerivedCategories([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await getCategories();
-        setCategories(response.results || []);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      }
-    };
-    fetchCategories();
-  }, []);
 
   useEffect(() => {
     fetchTasks();
@@ -111,7 +123,7 @@ export default function Feed() {
           Popular Categories
         </Text>
         <View style={styles.categories}>
-          {categories.map((cat) => (
+          {taskDerivedCategories.map((cat) => (
             <TouchableOpacity
               key={cat.id}
               style={[styles.card, { backgroundColor: colors.card }]}

@@ -16,24 +16,45 @@ import {
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { getCategories, type Category as ApiCategory } from '../lib/api';
+import { getTasks, type Task, type Category as ApiCategory } from '../lib/api';
 import { useAuth } from '../lib/auth';
 
 export default function Categories() {
   const { colors } = useTheme();
   const router = useRouter();
   const { user } = useAuth();
-  const [categories, setCategories] = useState<ApiCategory[]>([]);
+  const [derivedCategories, setDerivedCategories] = useState<ApiCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchCategories = async () => {
+  const fetchTasksAndDeriveCategories = async () => {
+    setLoading(true);
     try {
-      const response = await getCategories();
-      setCategories(response.results || []);
+      const response = await getTasks();
+      const fetchedTasks = response.results || [];
+
+      if (fetchedTasks.length > 0) {
+        const uniqueCategoriesMap = new Map<string, ApiCategory>();
+        fetchedTasks.forEach(task => {
+          if (task.category && task.category_display) {
+            if (!uniqueCategoriesMap.has(task.category)) {
+              uniqueCategoriesMap.set(task.category, {
+                id: task.category,
+                name: task.category_display,
+                description: '',
+                task_count: 0,
+              });
+            }
+          }
+        });
+        setDerivedCategories(Array.from(uniqueCategoriesMap.values()));
+      } else {
+        setDerivedCategories([]);
+      }
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error('Error fetching tasks for categories page:', error);
       Alert.alert('Error', 'Failed to load categories. Please try again.');
+      setDerivedCategories([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -41,12 +62,12 @@ export default function Categories() {
   };
 
   useEffect(() => {
-    fetchCategories();
+    fetchTasksAndDeriveCategories();
   }, []);
 
   const onRefresh = () => {
     setRefreshing(true);
-    fetchCategories();
+    fetchTasksAndDeriveCategories();
   };
 
   if (loading) {
@@ -86,7 +107,12 @@ export default function Categories() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {categories.map((cat) => (
+        {derivedCategories.length === 0 && !loading && (
+          <Text style={{textAlign: 'center', marginTop: 20, color: colors.text}}>
+            No categories found based on current tasks.
+          </Text>
+        )}
+        {derivedCategories.map((cat) => (
           <TouchableOpacity 
             key={cat.id} 
             style={[styles.catRow, { backgroundColor: colors.card }]} 
@@ -95,7 +121,6 @@ export default function Categories() {
             <Image source={require('../assets/images/help.png')} style={styles.catImage} />
             <View>
               <Text style={[styles.catTitle, { color: colors.text }]}>{cat.name}</Text>
-              <Text style={[styles.catCount, { color: colors.text }]}>{`${cat.task_count} requests`}</Text>
             </View>
           </TouchableOpacity>
         ))}

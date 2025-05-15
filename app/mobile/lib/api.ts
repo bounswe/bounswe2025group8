@@ -68,8 +68,8 @@ export interface Task {
   category_display: string;
   created_at: string;
   updated_at: string;
-  creator: any;
-  assignee: any;
+  creator: UserProfile;
+  assignee: UserProfile | null;
   photo?: string;
   urgency_level: number;
   volunteer_number: number;
@@ -122,6 +122,77 @@ export interface UsersResponse {
   next: string | null;
   previous: string | null;
   results: UserProfile[];
+}
+
+// Add Notification Interface
+export interface Notification {
+  id: number;
+  content: string;
+  timestamp: string; // ISO date string
+  type: string; // e.g., "TASK_APPLIED", "REVIEW_RECEIVED"
+  type_display: string; // e.g., "Volunteer Applied", "New Review"
+  is_read: boolean;
+  // user: UserProfile; // The user field is for the recipient, usually the logged-in user, so often not needed in the list item itself if fetching "my" notifications.
+  related_task: Task | null; // Task can be null if notification is not task-specific
+}
+
+export interface PaginationInfo {
+  count: number;
+  page: number;
+  pages: number;
+  limit: number;
+  next: string | null;
+  previous: string | null;
+}
+
+// Add NotificationsListResponse Interface
+export interface NotificationsListResponse {
+  status: string; // from format_response
+  message?: string; // from format_response, optional
+  data: {
+    notifications: Notification[];
+    pagination: PaginationInfo;
+    unread_count: number;
+  };
+}
+
+// Add MarkReadResponse (can be generic if backend sends consistent success/data structure)
+export interface MarkReadResponse {
+    status: string;
+    message: string;
+    data?: Notification; // mark_as_read returns the updated notification
+}
+
+export interface MarkAllReadResponse {
+    status: string;
+    message: string;
+    // data is not typically returned for mark_all_as_read, just a success message
+}
+
+// Add Volunteer Interface
+export interface Volunteer {
+  id: number;
+  user: UserProfile;
+  task: Partial<Task>; // Task might not be fully populated here, or could be just task_id
+  status: string;
+  status_display: string;
+  volunteered_at: string;
+}
+
+export interface GetTaskApplicantsResponse {
+  status: string;
+  message?: string;
+  data: {
+    volunteers: Volunteer[];
+    pagination: PaginationInfo;
+  };
+}
+
+// Add UpdateVolunteerStatusResponse Interface
+export interface UpdateVolunteerStatusResponse {
+  status: string;
+  message: string;
+  data: Volunteer; 
 }
 
 const api = axios.create({
@@ -313,9 +384,9 @@ export const login = async (email: string, password: string): Promise<LoginRespo
       
       // Fetch and store user profile
       if (response.data.data?.user_id) {
-        const profileResponse = await getUserProfile(response.data.data.user_id);
-        if (profileResponse && profileResponse.data) {
-          await AsyncStorage.setItem('userProfile', JSON.stringify(profileResponse.data));
+        const profileFromApi = await getUserProfile(response.data.data.user_id);
+        if (profileFromApi && profileFromApi.id) {
+          await AsyncStorage.setItem('userProfile', JSON.stringify(profileFromApi));
         } else {
           await AsyncStorage.removeItem('userProfile');
         }
@@ -357,15 +428,16 @@ export const forgotPassword = async (email: string): Promise<ForgotPasswordRespo
   }
 };
 
-export const getUserProfile = async (userId: number): Promise<UserProfileResponse> => {
+export const getUserProfile = async (userId: number): Promise<UserProfile> => {
   try {
-    console.log('Fetching user profile for:', userId);
-    const response = await api.get<UserProfileResponse>(`/users/${userId}/`);
-    console.log('User profile response:', response.data);
-    return response.data;
+    console.log('Fetching user profile for (expecting direct object):', userId);
+    // Expect UserProfile directly as response.data
+    const response = await api.get<UserProfile>(`/users/${userId}/`); 
+    console.log('User profile response (direct object expected):', response.data);
+    return response.data; // response.data should now be UserProfile
   } catch (error) {
     if (error instanceof AxiosError) {
-      console.error('Get user profile error details:', {
+      console.error('Get user profile error details (direct object expected):', {
         error: error.message,
         request: error.config,
         response: error.response?.data,
@@ -508,4 +580,144 @@ export const searchUsers = async (query?: string): Promise<UsersResponse> => {
   }
 };
 
-export default api; 
+export const getNotifications = async (page = 1, limit = 20, unreadOnly = false): Promise<NotificationsListResponse> => {
+  try {
+    const response = await api.get<NotificationsListResponse>('/notifications/', {
+      params: {
+        page,
+        limit,
+        unread: unreadOnly,
+      },
+    });
+    console.log('Get notifications response:', response.data);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get notifications error details:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers,
+      });
+    }
+    throw error;
+  }
+};
+
+export const markNotificationAsRead = async (notificationId: number): Promise<MarkReadResponse> => {
+  try {
+    const response = await api.post<MarkReadResponse>(`/notifications/${notificationId}/mark-read/`);
+    console.log(`Mark notification ${notificationId} as read response:`, response.data);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error(`Mark notification ${notificationId} as read error:`, {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers,
+      });
+    }
+    throw error;
+  }
+};
+
+export const markAllNotificationsAsRead = async (): Promise<MarkAllReadResponse> => {
+  try {
+    const response = await api.post<MarkAllReadResponse>('/notifications/mark-all-read/');
+    console.log('Mark all notifications as read response:', response.data);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Mark all notifications as read error:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers,
+      });
+    }
+    throw error;
+  }
+};
+
+export const getTaskDetails = async (taskId: number): Promise<Task> => {
+  try {
+    console.log(`Fetching task details for ID: ${taskId}`);
+    const response = await api.get<Task>(`/tasks/${taskId}/`);
+    console.log('Task details response:', response.data);
+    return response.data; // Expect Task object directly
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error(`Get task details for ID ${taskId} error:`, {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers,
+      });
+      const errMessage = error.response?.data?.detail || error.response?.data?.message || 'Failed to fetch task details.';
+      throw new Error(errMessage);
+    }
+    const errMessage = (error as Error).message || 'An unexpected error occurred while fetching task details.';
+    throw new Error(errMessage);
+  }
+};
+
+export const getTaskApplicants = async (taskId: number, status: string = 'PENDING', page: number = 1, limit: number = 20): Promise<GetTaskApplicantsResponse> => {
+  try {
+    const response = await api.get<GetTaskApplicantsResponse>(`/tasks/${taskId}/volunteers/`, {
+      params: {
+        status,
+        page,
+        limit,
+      }
+    });
+    console.log(`Get task applicants for ${taskId} (status: ${status}) response:`, response.data);
+    return response.data; 
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error(`Get task ${taskId} applicants error details:`, {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers,
+      });
+    }
+    const errMessage = (error as any)?.response?.data?.message || (error as Error).message || 'Failed to fetch task applicants.';
+    throw new Error(errMessage);
+  }
+};
+
+export const updateVolunteerAssignmentStatus = async (taskId: number, volunteerId: number, action: 'accept' | 'reject'): Promise<UpdateVolunteerStatusResponse> => {
+  try {
+    const response = await api.post<UpdateVolunteerStatusResponse>(`/tasks/${taskId}/volunteers/`, {
+      volunteer_id: volunteerId,
+      action: action,
+    });
+    console.log(`Update volunteer ${volunteerId} for task ${taskId} to ${action} response:`, response.data);
+    if (response.data.status !== 'success') {
+      throw new Error(response.data.message || `Failed to ${action} volunteer.`);
+    }
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error(`Update volunteer ${volunteerId} for task ${taskId} to ${action} error:`, {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers,
+      });
+      const errMessage = error.response?.data?.message || `Failed to ${action} volunteer.`;
+      throw new Error(errMessage);
+    }
+    const errMessage = (error as Error).message || `An unexpected error occurred while trying to ${action} volunteer.`;
+    throw new Error(errMessage);
+  }
+};
+
+export default api;

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import SearchBarWithResults, { Category, Request, Profile } from '../components/ui/SearchBarWithResults';
-import { getTasks, getCategories, searchUsers, type Task, type Category as ApiCategory, type UserProfile } from '../lib/api';
+import { getTasks, searchUsers, type Task, type Category as ApiCategory, type UserProfile } from '../lib/api';
 import { useAuth } from '../lib/auth';
 
 export default function SearchPage() {
@@ -20,31 +20,43 @@ export default function SearchPage() {
         setLoading(true);
         // Fetch tasks
         const tasksResponse = await getTasks();
-        setAllTasks(tasksResponse.results);
-        setRequests(tasksResponse.results.map(task => ({
+        const fetchedTasks = tasksResponse.results || [];
+        setAllTasks(fetchedTasks);
+        setRequests(fetchedTasks.map(task => ({
           id: String(task.id),
           title: task.title,
           urgency: task.urgency_level === 3 ? 'High' : task.urgency_level === 2 ? 'Medium' : 'Low',
-          meta: `${task.location} • ${task.deadline}`,
+          meta: `${task.location} • ${task.deadline ? new Date(task.deadline).toLocaleDateString() : 'N/A'}`,
           category: task.category_display || task.category,
           image: require('../assets/images/help.png'),
         })));
 
-        // Fetch categories
-        const categoriesResponse = await getCategories();
-        setCategories(categoriesResponse.results.map(cat => ({
-          id: cat.id,
-          title: cat.name,
-          image: require('../assets/images/help.png'),
-          count: cat.task_count,
-        })));
+        // Derive categories from fetchedTasks
+        if (fetchedTasks.length > 0) {
+          const uniqueCategoriesMap = new Map<string, Category>();
+          fetchedTasks.forEach(task => {
+            if (task.category && task.category_display) {
+              if (!uniqueCategoriesMap.has(task.category)) {
+                uniqueCategoriesMap.set(task.category, {
+                  id: task.category,
+                  title: task.category_display,
+                  image: require('../assets/images/help.png'),
+                  count: fetchedTasks.filter(t => t.category === task.category).length
+                });
+              }
+            }
+          });
+          setCategories(Array.from(uniqueCategoriesMap.values()));
+        } else {
+          setCategories([]);
+        }
 
         // Fetch users for profiles search
         const usersResponse = await searchUsers();
         setProfiles(usersResponse.results.map(prof => ({
           id: String(prof.id),
           name: `${prof.name} ${prof.surname}`,
-          image: require('../assets/images/empty_profile_photo.png'),
+          image: prof.photo ? { uri: prof.photo } : require('../assets/images/empty_profile_photo.png'),
         })));
 
       } catch (error) {
@@ -74,20 +86,10 @@ export default function SearchPage() {
         categories={categories}
         requests={requests}
         profiles={profiles}
-        onSelect={(item, tab) => {
-          if (tab === 'Categories') router.push('/category/' + item.id as any);
-          else if (tab === 'Requests') {
-            const task = allTasks.find((t) => String(t.id) === String(item.id));
-            const isCreator = user && task && task.creator && task.creator.id === user.id;
-            if (isCreator) {
-              router.push({ pathname: '/r-request-details', params: { id: item.id } });
-            } else {
-              router.push({ pathname: '/v-request-details', params: { id: item.id } });
-            }
-          }
-          else if (tab === 'Profiles') {
-            router.push({ pathname: '/profile', params: { userId: item.id } });
-          }
+        onSelect={(item, type) => {
+          if (type === 'category') router.push('/category/' + item.id as any);
+          else if (type === 'request') router.push({ pathname: '/v-request-details', params: { id: item.id } });
+          else if (type === 'profile') router.push({ pathname: '/profile', params: { userId: item.id } });
         }}
       />
     </SafeAreaView>

@@ -8,41 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { getTasks, type Task, volunteerForTask } from '../lib/api';
 import { useAuth } from '../lib/auth';
 
-const backgroundColors: Record<string, string> = {
-  High: '#de3b40', // High Urhgency background color
-  Medium: '#efb034', // Medium Urgency background color
-  Low: '#1dd75b', // Low Urgency background color
-  Past: '#9095a0', // Past background color
-  Completed: '#379ae6', // Completed background color
-  Accepted: '#636AE8', // Accepted background color
-  Pending: 'transparent', // Pending background color
-  Rejected: 'transparent', // Rejected background color
-};
-
-const textColors: Record<string, string> = {
-  High: '#fff', // High Urgency text color
-  Medium: '#5d4108', // Medium Urgency text color  
-  Low: '#0a4d20', // Low Urgency text color
-  Completed: '#fff', // Completed text color
-  Accepted: '#fff', // Accepted text color
-  Pending: '#636AE8', // Pending text color
-  Rejected: '#E8618C', // Rejected text color
-};
-
-const borderColors: Record<string, string> = {
-  High: '#de3b40', // High Urgency border color
-  Medium: '#efb034', // Medium Urgency border color
-  Low: '#1dd75b', // Low Urgency border color
-  Past: '#9095a0', // Past border color
-  Completed: '#379ae6', // Completed border color
-  Accepted: '#636AE8', // Accepted border color
-  Pending: '#636AE8', // Pending border color
-  Rejected: '#E8618C', // Rejected border color
-};
-
 export default function RequestDetails() {
   const params = useLocalSearchParams();
-  const { colors } = useTheme();
   const colorScheme = useColorScheme();
   const themeColors = Colors[colorScheme || 'light'];
   const router = useRouter();
@@ -57,6 +24,16 @@ export default function RequestDetails() {
   const [isEdit, setIsEdit] = useState(false);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
+
+  const getLabelColors = (type: string, property: 'Background' | 'Text' | 'Border') => {
+    const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
+    const baseKey = type === 'Past' ? 'statusPast' : `status${capitalizedType}`;
+    const key = `${baseKey}${property}` as keyof typeof themeColors;
+
+    return themeColors[key] || 
+           (property === 'Text' ? themeColors.text : 
+            property === 'Background' ? 'transparent' : themeColors.border);
+  };
 
   const fetchRequestDetails = () => {
     if (!id) {
@@ -103,91 +80,94 @@ export default function RequestDetails() {
   };
 
   if (loading) {
-    return <ActivityIndicator size="large" color={colors.primary} style={{ flex: 1, marginTop: 40 }} />;
+    return <ActivityIndicator size="large" color={themeColors.primary} style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: themeColors.background }} />;
   }
   if (error || !request) {
-    return <Text style={{ color: 'red', textAlign: 'center', marginTop: 24 }}>{error || 'Request not found.'}</Text>;
+    return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: themeColors.background }}>
+            <Text style={{ color: themeColors.pink, textAlign: 'center', fontSize: 18 }}>{error || 'Request not found.'}</Text>
+        </View>
+    );
   }
 
-  const urgencyLevel = request.urgency_level === 3 ? 'High' : request.urgency_level === 2 ? 'Medium' : request.urgency_level === 1 ? 'Low' : 'Medium';
-  const status = request.status_display || request.status;
+  const urgencyLevelDisplay = request.urgency_level === 3 ? 'High' : request.urgency_level === 2 ? 'Medium' : request.urgency_level === 1 ? 'Low' : 'Medium';
+  const statusDisplay = request.status_display || request.status;
   const imageUrl = request.photo || 'https://placehold.co/400x280';
   const requesterName = request.creator?.name || 'Unknown';
   const requesterAvatar = request.creator?.photo || 'https://placehold.co/70x70';
   const description = request.description;
   const datetime = request.deadline ? new Date(request.deadline).toLocaleString() : '';
-  const location = request.location || 'N/A';
+  const locationDisplay = request.location || 'N/A';
   const requiredPerson = request.volunteer_number || 1;
   const phoneNumber = request.creator?.phone_number || '';
 
   const isCreator = user && request.creator && user.id === request.creator.id;
-  const canVolunteer = !isCreator && status === 'Posted';
+  const isAlreadyVolunteered = user && request.assignee && (Array.isArray(request.assignee) ? request.assignee.some(a => a.id === user.id) : request.assignee.id === user.id);
+  const canVolunteer = !isCreator && statusDisplay === 'Posted' && !isAlreadyVolunteered;
 
   return (
-    <View style={{ flex: 1, backgroundColor: themeColors.gray }}>
-      <View style={[styles.header, { backgroundColor: themeColors.background, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }]}> 
+    <View style={{ flex: 1, backgroundColor: themeColors.background }}>
+      <View style={[styles.header, { backgroundColor: themeColors.card, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10, borderBottomColor: themeColors.border, borderBottomWidth: 1 }]}> 
         <View style={styles.titleContainer}>
           <TouchableOpacity 
             onPress={() => {
-              console.log('Back button pressed');
               if (router.canGoBack()) {
                 router.back();
               } else {
-                console.log('Cannot go back, navigating to /feed as fallback.');
-                router.replace('/feed'); // Fallback to feed screen
+                router.replace('/feed');
               }
             }}
             style={styles.backButton}
           >
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
+            <Ionicons name="arrow-back" size={24} color={themeColors.text} />
           </TouchableOpacity>
-          <Text style={[styles.title, { color: colors.text }]}> 
+          <Text style={[styles.title, { color: themeColors.text }]}> 
             {request.title}
           </Text>
         </View>
-        <Text style={[styles.categoryLabel, { color: colors.primary, backgroundColor: themeColors.lightPurple }]}>{request.category_display || request.category}</Text>
+        <Text style={[styles.categoryLabel, { color: themeColors.primary, backgroundColor: themeColors.lightPurple }]}>{request.category_display || request.category}</Text>
         <Text
           style={[
             styles.label,
             {
-              color: textColors[urgencyLevel] || '#fff',
-              backgroundColor: backgroundColors[urgencyLevel] || '#9095a0',
-              borderColor: borderColors[urgencyLevel] || '#9095a0',
+              color: getLabelColors(urgencyLevelDisplay, 'Text'),
+              backgroundColor: getLabelColors(urgencyLevelDisplay, 'Background'),
+              borderColor: getLabelColors(urgencyLevelDisplay, 'Border'),
               borderWidth: 1,
             },
           ]}
         >
-          {status === 'Past' ? status : `${urgencyLevel} Urgency`}
+          {statusDisplay === 'Past' ? statusDisplay : `${urgencyLevelDisplay} Urgency`}
         </Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={[styles.detailsContainer, { backgroundColor: themeColors.background }]}> 
+      <ScrollView contentContainerStyle={[styles.container, { backgroundColor: themeColors.background }]}>
+        <View style={[styles.detailsContainer, { backgroundColor: themeColors.card }]}> 
           <View style={styles.avatarRow}>
             <Image
               source={{ uri: requesterAvatar }}
-              style={styles.avatar}
+              style={[styles.avatar, { backgroundColor: themeColors.gray }]}
             />
-            <Text style={[styles.name, { color: colors.text }]}>{requesterName}</Text>
+            <Text style={[styles.name, { color: themeColors.text }]}>{requesterName}</Text>
           </View>
-          <Text style={[styles.descriptionText, { color: colors.text }]}>{description}</Text>
+          <Text style={[styles.descriptionText, { color: themeColors.text }]}>{description}</Text>
           <View style={styles.infoContainer}>
             <View style={styles.infoRow}>
-              <Ionicons name="time-outline" size={25} color={colors.text} style={styles.icon} />
-              <Text style={[styles.infoText, { color: colors.text }]}>{datetime}</Text>
+              <Ionicons name="time-outline" size={25} color={themeColors.textMuted} style={styles.icon} />
+              <Text style={[styles.infoText, { color: themeColors.textMuted }]}>{datetime}</Text>
             </View>
             <View style={styles.infoRow}>
-              <Ionicons name="location-outline" size={25} color={colors.text} style={styles.icon} />
-              <Text style={[styles.infoText, { color: colors.text }]}>{location}</Text>
+              <Ionicons name="location-outline" size={25} color={themeColors.textMuted} style={styles.icon} />
+              <Text style={[styles.infoText, { color: themeColors.textMuted }]}>{locationDisplay}</Text>
             </View>
             <View style={styles.infoRow}>
-              <Ionicons name="people-outline" size={25} color={colors.text} style={styles.icon} />
-              <Text style={[styles.infoText, { color: colors.text }]}>{requiredPerson} person required</Text>
+              <Ionicons name="people-outline" size={25} color={themeColors.textMuted} style={styles.icon} />
+              <Text style={[styles.infoText, { color: themeColors.textMuted }]}>{requiredPerson} person required</Text>
             </View>
-            {(status === 'Accepted' || status === 'Completed' || isCreator) && phoneNumber && (
+            {(statusDisplay === 'Accepted' || statusDisplay === 'Completed' || isCreator || isAlreadyVolunteered) && phoneNumber && (
               <View style={styles.infoRow}>
-                <Ionicons name="call-outline" size={25} color={colors.text} style={styles.icon} />
-                <Text style={[styles.infoText, { color: colors.text }]}>{phoneNumber}</Text>
+                <Ionicons name="call-outline" size={25} color={themeColors.textMuted} style={styles.icon} />
+                <Text style={[styles.infoText, { color: themeColors.textMuted }]}>{phoneNumber}</Text>
               </View>
             )}
           </View>
@@ -195,44 +175,44 @@ export default function RequestDetails() {
 
         <Text style={[
           styles.statusText, 
-          { color: status === 'Past' ? '#efb034' : borderColors[status] || colors.text }
+          { color: statusDisplay === 'Past' ? themeColors.statusPastText : getLabelColors(statusDisplay, 'Text') }
         ]}>{
-          status === 'Past' 
-            ? `☆ ${parseFloat(request.assignee?.rating || '0').toFixed(1)}` 
-            : status
+          statusDisplay === 'Past' && request.assignee
+            ? `☆ ${(Number(request.assignee?.rating) || 0).toFixed(1)}` 
+            : statusDisplay
         }</Text>
 
         {actionLoading ? (
-          <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 16 }} />
+          <ActivityIndicator size="small" color={themeColors.primary} style={{ marginVertical: 16 }} />
         ) : (
           !isCreator && (
-            status === 'Completed' ? (
+            statusDisplay === 'Completed' ? (
               <TouchableOpacity
-                style={[styles.volunteerButton, { backgroundColor: themeColors.pink }]} 
+                style={[styles.actionButton, { backgroundColor: themeColors.pink }]} 
                 onPress={() => { setIsEdit(false); setModalVisible(true); }}
               >
-                <Text style={styles.buttonText}>Rate & Review Requester</Text>
+                <Text style={[styles.buttonText, { color: themeColors.card }]}>Rate & Review Requester</Text>
               </TouchableOpacity>
-            ) : status === 'Past' ? (
+            ) : statusDisplay === 'Past' ? (
               <TouchableOpacity
-                style={[styles.volunteerButton, { backgroundColor: themeColors.pink }]} 
+                style={[styles.actionButton, { backgroundColor: themeColors.pink }]} 
                 onPress={() => { setIsEdit(true); setModalVisible(true); }}
               >
-                <Text style={styles.buttonText}>Edit Review</Text>
+                <Text style={[styles.buttonText, { color: themeColors.card }]}>Edit Your Review</Text>
               </TouchableOpacity>
-            ) : ['Accepted', 'Pending'].includes(status) ? (
+            ) : isAlreadyVolunteered && (statusDisplay === 'Accepted' || statusDisplay === 'Pending') ? (
               <TouchableOpacity
-                style={[styles.volunteerButton, { backgroundColor: '#de3b40' }]} 
+                style={[styles.actionButton, { backgroundColor: getLabelColors('High', 'Background') }]}
                 onPress={() => Alert.alert('Cancel Volunteering', 'Are you sure you want to cancel?')}
               >
-                <Text style={styles.buttonText}>Cancel Volunteering</Text>
+                <Text style={[styles.buttonText, { color: getLabelColors('High', 'Text') }]}>Cancel Volunteering</Text>
               </TouchableOpacity>
-            ) : status === 'Posted' ? (
+            ) : canVolunteer ? (
               <TouchableOpacity
-                style={[styles.volunteerButton, { backgroundColor: colors.primary }]}
+                style={[styles.actionButton, { backgroundColor: themeColors.primary }]}
                 onPress={handleBeVolunteer}
               >
-                <Text style={styles.buttonText}>Be Volunteer</Text>
+                <Text style={[styles.buttonText, { color: themeColors.card }]}>Be Volunteer</Text>
               </TouchableOpacity>
             ) : null
           )
@@ -240,58 +220,43 @@ export default function RequestDetails() {
       </ScrollView>
 
       {modalVisible && (
-        <View style={{
-          position: 'absolute',
-          left: '5%',
-          right: '5%',
-          bottom: 10,
-          zIndex: 100,
-        }}>
-          <View style={{
-            backgroundColor: '#fff',
-            borderRadius: 20,
-            padding: 24,
-            alignItems: 'center',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.2,
-            shadowRadius: 8,
-            elevation: 5,
-          }}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 16 }}>{isEdit ? 'Edit Review' : 'Rate & Review Requester'}</Text>
-            <View style={{ flexDirection: 'row', marginBottom: 16 }}>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContainer, { backgroundColor: themeColors.card }]}>
+            <Text style={[styles.modalTitle, { color: themeColors.text }]}>{isEdit ? 'Edit Your Review' : 'Rate & Review Requester'}</Text>
+            <View style={styles.starsContainer}>
               {[1,2,3,4,5].map((star) => (
                 <TouchableOpacity key={star} onPress={() => handleStarPress(star)}>
                   <Ionicons
                     name={rating >= star ? 'star' : 'star-outline'}
                     size={32}
                     color={themeColors.pink}
-                    style={{ marginHorizontal: 2 }}
+                    style={styles.starIcon}
                   />
                 </TouchableOpacity>
               ))}
             </View>
             <TextInput
-              style={{
-                width: '100%',
-                minHeight: 150,
-                borderColor: '#eee',
-                borderWidth: 1,
-                borderRadius: 10,
-                padding: 10,
-                marginBottom: 16,
-                textAlignVertical: 'top',
-              }}
+              style={[
+                styles.reviewInput,
+                { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background }
+              ]}
               placeholder="Write your review..."
+              placeholderTextColor={themeColors.textMuted}
               multiline
               value={reviewText}
               onChangeText={setReviewText}
             />
             <TouchableOpacity
-              style={{ backgroundColor: themeColors.lightPink, padding: 12, borderRadius: 32, width: '100%', alignItems: 'center' }}
-              onPress={() => { setModalVisible(false); /* TODO: handle submit review for requester */ }}
+              style={[styles.submitButton, { backgroundColor: themeColors.primary }]}
+              onPress={() => { setModalVisible(false); /* TODO: handle submit review */ }}
             >
-              <Text style={{ color: themeColors.pink, fontWeight: 'bold', fontSize: 17 }}>Submit</Text>
+              <Text style={[styles.submitButtonText, { color: themeColors.card }]}>Submit</Text>
+            </TouchableOpacity>
+             <TouchableOpacity
+              style={[styles.cancelButton, { marginTop:10, backgroundColor: themeColors.gray }]} 
+              onPress={() => setModalVisible(false) }
+            >
+              <Text style={[styles.submitButtonText, { color: themeColors.textMuted }]}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -307,7 +272,7 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'column',
-    paddingTop: 16,
+    paddingTop: 16, 
     paddingBottom: 16,
     height: 130,
     paddingHorizontal: 24,
@@ -319,62 +284,66 @@ const styles = StyleSheet.create({
   },
   backButton: {
     marginRight: 12,
+    padding: 5,
   },
   title: {
     fontSize: 20,
     fontWeight: '500',
+    flexShrink: 1,
   },
   categoryLabel: {
     textAlign: 'center',
     paddingVertical: 5,
-    fontSize: 14,
+    paddingHorizontal: 10,
+    fontSize: 12,
     fontWeight: '500',
     borderRadius: 7,
+    alignSelf: 'flex-start',
+    marginTop: 4,
   },
   label: {
     textAlign: 'center',
     paddingVertical: 3,
+    paddingHorizontal: 8,
     fontSize: 14,
     fontWeight: '400',
     borderRadius: 7,
     width: 120,
-    marginRight: 8,
-  },
-  requestImage: {
-    width: '90%',
-    alignSelf: 'center',
-    height: 280,
-    borderRadius: 12,
-    marginTop: 16,
-    marginBottom: 16,
+    marginTop: 4,
   },
   detailsContainer: {
     flexDirection: 'column',
-    borderRadius: 24,
+    borderRadius: 12,
     width: '90%',
     alignSelf: 'center',
     padding: 16,
+    marginTop: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
   },
   avatarRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 16,
   },
   avatar: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    marginRight: 16,
-    backgroundColor: '#f2f2fd',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginRight: 12,
   },
   name: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '500',
   },
   descriptionText: {
-    flexDirection: 'row',
     fontSize: 15,
     fontWeight: '300',
+    lineHeight: 22,
     marginBottom: 16,
   },
   infoContainer: {
@@ -383,33 +352,95 @@ const styles = StyleSheet.create({
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 8,
   },
   icon: {
-    marginRight: 6,
+    marginRight: 10,
   },
   infoText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '300',
   },
   statusText: {
-    fontSize: 17,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: '600',
     textAlign: 'center',
-    marginTop: 24,
-    marginBottom: 24,
+    marginTop: 16,
+    marginBottom: 16,
   },
-  volunteerButton: {
+  actionButton: {
     alignItems: 'center',
     width: '90%',
     alignSelf: 'center',
-    padding: 12,
-    borderRadius: 32,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 25,
     marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
   },
   buttonText: {
-    color: '#fff',
-    fontSize: 17,
-    fontWeight: '500',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContainer: {
+    width: '90%',
+    borderRadius: 15,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  starsContainer: {
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
+  starIcon: {
+    marginHorizontal: 3,
+  },
+  reviewInput: {
+    width: '100%',
+    minHeight: 100,
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 20,
+    textAlignVertical: 'top',
+    fontSize: 15,
+  },
+  submitButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    width: '100%',
+    alignItems: 'center',
+  },
+  cancelButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    width: '100%',
+    alignItems: 'center',
+  },
+  submitButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 }); 
