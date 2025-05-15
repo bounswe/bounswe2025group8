@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, useColorScheme, View, Text, TouchableOpacity, ActivityIndicator, Image, Alert } from 'react-native';
+import { ScrollView, StyleSheet, useColorScheme, View, Text, TouchableOpacity, ActivityIndicator, Image, Alert, SafeAreaView } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
 import TabButton from '../components/ui/TabButton';
@@ -227,177 +227,179 @@ export default function ProfileScreen() {
   const isOwnProfile = user?.id === profile.id;
 
   return (
-    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: themeColors.background }]}>
-      <View style={[styles.profileHeaderRow, { /* backgroundColor is already themeColors.background from ScrollView if not overridden, marginTop removed */ }]}>
-        <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/feed')} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={28} color={themeColors.text} />
-        </TouchableOpacity>
-        <Image
-          source={ profile.photo ? {uri: profile.photo } : require('../assets/images/empty_profile_photo.png')}
-          style={styles.profileAvatar}
-        />
-        <View style={{ flex: 1, marginLeft: 16, justifyContent: 'center' }}>
-          <Text style={[styles.profileName, { marginTop: 16, marginBottom: 4, fontSize: 18, color: themeColors.text }]} numberOfLines={2} ellipsizeMode="tail">{profile.name} {profile.surname}</Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
-            <RatingPill
-              rating={profile.rating}
-              reviewCount={profile.completed_task_count}
-              backgroundColor={themeColors.pink}
-              textColor="#fff"
-              iconColor="#fff"
-            />
+    <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background }}>
+      <ScrollView contentContainerStyle={[styles.container, { backgroundColor: themeColors.background }]}>
+        <View style={[styles.profileHeaderRow, { /* marginTop might need adjustment if SafeAreaView adds too much space */ }]}>
+          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/feed')} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={28} color={themeColors.text} />
+          </TouchableOpacity>
+          <Image
+            source={ profile.photo ? {uri: profile.photo } : require('../assets/images/empty_profile_photo.png')}
+            style={styles.profileAvatar}
+          />
+          <View style={{ flex: 1, marginLeft: 16, justifyContent: 'center' }}>
+            <Text style={[styles.profileName, { marginTop: 16, marginBottom: 4, fontSize: 18, color: themeColors.text }]} numberOfLines={2} ellipsizeMode="tail">{profile.name} {profile.surname}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
+              <RatingPill
+                rating={profile.rating}
+                reviewCount={profile.completed_task_count}
+                backgroundColor={themeColors.pink}
+                textColor="#fff"
+                iconColor="#fff"
+              />
+            </View>
           </View>
+          {isOwnProfile && (
+              <>
+                  <TouchableOpacity onPress={() => router.push('/notifications')} style={{ marginLeft: 12 }}>
+                      <Ionicons name="notifications-outline" size={28} color={themeColors.text} />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => router.push('/settings')} style={{ marginLeft: 12 }}>
+                      <Ionicons name="settings-outline" size={28} color={themeColors.text} />
+                  </TouchableOpacity>
+              </>
+          )}
         </View>
+
         {isOwnProfile && (
-            <>
-                <TouchableOpacity onPress={() => router.push('/notifications')} style={{ marginLeft: 12 }}>
-                    <Ionicons name="notifications-outline" size={28} color={themeColors.text} />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => router.push('/settings')} style={{ marginLeft: 12 }}>
-                    <Ionicons name="settings-outline" size={28} color={themeColors.text} />
-                </TouchableOpacity>
-            </>
+            <View style={[styles.tabSelectorContainer, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+              <TouchableOpacity
+                style={[styles.tabButton, { backgroundColor: selectedTab === 'volunteer' ? themeColors.primary : 'transparent' } ]}
+                onPress={() => setSelectedTab('volunteer')}
+              >
+                <Text style={[styles.tabButtonText, { color: selectedTab === 'volunteer' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'volunteer' ? 'bold' : 'normal' }]}>My Volunteer Tasks</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.tabButton, { backgroundColor: selectedTab === 'requester' ? themeColors.primary : 'transparent' } ]}
+                onPress={() => setSelectedTab('requester')}
+              >
+                <Text style={[styles.tabButtonText, { color: selectedTab === 'requester' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'requester' ? 'bold' : 'normal' }]}>My Created Tasks</Text>
+              </TouchableOpacity>
+            </View>
         )}
-      </View>
 
-      {isOwnProfile && (
-          <View style={[styles.tabSelectorContainer, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-            <TouchableOpacity
-              style={[styles.tabButton, { backgroundColor: selectedTab === 'volunteer' ? themeColors.primary : 'transparent' } ]}
-              onPress={() => setSelectedTab('volunteer')}
-            >
-              <Text style={[styles.tabButtonText, { color: selectedTab === 'volunteer' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'volunteer' ? 'bold' : 'normal' }]}>My Volunteer Tasks</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.tabButton, { backgroundColor: selectedTab === 'requester' ? themeColors.primary : 'transparent' } ]}
-              onPress={() => setSelectedTab('requester')}
-            >
-              <Text style={[styles.tabButtonText, { color: selectedTab === 'requester' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'requester' ? 'bold' : 'normal' }]}>My Created Tasks</Text>
-            </TouchableOpacity>
+        {isOwnProfile && selectedTab === 'volunteer' && <>
+          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Active Tasks as Volunteer</Text>
+          <View style={styles.taskListContainer}>
+            {activeVolunteerTasks.length === 0 ? (
+              <Text style={[styles.emptyListText, { color: themeColors.textMuted }]}>No active volunteer tasks.</Text>
+            ) : (
+              activeVolunteerTasks.map(req => (
+                <RequestCard
+                  key={req.id}
+                  title={req.title}
+                  imageUrl={req.photo || require('../assets/images/help.png')}
+                  category={req.category_display || req.category}
+                  urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
+                  status={req.status_display || req.status}
+                  distance={req.location || 'N/A'}
+                  time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
+                  onPress={() => router.push({ 
+                    pathname: '/v-request-details',
+                    params: { id: req.id } 
+                  })}
+                />
+              ))
+            )}
           </View>
-      )}
-
-      {isOwnProfile && selectedTab === 'volunteer' && <>
-        <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Active Tasks as Volunteer</Text>
-        <View style={styles.taskListContainer}>
-          {activeVolunteerTasks.length === 0 ? (
-            <Text style={[styles.emptyListText, { color: themeColors.textMuted }]}>No active volunteer tasks.</Text>
-          ) : (
-            activeVolunteerTasks.map(req => (
-              <RequestCard
-                key={req.id}
-                title={req.title}
-                imageUrl={req.photo || require('../assets/images/help.png')}
-                category={req.category_display || req.category}
-                urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
-                status={req.status_display || req.status}
-                distance={req.location || 'N/A'}
-                time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
-                onPress={() => router.push({ 
-                  pathname: '/v-request-details',
-                  params: { id: req.id } 
-                })}
-              />
-            ))
-          )}
-        </View>
-        <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Past Tasks as Volunteer</Text>
-        <View style={styles.taskListContainer}>
-          {pastVolunteerTasks.length === 0 ? (
-            <Text style={[styles.emptyListText, { color: themeColors.textMuted }]}>No past volunteer tasks.</Text>
-          ) : (
-            pastVolunteerTasks.map(req => (
-              <RequestCard
-                key={req.id}
-                title={req.title}
-                imageUrl={req.photo || require('../assets/images/help.png')}
-                category={req.category_display || req.category}
-                urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
-                status={req.status_display || req.status}
-                distance={req.location || 'N/A'}
-                time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
-                onPress={() => router.push({ 
-                  pathname: '/v-request-details',
-                  params: { id: req.id } 
-                })}
-              />
-            ))
-          )}
-        </View>
-      </>}
-
-      {isOwnProfile && selectedTab === 'requester' && <>
-        <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Active Tasks as Requester</Text>
-        <View style={styles.taskListContainer}>
-          {activeRequesterTasks.length === 0 ? (
-            <Text style={[styles.emptyListText, { color: themeColors.textMuted }]}>No active requester tasks.</Text>
-          ) : (
-            activeRequesterTasks.map(req => (
-              <RequestCard
-                key={req.id}
-                title={req.title}
-                imageUrl={req.photo || require('../assets/images/help.png')}
-                category={req.category_display || req.category}
-                urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
-                status={req.status_display || req.status}
-                distance={req.location || 'N/A'}
-                time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
-                onPress={() => router.push({ 
-                  pathname: '/r-request-details',
-                  params: { id: req.id } 
-                })}
-              />
-            ))
-          )}
-        </View>
-        <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Past Tasks as Requester</Text>
-        <View style={styles.taskListContainer}>
-          {pastRequesterTasks.length === 0 ? (
-            <Text style={[styles.emptyListText, { color: themeColors.textMuted }]}>No past requester tasks.</Text>
-          ) : (
-            pastRequesterTasks.map(req => (
-              <RequestCard
-                key={req.id}
-                title={req.title}
-                imageUrl={req.photo || require('../assets/images/help.png')}
-                category={req.category_display || req.category}
-                urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
-                status={req.status_display || req.status}
-                distance={req.location || 'N/A'}
-                time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
-                onPress={() => router.push({ 
-                  pathname: '/r-request-details',
-                  params: { id: req.id } 
-                })}
-              />
-            ))
-          )}
-        </View>
-      </>}
-
-      <View style={[styles.reviewsSectionContainer, {borderColor: themeColors.border}]}>
-          <View style={styles.reviewsHeaderRow}>
-            <Ionicons name="star-outline" size={20} color={themeColors.pink} />
-            <Text style={[styles.reviewsHeaderText, {color: themeColors.text}]}>Reviews for {profile ? profile.name : 'User'}</Text>
+          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Past Tasks as Volunteer</Text>
+          <View style={styles.taskListContainer}>
+            {pastVolunteerTasks.length === 0 ? (
+              <Text style={[styles.emptyListText, { color: themeColors.textMuted }]}>No past volunteer tasks.</Text>
+            ) : (
+              pastVolunteerTasks.map(req => (
+                <RequestCard
+                  key={req.id}
+                  title={req.title}
+                  imageUrl={req.photo || require('../assets/images/help.png')}
+                  category={req.category_display || req.category}
+                  urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
+                  status={req.status_display || req.status}
+                  distance={req.location || 'N/A'}
+                  time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
+                  onPress={() => router.push({ 
+                    pathname: '/v-request-details',
+                    params: { id: req.id } 
+                  })}
+                />
+              ))
+            )}
           </View>
-          {reviewsLoading && <ActivityIndicator color={themeColors.primary} style={{marginVertical: 16}} />}
-          {reviewsError && <Text style={[styles.errorText, {color: themeColors.error}]}>{reviewsError}</Text>}
-          {!reviewsLoading && !reviewsError && reviews.length === 0 && (
-            <Text style={[styles.emptyListText, { color: themeColors.textMuted, marginTop: 8, marginBottom: 16 }]}>No reviews yet for this user.</Text>
-          )}
-          {!reviewsLoading && !reviewsError && reviews.map((review) => (
-            <ReviewCard 
-                key={review.id} 
-                author={review.reviewer.name} 
-                score={review.score}
-                comment={review.comment}
-                date={new Date(review.timestamp).toLocaleDateString()} 
-                imageUrl={review.reviewer.photo || require('../assets/images/empty_profile_photo.png')}
-            />
-          ))}
-      </View>
+        </>}
 
-    </ScrollView>
+        {isOwnProfile && selectedTab === 'requester' && <>
+          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Active Tasks as Requester</Text>
+          <View style={styles.taskListContainer}>
+            {activeRequesterTasks.length === 0 ? (
+              <Text style={[styles.emptyListText, { color: themeColors.textMuted }]}>No active requester tasks.</Text>
+            ) : (
+              activeRequesterTasks.map(req => (
+                <RequestCard
+                  key={req.id}
+                  title={req.title}
+                  imageUrl={req.photo || require('../assets/images/help.png')}
+                  category={req.category_display || req.category}
+                  urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
+                  status={req.status_display || req.status}
+                  distance={req.location || 'N/A'}
+                  time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
+                  onPress={() => router.push({ 
+                    pathname: '/r-request-details',
+                    params: { id: req.id } 
+                  })}
+                />
+              ))
+            )}
+          </View>
+          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Past Tasks as Requester</Text>
+          <View style={styles.taskListContainer}>
+            {pastRequesterTasks.length === 0 ? (
+              <Text style={[styles.emptyListText, { color: themeColors.textMuted }]}>No past requester tasks.</Text>
+            ) : (
+              pastRequesterTasks.map(req => (
+                <RequestCard
+                  key={req.id}
+                  title={req.title}
+                  imageUrl={req.photo || require('../assets/images/help.png')}
+                  category={req.category_display || req.category}
+                  urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
+                  status={req.status_display || req.status}
+                  distance={req.location || 'N/A'}
+                  time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
+                  onPress={() => router.push({ 
+                    pathname: '/r-request-details',
+                    params: { id: req.id } 
+                  })}
+                />
+              ))
+            )}
+          </View>
+        </>}
+
+        <View style={[styles.reviewsSectionContainer, {borderColor: themeColors.border}]}>
+            <View style={styles.reviewsHeaderRow}>
+              <Ionicons name="star-outline" size={20} color={themeColors.pink} />
+              <Text style={[styles.reviewsHeaderText, {color: themeColors.text}]}>Reviews for {profile ? profile.name : 'User'}</Text>
+            </View>
+            {reviewsLoading && <ActivityIndicator color={themeColors.primary} style={{marginVertical: 16}} />}
+            {reviewsError && <Text style={[styles.errorText, {color: themeColors.error}]}>{reviewsError}</Text>}
+            {!reviewsLoading && !reviewsError && reviews.length === 0 && (
+              <Text style={[styles.emptyListText, { color: themeColors.textMuted, marginTop: 8, marginBottom: 16 }]}>No reviews yet for this user.</Text>
+            )}
+            {!reviewsLoading && !reviewsError && reviews.map((review) => (
+              <ReviewCard 
+                  key={review.id} 
+                  author={review.reviewer.name} 
+                  score={review.score}
+                  comment={review.comment}
+                  date={new Date(review.timestamp).toLocaleDateString()} 
+                  imageUrl={review.reviewer.photo || require('../assets/images/empty_profile_photo.png')}
+              />
+            ))}
+        </View>
+
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -410,9 +412,7 @@ const styles = StyleSheet.create({
   profileHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 16,
-    paddingBottom: 16,
-    marginBottom: 24,
+    paddingVertical: 10,
   },
   backButton: {
     padding: 8,
@@ -427,63 +427,54 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 20,
     fontWeight: 'bold',
-    // color: '#222', // Will be themed by parent Text component or inline
   },
-  tabSelectorContainer: { // Added style for tab selector
+  tabSelectorContainer: {
     flexDirection: 'row',
-    // marginHorizontal: 24, // Removed
-    marginTop: 0, // Adjusted from 18
-    marginBottom: 24, // Adjusted from 18
+    marginTop: 0,
+    marginBottom: 24,
     borderRadius: 12,
     borderWidth: 1,
     overflow: 'hidden',
   },
-  tabButton: { // Added style for tab button
+  tabButton: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 12, // Adjusted from 10
+    paddingVertical: 12,
   },
-  tabButtonText: { // Added style for tab button text
-    fontSize: 15, // Adjusted from 16
-    // fontWeight: '600', // Will be set conditionally
+  tabButtonText: {
+    fontSize: 15,
   },
-  sectionTitle: { // Added style for section titles
+  sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginTop: 0, // Adjusted from 8, handled by taskListContainer if needed
-    marginBottom: 12, // Added space below title
-    // marginLeft: 16, // Removed
+    marginTop: 0,
+    marginBottom: 12,
   },
-  taskListContainer: { // Added style for view wrapping task lists
+  taskListContainer: {
     marginBottom: 16,
-    // marginTop: 12, // Removed, handled by sectionTitle margin
   },
-  emptyListText: { // Added style for empty list text
-    // color: colors.text, // Themed inline
-    marginTop: 8, 
-    // marginLeft: 16, // Removed
+  emptyListText: {
+    marginTop: 8,
     textAlign: 'center',
     fontSize: 15,
   },
   reviewsSectionContainer: {
-    // marginHorizontal: 24, // Removed
-    marginBottom: 16, // Adjusted from 32
-    marginTop: 24, // Adjusted from 16, give more space before reviews
-    borderTopWidth: 1, // Add a separator line
-    paddingTop: 16, // Add padding above the review section title
+    marginBottom: 16,
+    marginTop: 24,
+    borderTopWidth: 1,
+    paddingTop: 16,
   },
   reviewsHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12, // Adjusted from 8
+    marginBottom: 12,
   },
   reviewsHeaderText: {
-    // marginLeft: 12, // Removed
     fontSize: 16,
     fontWeight: '600',
-    marginLeft: 8, // Reduced from 12, as icon provides some spacing
+    marginLeft: 8,
   },
-  errorText: { // Added style for error text, can be reused
+  errorText: {
     textAlign: 'center',
     fontSize: 15,
     marginVertical: 16,

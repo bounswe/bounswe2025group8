@@ -10,6 +10,7 @@ import {
   RefreshControl,
   useColorScheme,
   Platform,
+  SafeAreaView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -184,7 +185,7 @@ export default function NotificationsScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: themeColors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
       <View style={[styles.headerBar, themedStyles.headerBar]}>
         <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/feed')} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
@@ -214,7 +215,7 @@ export default function NotificationsScreen() {
           ListFooterComponent={loadingMore ? <ActivityIndicator style={{ marginVertical: 20 }} color={colors.primary} /> : null}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 15,
-    paddingTop: Platform.OS === 'android' ? 15 : 10,
+    paddingTop: Platform.OS === 'android' ? 10 : 5,
     paddingBottom: 8,
     borderBottomWidth: 1,
   },

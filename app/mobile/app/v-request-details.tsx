@@ -107,7 +107,7 @@ export default function RequestDetails() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background }}>
-      <View style={[styles.header, { backgroundColor: themeColors.card, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10, borderBottomColor: themeColors.border, borderBottomWidth: 1 }]}> 
+      <View style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border, borderBottomWidth: 1 }]}> 
         <View style={styles.titleContainer}>
           <TouchableOpacity 
             onPress={() => {
@@ -280,15 +280,15 @@ export default function RequestDetails() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    paddingTop: 85,
+    paddingTop: 16,
   },
   header: {
     flexDirection: 'column',
-    paddingTop: Platform.OS === 'android' ? 20 : 5,
+    paddingTop: Platform.OS === 'android' ? 10 : 10,
     paddingBottom: 10,
-    minHeight: 80,
+    minHeight: 70,
     paddingHorizontal: 15,
-    justifyContent: 'space-between',
+    justifyContent: 'space-around',
   },
   titleContainer: {
     flexDirection: 'row',

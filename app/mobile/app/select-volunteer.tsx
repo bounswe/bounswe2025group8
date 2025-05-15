@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, FlatList, ActivityIndicator, Alert, Platform } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, FlatList, ActivityIndicator, Alert, Platform, SafeAreaView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
@@ -225,7 +225,7 @@ export default function SelectVolunteer() {
     const remainingSlots = maxSelectable - selectedApplicants.length;
 
     return (
-        <View style={{ flex: 1, backgroundColor: themeColors.background }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background }}>
             <View style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border, borderBottomWidth: 1 }]}>
                 <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/feed')} style={styles.backButton}>
                     <Ionicons name="arrow-back" size={24} color={themeColors.text} />
@@ -294,7 +294,7 @@ export default function SelectVolunteer() {
                     )}
                 </TouchableOpacity>
             )}
-        </View>
+        </SafeAreaView>
     );
 }
 
@@ -314,10 +314,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingTop: Platform.OS === 'android' ? 20 : 10, // Reduced paddingTop
+        paddingTop: Platform.OS === 'android' ? 10 : 5, // Reduced paddingTop
         paddingBottom: 10,
         paddingHorizontal: 15,
-        minHeight: Platform.OS === 'android' ? 60 : 50, // Changed height to minHeight and reduced
+        minHeight: Platform.OS === 'android' ? 50 : 45, // Reduced minHeight
     },
     backButton: {
         padding: 5,

@@ -74,7 +74,7 @@ export default function CategoryPage() {
                 params: { id: task.id }
               })}
             >
-              <Image source={require('../assets/images/help.png')} style={styles.cardImage} />
+              <Image source={require('../../assets/images/help.png')} style={styles.cardImage} />
               <View style={styles.cardContent}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>{task.title}</Text>
                 <Text style={[styles.cardMeta, { color: colors.text + '99' }]}>{task.location}</Text>
