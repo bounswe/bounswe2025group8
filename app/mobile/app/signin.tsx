@@ -48,8 +48,8 @@ export default function SignIn() {
         const profileResponse = await getUserProfile(response.data.user_id);
         console.log('User profile:', profileResponse);
         // Store user profile data only if defined
-        if (profileResponse && profileResponse.data) {
-          await AsyncStorage.setItem('userProfile', JSON.stringify(profileResponse.data));
+        if (profileResponse && profileResponse) {
+          await AsyncStorage.setItem('userProfile', JSON.stringify(profileResponse));
         } else {
           await AsyncStorage.removeItem('userProfile');
         }

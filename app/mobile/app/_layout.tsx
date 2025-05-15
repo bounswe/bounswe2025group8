@@ -35,7 +35,7 @@ const myDarkTheme = {
 
 // Define your route groups
 const authRoutes = ['index', 'signin', 'signup', 'forgot-password'];
-const publicAppRoutes = ['feed', 'categories', 'category', 'search', 'terms']; // NEW - Adjusted for segments[0] matching
+const publicAppRoutes = ['feed', 'categories', 'category', 'search', 'terms', 'requests', 'v-request-details', 'r-request-details', 'profile']; // NEW - Added 'profile'
 // Add any other public/auth routes here, ensure 'index' is treated as an auth route if it's a landing page.
 
 function RootNavigator() {
@@ -57,11 +57,11 @@ function RootNavigator() {
     if (!user && !inAuthGroup && !inPublicAppGroup) {
       // User is not signed in, not in an auth screen, AND not in a public app screen.
       // Redirect to the initial screen.
-      router.replace('/');
+      router.replace('/index' as any);
     } else if (user && inAuthGroup) {
       // User is signed in and IS in an auth screen (e.g. /signin).
       // Redirect to the main app screen (e.g., feed).
-      router.replace('/feed');
+      router.replace('/feed' as any);
     }
     // If user is null and inAuthGroup, they can stay (e.g. on /signin).
     // If user is null and inPublicAppGroup, they can stay (e.g. on /feed as guest).
