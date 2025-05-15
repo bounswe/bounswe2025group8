@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import SearchBarWithResults, { Category, Request, Profile } from '../components/ui/SearchBarWithResults';
-import { getTasks, getCategories, getUserProfile, type Task, type Category as ApiCategory, type UserProfile } from '../lib/api';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getTasks, getCategories, searchUsers, type Task, type Category as ApiCategory, type UserProfile } from '../lib/api';
 import { useAuth } from '../lib/auth';
 
 export default function SearchPage() {
@@ -18,6 +17,7 @@ export default function SearchPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         // Fetch tasks
         const tasksResponse = await getTasks();
         setAllTasks(tasksResponse.results);
@@ -39,17 +39,20 @@ export default function SearchPage() {
           count: cat.task_count,
         })));
 
-        // Fetch current user profile from AsyncStorage (or API if needed)
-        const profileData = await AsyncStorage.getItem('userProfile');
-        if (profileData) {
-          const userProfile: UserProfile = JSON.parse(profileData);
-          setProfiles([{ id: String(userProfile.id), name: userProfile.name + ' ' + userProfile.surname }]);
-        } else {
-          setProfiles([]);
-        }
+        // Fetch users for profiles search
+        const usersResponse = await searchUsers();
+        setProfiles(usersResponse.results.map(prof => ({
+          id: String(prof.id),
+          name: `${prof.name} ${prof.surname}`,
+          image: require('../assets/images/empty_profile_photo.png'),
+        })));
+
       } catch (error) {
         console.error('Error loading search data:', error);
-        Alert.alert('Error', 'Failed to load search data.');
+        Alert.alert('Error', 'Failed to load search data. Please try again.');
+        setRequests([]);
+        setCategories([]);
+        setProfiles([]);
       } finally {
         setLoading(false);
       }
@@ -75,13 +78,16 @@ export default function SearchPage() {
           if (tab === 'Categories') router.push('/category/' + item.id as any);
           else if (tab === 'Requests') {
             const task = allTasks.find((t) => String(t.id) === String(item.id));
-            if (task && task.creator && task.creator.id === user?.id) {
+            const isCreator = user && task && task.creator && task.creator.id === user.id;
+            if (isCreator) {
               router.push({ pathname: '/r-request-details', params: { id: item.id } });
             } else {
               router.push({ pathname: '/v-request-details', params: { id: item.id } });
             }
           }
-          else if (tab === 'Profiles') router.push('/profile/' + item.id as any);
+          else if (tab === 'Profiles') {
+            router.push({ pathname: '/profile', params: { userId: item.id } });
+          }
         }}
       />
     </SafeAreaView>

@@ -111,7 +111,18 @@ export default function RequestDetails() {
       {/* Sticky Header */}
       <View style={[styles.header, { backgroundColor: themeColors.background, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }]}>
         <View style={styles.titleContainer}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity
+            onPress={() => {
+              console.log('Back button pressed on r-details');
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                console.log('Cannot go back from r-details, navigating to /feed as fallback.');
+                router.replace('/feed'); // Fallback to feed screen
+              }
+            }}
+            style={styles.backButton}
+          >
             <Ionicons name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
           <Text style={[styles.title, { color: colors.text }]}>
@@ -138,14 +149,7 @@ export default function RequestDetails() {
 
       {/* Scrollable Content */}
       <ScrollView contentContainerStyle={styles.container}>
-        {/* Request Image */}
-        {imageUrl && (
-          <Image
-            source={{ uri: imageUrl }}
-            style={styles.requestImage}
-            resizeMode="cover"
-          />
-        )}
+        {/* Request Image section removed */}
 
         {/* Request Details */}
         <View style={[styles.detailsContainer, { backgroundColor: themeColors.background }]}>

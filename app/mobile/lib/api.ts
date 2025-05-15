@@ -48,6 +48,7 @@ export interface UserProfile {
   rating: number;
   completed_task_count: number;
   is_active: boolean;
+  photo?: string;
 }
 
 export interface UserProfileResponse {
@@ -114,6 +115,13 @@ export interface UserReviewsResponse {
     reviews: Review[];
     pagination: any;
   };
+}
+
+export interface UsersResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: UserProfile[];
 }
 
 const api = axios.create({
@@ -391,46 +399,31 @@ export const getTasks = async (): Promise<TasksResponse> => {
 
 export const getCategories = async (): Promise<CategoriesResponse> => {
   try {
-    console.log('Fetching categories from tasks');
-    const response = await api.get<TasksResponse>('/tasks/');
-    console.log('Tasks response:', response.data);
-    
-    // Extract unique categories from tasks
-    const categoryMap = new Map<string, Category>();
-    response.data.results.forEach(task => {
-      console.log('Processing task category:', task.category, 'display:', task.category_display);
-      if (!categoryMap.has(task.category)) {
-        categoryMap.set(task.category, {
-          id: task.category,
-          name: task.category_display || task.category,
-          description: task.category_display || task.category,
-          task_count: 1
-        });
-      } else {
-        const category = categoryMap.get(task.category)!;
-        category.task_count += 1;
-      }
-    });
-
-    const categories = Array.from(categoryMap.values());
-    console.log('Generated categories:', categories);
-    return {
-      count: categoryMap.size,
-      next: null,
-      previous: null,
-      results: categories
-    };
+    const response = await api.get<CategoriesResponse>('/categories/');
+    return response.data;
   } catch (error) {
-    if (error instanceof AxiosError) {
-      console.error('Get categories error details:', {
-        error: error.message,
-        request: error.config,
-        response: error.response?.data,
-        status: error.response?.status,
-        headers: error.response?.headers
-      });
-    }
+    console.error('Error fetching categories:', error);
     throw error;
+  }
+};
+
+export interface VolunteerApplicationResponse {
+  status: string;
+  message: string;
+  data: any; // Adjust based on actual VolunteerSerializer response structure if needed
+}
+
+export const volunteerForTask = async (taskId: number): Promise<VolunteerApplicationResponse> => {
+  try {
+    const response = await api.post<VolunteerApplicationResponse>('/volunteers/', { task_id: taskId });
+    return response.data;
+  } catch (error) {
+    console.error(`Error volunteering for task ${taskId}:`, error);
+    if (axios.isAxiosError(error) && error.response) {
+      // Re-throw with more specific error information if available
+      throw new Error(error.response.data.message || 'Failed to volunteer for task.');
+    }
+    throw new Error('Failed to volunteer for task. An unexpected error occurred.');
   }
 };
 
@@ -498,6 +491,20 @@ export const getUserReviews = async (userId: number, page = 1, limit = 10): Prom
       });
     }
     throw error;
+  }
+};
+
+export const searchUsers = async (query?: string): Promise<UsersResponse> => {
+  try {
+    const params = query ? { search: query } : {};
+    const response = await api.get<UsersResponse>('/users/', { params });
+    return response.data;
+  } catch (error) {
+    console.error(`Error searching users with query "${query}":`, error);
+    if (axios.isAxiosError(error) && error.response) {
+      throw new Error(error.response.data.message || 'Failed to search users.');
+    }
+    throw new Error('Failed to search users. An unexpected error occurred.');
   }
 };
 

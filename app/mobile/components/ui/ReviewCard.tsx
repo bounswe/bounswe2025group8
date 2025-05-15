@@ -3,7 +3,7 @@ import { View, Text, Image, StyleSheet, useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 
-interface ReviewCardProps {
+export interface ReviewCardProps {
   author: string;
   imageUrl: string;
   score: number;
