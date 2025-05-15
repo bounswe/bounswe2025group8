@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, Modal, TextInput, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, Modal, TextInput, ActivityIndicator, Alert, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
@@ -185,18 +185,30 @@ export default function RequestDetails() {
         {actionLoading ? (
           <ActivityIndicator size="small" color={themeColors.primary} style={{ marginVertical: 16 }} />
         ) : (
-          !isCreator && (
+          user && !isCreator && (
             statusDisplay === 'Completed' ? (
               <TouchableOpacity
                 style={[styles.actionButton, { backgroundColor: themeColors.pink }]} 
-                onPress={() => { setIsEdit(false); setModalVisible(true); }}
+                onPress={() => { 
+                    if (!user) {
+                        Alert.alert('Login Required', 'Please sign in to rate/review.', [{ text: 'OK', onPress: () => router.push('/signin') }]);
+                        return;
+                    }
+                    setIsEdit(false); setModalVisible(true); 
+                }}
               >
                 <Text style={[styles.buttonText, { color: themeColors.card }]}>Rate & Review Requester</Text>
               </TouchableOpacity>
             ) : statusDisplay === 'Past' ? (
               <TouchableOpacity
                 style={[styles.actionButton, { backgroundColor: themeColors.pink }]} 
-                onPress={() => { setIsEdit(true); setModalVisible(true); }}
+                onPress={() => { 
+                    if (!user) {
+                        Alert.alert('Login Required', 'Please sign in to rate/review.', [{ text: 'OK', onPress: () => router.push('/signin') }]);
+                        return;
+                    }
+                    setIsEdit(true); setModalVisible(true); 
+                }}
               >
                 <Text style={[styles.buttonText, { color: themeColors.card }]}>Edit Your Review</Text>
               </TouchableOpacity>
@@ -268,13 +280,13 @@ export default function RequestDetails() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    paddingTop: 130,
+    paddingTop: 105,
   },
   header: {
     flexDirection: 'column',
-    paddingTop: 16, 
-    paddingBottom: 16,
-    height: 130,
+    paddingTop: Platform.OS === 'android' ? 25 : 15,
+    paddingBottom: 12,
+    minHeight: 95,
     paddingHorizontal: 24,
     justifyContent: 'space-between',
   },

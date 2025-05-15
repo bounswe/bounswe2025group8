@@ -314,10 +314,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingTop: Platform.OS === 'android' ? 25 : 10, // Adjust for status bar
+        paddingTop: Platform.OS === 'android' ? 20 : 10, // Reduced paddingTop
         paddingBottom: 10,
         paddingHorizontal: 15,
-        height: Platform.OS === 'android' ? 70 : 55,
+        minHeight: Platform.OS === 'android' ? 60 : 50, // Changed height to minHeight and reduced
     },
     backButton: {
         padding: 5,

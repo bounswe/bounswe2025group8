@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Modal, Pressable, Image, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
+import { useAuth } from '../lib/auth';
 
 const categories = [
   { value: 'GROCERY_SHOPPING', label: 'Grocery Shopping' },
@@ -17,6 +18,7 @@ const urgencies = ['Low', 'Medium', 'High'];
 export default function CreateRequest() {
   const { colors } = useTheme();
   const router = useRouter();
+  const { user } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState(categories[0].value);
@@ -24,6 +26,26 @@ export default function CreateRequest() {
   const [people, setPeople] = useState(1);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showUrgencyModal, setShowUrgencyModal] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      Alert.alert(
+        "Authentication Required", 
+        "You need to be logged in to create a request.",
+        [
+          { text: "OK", onPress: () => router.replace('/signin') }
+        ]
+      );
+    }
+  }, [user, router]);
+
+  if (!user) {
+    return (
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{color: colors.text, fontSize: 18}}>Redirecting to login...</Text>
+      </SafeAreaView>
+    );
+  }
 
   const renderPickerModal = (
     visible: boolean,

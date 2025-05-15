@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Alert, useColorScheme, Platform } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,12 +8,15 @@ import { CommonActions } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { logout as apiLogout } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import { Colors } from '../constants/Colors';
 
 export default function Settings() {
   const { colors } = useTheme();
   const router = useRouter();
   const navigation = useNavigation();
   const { user } = useAuth();
+  const colorScheme = useColorScheme();
+  const themeColors = Colors[colorScheme || 'light'];
 
   const resetToLaunch = () => {
     navigation.dispatch(
@@ -54,21 +57,29 @@ export default function Settings() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}> 
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={24} color={colors.primary} />
-        <Text style={[styles.backText, { color: colors.primary }]}>Back</Text>
-      </TouchableOpacity>
-      <Text style={[styles.title, { color: colors.primary }]}>Settings</Text>
-      {user && (
-        <TouchableOpacity 
-          style={styles.logoutButton} 
-          onPress={handleLogout}
-        >
-          <Ionicons name="log-out-outline" size={22} color="#FF3B30" />
-          <Text style={styles.logoutText}>Logout</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+      <View style={[styles.headerBar, { borderBottomColor: themeColors.border }]}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color={themeColors.text} />
         </TouchableOpacity>
-      )}
+        <Text style={[styles.headerTitle, { color: themeColors.text }]}>Settings</Text>
+        <View style={{ width: 24 }} />
+      </View>
+      
+      <View style={styles.contentContainer}> 
+        {user && (
+          <TouchableOpacity 
+            style={[styles.logoutButton, { backgroundColor: themeColors.error, borderColor: themeColors.error }]} 
+            onPress={handleLogout}
+          >
+            <Ionicons name="log-out-outline" size={22} color={themeColors.card} />
+            <Text style={[styles.logoutText, { color: themeColors.card }]}>Logout</Text>
+          </TouchableOpacity>
+        )}
+        {!user && (
+            <Text style={{color: themeColors.textMuted, textAlign: 'center', marginTop: 40}}>You are not signed in.</Text>
+        )}
+      </View>
     </SafeAreaView>
   );
 }
@@ -76,22 +87,29 @@ export default function Settings() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 32,
-    paddingTop: 40,
-    alignItems: 'flex-start',
-    backgroundColor: '#fff',
   },
-  backButton: {
+  headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-start',
-    marginBottom: 16,
-    marginLeft: 0,
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
+    paddingTop: Platform.OS === 'android' ? 25 : 10,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
   },
-  backText: {
-    marginLeft: 6,
-    fontSize: 16,
-    fontWeight: '500',
+  backButton: {
+    padding: 5,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  contentContainer: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 24,
+    alignItems: 'center',
   },
   title: {
     fontSize: 28,
@@ -101,38 +119,16 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     textAlign: 'center',
   },
-  settingsContainer: {
-    width: '100%',
-    marginTop: 24,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 340,
-    borderRadius: 16,
-    padding: 24,
-    marginTop: 32,
-    alignItems: 'center',
-    alignSelf: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 25,
     marginTop: 32,
-    alignSelf: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-    borderWidth: 2,
-    borderColor: '#FF3B30',
+    alignSelf: 'stretch',
   },
   logoutText: {
-    color: '#FF3B30',
     fontSize: 16,
     fontWeight: 'bold',
     marginLeft: 10,

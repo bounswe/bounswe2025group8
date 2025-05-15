@@ -8,7 +8,7 @@ export interface RequestCardProps {
   title: string;
   distance: string;
   time: string;
-  imageUrl: string;
+  imageUrl: string | number; // Allow string (URI) or number (require result)
   category: string;
   urgencyLevel: string; // e.g., "High", "Medium", "Low", "Past"
   status: string; // e.g., "Completed", "Accepted", "Pending", "Rejected", or a rating string for "Past"
@@ -52,7 +52,10 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, imageUrl, category, ur
   return (
     <View style={[styles.cardContainer, { backgroundColor: themeColors.card }]}> {/* Use themeColors.card */}
       <View style={styles.topContainer}>
-        <Image source={{ uri: imageUrl }} style={styles.cardImage} />
+        <Image 
+          source={typeof imageUrl === 'string' ? { uri: imageUrl } : imageUrl} 
+          style={styles.cardImage} 
+        />
         <View style={styles.infoContainer}>
           <Text style={[styles.title, { color: themeColors.text }]} numberOfLines={1}>{title}</Text>
           <Text style={[styles.distanceTimeText, { color: themeColors.textMuted }]} numberOfLines={1}>{distance} • {time}</Text>
@@ -100,7 +103,7 @@ const RequestCard: React.FC<RequestCardProps> = ({ title, imageUrl, category, ur
                 },
             ]}
             >
-            {status} 
+            {typeof status === 'object' ? JSON.stringify(status) : String(status)} 
             </Text>
         )}
         {/* If urgency is 'Past', display the rating (status prop) with specific styling */}

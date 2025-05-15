@@ -282,34 +282,34 @@ export default function RequestDetails() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    paddingTop: 130, 
+    paddingTop: 105,
   },
   header: {
     flexDirection: 'column',
-    paddingTop: Platform.OS === 'android' ? 35 : 16, // Adjusted for status bar
-    paddingBottom: 16,
-    minHeight: 110, // Ensure enough height for labels
-    paddingHorizontal: 15, // Consistent padding
+    paddingTop: Platform.OS === 'android' ? 25 : 15,
+    paddingBottom: 12,
+    minHeight: 95,
+    paddingHorizontal: 15,
     justifyContent: 'space-around',
   },
   titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8, // Space below title row
-    width: '100%', // Ensure it takes full width for centering title
+    marginBottom: 8,
+    width: '100%',
   },
   backButton: {
     marginRight: 8,
-    padding:5, // Easier to tap
+    padding:5,
   },
   title: {
     fontSize: 20,
     fontWeight: 'bold',
-    flexShrink: 1, // Allow title to shrink if too long
+    flexShrink: 1,
   },
-  labelsContainer: { // Container for category and urgency labels
+  labelsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around', // Distribute labels
+    justifyContent: 'space-around',
     alignItems: 'center',
     width: '100%',
   },
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
     borderRadius: 7,
-    overflow: 'hidden', // Ensure background respects border radius
+    overflow: 'hidden',
   },
   label: { 
     paddingVertical: 4,
@@ -328,10 +328,9 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     borderRadius: 7,
     textAlign: 'center',
-    minWidth: 100, // Give some base width to labels
+    minWidth: 100,
     overflow: 'hidden',
   },
-  // ... (rest of the styles are largely unchanged but might need minor theme color adjustments if not already done)
   detailsContainer: {
     borderRadius: 12,
     marginHorizontal: 15,
@@ -349,7 +348,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   avatar: {
-    width: 50, // Slightly smaller avatar in details
+    width: 50,
     height: 50,
     borderRadius: 25,
     marginRight: 12,
@@ -374,18 +373,18 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 14,
-    flexShrink: 1, // Allow text to wrap or shrink
+    flexShrink: 1,
   },
   statusText: {
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
-    marginVertical: 20, // Consistent margin
+    marginVertical: 20,
     alignSelf: 'center',
   },
   actionButton: {
     alignItems: 'center',
-    marginHorizontal: '5%', // Use margin for centering
+    marginHorizontal: '5%',
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 25,
@@ -412,7 +411,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginHorizontal: 5,
     alignItems: 'center',
-    borderWidth: 1, // Add border for subtle distinction
+    borderWidth: 1,
   },
   editButtonText: {
     fontSize: 15,

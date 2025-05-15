@@ -83,14 +83,16 @@ export default function Categories() {
       {/* Header */}
       <View style={styles.header}>
         <Image source={require('../assets/images/logo.png')} style={styles.logo} />
-        <View style={styles.icons}>
-          <TouchableOpacity onPress={() => router.push('/notifications')}>
-            <Ionicons name="notifications-outline" size={24} color={colors.text} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/settings')}>
-            <Ionicons name="settings-outline" size={24} color={colors.text} />
-          </TouchableOpacity>
-        </View>
+        {user && (
+          <View style={styles.icons}>
+            <TouchableOpacity onPress={() => router.push('/notifications')}>
+              <Ionicons name="notifications-outline" size={24} color={colors.text} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/settings')}>
+              <Ionicons name="settings-outline" size={24} color={colors.text} />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       {/* Search bar */}

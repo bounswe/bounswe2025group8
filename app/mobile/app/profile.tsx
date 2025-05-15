@@ -227,9 +227,9 @@ export default function ProfileScreen() {
   const isOwnProfile = user?.id === profile.id;
 
   return (
-    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: themeColors.gray }]}>
-      <View style={[styles.profileHeaderRow, { backgroundColor: themeColors.background, marginTop: 32 }]}>
-        <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/feed')} style={{ marginRight: 12 }}>
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: themeColors.background }]}>
+      <View style={[styles.profileHeaderRow, { /* backgroundColor is already themeColors.background from ScrollView if not overridden, marginTop removed */ }]}>
+        <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/feed')} style={styles.backButton}>
           <Ionicons name="arrow-back" size={28} color={themeColors.text} />
         </TouchableOpacity>
         <Image
@@ -261,27 +261,27 @@ export default function ProfileScreen() {
       </View>
 
       {isOwnProfile && (
-          <View style={{ flexDirection: 'row', marginHorizontal: 24, marginTop: 18, marginBottom: 18, borderRadius: 12, backgroundColor: '#f3f0ff', overflow: 'hidden' }}>
+          <View style={[styles.tabSelectorContainer, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
             <TouchableOpacity
-              style={{ flex: 1, alignItems: 'center', paddingVertical: 10, backgroundColor: selectedTab === 'volunteer' ? '#7C6AED' : 'transparent' }}
+              style={[styles.tabButton, { backgroundColor: selectedTab === 'volunteer' ? themeColors.primary : 'transparent' } ]}
               onPress={() => setSelectedTab('volunteer')}
             >
-              <Text style={{ color: selectedTab === 'volunteer' ? '#fff' : '#7C6AED', fontWeight: '600', fontSize: 16 }}>My Volunteer Tasks</Text>
+              <Text style={[styles.tabButtonText, { color: selectedTab === 'volunteer' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'volunteer' ? 'bold' : 'normal' }]}>My Volunteer Tasks</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={{ flex: 1, alignItems: 'center', paddingVertical: 10, backgroundColor: selectedTab === 'requester' ? '#7C6AED' : 'transparent' }}
+              style={[styles.tabButton, { backgroundColor: selectedTab === 'requester' ? themeColors.primary : 'transparent' } ]}
               onPress={() => setSelectedTab('requester')}
             >
-              <Text style={{ color: selectedTab === 'requester' ? '#fff' : '#7C6AED', fontWeight: '600', fontSize: 16 }}>My Created Tasks</Text>
+              <Text style={[styles.tabButtonText, { color: selectedTab === 'requester' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'requester' ? 'bold' : 'normal' }]}>My Created Tasks</Text>
             </TouchableOpacity>
           </View>
       )}
 
       {isOwnProfile && selectedTab === 'volunteer' && <>
-        <Text style={{ fontSize: 18, fontWeight: 'bold', marginTop: 8, marginLeft: 16, color: colors.text }}>Active Tasks as Volunteer</Text>
-        <View style={{ marginBottom: 16, marginTop: 12 }}>
+        <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Active Tasks as Volunteer</Text>
+        <View style={styles.taskListContainer}>
           {activeVolunteerTasks.length === 0 ? (
-            <Text style={{ color: colors.text, marginTop: 8, marginLeft: 16 }}>No active volunteer tasks.</Text>
+            <Text style={[styles.emptyListText, { color: themeColors.textMuted }]}>No active volunteer tasks.</Text>
           ) : (
             activeVolunteerTasks.map(req => (
               <RequestCard
@@ -301,10 +301,10 @@ export default function ProfileScreen() {
             ))
           )}
         </View>
-        <Text style={{ fontSize: 18, fontWeight: 'bold', marginTop: 8, marginLeft: 16, color: colors.text }}>Past Tasks as Volunteer</Text>
-        <View style={{ marginBottom: 32, marginTop: 12 }}>
+        <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Past Tasks as Volunteer</Text>
+        <View style={styles.taskListContainer}>
           {pastVolunteerTasks.length === 0 ? (
-            <Text style={{ color: colors.text, marginTop: 8, marginLeft: 16 }}>No past volunteer tasks.</Text>
+            <Text style={[styles.emptyListText, { color: themeColors.textMuted }]}>No past volunteer tasks.</Text>
           ) : (
             pastVolunteerTasks.map(req => (
               <RequestCard
@@ -327,10 +327,10 @@ export default function ProfileScreen() {
       </>}
 
       {isOwnProfile && selectedTab === 'requester' && <>
-        <Text style={{ fontSize: 18, fontWeight: 'bold', marginTop: 8, marginLeft: 16, color: colors.text }}>Active Tasks as Requester</Text>
-        <View style={{ marginBottom: 16, marginTop: 12 }}>
+        <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Active Tasks as Requester</Text>
+        <View style={styles.taskListContainer}>
           {activeRequesterTasks.length === 0 ? (
-            <Text style={{ color: colors.text, marginTop: 8, marginLeft: 16 }}>No active requester tasks.</Text>
+            <Text style={[styles.emptyListText, { color: themeColors.textMuted }]}>No active requester tasks.</Text>
           ) : (
             activeRequesterTasks.map(req => (
               <RequestCard
@@ -350,10 +350,10 @@ export default function ProfileScreen() {
             ))
           )}
         </View>
-        <Text style={{ fontSize: 18, fontWeight: 'bold', marginTop: 8, marginLeft: 16, color: colors.text }}>Past Tasks as Requester</Text>
-        <View style={{ marginBottom: 32, marginTop: 12 }}>
+        <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Past Tasks as Requester</Text>
+        <View style={styles.taskListContainer}>
           {pastRequesterTasks.length === 0 ? (
-            <Text style={{ color: colors.text, marginTop: 8, marginLeft: 16 }}>No past requester tasks.</Text>
+            <Text style={[styles.emptyListText, { color: themeColors.textMuted }]}>No past requester tasks.</Text>
           ) : (
             pastRequesterTasks.map(req => (
               <RequestCard
@@ -375,15 +375,15 @@ export default function ProfileScreen() {
         </View>
       </>}
 
-      <View style={styles.reviewsSectionContainer}>
+      <View style={[styles.reviewsSectionContainer, {borderColor: themeColors.border}]}>
           <View style={styles.reviewsHeaderRow}>
             <Ionicons name="star-outline" size={20} color={themeColors.pink} />
-            <Text style={styles.reviewsHeaderText}>Reviews for {profile ? profile.name : 'User'}</Text>
+            <Text style={[styles.reviewsHeaderText, {color: themeColors.text}]}>Reviews for {profile ? profile.name : 'User'}</Text>
           </View>
-          {reviewsLoading && <ActivityIndicator color={colors.primary} />}
-          {reviewsError && <Text style={{color: 'red', marginLeft: 16}}>{reviewsError}</Text>}
+          {reviewsLoading && <ActivityIndicator color={themeColors.primary} style={{marginVertical: 16}} />}
+          {reviewsError && <Text style={[styles.errorText, {color: themeColors.error}]}>{reviewsError}</Text>}
           {!reviewsLoading && !reviewsError && reviews.length === 0 && (
-            <Text style={{ color: colors.text, marginLeft: 16, marginTop: 8 }}>No reviews yet for this user.</Text>
+            <Text style={[styles.emptyListText, { color: themeColors.textMuted, marginTop: 8, marginBottom: 16 }]}>No reviews yet for this user.</Text>
           )}
           {!reviewsLoading && !reviewsError && reviews.map((review) => (
             <ReviewCard 
@@ -404,14 +404,19 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: 0,
-    paddingTop: 36,
+    paddingHorizontal: 16,
+    paddingBottom: 32,
   },
   profileHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 24,
-    marginBottom: 12,
+    paddingTop: 16,
+    paddingBottom: 16,
+    marginBottom: 24,
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 8,
   },
   profileAvatar: {
     width: 72,
@@ -422,21 +427,65 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#222',
+    // color: '#222', // Will be themed by parent Text component or inline
+  },
+  tabSelectorContainer: { // Added style for tab selector
+    flexDirection: 'row',
+    // marginHorizontal: 24, // Removed
+    marginTop: 0, // Adjusted from 18
+    marginBottom: 24, // Adjusted from 18
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  tabButton: { // Added style for tab button
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 12, // Adjusted from 10
+  },
+  tabButtonText: { // Added style for tab button text
+    fontSize: 15, // Adjusted from 16
+    // fontWeight: '600', // Will be set conditionally
+  },
+  sectionTitle: { // Added style for section titles
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 0, // Adjusted from 8, handled by taskListContainer if needed
+    marginBottom: 12, // Added space below title
+    // marginLeft: 16, // Removed
+  },
+  taskListContainer: { // Added style for view wrapping task lists
+    marginBottom: 16,
+    // marginTop: 12, // Removed, handled by sectionTitle margin
+  },
+  emptyListText: { // Added style for empty list text
+    // color: colors.text, // Themed inline
+    marginTop: 8, 
+    // marginLeft: 16, // Removed
+    textAlign: 'center',
+    fontSize: 15,
   },
   reviewsSectionContainer: {
-    marginHorizontal: 24,
-    marginBottom: 32,
-    marginTop: 16,
+    // marginHorizontal: 24, // Removed
+    marginBottom: 16, // Adjusted from 32
+    marginTop: 24, // Adjusted from 16, give more space before reviews
+    borderTopWidth: 1, // Add a separator line
+    paddingTop: 16, // Add padding above the review section title
   },
   reviewsHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12, // Adjusted from 8
   },
   reviewsHeaderText: {
-    marginLeft: 12,
+    // marginLeft: 12, // Removed
     fontSize: 16,
     fontWeight: '600',
+    marginLeft: 8, // Reduced from 12, as icon provides some spacing
   },
+  errorText: { // Added style for error text, can be reused
+    textAlign: 'center',
+    fontSize: 15,
+    marginVertical: 16,
+  }
 }); 

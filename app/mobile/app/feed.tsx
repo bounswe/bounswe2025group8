@@ -99,17 +99,19 @@ export default function Feed() {
           <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
             <Image source={require('../assets/images/logo.png')} style={{ width: 48, height: 48, marginRight: 12 }} />
             <View>
-              <Text style={[styles.welcomeText, { color: colors.text }]}>Welcome back</Text>
+              <Text style={[styles.welcomeText, { color: colors.text }]}>{user ? 'Welcome back' : 'Welcome Guest'}</Text>
             </View>
           </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <TouchableOpacity onPress={() => router.push('/notifications')} style={{ marginRight: 12 }}>
-              <Ionicons name="notifications-outline" size={24} color={colors.text} />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/settings')}>
-              <Ionicons name="settings-outline" size={24} color={colors.text} />
-            </TouchableOpacity>
-          </View>
+          {user && (
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <TouchableOpacity onPress={() => router.push('/notifications')} style={{ marginRight: 12 }}>
+                <Ionicons name="notifications-outline" size={24} color={colors.text} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/settings')}>
+                <Ionicons name="settings-outline" size={24} color={colors.text} />
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
 
         {/* — Search bar — */}

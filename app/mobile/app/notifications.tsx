@@ -9,6 +9,7 @@ import {
   Alert,
   RefreshControl,
   useColorScheme,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -236,7 +237,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 15,
-    paddingVertical: 10,
+    paddingTop: Platform.OS === 'android' ? 15 : 10,
+    paddingBottom: 8,
     borderBottomWidth: 1,
   },
   backButton: {
