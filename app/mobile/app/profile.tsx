@@ -284,25 +284,16 @@ export default function ProfileScreen() {
             {activeVolunteerTasks.length === 0 ? (
               <Text style={[styles.emptyListText, { color: themeColors.textMuted }]}>No active volunteer tasks.</Text>
             ) : (
-              activeVolunteerTasks.map(req => {
-                console.log('[ProfileScreen] Active Volunteer Task Title Type:', typeof req.title, 'Value:', req.title);
-                return (
-                  <RequestCard
-                    key={req.id}
-                    title={req.title}
-                    imageUrl={req.photo || require('../assets/images/help.png')}
-                    category={req.category_display || req.category}
-                    urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
-                    status={req.status_display || req.status}
-                    distance={req.location || 'N/A'}
-                    time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
-                    onPress={() => router.push({ 
-                      pathname: '/v-request-details',
-                      params: { id: req.id } 
-                    })}
-                  />
-                );
-              })
+              (() => {
+                console.log('[ProfileScreen] PRE-MAP activeVolunteerTasks:', JSON.stringify(activeVolunteerTasks.map(t => ({ id: t.id, title: t.title, typeOfTitle: typeof t.title }))));
+                return activeVolunteerTasks.map(req => {
+                  console.log('[ProfileScreen] RENDERING RequestCard for Active Volunteer. Task ID:', req.id, 'Title:', req.title, 'TypeOfTitle:', typeof req.title);
+                  if (typeof req.title !== 'string') {
+                    console.error('[ProfileScreen] CRITICAL (Active Volunteer): Non-string title. Task ID:', req.id, 'Title:', req.title);
+                  }
+                  return <RequestCard key={req.id} title={req.title} category={req.category_display || req.category} urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'} status={req.status_display || req.status} distance={req.location || 'N/A'} time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''} onPress={() => router.push({ pathname: '/v-request-details', params: { id: req.id } })} />;
+                });
+              })()
             )}
           </View>
           <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Past Tasks as Volunteer</Text>
@@ -310,25 +301,16 @@ export default function ProfileScreen() {
             {pastVolunteerTasks.length === 0 ? (
               <Text style={[styles.emptyListText, { color: themeColors.textMuted }]}>No past volunteer tasks.</Text>
             ) : (
-              pastVolunteerTasks.map(req => {
-                console.log('[ProfileScreen] Past Volunteer Task Title Type:', typeof req.title, 'Value:', req.title);
-                return (
-                  <RequestCard
-                    key={req.id}
-                    title={req.title}
-                    imageUrl={req.photo || require('../assets/images/help.png')}
-                    category={req.category_display || req.category}
-                    urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
-                    status={req.status_display || req.status}
-                    distance={req.location || 'N/A'}
-                    time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
-                    onPress={() => router.push({ 
-                      pathname: '/v-request-details',
-                      params: { id: req.id } 
-                    })}
-                  />
-                );
-              })
+              (() => {
+                console.log('[ProfileScreen] PRE-MAP pastVolunteerTasks:', JSON.stringify(pastVolunteerTasks.map(t => ({ id: t.id, title: t.title, typeOfTitle: typeof t.title }))));
+                return pastVolunteerTasks.map(req => {
+                  console.log('[ProfileScreen] RENDERING RequestCard for Past Volunteer. Task ID:', req.id, 'Title:', req.title, 'TypeOfTitle:', typeof req.title);
+                  if (typeof req.title !== 'string') {
+                    console.error('[ProfileScreen] CRITICAL (Past Volunteer): Non-string title. Task ID:', req.id, 'Title:', req.title);
+                  }
+                  return <RequestCard key={req.id} title={req.title} category={req.category_display || req.category} urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'} status={req.status_display || req.status} distance={req.location || 'N/A'} time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''} onPress={() => router.push({ pathname: '/v-request-details', params: { id: req.id } })} />;
+                });
+              })()
             )}
           </View>
         </>}
@@ -339,25 +321,16 @@ export default function ProfileScreen() {
             {activeRequesterTasks.length === 0 ? (
               <Text style={[styles.emptyListText, { color: themeColors.textMuted }]}>No active requester tasks.</Text>
             ) : (
-              activeRequesterTasks.map(req => {
-                console.log('[ProfileScreen] Active Requester Task Title Type:', typeof req.title, 'Value:', req.title);
-                return (
-                  <RequestCard
-                    key={req.id}
-                    title={req.title}
-                    imageUrl={req.photo || require('../assets/images/help.png')}
-                    category={req.category_display || req.category}
-                    urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
-                    status={req.status_display || req.status}
-                    distance={req.location || 'N/A'}
-                    time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
-                    onPress={() => router.push({ 
-                      pathname: '/r-request-details',
-                      params: { id: req.id } 
-                    })}
-                  />
-                );
-              })
+              (() => {
+                console.log('[ProfileScreen] PRE-MAP activeRequesterTasks:', JSON.stringify(activeRequesterTasks.map(t => ({ id: t.id, title: t.title, typeOfTitle: typeof t.title }))));
+                return activeRequesterTasks.map(req => {
+                  console.log('[ProfileScreen] RENDERING RequestCard for Active Requester. Task ID:', req.id, 'Title:', req.title, 'TypeOfTitle:', typeof req.title);
+                  if (typeof req.title !== 'string') {
+                    console.error('[ProfileScreen] CRITICAL (Active Requester): Non-string title. Task ID:', req.id, 'Title:', req.title);
+                  }
+                  return <RequestCard key={req.id} title={req.title} category={req.category_display || req.category} urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'} status={req.status_display || req.status} distance={req.location || 'N/A'} time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''} onPress={() => router.push({ pathname: '/r-request-details', params: { id: req.id } })} />;
+                });
+              })()
             )}
           </View>
           <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Past Tasks as Requester</Text>
@@ -365,25 +338,16 @@ export default function ProfileScreen() {
             {pastRequesterTasks.length === 0 ? (
               <Text style={[styles.emptyListText, { color: themeColors.textMuted }]}>No past requester tasks.</Text>
             ) : (
-              pastRequesterTasks.map(req => {
-                console.log('[ProfileScreen] Past Requester Task Title Type:', typeof req.title, 'Value:', req.title);
-                return (
-                  <RequestCard
-                    key={req.id}
-                    title={req.title}
-                    imageUrl={req.photo || require('../assets/images/help.png')}
-                    category={req.category_display || req.category}
-                    urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'}
-                    status={req.status_display || req.status}
-                    distance={req.location || 'N/A'}
-                    time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
-                    onPress={() => router.push({ 
-                      pathname: '/r-request-details',
-                      params: { id: req.id } 
-                    })}
-                  />
-                );
-              })
+              (() => {
+                console.log('[ProfileScreen] PRE-MAP pastRequesterTasks:', JSON.stringify(pastRequesterTasks.map(t => ({ id: t.id, title: t.title, typeOfTitle: typeof t.title }))));
+                return pastRequesterTasks.map(req => {
+                  console.log('[ProfileScreen] RENDERING RequestCard for Past Requester. Task ID:', req.id, 'Title:', req.title, 'TypeOfTitle:', typeof req.title);
+                  if (typeof req.title !== 'string') {
+                    console.error('[ProfileScreen] CRITICAL (Past Requester): Non-string title. Task ID:', req.id, 'Title:', req.title);
+                  }
+                  return <RequestCard key={req.id} title={req.title} category={req.category_display || req.category} urgencyLevel={req.urgency_level === 3 ? 'High' : req.urgency_level === 2 ? 'Medium' : req.urgency_level === 1 ? 'Low' : 'Medium'} status={req.status_display || req.status} distance={req.location || 'N/A'} time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''} onPress={() => router.push({ pathname: '/r-request-details', params: { id: req.id } })} />;
+                });
+              })()
             )}
           </View>
         </>}
