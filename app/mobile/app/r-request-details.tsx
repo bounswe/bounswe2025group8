@@ -1,48 +1,43 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, Modal, TextInput } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, Modal, TextInput, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
 import { useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { getTasks, type Task } from '../lib/api'; // Import getTasks and Task type
 
-const MOCK_MAP: Record<string, any[]> = {
-  // MOCK_V_ACTIVE_REQUESTS,
-  // MOCK_V_PAST_REQUESTS,
-  // MOCK_R_ACTIVE_REQUESTS,
-  // MOCK_R_PAST_REQUESTS,
-};
 
 const backgroundColors: Record<string, string> = {
-  High: '#de3b40', // High Urhgency background color
-  Medium: '#efb034', // Medium Urgency background color
-  Low: '#1dd75b', // Low Urgency background color
-  Past: '#9095a0', // Past background color
-  Completed: '#379ae6', // Completed background color
-  Accepted: '#636AE8', // Accepted background color
-  Pending: 'transparent', // Pending background color
-  Rejected: 'transparent', // Rejected background color
+  High: '#de3b40',
+  Medium: '#efb034',
+  Low: '#1dd75b',
+  Past: '#9095a0',
+  Completed: '#379ae6',
+  Accepted: '#636AE8',
+  Pending: 'transparent',
+  Rejected: 'transparent',
 };
 
 const textColors: Record<string, string> = {
-  High: '#fff', // High Urgency text color
-  Medium: '#5d4108', // Medium Urgency text color  
-  Low: '#0a4d20', // Low Urgency text color
-  Completed: '#fff', // Completed text color
-  Accepted: '#fff', // Accepted text color
-  Pending: '#636AE8', // Pending text color
-  Rejected: '#E8618C', // Rejected text color
+  High: '#fff',
+  Medium: '#5d4108',
+  Low: '#0a4d20',
+  Completed: '#fff',
+  Accepted: '#fff',
+  Pending: '#636AE8',
+  Rejected: '#E8618C',
 };
 
 const borderColors: Record<string, string> = {
-  High: '#de3b40', // High Urgency border color
-  Medium: '#efb034', // Medium Urgency border color
-  Low: '#1dd75b', // Low Urgency border color
-  Past: '#9095a0', // Past border color
-  Completed: '#379ae6', // Completed border color
-  Accepted: '#636AE8', // Accepted border color
-  Pending: '#636AE8', // Pending border color
-  Rejected: '#E8618C', // Rejected border color
+  High: '#de3b40',
+  Medium: '#efb034',
+  Low: '#1dd75b',
+  Past: '#9095a0',
+  Completed: '#379ae6',
+  Accepted: '#636AE8',
+  Pending: '#636AE8',
+  Rejected: '#E8618C',
 };
 
 export default function RequestDetails() {
@@ -52,118 +47,163 @@ export default function RequestDetails() {
   const themeColors = Colors[colorScheme || 'light'];
   const router = useRouter();
 
-  const arrayName = params.arrayName as string;
-  const index = typeof params.index === 'string' ? parseInt(params.index, 10) : Number(params.index);
-  const requestsArray = MOCK_MAP[arrayName];
-  const request = requestsArray && !isNaN(index) ? requestsArray[index] : null;
+  const id = params.id ? Number(params.id) : null; // Get ID from params
+  const [request, setRequest] = useState<Task | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
 
+  useEffect(() => {
+    if (!id) {
+      setError('Request ID not provided.');
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    getTasks() // Fetch all tasks
+      .then(res => {
+        const found = res.results.find((t) => t.id === id); // Find the specific task by ID
+        if (found) {
+          setRequest(found);
+        } else {
+          setError('Request not found.');
+        }
+      })
+      .catch(() => setError('Failed to load request details.'))
+      .finally(() => setLoading(false));
+  }, [id]);
+
   const handleStarPress = (star: number) => setRating(star);
+
+  if (loading) {
+    return <ActivityIndicator size="large" color={colors.primary} style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: themeColors.gray }} />;
+  }
+
+  if (error || !request) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: themeColors.gray }}>
+        <Text style={{ color: 'red', textAlign: 'center', fontSize: 18 }}>{error || 'Request details could not be loaded.'}</Text>
+      </View>
+    );
+  }
+
+  // Map API fields to UI fields for clarity, similar to v-request-details
+  const title = request.title;
+  const categoryDisplay = request.category_display || request.category || 'Unknown';
+  const urgencyLevel = request.urgency_level === 3 ? 'High' : request.urgency_level === 2 ? 'Medium' : request.urgency_level === 1 ? 'Low' : 'Medium';
+  const statusDisplay = request.status_display || request.status;
+  const imageUrl = request.photo || 'https://placehold.co/400x280'; // Default placeholder
+  const requesterName = request.creator?.name || 'Unknown User';
+  const requesterAvatar = request.creator?.photo || 'https://placehold.co/70x70'; // Default placeholder
+  const description = request.description || 'No description provided.';
+  const datetime = request.deadline ? new Date(request.deadline).toLocaleString() : 'Not specified';
+  const locationDisplay = request.location || 'Not specified';
+  const requiredPerson = request.volunteer_number || 1;
+  const phoneNumber = request.creator?.phone_number || 'Not available';
+
 
   return (
     <View style={{ flex: 1, backgroundColor: themeColors.gray }}>
       {/* Sticky Header */}
-      <View style={[styles.header, { backgroundColor: themeColors.background, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }]}> 
+      <View style={[styles.header, { backgroundColor: themeColors.background, position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }]}>
         <View style={styles.titleContainer}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={[styles.title, { color: colors.text }]}> 
-            {request ? request.title : 'Request Details'}
+          <Text style={[styles.title, { color: colors.text }]}>
+            {title}
           </Text>
         </View>
         <Text style={[styles.categoryLabel, { color: colors.primary, backgroundColor: themeColors.lightPurple }]}>
-          {request.category_display || request.category || 'Unknown'}
+          {categoryDisplay}
         </Text>
-        {/* Urgency Level Label */}
         <Text
           style={[
             styles.label,
             {
-              color: textColors[request.urgencyLevel] || '#fff',
-              backgroundColor: backgroundColors[request.urgencyLevel] || '#9095a0',
-              borderColor: borderColors[request.urgencyLevel] || '#9095a0',
+              color: textColors[urgencyLevel] || '#fff',
+              backgroundColor: backgroundColors[urgencyLevel] || '#9095a0',
+              borderColor: borderColors[urgencyLevel] || '#9095a0',
               borderWidth: 1,
             },
           ]}
         >
-          {request.urgencyLevel === 'Past' ? request.urgencyLevel : `${request.urgencyLevel} Urgency`}
+          {statusDisplay === 'Past' ? statusDisplay : `${urgencyLevel} Urgency`}
         </Text>
       </View>
 
       {/* Scrollable Content */}
       <ScrollView contentContainerStyle={styles.container}>
         {/* Request Image */}
-        {request?.imageUrl && (
+        {imageUrl && (
           <Image
-            source={{ uri: request.imageUrl }}
+            source={{ uri: imageUrl }}
             style={styles.requestImage}
             resizeMode="cover"
           />
         )}
 
         {/* Request Details */}
-        <View style={[styles.detailsContainer, { backgroundColor: themeColors.background }]}> 
+        <View style={[styles.detailsContainer, { backgroundColor: themeColors.background }]}>
           <View style={styles.avatarRow}>
             <Image
-              source={{ uri: request.requester.profileImageUrl }}
+              source={{ uri: requesterAvatar }}
               style={styles.avatar}
             />
-            <Text style={[styles.name, { color: colors.text }]}>{request.requester.name}</Text>
+            <Text style={[styles.name, { color: colors.text }]}>{requesterName}</Text>
           </View>
-          <Text style={[styles.descriptionText, { color: colors.text }]}>{request.desc}</Text>
+          <Text style={[styles.descriptionText, { color: colors.text }]}>{description}</Text>
           <View style={styles.infoContainer}>
             <View style={styles.infoRow}>
               <Ionicons name="time-outline" size={25} color={colors.text} style={styles.icon} />
-              <Text style={[styles.infoText, { color: colors.text }]}>{request.datetime}</Text>
+              <Text style={[styles.infoText, { color: colors.text }]}>{datetime}</Text>
             </View>
             <View style={styles.infoRow}>
               <Ionicons name="location-outline" size={25} color={colors.text} style={styles.icon} />
-              <Text style={[styles.infoText, { color: colors.text }]}>{request.location}</Text>
+              <Text style={[styles.infoText, { color: colors.text }]}>{locationDisplay}</Text>
             </View>
             <View style={styles.infoRow}>
               <Ionicons name="people-outline" size={25} color={colors.text} style={styles.icon} />
-              <Text style={[styles.infoText, { color: colors.text }]}>{request.requiredPerson} person required</Text>
+              <Text style={[styles.infoText, { color: colors.text }]}>{requiredPerson} person required</Text>
             </View>
             <View style={styles.infoRow}>
               <Ionicons name="call-outline" size={25} color={colors.text} style={styles.icon} />
-              <Text style={[styles.infoText, { color: colors.text }]}>{request.phoneNumber}</Text>
+              <Text style={[styles.infoText, { color: colors.text }]}>{phoneNumber}</Text>
             </View>
           </View>
         </View>
 
-        {/* Show statusText always */}
         <Text style={[
-          styles.statusText, 
-          { color: request.urgencyLevel === 'Past' ? '#efb034' : borderColors[request.status] }
+          styles.statusText,
+          { color: statusDisplay === 'Past' ? '#efb034' : borderColors[statusDisplay] || textColors[statusDisplay] || colors.text }
         ]}>{
-          request.urgencyLevel === 'Past' 
-            ? `☆ ${parseFloat(request.status).toFixed(1)}` 
-            : request.status
+          statusDisplay === 'Past' && request.assignee?.rating // Assuming rating might be on assignee for past tasks
+            ? `☆ ${parseFloat(request.assignee.rating).toFixed(1)}` // This part might need adjustment based on actual data structure for past task ratings
+            : statusDisplay
         }</Text>
 
         {/* Button logic based on request status */}
-        {request && (
-          ['Pending', 'Accepted'].includes(request.status) ? (
+        {request && ( // Check if request is not null
+          ['Pending', 'Accepted'].includes(statusDisplay) ? (
             <>
               <TouchableOpacity
                 style={[styles.volunteerButton, { backgroundColor: colors.primary }]}
-                onPress={() => router.push({ pathname: '/select-volunteer', params: { arrayName, index } })}
+                // onPress={() => router.push({ pathname: '/select-volunteer', params: { id: request.id } })} // Pass ID
               >
                 <Text style={styles.buttonText}>Select Volunteer</Text>
               </TouchableOpacity>
               <View style={styles.editRow}>
-                <TouchableOpacity style={[styles.editButton, { backgroundColor: '#fef9ee' }]} onPress={() => {/* TODO: Edit logic 1 */}}>
+                <TouchableOpacity style={[styles.editButton, { backgroundColor: '#fef9ee' }]} onPress={() => {/* TODO: Edit logic */}}>
                   <View style={styles.editButtonContent}>
                     <Ionicons name="create-outline" size={20} color="#98690c" style={{ marginRight: 6 }} />
                     <Text style={[styles.editButtonText, { color: '#98690c' }]}>Edit Request</Text>
                   </View>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.editButton, { backgroundColor: '#fdf2f2' }]} onPress={() => {/* TODO: Edit logic 2 */}}>
+                <TouchableOpacity style={[styles.editButton, { backgroundColor: '#fdf2f2' }]} onPress={() => {/* TODO: Delete logic */}}>
                   <View style={styles.editButtonContent}>
                     <Ionicons name="trash-outline" size={20} color="#de3b40" style={{ marginRight: 6 }} />
                     <Text style={[styles.editButtonText, { color: '#de3b40' }]}>Delete Request</Text>
@@ -171,38 +211,31 @@ export default function RequestDetails() {
                 </TouchableOpacity>
               </View>
             </>
-          ) : request.status === 'Completed' ? (
-            request.urgencyLevel !== 'Past' ? (
+          ) : statusDisplay === 'Completed' ? (
               <TouchableOpacity
                 style={[styles.volunteerButton, { backgroundColor: themeColors.pink }]}
                 onPress={() => { setIsEdit(false); setModalVisible(true); }}
               >
                 <Text style={styles.buttonText}>Rate & Review</Text>
               </TouchableOpacity>
-            ) : (
+          ) : statusDisplay === 'Past' ? ( // Check for 'Past' status directly
               <TouchableOpacity
                 style={[styles.volunteerButton, { backgroundColor: themeColors.pink }]}
-                onPress={() => { setIsEdit(true); setModalVisible(true); }}
+                onPress={() => { setIsEdit(true); setModalVisible(true); }} // Set isEdit for 'Past'
               >
                 <Text style={styles.buttonText}>Edit Rate & Review</Text>
               </TouchableOpacity>
-            )
-          ) : null
-        )}
-
-        {!request && (
-          <Text style={{ color: 'red', textAlign: 'center', marginTop: 24 }}>Request not found.</Text>
+          ) : null // For other statuses like Rejected, or if no button is applicable
         )}
       </ScrollView>
 
-      {/* Place the popup just above the Rate & Review button by using absolute positioning and measuring the button's position */}
+      {/* Modal for Rate & Review */}
       {modalVisible && (
         <View style={{
           position: 'absolute',
           left: '5%',
           right: '5%',
-          // Place the popup above the button
-          bottom: 10, // Adjust as needed to be just above the button
+          bottom: 10,
           zIndex: 100,
         }}>
           <View style={{
@@ -232,7 +265,7 @@ export default function RequestDetails() {
             <TextInput
               style={{
                 width: '100%',
-                minHeight: 260,
+                minHeight: 260, // Increased height
                 borderColor: '#eee',
                 borderWidth: 1,
                 borderRadius: 10,
@@ -247,7 +280,7 @@ export default function RequestDetails() {
             />
             <TouchableOpacity
               style={{ backgroundColor: themeColors.lightPink, padding: 12, borderRadius: 32, width: '100%', alignItems: 'center' }}
-              onPress={() => { setModalVisible(false); /* handle submit here */ }}
+              onPress={() => { setModalVisible(false); /* TODO: handle submit review here */ }}
             >
               <Text style={{ color: themeColors.pink, fontWeight: 'bold', fontSize: 17 }}>Submit</Text>
             </TouchableOpacity>
@@ -261,15 +294,16 @@ export default function RequestDetails() {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    paddingTop: 130,
+    paddingTop: 130, // Ensure content starts below the sticky header
   },
   header: {
     flexDirection: 'column',
-    paddingTop: 16,
+    paddingTop: 16, // Adjust as needed for status bar height if not using SafeAreaView at root
     paddingBottom: 16,
     height: 130,
     paddingHorizontal: 24,
-    justifyContent: 'space-between',
+    justifyContent: 'space-between', // Distributes title, category, urgency
+    // backgroundColor will be set by themeColors.background
   },
   titleContainer: {
     flexDirection: 'row',
@@ -281,6 +315,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '500',
+    // color will be set by colors.text
   },
   categoryLabel: {
     textAlign: 'center',
@@ -288,22 +323,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     borderRadius: 7,
+    // color and backgroundColor set by theme
+    // marginTop: 4, // Add some space if needed
   },
-  label: {
+  label: { // Urgency/Status Label
     textAlign: 'center',
     paddingVertical: 3,
     fontSize: 14,
     fontWeight: '400',
     borderRadius: 7,
-    width: 120,
-    marginRight: 8,
+    width: 120, // Fixed width for consistency
+    // marginRight: 8, // Only if multiple labels are side-by-side
+    // color, backgroundColor, borderColor set dynamically
+    // marginTop: 4, // Add some space if needed
   },
   requestImage: {
     width: '90%',
     alignSelf: 'center',
     height: 280,
     borderRadius: 12,
-    marginTop: 16,
+    marginTop: 16, // Space from header
     marginBottom: 16,
   },
   detailsContainer: {
@@ -312,6 +351,8 @@ const styles = StyleSheet.create({
     width: '90%',
     alignSelf: 'center',
     padding: 16,
+    // backgroundColor will be set by themeColors.background
+    // marginBottom: 16, // Add space before status text or buttons
   },
   avatarRow: {
     flexDirection: 'row',
@@ -323,17 +364,19 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 35,
     marginRight: 16,
-    backgroundColor: '#f2f2fd',
+    backgroundColor: '#f2f2fd', // Light placeholder color
   },
   name: {
     fontSize: 20,
     fontWeight: '500',
+    // color will be set by colors.text
   },
   descriptionText: {
-    flexDirection: 'row',
+    // flexDirection: 'row', // Not needed for Text component
     fontSize: 15,
     fontWeight: '300',
     marginBottom: 16,
+    // color will be set by colors.text
   },
   infoContainer: {
     flexDirection: 'column',
@@ -348,9 +391,8 @@ const styles = StyleSheet.create({
   },
   infoText: {
     fontSize: 15,
-    // line space
-    
     fontWeight: '300',
+    // color will be set by colors.text
   },
   statusText: {
     fontSize: 17,
@@ -358,6 +400,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 24,
     marginBottom: 24,
+    // color will be set dynamically
   },
   volunteerButton: {
     alignItems: 'center',
@@ -365,10 +408,11 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     padding: 12,
     borderRadius: 32,
-    marginBottom: 16,
+    marginBottom: 16, // Space below button
+    // backgroundColor will be set dynamically
   },
   buttonText: {
-    color: '#fff',
+    color: '#fff', // Assuming button text is usually white
     fontSize: 17,
     fontWeight: '500',
   },
@@ -380,15 +424,17 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   editButton: {
-    flex: 1,
+    flex: 1, // Distribute space equally
     padding: 12,
     borderRadius: 24,
-    marginHorizontal: 6,
+    marginHorizontal: 6, // Space between edit buttons
     alignItems: 'center',
+    // backgroundColor will be set
   },
   editButtonText: {
     fontSize: 17,
     fontWeight: '500',
+    // color will be set dynamically
   },
   editButtonContent: {
     flexDirection: 'row',

@@ -118,7 +118,7 @@ export default function VPastRequestsScreen() {
               status={req.status_display || req.status}
               distance={req.location || 'N/A'}
               time={req.deadline ? new Date(req.deadline).toLocaleDateString() : ''}
-              onPress={() => router.push({ pathname: './v-request-details', params: { id: req.id } })}
+              onPress={() => router.push({ pathname: (req.creator && user && req.creator.id === user.id) ? '/r-request-details' : '/v-request-details', params: { id: req.id } })}
             />
           ))
         )}
