@@ -12,6 +12,7 @@ interface TaskParams {
   category: string;
   urgency: string;
   people: number;
+  deadline?: string;
 }
 
 const cityList = turkeyData.getCityNames();
@@ -65,6 +66,7 @@ export default function CRAddress() {
       const category = params.category as string;
       const urgency = params.urgency as string;
       const people = parseInt(params.people as string) || 1;
+      const deadline = params.deadline as string || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
       
       if (!title || !taskDescription || !category) {
         Alert.alert('Error', 'Missing task data. Please go back and try again.');
@@ -81,7 +83,7 @@ export default function CRAddress() {
         category,
         location,
         requirements: description,
-        deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
+        deadline,
         urgency_level: urgency === 'High' ? 3 : urgency === 'Medium' ? 2 : 1,
         volunteer_number: people,
         is_recurring: false
