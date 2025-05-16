@@ -16,18 +16,17 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    networks:
-      - app-network
+    networks: [app-network]
+
   web:
     build: .
     command: >
       sh -c "
       python manage.py wait_for_db &&
-      python manage.py migrate && 
+      python manage.py migrate &&
       python manage.py runserver 0.0.0.0:8000
       "
-    volumes:
-      - .:/app
+    volumes: [.:/app]
     ports:
       - "8000:8000"
     depends_on:
@@ -41,29 +40,25 @@ services:
       - DATABASE_PASSWORD=postgres
       - DATABASE_PORT=5432
       - ALLOWED_HOSTS=localhost,127.0.0.1,web,165.227.152.202
-    networks:
-      - app-network
-
+    networks: [app-network]
 
   frontend:
     build: ../frontend
+    command: npm run dev        # Vite dev server
     ports:
       - "5173:5173"
     volumes:
       - ../frontend:/app
       - /app/node_modules
-    depends_on:
-      - web
+    depends_on: [web]
     environment:
-      - VITE_API_URL=http://localhost:8000/api
-    networks:
-      - app-network
-
+      # ▸ add scheme and drop the space at the end
+      - VITE_API_URL=http://165.227.152.202:8000/api
+    networks: [app-network]
 
 networks:
   app-network:
     driver: bridge
-
 
 volumes:
   postgres_data:

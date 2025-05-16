@@ -28,8 +28,7 @@ SECRET_KEY = 'django-insecure-slxa^gdo!g*y9r7)2_)#fg=zzjif2i3&=$u%n-wv20d&jlptzi
 DEBUG = bool(int(os.environ.get('DEBUG', 1)))
 
 # Make sure this is how you're handling ALLOWED_HOSTS
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split(',')
-
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
