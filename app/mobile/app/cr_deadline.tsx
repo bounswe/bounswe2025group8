@@ -4,10 +4,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useLocalSearchParams } from 'expo-router';
 
 export default function CRDeadline() {
   const { colors } = useTheme();
   const router = useRouter();
+  const params = useLocalSearchParams();
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -91,7 +93,7 @@ export default function CRDeadline() {
           />
         )}
         {/* Next Button */}
-        <TouchableOpacity style={[styles.nextBtn, { backgroundColor: colors.primary }]} onPress={() => router.push('/cr_address')}> 
+        <TouchableOpacity style={[styles.nextBtn, { backgroundColor: colors.primary }]} onPress={() => router.push({ pathname: '/cr_address', params: { ...params, deadline: date.toISOString() } })}> 
           <Text style={styles.nextBtnText}>Next</Text>
         </TouchableOpacity>
       </ScrollView>
