@@ -35,7 +35,7 @@ class TaskViewSet(viewsets.ModelViewSet):
             return [permissions.IsAuthenticated()]
         # Default to authenticated
         else:
-            return [permissions.IsAuthenticated()]
+            return []
     
     def get_queryset(self):
         """Return appropriate queryset based on filters"""

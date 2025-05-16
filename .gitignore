@@ -109,3 +109,4 @@ junit-*.xml
 
 # === Custom ===
 # Add any other custom ignores below 
+.venv/
