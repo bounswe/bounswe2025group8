@@ -4,9 +4,9 @@
 
 # bounswe2025group8 - Neighborhood Assistance Board
 
-Website URL: http://165.227.152.202:5173
-
-[APK Link](https://drive.google.com/file/d/1cvoie2sDJEsxAHzcG-A9hGRqtKnd2RM5/view)
+- **Website:** [Web App URL](http://165.227.152.202:5173)
+- **APK File:** [Download APK](https://drive.google.com/file/d/1cvoie2sDJEsxAHzcG-A9hGRqtKnd2RM5/view?usp=sharing)  
+- **Demo Video:** [Watch Demo](https://drive.google.com/file/d/1-CQLt7syZLWNiVpHy24dqh_jMBZWAqjW/view?usp=sharing)
 
 **Neighborhood Assistance Board** is a community-driven web and mobile platform that connects individuals in need of help with volunteers willing to offer assistance. Whether it's grocery shopping, tutoring, or small repairs, users can post requests and volunteers can browse and respond based on availability and location.
 
