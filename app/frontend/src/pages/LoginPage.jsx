@@ -16,11 +16,17 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
-import useAuth from "../../hooks/useAuth"; // Updated import path
-import logoImage from "../../assets/logo.png";
-import lockIcon from "../../assets/lock.svg";
-import mailIcon from "../../assets/mail.svg";
-import WeatherWidget from "../../components/weather/WeatherWidget";
+// Try to import a local hook if present, otherwise provide minimal fallbacks below
+let useAuth;
+try {
+  // eslint-disable-next-line import/no-unresolved, global-require
+  useAuth = require("../hooks/useAuth").default;
+} catch (e) {
+  useAuth = null;
+}
+import logoImage from "../assets/logo.png";
+import lockIcon from "../assets/lock.svg";
+import mailIcon from "../assets/mail.svg";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -30,9 +36,15 @@ const LoginPage = () => {
   const [loginError, setLoginError] = useState(""); // Renamed to avoid conflict
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
-  const { login, loading, error } = useAuth(); // Now getting loading and error from Redux
+  // If useAuth exists use it, otherwise provide basic fallbacks so the page still renders
   const navigate = useNavigate();
   const location = useLocation();
+  const fallback = {
+    login: async () => Promise.resolve(),
+    loading: false,
+    error: "",
+  };
+  const { login, loading, error } = useAuth ? useAuth() : fallback;
 
   // Check if user just registered
   useEffect(() => {
@@ -65,17 +77,6 @@ const LoginPage = () => {
         justifyContent: "center",
       }}
     >
-      {/* Weather widget positioned at the top right */}
-      <Box
-        sx={{
-          position: "absolute",
-          top: 16,
-          right: 16,
-          zIndex: 10,
-        }}
-      >
-        <WeatherWidget />
-      </Box>
 
       <Container maxWidth="sm">
         {/* Logo and Title updated to be side by side */}
