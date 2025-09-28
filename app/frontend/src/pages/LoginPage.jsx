@@ -1,13 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
-// Try to import a local hook if present, otherwise provide minimal fallbacks below
-let useAuth;
-try {
-  // eslint-disable-next-line import/no-unresolved, global-require
-  useAuth = require("../hooks/useAuth").default;
-} catch (e) {
-  useAuth = null;
-}
+import useAuth from "../features/authentication/hooks/useAuth"; 
 import logoImage from "../assets/logo.png";
 import lockIcon from "../assets/lock.svg";
 import mailIcon from "../assets/mail.svg";
@@ -62,10 +55,16 @@ const LoginPage = () => {
   }, [location]);
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoginError("");
+    
     try {
-      setLoginError("");
-      await login({ email, password });
-      navigate("/"); // Redirect to home dashboard after login
+      const success = await login({ email, password });
+      
+      if (success) {
+        navigate("/"); // Only redirect on successful login
+      } else {
+        setLoginError("Invalid credentials. Please check your email and password.");
+      }
     } catch (error) {
       setLoginError(
         "Failed to sign in: " + (error.message || "Invalid credentials")

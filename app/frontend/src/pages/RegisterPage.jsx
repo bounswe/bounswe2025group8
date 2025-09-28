@@ -27,7 +27,7 @@ const EyeOffIcon = () => (
 let useAuth;
 try {
   // eslint-disable-next-line import/no-unresolved, global-require
-  useAuth = require("../hooks/useAuth").default;
+  useAuth = require("../features/authentication/hooks/useAuth").default;
 } catch (e) {
   useAuth = null;
 }
