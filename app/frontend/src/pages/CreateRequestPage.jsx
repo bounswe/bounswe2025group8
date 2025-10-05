@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Box, Container, Typography, Button, Stepper, Step, StepLabel, Paper } from '@mui/material';
-// import { fetchCategories, nextStep, prevStep, setStep, submitRequest, resetForm } from '../store/slices/createRequestSlice';
+import { fetchCategories, nextStep, prevStep, setStep, submitRequest, resetForm } from '../features/request/store/createRequestSlice';
 import GeneralInformationStep from './GeneralInformationStep';
 import UploadPhotosStep from './UploadPhotosStep';
 import DetermineDeadlineStep from './DetermineDeadlineStep';

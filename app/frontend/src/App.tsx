@@ -6,7 +6,7 @@ import ResetPassword from "./pages/ResetPassword.jsx";
 import Home from "./pages/Home.jsx";
 import Test from "./pages/Test.tsx";
 import MainLayout from "./layouts/MainLayout.jsx";
-import CreateRequestPage from "./components/CreateRequestPage.jsx";
+import CreateRequestPage from "./pages/CreateRequestPage.jsx";
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
 function App() {
