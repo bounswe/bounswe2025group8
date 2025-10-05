@@ -3,20 +3,26 @@ import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
+import Home from "./pages/Home.jsx";
 import Test from "./pages/Test.tsx";
+import MainLayout from "./layouts/MainLayout.jsx";
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
+        {/* Public/auth routes (outside main layout) */}
+        <Route path="/" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
-        <Route path="/test" element={<Test />} />
-        {/* Redirect root to /test */}
-        <Route path="/" element={<Navigate to="/test" replace />} />
+
+        {/* All other routes use MainLayout which renders an <Outlet /> */}
+        <Route path="/" element={<MainLayout />}>
+          <Route path="/home" element={<Home />} />
+          <Route path="/test" element={<Test />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   )
