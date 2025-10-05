@@ -17,8 +17,8 @@ import {
   ListItemText
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
-// import { updateFormData } from '../../../store/slices/createRequestSlice';
-// import * as createRequestService from '../../../services/createRequestService';
+import { updateFormData } from '../features/request/store/createRequestSlice';
+import * as createRequestService from '../features/request/services/createRequestService';
 
 const SetupAddressStep = () => {
   const dispatch = useDispatch();
