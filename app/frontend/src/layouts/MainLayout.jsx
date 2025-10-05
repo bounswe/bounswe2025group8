@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { Box, Container, AppBar, Toolbar } from '@mui/material';
 import { Outlet, useNavigate } from 'react-router-dom';
-import Sidebar from '../components/Sidebar/Sidebar';
+import Sidebar from '../components/Sidebar';
 import Searchbar from '../components/Searchbar';
 import { loadUserFromStorage } from '../features/authentication/store/authSlice';
 
