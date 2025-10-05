@@ -27,8 +27,12 @@ services:
     container_name: neighborhood_backend
     command: >
       sh -c "
-        ./wait-for-db.sh db &&
-        python manage.py migrate &&
+        while ! pg_isready -h db -p 5432 -U postgres; do
+          echo 'Waiting for database...'
+          sleep 2
+        done
+        echo 'Database is ready!'
+        python manage.py migrate
         python manage.py runserver 0.0.0.0:8000
       "
     volumes:
