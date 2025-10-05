@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "../../../services/api";
 
 /**
  * Submit a new task/request to the backend
