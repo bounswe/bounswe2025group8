@@ -23,24 +23,10 @@ const EyeOffIcon = () => (
     <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
   </svg>
 );
+import useAuth from "../features/authentication/hooks/useAuth";
 
-let useAuth;
-try {
-  // eslint-disable-next-line import/no-unresolved, global-require
-  useAuth = require("../features/authentication/hooks/useAuth").default;
-} catch (e) {
-  useAuth = null;
-}
 
-let authAPI;
-try {
-  // eslint-disable-next-line import/no-unresolved, global-require
-  authAPI = require("../services/api").authAPI;
-} catch (e) {
-  authAPI = {
-    checkPhoneAvailability: async () => ({ data: { available: true } }),
-  };
-}
+
 import logoImage from "../assets/logo.png";
 import userIcon from "../assets/user.svg";
 import keyIcon from "../assets/key_for_register.svg";
@@ -61,15 +47,12 @@ const RegisterPage = () => {
   const [registerError, setRegisterError] = useState("");
 
   const navigate = useNavigate();
-  const fallback = {
-    register: async () => ({ registered: true }),
-    loading: false,
-    error: "",
-  };
-  const { register, loading, error } = useAuth ? useAuth() : fallback;
+  const { register, loading, error } = useAuth();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Frontend validation before API call
     if (!agreeTerms) {
       return setRegisterError("You must agree to the Terms & Conditions");
     }
@@ -78,42 +61,35 @@ const RegisterPage = () => {
       return setRegisterError("Passwords do not match");
     }
 
-    if (password.length < 8) {
-      return setRegisterError("Password must be at least 8 characters long");
+    // Password strength validation (matching backend requirements)
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return setRegisterError(
+        "Password must be at least 8 characters and include uppercase, lowercase, number, and special character."
+      );
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return setRegisterError("Please enter a valid email address");
+    }
+
+    // Phone number validation (10-15 digits)
+    const phoneRegex = /^\d{10,15}$/;
+    if (!phoneRegex.test(phone.replace(/\D/g, ''))) {
+      return setRegisterError("Phone number must be 10-15 digits");
+    }
+
+    // Required fields validation
+    if (!firstName.trim() || !lastName.trim() || !username.trim() || !email.trim() || !phone.trim()) {
+      return setRegisterError("All fields are required");
     }
 
     try {
       setRegisterError("");
 
-      // Check email availability first
-      // try {
-      //   const emailCheck = await authAPI.checkEmailAvailability(email);
-      //   console.log(emailCheck);
-      //   if (emailCheck && !emailCheck.data.available) {
-      //     return setRegisterError(
-      //       "This email is already in use. Please use a different email."
-      //     );
-      //   }
-      // } catch (error) {
-      //   console.warn("Email availability check failed:", error);
-      //   // Continue with registration even if check fails
-      // }
-
-      // If phone provided, check its availability too
-      if (phone) {
-        try {
-          const phoneCheck = await authAPI.checkPhoneAvailability(phone);
-          if (phoneCheck && !phoneCheck.data.available) {
-            return setRegisterError(
-              "This phone number is already in use. Please use a different number."
-            );
-          }
-        } catch (error) {
-          console.warn("Phone availability check failed:", error);
-          // Continue with registration even if check fails
-        }
-      } // All checks passed, register the user
-      const fullName = `${firstName} ${lastName}`.trim();
+      // All frontend validation passed, now call the API
       const result = await register(
         firstName,
         lastName,
@@ -126,16 +102,33 @@ const RegisterPage = () => {
 
       if (result && result.registered) {
         // Show success message and navigate to login
-        navigate("/login?registered=true");
-      } else {
-        // Direct registration with auto-login
-        navigate("/");
-      }
+        navigate("/login");
+      } 
+
     } catch (error) {
-      setRegisterError(
-        "Failed to create an account: " +
-          (error.message || "Registration failed")
-      );
+      // Handle backend validation errors
+      if (error.data) {
+        // Backend returned specific field errors
+        const backendErrors = error.data;
+        if (backendErrors.email) {
+          setRegisterError(backendErrors.email[0]);
+        } else if (backendErrors.username) {
+          setRegisterError(`Username: ${backendErrors.username[0]}`);
+        } else if (backendErrors.phone_number) {
+          setRegisterError(`Phone: ${backendErrors.phone_number[0]}`);
+        } else if (backendErrors.password) {
+          setRegisterError(backendErrors.password[0]);
+        } else if (backendErrors.confirm_password) {
+          setRegisterError(backendErrors.confirm_password[0]);
+        } else {
+          setRegisterError(error.message || "Registration failed");
+        }
+      } else {
+        setRegisterError(
+          "Failed to create an account: " +
+            (error.message || "Registration failed")
+        );
+      }
     }
   };
 
