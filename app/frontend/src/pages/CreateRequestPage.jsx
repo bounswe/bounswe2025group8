@@ -1,42 +1,50 @@
-import React, { useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { Box, Container, Typography, Button, Stepper, Step, StepLabel, Paper } from '@mui/material';
-import { fetchCategories, nextStep, prevStep, setStep, submitRequest, resetForm } from '../features/request/store/createRequestSlice';
-import GeneralInformationStep from './GeneralInformationStep';
-import UploadPhotosStep from './UploadPhotosStep';
-import DetermineDeadlineStep from './DetermineDeadlineStep';
-import SetupAddressStep from './SetupAddressStep';
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import {
+  fetchCategories,
+  nextStep,
+  prevStep,
+  setStep,
+  submitRequest,
+  resetForm,
+} from "../features/request/store/createRequestSlice";
+import GeneralInformationStep from "./GeneralInformationStep";
+import UploadPhotosStep from "./UploadPhotosStep";
+import DetermineDeadlineStep from "./DetermineDeadlineStep";
+import SetupAddressStep from "./SetupAddressStep";
 
 const steps = [
-  'General Information',
-  'Upload Photos',
-  'Determine Deadline',
-  'Setup Address'
+  "General Information",
+  "Upload Photos",
+  "Determine Deadline",
+  "Setup Address",
 ];
 
 const CreateRequestPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { currentStep, loading, success, error } = useSelector((state) => state.createRequest);
-  
+  const { currentStep, loading, success, error } = useSelector(
+    (state) => state.createRequest
+  );
+
   useEffect(() => {
     // Fetch categories when component mounts
     dispatch(fetchCategories());
   }, [dispatch]);
-    // Get form data from redux store
-  const { formData } = useSelector((state) => state.createRequest);// Handle form submission
+  // Get form data from redux store
+  const { formData } = useSelector((state) => state.createRequest); // Handle form submission
   const handleSubmit = () => {
     // Prepare data for submission
     // Note: Photo upload functionality is temporarily disabled
     const requestData = {
       ...formData,
-      photos: [] // Photo upload is disabled, so we pass an empty array
+      photos: [], // Photo upload is disabled, so we pass an empty array
     };
-    
+
     dispatch(submitRequest(requestData));
   };
-  
+
   // Handle step navigation
   const handleNext = () => {
     if (currentStep === steps.length - 1) {
@@ -45,24 +53,24 @@ const CreateRequestPage = () => {
       dispatch(nextStep());
     }
   };
-  
+
   const handleBack = () => {
     dispatch(prevStep());
   };
-  
+
   // Navigate to home page if submission was successful
   useEffect(() => {
     if (success) {
       // Reset the form data immediately when the submission is successful
       dispatch(resetForm());
-      
+
       // Navigate to home page after a short delay to show success message
       setTimeout(() => {
-        navigate('/');
+        navigate("/");
       }, 1000);
     }
   }, [success, navigate, dispatch]);
-  
+
   // Render the current step
   const renderStep = () => {
     switch (currentStep) {
@@ -75,114 +83,112 @@ const CreateRequestPage = () => {
       case 3:
         return <SetupAddressStep />;
       default:
-        return <Typography>Unknown step</Typography>;
+        return <p>Unknown step</p>;
     }
   };
-  
+
   return (
-    <Box sx={{ display: 'flex', height: '100vh' }}>
-      
+    <div className="flex h-screen">
       {/* Main content */}
-      <Box component="main" sx={{ flexGrow: 1, p: 3, overflow: 'auto' }}>
-        <Container maxWidth="lg">
-          
+      <main className="flex-grow p-6 overflow-auto">
+        <div className="max-w-4xl mx-auto">
           {/* Form header */}
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            mb: 3 
-          }}>
-            <Typography variant="h5" component="h1">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-medium">
               Create Request &gt; {steps[currentStep]}
-            </Typography>
-            
-          </Box>
-          
+            </h1>
+          </div>
+
           {/* Stepper */}
-          <Stepper 
-            activeStep={currentStep} 
-            alternativeLabel
-            sx={{ mb: 4 }}
-          >
-            {steps.map((label, index) => (
-              <Step key={label}>
-                <StepLabel 
-                  onClick={() => dispatch(setStep(index))}
-                  sx={{ cursor: 'pointer' }}
-                >
-                  {label}
-                </StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-          
+          <div className="flex justify-center mb-8">
+            <div className="flex items-center space-x-4">
+              {steps.map((label, index) => (
+                <div key={label} className="flex items-center">
+                  <div
+                    className={`flex items-center cursor-pointer ${
+                      index <= currentStep ? "text-blue-600" : "text-gray-400"
+                    }`}
+                    onClick={() => dispatch(setStep(index))}
+                  >
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium border-2 ${
+                        index === currentStep
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : index < currentStep
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "bg-white text-gray-400 border-gray-300"
+                      }`}
+                    >
+                      {index + 1}
+                    </div>
+                    <span className="ml-2 text-sm font-medium hidden sm:block">
+                      {label}
+                    </span>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div
+                      className={`w-12 h-0.5 mx-4 ${
+                        index < currentStep ? "bg-blue-600" : "bg-gray-300"
+                      }`}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Success message */}
           {success ? (
-            <Paper sx={{ p: 3, textAlign: 'center', mb: 3 }}>
-              <Typography variant="h6" color="success.main">
+            <div className="p-6 text-center mb-6 bg-white rounded-lg shadow-sm border border-gray-200">
+              <h3 className="text-lg font-medium text-green-600 mb-2">
                 Your request has been submitted successfully!
-              </Typography>
-              <Typography variant="body1">
+              </h3>
+              <p className="text-base text-gray-700">
                 You will be redirected to the home page shortly.
-              </Typography>
-            </Paper>
+              </p>
+            </div>
           ) : null}
-          
+
           {/* Error message */}
           {error ? (
-            <Paper sx={{ p: 3, textAlign: 'center', mb: 3, bgcolor: 'error.light' }}>
-              <Typography variant="h6" color="error">
+            <div className="p-6 text-center mb-6 bg-red-50 rounded-lg shadow-sm border border-red-200">
+              <h3 className="text-lg font-medium text-red-600">
                 Error: {error}
-              </Typography>
-            </Paper>
+              </h3>
+            </div>
           ) : null}
-          
+
           {/* Step content */}
-          <Paper 
-            elevation={0} 
-            sx={{ 
-              p: 3, 
-              mb: 4, 
-              borderRadius: 2,
-              border: '1px solid #f0f0f0'
-            }}
-          >
+          <div className="p-6 mb-8 rounded-lg border border-gray-200 bg-white">
             {renderStep()}
-          </Paper>
-          
+          </div>
+
           {/* Navigation buttons */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-            <Box>
+          <div className="flex justify-between mb-8">
+            <div>
               {currentStep > 0 && (
-                <Button
-                  variant="text"
-                  color="inherit"
+                <button
+                  className="text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleBack}
                   disabled={loading}
                 >
                   Back
-                </Button>
+                </button>
               )}
-            </Box>
-            <Box>
-              <Button
-                variant="contained"
-                color="primary"
+            </div>
+            <div>
+              <button
+                className="bg-blue-600 text-white px-8 py-2 rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 onClick={handleNext}
                 disabled={loading}
-                sx={{ 
-                  borderRadius: '20px',
-                  px: 4
-                }}
               >
-                {currentStep === steps.length - 1 ? 'Create Request' : 'Next'}
-              </Button>
-            </Box>
-          </Box>
-        </Container>
-      </Box>
-    </Box>
+                {currentStep === steps.length - 1 ? "Create Request" : "Next"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
   );
 };
 

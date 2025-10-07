@@ -1,14 +1,4 @@
 import React from "react";
-import {
-  Box,
-  Typography,
-  Button,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
-  Container,
-} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
@@ -38,93 +28,75 @@ const HomeDashboard = () => {
   ];
 
   return (
-    <Container>
-      <Box sx={{ mb: 4, textAlign: "left" }}>
-        <Typography variant="h4" gutterBottom>
+    <div className="container mx-auto px-4">
+      <div className="mb-8 text-left">
+        <h1 className="text-4xl mb-4">
           {currentUser
             ? `Welcome back, ${currentUser.name || "User"}!`
             : "Welcome to Neighborhood Assistance Board!"}
-        </Typography>
-        <Typography variant="body1" color="text.secondary" paragraph>
+        </h1>
+        <p className="text-base text-gray-600 mb-4">
           Connect with your community, help neighbors, and get assistance when
           you need it.
-        </Typography>
-      </Box>
+        </p>
+      </div>
 
-      <Grid container spacing={4}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {quickLinks.map((link) => (
-          <Grid item xs={12} md={4} key={link.title}>
-            <Card
-              sx={{
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                borderTop: `4px solid ${link.color}`,
-                "&:hover": { boxShadow: "0 4px 20px rgba(0,0,0,0.1)" },
-                transition: "all 0.3s ease",
-              }}
+          <div key={link.title} className="col-span-1">
+            <div
+              className="h-full flex flex-col bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 ease-in-out"
+              style={{ borderTop: `4px solid ${link.color}` }}
             >
-              <CardContent sx={{ flexGrow: 1 }}>
-                <Typography gutterBottom variant="h5" component="h2">
-                  {link.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {link.description}
-                </Typography>
-              </CardContent>
-              <CardActions>
-                <Button
-                  size="small"
+              <div className="flex-grow p-4">
+                <h2 className="text-xl font-medium mb-2">{link.title}</h2>
+                <p className="text-sm text-gray-600">{link.description}</p>
+              </div>
+              <div className="p-4 pt-0">
+                <button
+                  className="text-sm hover:underline transition-colors"
                   onClick={() => navigate(link.path)}
-                  sx={{ color: link.color }}
+                  style={{ color: link.color }}
                 >
                   Explore
-                </Button>
-              </CardActions>
-            </Card>
-          </Grid>
+                </button>
+              </div>
+            </div>
+          </div>
         ))}
-      </Grid>
+      </div>
 
-      <Box sx={{ mt: 6, mb: 4, textAlign: "center" }}>
-        <Typography variant="h5" gutterBottom>
-          How It Works
-        </Typography>
-        <Grid container spacing={3} sx={{ mt: 2 }}>
-          <Grid item xs={12} md={4}>
-            <Box sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Request Help
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
+      <div className="mt-12 mb-8 text-center">
+        <h2 className="text-2xl mb-4">How It Works</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+          <div className="col-span-1">
+            <div className="p-6">
+              <h3 className="text-lg font-medium mb-2">Request Help</h3>
+              <p className="text-sm text-gray-600">
                 Post a task describing what you need help with in your
                 neighborhood
-              </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Box sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Connect
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
+              </p>
+            </div>
+          </div>
+          <div className="col-span-1">
+            <div className="p-6">
+              <h3 className="text-lg font-medium mb-2">Connect</h3>
+              <p className="text-sm text-gray-600">
                 Volunteers in your area will respond to your request
-              </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Box sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Get Help
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
+              </p>
+            </div>
+          </div>
+          <div className="col-span-1">
+            <div className="p-6">
+              <h3 className="text-lg font-medium mb-2">Get Help</h3>
+              <p className="text-sm text-gray-600">
                 Select a volunteer and get the assistance you need
-              </Typography>
-            </Box>
-          </Grid>
-        </Grid>
-      </Box>
-    </Container>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
