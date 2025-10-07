@@ -49,9 +49,8 @@ const useAuth = (redirectTo: string | null = null): UseAuthReturn => {
       navigate(redirectTo, { replace: true });
     }
   }, [isAuthenticated, navigate, redirectTo]);
-
   // Handle login submission
-  const login = async (credentials: LoginCredentials): Promise<boolean> => {
+  const handleLogin = async (credentials: LoginCredentials): Promise<boolean> => {
     console.log('Attempting login with:', { email: credentials.email });
     
     try {
@@ -69,7 +68,6 @@ const useAuth = (redirectTo: string | null = null): UseAuthReturn => {
       return false;
     }
   };
-
   // Handle register submission
   const register = async (
     firstName: string,
@@ -95,7 +93,7 @@ const useAuth = (redirectTo: string | null = null): UseAuthReturn => {
       
       if (result.type.endsWith('/rejected')) {
         throw new Error((result.payload as string) ?? 'Registration failed');
-      } 
+      }
       
       return result.payload;
     } catch (error) {
@@ -210,7 +208,7 @@ const useAuth = (redirectTo: string | null = null): UseAuthReturn => {
     error,
     
     // Auth methods
-    login,
+    login: handleLogin,
     register,
     logout: handleLogout,
     forgotPassword: handleForgotPassword,

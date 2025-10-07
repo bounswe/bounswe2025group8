@@ -11,7 +11,7 @@ import type {
   RegisterAsyncReturn, 
   ForgotPasswordReturn, 
   VerifyTokenReturn, 
-  ResetPasswordReturn, 
+  ResetPasswordReturn 
 } from '../types';
 
 
@@ -54,11 +54,13 @@ export const loginAsync = createAsyncThunk<
       const response = await authAPI.login({ email, password });
       
       if (response.status === 'success' && response.data) {
-        const responseData = response.data; 
-
-        // Mock user data - replace with actual data after implementing User Profile Management 
-        const userData: AuthUser = {
-          id: responseData.user_id,
+        const responseData = response.data as Record<string, unknown>; // Type assertion for mock data
+        const userData: AuthUser = responseData.user_id ? {
+          id: responseData.user_id as string | number,
+          email: email,
+          name: (responseData.name as string) || email.split('@')[0]
+        } : {
+          id: 'temp-user-id',
           email: email,
           name: email.split('@')[0]
         };
@@ -100,9 +102,9 @@ export const registerAsync = createAsyncThunk<
       const response = await authAPI.register(userData);
       
       if (response.status === 'success' && response.data) {
-        const responseData = response.data;
+        const responseData = response.data as Record<string, unknown>; // Type assertion for mock data
         const userData: AuthUser = {
-          id: responseData.user_id ,
+          id: responseData.user_id as string | number,
           email: email,
           name: (responseData.name as string) || firstName
         };

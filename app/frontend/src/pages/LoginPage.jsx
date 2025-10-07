@@ -39,8 +39,20 @@ const LoginPage = () => {
   // If useAuth exists use it, otherwise provide basic fallbacks so the page still renders
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, loading, error } = useAuth();
+  const fallback = {
+    login: async () => Promise.resolve(),
+    loading: false,
+    error: "",
+  };
+  const { login, loading, error } = useAuth ? useAuth() : fallback;
 
+  // Check if user just registered
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("registered") === "true") {
+      setRegistrationSuccess(true);
+    }
+  }, [location]);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoginError("");

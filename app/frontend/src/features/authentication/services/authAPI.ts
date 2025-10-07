@@ -4,14 +4,13 @@ import {
   simulateApiDelay, 
   isEmailTaken, 
   isPhoneNumberTaken, 
+  isUsernameTaken,
   validatePassword,
   validateEmail,
   mockUsers,
+  mockAuthToken,
 } from '../mockData';
-import api from '../../../services/api'; // Axios instance
-import type { ApiResponse, LoginRequest, LoginResponse, PasswordResetRequest, RegisterResponse, ResetPasswordRequest } from '../types';
-import { AxiosError } from 'axios';
-
+import type { ApiResponse, User, LoginRequest, PasswordResetRequest, ResetPasswordRequest } from '../types';
 
 
 
@@ -36,81 +35,87 @@ class AuthAPI {
     phone: string;
     password: string;
     confirmPassword: string;
-  }): Promise<ApiResponse<RegisterResponse>> {
-    // Transform frontend data to backend API format
-  const requestData = {
-    name: userData.firstName,
-    surname: userData.lastName,
-    username: userData.username,
-    email: userData.email,
-    phone_number: userData.phone,
-    password: userData.password,
-    confirm_password: userData.confirmPassword
-  };
+  }): Promise<ApiResponse> {
+    await simulateApiDelay(100);
 
-  try {
-    // Use the axios api instance from api.ts
-    const response = await api.post('/auth/register/', requestData);
-    
-    // Transform backend response to frontend format
-    return {
-      status: 'success',
-      message: response.data.message || 'Registration successful. Please log in to continue.',
-      data: {
-        user_id: response.data.data?.user_id,
-        name: response.data.data?.name,
-        email: response.data.data?.email
-      }
-    };
-  } catch (error) {
-    // Handle API errors and transform to frontend format
-    if (error instanceof AxiosError && error.response?.data) {
+    // Validation checks
+    if (userData.password !== userData.confirmPassword) {
       return {
         status: 'error',
-        message: error.response.data.message || 'Registration failed.',
-        data: error.response.data.data || {}
-      };
-    }
-    
-    // Handle network or other errors
-    return {
-      status: 'error',
-      message: 'Network error. Please try again.',
-      data: { }
-    };
-  }
-  }
-  
-
-  // Login user
-  async login(credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> {
-    try {
-      const response = await api.post('/auth/login/', credentials);
-      return {
-        status: 'success',
-        message: response.data.message || 'Login successful.',
+        message: 'Registration failed.',
         data: {
-          user_id: response.data.data.user_id,
-          token: response.data.data.token
+          confirm_password: ['Passwords do not match.']
         }
       };
-    } catch (error) {
-      // Handle API errors and transform to frontend format
-      if (error instanceof AxiosError && error.response?.data) {
-        return {
-          status: 'error',
-          message: error.response.data.message || 'Login failed.',
-          data: error.response.data.data || {}
-        };
-      }
+    }
 
-      // Handle network or other errors
+    if (!validatePassword(userData.password)) {
+      return mockApiResponses.register.emailTaken;
+    }
+
+    if (!validateEmail(userData.email)) {
       return {
         status: 'error',
-        message: 'Network error. Please try again.',
-        data: {}
+        message: 'Registration failed.',
+        data: {
+          email: ['Please enter a valid email address.']
+        }
       };
     }
+
+    if (isEmailTaken(userData.email)) {
+      return mockApiResponses.register.emailTaken;
+    }
+
+    if (isUsernameTaken(userData.username)) {
+      return mockApiResponses.register.validation;
+    }
+
+    if (isPhoneNumberTaken(userData.phone)) {
+      return {
+        status: 'error',
+        message: 'Registration failed.',
+        data: {
+          phone_number: ['This phone number is already taken.']
+        }
+      };
+    }
+
+    // Simulate successful registration
+    const newUserId = mockUsers.length + 1;
+    return {
+      status: 'success',
+      message: 'Registration successful. Please log in to continue.',
+      data: {
+        user_id: newUserId,
+        name: userData.firstName,
+        email: userData.email
+      }
+    };
+  }
+
+  // Login user
+  async login(credentials: LoginRequest): Promise<ApiResponse> {
+    await simulateApiDelay(100);
+
+    if (!validateEmail(credentials.email)) {
+      return mockApiResponses.login.validation;
+    }
+
+    // Check if user exists and password is valid
+    const user = mockUsers.find((u: User) => u.email === credentials.email);
+    if (!user || !validatePassword(credentials.password)) {
+      return mockApiResponses.login.invalidCredentials;
+    }
+
+    // Simulate successful login - return token for Redux to store
+    return {
+      ...mockApiResponses.login.success,
+      data: {
+        ...mockApiResponses.login.success.data,
+        token: mockAuthToken
+      }
+    };
   }
 
   // Logout user - token passed from Redux

@@ -1,12 +1,8 @@
-export type ApiResponse<T = unknown> = {
-  status: 'success';
+export interface ApiResponse<T = unknown> {
+  status: 'success' | 'error';
   message: string;
-  data: T;
-} | {
-  status: 'error';
-  message: string;
-  data?: unknown; // Optional for error cases
-};
+  data?: T;
+}
 
 export interface User {
   user_id: number;
@@ -43,12 +39,6 @@ export interface ResetPasswordRequest {
 }
 
 
-export interface RegisterResponse {
-  user_id: number;
-  name: string;
-  email: string;
-  } 
-
 
 export interface CheckAvailabilityResponse {
   available: boolean;
@@ -74,7 +64,7 @@ export interface LoginCredentials {
 
 // Auth State Interfaces
 export interface AuthUser {
-  id: number;
+  id: string | number;
   email: string;
   name: string;
 }
