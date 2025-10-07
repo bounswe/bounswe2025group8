@@ -1,15 +1,14 @@
-version: "3.8"
+version: "3"
 
 services:
   db:
     image: postgres:14
-    container_name: neighborhood_db
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_USER: postgres
-      POSTGRES_DB: neighborhood_assistance
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=neighborhood_assistance
     ports:
       - "5433:5432"
     healthcheck:
@@ -17,58 +16,45 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    networks:
-      - app-network
+    networks: [app-network]
 
-  backend:
-    build: 
-      context: .
-      dockerfile: Dockerfile
-    container_name: neighborhood_backend
+  web:
+    build: .
     command: >
       sh -c "
-        while ! pg_isready -h db -p 5432 -U postgres; do
-          echo 'Waiting for database...'
-          sleep 2
-        done
-        echo 'Database is ready!'
-        python manage.py migrate
-        python manage.py runserver 0.0.0.0:8000
+      python manage.py wait_for_db &&
+      python manage.py migrate &&
+      python manage.py runserver 0.0.0.0:8000
       "
-    volumes:
-      - .:/app
+    volumes: [.:/app]
     ports:
       - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
     environment:
-      DEBUG: 1
-      DATABASE_HOST: db
-      DATABASE_NAME: neighborhood_assistance
-      DATABASE_USER: postgres
-      DATABASE_PASSWORD: postgres
-      DATABASE_PORT: 5432
-      ALLOWED_HOSTS: localhost,127.0.0.1,backend,165.227.152.202
-    networks:
-      - app-network
+      - DEBUG=1
+      - DATABASE_HOST=db
+      - DATABASE_NAME=neighborhood_assistance
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - DATABASE_PORT=5432
+      - ALLOWED_HOSTS=localhost,127.0.0.1,web,165.227.152.202
+    networks: [app-network]
 
   frontend:
-    build: 
-      context: ../frontend
-      dockerfile: Dockerfile
-    container_name: neighborhood_frontend
+    build: ../frontend
+    command: npm run dev        # Vite dev server
     ports:
       - "5173:5173"
     volumes:
       - ../frontend:/app
-      - node_modules:/app/node_modules
-    depends_on:
-      - backend
+      - /app/node_modules
+    depends_on: [web]
     environment:
-      VITE_API_URL: http://localhost:8000/api
-    networks:
-      - app-network
+      # ▸ add scheme and drop the space at the end
+      - VITE_API_URL=http://165.227.152.202:8000/api
+    networks: [app-network]
 
 networks:
   app-network:
@@ -76,4 +62,3 @@ networks:
 
 volumes:
   postgres_data:
-  node_modules:
