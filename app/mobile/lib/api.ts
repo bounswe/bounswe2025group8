@@ -4,13 +4,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
-const lanHost = Constants.expoConfig?.extra?.apiHost ?? '192.168.x.x'; // place actual IP or ENV
-const port = Constants.expoConfig?.extra?.apiPort ?? '8080';
+// Local IP Terminal commands:
+// macOS: ipconfig getifaddr en0
+// Windows: ipconfig (look forIPv4)
+const lanHost = Constants.expoConfig?.extra?.apiHost ?? '192.168.55.172';
+
+// Backend port is fixed at 8000
+const port = Constants.expoConfig?.extra?.apiPort ?? '8000';
 
 const API_HOST = Platform.select({
-  ios: __DEV__ ? 'localhost' : lanHost,
-  android: __DEV__ ? '10.0.2.2' : lanHost,
-  default: lanHost,
+  web: 'localhost',  // Web uses localhost (faster, more reliable)
+  default: lanHost,   // Mobile (ios/Android) uses LAN IP
 });
 
 export const API_BASE_URL = `http://${API_HOST}:${port}/api`;
@@ -212,7 +216,8 @@ api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     const token = await AsyncStorage.getItem('token');
     if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+      // Django Rest Framework expects "Token" prefix, not "Bearer"
+      config.headers.Authorization = `Token ${token}`;
     } else if (config.headers && 'Authorization' in config.headers) {
       delete config.headers.Authorization;
     }
