@@ -167,13 +167,16 @@ const GeneralInformationStep = () => {
                   <FormControl fullWidth variant="outlined">
                     <Select
                       {...field}
-                      displayEmpty                        onChange={(e) => {
+                      displayEmpty
+                      onChange={(e) => {
                         field.onChange(e);
                         handleFieldChange('urgency', e.target.value);
-                        }} > {Object.entries(urgencyLevels).map(([key, value]) => (
-                        <MenuItem key={key} value={String(key)}>{value.name}</MenuItem>
-                        ))}
-                      </Select>
+                      }}
+                    >
+                      {Object.entries(urgencyLevels).map(([key, value]) => (
+                        <MenuItem key={key} value={Number(key)}>{value.name}</MenuItem>
+                      ))}
+                    </Select>
                       </FormControl>
                     )}
                     />
