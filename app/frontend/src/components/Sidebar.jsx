@@ -1,15 +1,4 @@
-import {
-  Box,
-  Button,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Typography,
-  useTheme,
-  Divider,
-} from "@mui/material";
+import { useNavigate, useLocation } from "react-router-dom";
 import HomeIcon from "@mui/icons-material/Home";
 import CategoryIcon from "@mui/icons-material/Category";
 import AssignmentIcon from "@mui/icons-material/Assignment";
@@ -21,8 +10,6 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import DataObjectIcon from "@mui/icons-material/DataObject";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Tooltip, IconButton } from "@mui/material";
 // import UserAvatar from "./UserAvatar.jsx";
 import logo from "../assets/logo.png";
 import useAuth from "../features/authentication/hooks/useAuth";
@@ -30,7 +17,6 @@ import useAuth from "../features/authentication/hooks/useAuth";
 // import { logout as logoutService } from "../services/authService";
 
 const Sidebar = () => {
-  const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, currentUser, userRole, logout } = useAuth();
@@ -39,7 +25,7 @@ const Sidebar = () => {
     try {
       await logout();
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
     }
   };
 
@@ -56,7 +42,7 @@ const Sidebar = () => {
       path: "/admin",
     });
   }
-  
+
   // Add MockDataDemo menu item in development mode
   if (import.meta.env.DEV) {
     menuItems.push({
@@ -67,98 +53,53 @@ const Sidebar = () => {
   }
 
   return (
-    <Box
-      sx={{
-        width: 260,
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        borderRight: `1px solid ${theme.palette.divider}`,
-        backgroundColor: theme.palette.background.paper,
-        position: "fixed",
-        left: 0,
-        top: 0,
-        zIndex: 1200,
-        overflowY: "auto",
-      }}
-    >
+    <div className="w-64 h-screen flex flex-col border-r border-gray-200 bg-white fixed left-0 top-0 z-50 overflow-y-auto">
       {/* Logo */}
-      <Box
-        sx={{
-          p: 2,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: 80,
-          cursor: "pointer",
-          "&:hover": {
-            opacity: 0.9,
-          },
-        }}
+      <div
+        className="p-4 flex justify-center items-center h-20 cursor-pointer hover:opacity-90 transition-opacity"
         onClick={() => navigate("/")}
       >
-        <Box
-          component="img"
-          src={logo}
-          alt="Logo"
-          sx={{
-            maxHeight: "100px",
-            maxWidth: "100%",
-          }}
-        />
-      </Box>
+        <img src={logo} alt="Logo" className="max-h-24 max-w-full" />
+      </div>
 
       {/* Navigation Menu */}
-      <List sx={{ px: 2, py: 1 }}>
+      <nav className="px-4 py-2">
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
 
           return (
-            <ListItem key={item.text} disablePadding>
-              <ListItemButton
-                selected={isActive}
+            <div key={item.text} className="mb-2">
+              <button
                 onClick={() => navigate(item.path)}
-                sx={{
-                  borderRadius: theme.shape.borderRadius,
-                  mb: 1,
-                  "&:hover": {
-                    backgroundColor: theme.palette.action.hover,
-                  },
-                  "&.Mui-selected": {
-                    backgroundColor: theme.palette.primary.main, // Changed to primary.main for a stronger color
-                    color: "#FFFFFF", // White text for selected items
-                    "&:hover": {
-                      backgroundColor: theme.palette.primary.main,
-                    },
-                  },
-                }}
+                className={`w-full flex items-center px-3 py-2 rounded-lg transition-colors ${
+                  isActive
+                    ? "bg-blue-600 text-white"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
               >
-                <ListItemIcon
-                  sx={{
-                    minWidth: "40px",
-                    color: isActive ? "#FFFFFF" : "inherit", // White icon when active
-                  }}
+                <div
+                  className={`mr-3 min-w-[24px] ${
+                    isActive ? "text-white" : "text-gray-600"
+                  }`}
                 >
                   {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.text}
-                  primaryTypographyProps={{
-                    fontWeight: isActive ? 500 : 400,
-                    color: isActive ? "#FFFFFF" : "inherit", // White text when active
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
+                </div>
+                <span
+                  className={`${
+                    isActive ? "font-medium text-white" : "font-normal"
+                  }`}
+                >
+                  {item.text}
+                </span>
+              </button>
+            </div>
           );
         })}
-      </List>
+      </nav>
 
       {/* Create Request Button */}
-      <Box sx={{ p: 2 }}>
-        <Button
-          variant="contained"
-          startIcon={<AddCircleOutlineIcon />}
+      <div className="p-4">
+        <button
           onClick={() => {
             // If not logged in, redirect to login
             if (!isAuthenticated) {
@@ -167,144 +108,93 @@ const Sidebar = () => {
               navigate("/create-request");
             }
           }}
-          fullWidth
-          sx={{
-            textTransform: "none",
-            borderRadius: "24px",
-            py: 1.2,
-            boxShadow: theme.shadows[3],
-          }}
+          className="w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-md"
         >
+          <AddCircleOutlineIcon className="mr-2" />
           Create Request
-        </Button>
-      </Box>
+        </button>
+      </div>
 
       {/* Push content to bottom */}
-      <Box sx={{ flexGrow: 1 }} />
+      <div className="flex-grow" />
 
       {/* Authentication Buttons for non-authenticated users */}
       {!isAuthenticated && (
-        <Box
-          sx={{
-            p: 2,
-            display: "flex",
-            flexDirection: "column",
-            gap: 1,
-            borderTop: `1px solid ${theme.palette.divider}`,
-          }}
-        >
-          <Button
-            variant="outlined"
-            startIcon={<LoginIcon />}
+        <div className="p-4 flex flex-col gap-2 border-t border-gray-200">
+          <button
             onClick={() => navigate("/login")}
-            fullWidth
-            sx={{ textTransform: "none" }}
+            className="w-full flex items-center justify-center px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
           >
+            <LoginIcon className="mr-2" />
             Login
-          </Button>
-          <Button
-            variant="text"
-            startIcon={<PersonAddIcon />}
+          </button>
+          <button
             onClick={() => navigate("/register")}
-            fullWidth
-            sx={{ textTransform: "none" }}
+            className="w-full flex items-center justify-center px-4 py-2 text-blue-600 hover:bg-blue-50 transition-colors"
           >
+            <PersonAddIcon className="mr-2" />
             Sign Up
-          </Button>
-        </Box>
+          </button>
+        </div>
       )}
 
       {/* User Profile section */}
       {isAuthenticated && (
-        <Box
-          sx={{
-            p: 2,
-            borderTop: `1px solid ${theme.palette.divider}`,
-            display: "flex",
-          }}
-        >
+        <div className="p-4 border-t border-gray-200 flex">
           {/* Avatar on the left */}
-          <Box
-            sx={{
-              cursor: "pointer",
-              "&:hover": { opacity: 0.8 },
-            }}
+          <div
+            className="cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => navigate(`/profile/${currentUser?.id}`)}
           >
-            <Box
-              component="img"
-              src={currentUser?.avatar || currentUser?.profilePicture || "https://randomuser.me/api/portraits/men/32.jpg"}
+            <img
+              src={
+                currentUser?.avatar ||
+                currentUser?.profilePicture ||
+                "https://randomuser.me/api/portraits/men/32.jpg"
+              }
               alt="User"
-              sx={{
-                width: 40,
-                height: 40,
-                borderRadius: '50%',
-                objectFit: 'cover'
-              }}
+              className="w-10 h-10 rounded-full object-cover"
             />
-          </Box>
+          </div>
 
           {/* Username and buttons on the right */}
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              ml: 1,
-              gap: 0.5,
-            }}
-          >
+          <div className="flex flex-col ml-2 gap-1">
             {/* Username */}
-            <Typography
-              variant="subtitle1"
-              sx={{
-                fontWeight: "medium",
-                fontSize: "0.9rem",
-                cursor: "pointer",
-                "&:hover": { opacity: 0.8 },
-              }}
+            <h3
+              className="font-medium text-sm cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => navigate(`/profile/${currentUser?.id}`)}
             >
               {currentUser?.name || "User"}
-            </Typography>
+            </h3>
 
-            {/* Buttons below username */}            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              <Tooltip title="Notifications">
-                <IconButton
-                  size="small"
-                  sx={{ p: 0.5, mr: 1 }}
-                  onClick={() => navigate("/notifications")}
-                >
-                  <NotificationsIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Settings">
-                <IconButton
-                  size="small"
-                  sx={{ p: 0.5, mr: 1 }}
-                  onClick={() => navigate("/settings")}
-                >
-                  <SettingsIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Logout">
-                <IconButton
-                  size="small"
-                  sx={{ p: 0.5, color: theme.palette.error.main }}
-                  onClick={handleLogout}
-                >
-                  <LogoutIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          </Box>
-        </Box>
+            {/* Buttons below username */}
+            <div className="flex items-center">
+              <button
+                title="Notifications"
+                className="p-1 mr-2 hover:bg-gray-100 rounded transition-colors"
+                onClick={() => navigate("/notifications")}
+              >
+                <NotificationsIcon fontSize="small" />
+              </button>
+              <button
+                title="Settings"
+                className="p-1 mr-2 hover:bg-gray-100 rounded transition-colors"
+                onClick={() => navigate("/settings")}
+              >
+                <SettingsIcon fontSize="small" />
+              </button>
+              <button
+                title="Logout"
+                className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                onClick={handleLogout}
+              >
+                <LogoutIcon fontSize="small" />
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-    </Box>
+    </div>
   );
 };
 
