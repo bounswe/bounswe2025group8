@@ -52,12 +52,15 @@ export const getTasks = async (filters = {}, page = 1) => {
  */
 export const getPopularTasks = async (limit = 6) => {
   try {
+    console.log("getPopularTasks called with limit:", limit);
     const response = await api.get("/tasks/popular/", {
       params: { limit },
     });
+    console.log("getPopularTasks API response:", response.data);
     return response.data.data || [];
   } catch (error) {
     console.error("Error fetching popular tasks:", error);
+    console.error("Error details:", error.response?.data);
     throw error;
   }
 };
