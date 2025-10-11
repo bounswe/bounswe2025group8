@@ -10,6 +10,8 @@ import { categoryMapping, getCategoryImage } from "../constants/categories";
 import { urgencyLevels } from "../constants/urgency_level";
 import { formatRelativeTime } from "../utils/dateUtils";
 import { extractRegionFromLocation } from "../utils/taskUtils";
+import sortIcon from "../assets/sort.svg";
+import filterIcon from "../assets/filter.svg";
 
 const AllRequests = () => {
   const dispatch = useDispatch();
@@ -135,18 +137,14 @@ const AllRequests = () => {
 
         {/* Header Icons */}
         <div className="absolute top-[27px] right-12 flex space-x-4">
-          {/* Chat Circle Dots Icon */}
+          {/* Sort Icon */}
           <button className="w-6 h-6 text-gray-900 hover:text-indigo-600 transition-colors">
-            <svg className="w-full h-full fill-current" viewBox="0 0 24 24">
-              <path d="M12 2C6.48 2 2 6.48 2 12C2 13.54 2.36 14.99 3.01 16.28L2.09 19.91C1.93 20.48 2.52 21.07 3.09 20.91L6.72 19.99C8.01 20.64 9.46 21 11 21H12C17.52 21 22 16.52 22 11C22 5.48 17.52 1 12 1V2ZM8 10.5C7.17 10.5 6.5 11.17 6.5 12S7.17 13.5 8 13.5 9.5 12.83 9.5 12 8.83 10.5 8 10.5ZM12 13.5C11.17 13.5 10.5 12.83 10.5 12S11.17 10.5 12 10.5 13.5 11.17 13.5 12 12.83 13.5 12 13.5ZM16 13.5C15.17 13.5 14.5 12.83 14.5 12S15.17 10.5 16 10.5 17.5 11.17 17.5 12 16.83 13.5 16 13.5Z" />
-            </svg>
+            <img src={sortIcon} alt="Sort" className="w-full h-full" />
           </button>
 
-          {/* Bell Icon */}
+          {/* Filter Icon */}
           <button className="w-6 h-6 text-gray-900 hover:text-indigo-600 transition-colors">
-            <svg className="w-full h-full fill-current" viewBox="0 0 24 24">
-              <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.36 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5S10.5 3.17 10.5 4V4.68C7.63 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z" />
-            </svg>
+            <img src={filterIcon} alt="Filter" className="w-full h-full" />
           </button>
         </div>
       </div>
