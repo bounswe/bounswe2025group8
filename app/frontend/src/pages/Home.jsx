@@ -1,12 +1,4 @@
 import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Typography,
-  Button,
-  Grid,
-  Paper,
-  CircularProgress,
-} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import CategoryCard from "../components/CategoryCard";
 import RequestCard from "../components/RequestCard"; 
@@ -83,40 +75,28 @@ const Home = () => {
     <>
       {" "}
       {/* Popular Categories Section */}
-      <Box sx={{ mb: 6 }}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 2,
-          }}
-        >
-          <Typography variant="h5" component="h2" sx={{ fontWeight: "medium" }}>
-            Popular Categories
-          </Typography>
+      <div className="mb-12">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-medium">Popular Categories</h2>
           {categories.length > 4 && (
-            <Button
-              variant="text"
-              color="primary"
+            <button
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
               onClick={() => navigate("/categories")}
-              size="small"
             >
               See All
-            </Button>
+            </button>
           )}
-        </Box>
+        </div>
 
         {loading.categories ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
-            <CircularProgress />
-          </Box>
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
         ) : error.categories ? (
-          <Box sx={{ textAlign: "center", py: 4 }}>
-            <Typography color="error">{error.categories}</Typography>
-            <Button
-              variant="contained"
-              sx={{ mt: 2 }}
+          <div className="text-center py-8">
+            <p className="text-red-600 mb-4">{error.categories}</p>
+            <button
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
               onClick={() => {
                 setLoading((prev) => ({ ...prev, categories: true }));
                 categoryService
@@ -144,66 +124,52 @@ const Home = () => {
               }}
             >
               Try Again
-            </Button>
-          </Box>
+            </button>
+          </div>
         ) : (
-          <Grid container spacing={2} sx={{ mt: 2, justifyContent: "center" }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-4 justify-items-center">
             {categories.length > 0 ? (
               categories.slice(0, 4).map((category) => (
-                <Grid item xs={6} sm={6} md={3} lg={3} key={category.id}>
+                <div key={category.id} className="col-span-1">
                   <CategoryCard
                     title={category.title}
                     image={category.image}
                     categoryId={category.id}
                     onClick={() => handleCategoryClick(category.id)}
                   />
-                </Grid>
+                </div>
               ))
             ) : (
-              <Box sx={{ textAlign: "center", py: 4, width: "100%" }}>
-                <Typography color="text.secondary">
-                  No categories available
-                </Typography>
-              </Box>
+              <div className="col-span-full text-center py-8">
+                <p className="text-gray-500">No categories available</p>
+              </div>
             )}
-          </Grid>
+          </div>
         )}
-      </Box>{" "}
+      </div>{" "}
       {/* Popular Requests Section */}
-      <Box sx={{ mb: 6 }}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 2,
-          }}
-        >
-          <Typography variant="h5" component="h2" sx={{ fontWeight: "medium" }}>
-            Popular Requests
-          </Typography>
+      <div className="mb-12">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-medium">Popular Requests</h2>
           {requests.length > 6 && (
-            <Button
-              variant="text"
-              color="primary"
+            <button
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
               onClick={() => navigate("/requests")}
-              size="small"
             >
               See All
-            </Button>
+            </button>
           )}
-        </Box>
+        </div>
 
         {loading.requests ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
-            <CircularProgress />
-          </Box>
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
         ) : error.requests ? (
-          <Box sx={{ textAlign: "center", py: 4 }}>
-            <Typography color="error">{error.requests}</Typography>
-            <Button
-              variant="contained"
-              sx={{ mt: 2 }}
+          <div className="text-center py-8">
+            <p className="text-red-600 mb-4">{error.requests}</p>
+            <button
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
               onClick={() => {
                 setLoading((prev) => ({ ...prev, requests: true }));
                 requestService
@@ -226,29 +192,27 @@ const Home = () => {
               }}
             >
               Try Again
-            </Button>
-          </Box>
+            </button>
+          </div>
         ) : (
-          <Grid container spacing={3} sx={{ mt: 2, justifyContent: "center" }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4 justify-items-center">
             {requests.length > 0 ? (
               requests.slice(0, 6).map((request) => (
-                <Grid item xs={12} sm={6} key={request.id}>
+                <div key={request.id} className="col-span-1">
                   <RequestCard
                     request={request}
                     onClick={() => navigate(`/requests/${request.id}`)}
                   />
-                </Grid>
+                </div>
               ))
             ) : (
-              <Box sx={{ textAlign: "center", py: 4, width: "100%" }}>
-                <Typography color="text.secondary">
-                  No requests available
-                </Typography>
-              </Box>
+              <div className="col-span-full text-center py-8">
+                <p className="text-gray-500">No requests available</p>
+              </div>
             )}
-          </Grid>
+          </div>
         )}
-      </Box>
+      </div>
     </>
   );
 };

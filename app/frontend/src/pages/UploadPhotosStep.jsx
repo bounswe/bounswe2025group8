@@ -1,55 +1,33 @@
-import React from 'react';
-import { 
-  Box, 
-  Typography, 
-  Paper,
-  Alert,
-  AlertTitle
-} from '@mui/material';
-import ConstructionIcon from '@mui/icons-material/Construction';
+import React from "react";
+import ConstructionIcon from "@mui/icons-material/Construction";
 
 const UploadPhotosStep = () => {
   return (
-    <Box>
-
-      
+    <div>
       {/* Information box */}
-      <Paper
-        elevation={0}
-        sx={{
-          p: 4,
-          textAlign: 'center',
-          border: '1px dashed #ccc',
-          borderRadius: 2,
-          backgroundColor: '#f9f9f9',
-          mb: 4
-        }}
-      >
-        <ConstructionIcon sx={{ fontSize: 60, color: '#9e9e9e', mb: 2 }} />
-        
-        <Typography variant="h6" gutterBottom>
-          Feature Not Implemented
-        </Typography>
-        
-        <Typography variant="body1" color="text.secondary" paragraph>
+      <div className="p-8 text-center border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 mb-8">
+        <ConstructionIcon sx={{ fontSize: 60, color: "#9e9e9e", mb: 2 }} />
+
+        <h3 className="text-lg font-medium mb-2">Feature Not Implemented</h3>
+
+        <p className="text-base text-gray-600 mb-4">
           We're working on implementing the photo upload functionality.
-        </Typography>
-        
-        <Typography variant="body2" color="text.secondary">
+        </p>
+
+        <p className="text-sm text-gray-600">
           Please proceed to the next step to continue creating your request.
-        </Typography>
-      </Paper>
-      
+        </p>
+      </div>
+
       {/* Instructions */}
-      <Box sx={{ mt: 4 }}>
-        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-          Note:
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Your request can still be submitted without photos. You can add photos to your request later when this feature becomes available.
-        </Typography>
-      </Box>
-    </Box>
+      <div className="mt-8">
+        <h4 className="text-sm font-bold mb-2">Note:</h4>
+        <p className="text-sm text-gray-600">
+          Your request can still be submitted without photos. You can add photos
+          to your request later when this feature becomes available.
+        </p>
+      </div>
+    </div>
   );
 };
 
