@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
-import { Box, InputBase, IconButton, useTheme, alpha, Paper } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import ClearIcon from '@mui/icons-material/Clear';
+import React, { useState } from "react";
+import SearchIcon from "@mui/icons-material/Search";
+import ClearIcon from "@mui/icons-material/Clear";
 
 /**
  * Searchbar component that matches the provided design
@@ -10,16 +9,15 @@ import ClearIcon from '@mui/icons-material/Clear';
  * @param {string} props.placeholder - Placeholder text for the search input
  * @param {boolean} props.autoFocus - Whether to autofocus the search input
  * @param {string} props.defaultValue - Default search query
- * @param {Object} props.sx - Additional MUI sx styles to apply
+ * @param {string} props.className - Additional CSS classes to apply
  */
 const Searchbar = ({
   onSearch,
-  placeholder = 'What do you need help with',
+  placeholder = "What do you need help with",
   autoFocus = false,
-  defaultValue = '',
-  sx = {},
+  defaultValue = "",
+  className = "",
 }) => {
-  const theme = useTheme();
   const [query, setQuery] = useState(defaultValue);
   const [focused, setFocused] = useState(false);
 
@@ -31,54 +29,32 @@ const Searchbar = ({
   };
 
   const handleClear = () => {
-    setQuery('');
+    setQuery("");
     if (onSearch) {
-      onSearch('');
+      onSearch("");
     }
   };
 
   return (
-    <Paper
-      component="form"
+    <form
       onSubmit={handleSubmit}
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        width: '100%',
-        minWidth: 280, // Add minimum width
-        borderRadius: 28, // Very rounded corners
-        overflow: 'hidden', // Ensure children don't overflow the rounded corners
-        backgroundColor: alpha(theme.palette.common.white, 0.15),
-        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-        transition: theme.transitions.create(['border-color', 'box-shadow']),
-        '&:hover': {
-          backgroundColor: alpha(theme.palette.common.white, 0.25),
-        },
-        ...(focused && {
-          borderColor: theme.palette.primary.main,
-          boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
-          backgroundColor: alpha(theme.palette.common.white, 0.25),
-        }),
-        ...sx,
-      }}
-      elevation={0}
+      className={`flex items-center w-full max-w-md min-w-72 rounded-full overflow-hidden 
+        bg-blue-50 border border-blue-200 transition-all duration-200 ease-in-out
+        hover:bg-blue-100 hover:border-blue-300 ${
+          focused
+            ? "border-blue-500 shadow-[0_0_0_2px_rgba(59,130,246,0.2)] bg-blue-100"
+            : ""
+        }
+        ${className}`}
     >
-      <IconButton
-        sx={{
-          p: '10px',
-          color: theme.palette.primary.main,
-          backgroundColor: alpha(theme.palette.primary.main, 0.2),
-          borderRadius: 0, // Remove button border radius
-          ml: 0, // No left margin
-          height: '100%', // Make button match height of container
-          '&:hover': {
-            backgroundColor: alpha(theme.palette.primary.main, 0.3),
-          },
-        }}
+      <button
+        className="p-3 text-blue-500 bg-blue-500/20 border-0 ml-0 rounded-l-full 
+          hover:bg-blue-500/30 transition-colors duration-200 focus:outline-none 
+          focus:ring-2 focus:ring-blue-500/50 flex items-center justify-center"
         aria-label="search"
         onClick={handleSubmit}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
+          if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
             handleSubmit(e);
           }
@@ -86,22 +62,13 @@ const Searchbar = ({
         type="button"
       >
         <SearchIcon />
-      </IconButton>
+      </button>
 
-      <InputBase
-        sx={{
-          ml: 0.5,
-          flex: 1,
-          color:
-            theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.text.primary,
-          '& .MuiInputBase-input': {
-            py: 1.5,
-            px: 1,
-            width: '100%',
-          },
-        }}
+      <input
+        className="ml-2 flex-1 bg-transparent py-3 px-4 w-full outline-none 
+          text-gray-900 placeholder-gray-500 text-sm"
         placeholder={placeholder}
-        inputProps={{ 'aria-label': 'search' }}
+        aria-label="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => setFocused(true)}
@@ -110,12 +77,13 @@ const Searchbar = ({
       />
 
       {query && (
-        <IconButton
-          sx={{ p: '10px', mr: 1 }}
+        <button
+          className="p-2.5 mr-4 text-gray-600 hover:text-gray-800 transition-colors 
+            duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 rounded-full"
           aria-label="clear"
           onClick={handleClear}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
+            if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
               handleClear(e);
             }
@@ -123,9 +91,9 @@ const Searchbar = ({
           type="button"
         >
           <ClearIcon fontSize="small" />
-        </IconButton>
+        </button>
       )}
-    </Paper>
+    </form>
   );
 };
 
