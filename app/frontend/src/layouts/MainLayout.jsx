@@ -5,6 +5,8 @@ import Sidebar from "../components/Sidebar";
 import Searchbar from "../components/Searchbar";
 import { loadUserFromStorage } from "../features/authentication/store/authSlice";
 
+const SIDEBAR_WIDTH = 240;
+
 const MainLayout = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -22,29 +24,29 @@ const MainLayout = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar Container - Container 120 */}
-      <div className="absolute top-0 left-0 w-[287px] h-[844px] bg-white rounded-none shadow-sm">
-        <Sidebar />
-      </div>
-
-      {/* Main Content Container - Container 121 */}
-      <div className="absolute top-0 left-[287px] w-[1153px] h-[844px] bg-white rounded-md shadow-sm">
-        {/* Searchbar Group - positioned as per spec */}
-        <div className="absolute top-[63px] left-[140px] w-[873px] h-[44px]">
-          <Searchbar
-            onSearch={handleSearch}
-            placeholder="What do you need help with"
-            autoFocus={false}
-            defaultValue=""
-          />
-        </div>
-
-        {/* Main content area for pages */}
-        <div className="relative w-full h-full overflow-auto">
-          <div className="pt-[120px] px-4">
-            <Outlet />
+    <div className="flex">
+      {/* Sidebar */}
+      <Sidebar />
+      {/* Fixed Search AppBar */}
+      <header className="fixed w-[calc(100%-240px)] ml-60 shadow-sm bg-white text-gray-900 z-30">
+        <div className="px-6 py-4">
+          <div className="w-full sm:w-96 md:w-[500px] mx-auto">
+            <Searchbar
+              onSearch={handleSearch}
+              placeholder="Search across the app"
+              autoFocus={false}
+              defaultValue=""
+            />
           </div>
+        </div>
+      </header>
+
+      {/* Main content area */}
+      <div className="flex-grow p-0 ml-60 min-h-screen overflow-auto w-[calc(100%-240px)] mt-16">
+        {/* Full-width container */}
+        <div className="px-12 py-12">
+          {/* Main content outlet */}
+          <Outlet />
         </div>
       </div>
     </div>
