@@ -4,10 +4,24 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
-// Local IP Terminal commands:
-// macOS: ipconfig getifaddr en0
-// Windows: ipconfig (look forIPv4)
-const lanHost = Constants.expoConfig?.extra?.apiHost ?? '192.168.55.172';
+const resolveDefaultHost = () => {
+  const extraHost = Constants.expoConfig?.extra?.apiHost;
+  if (extraHost) {
+    return extraHost;
+  }
+
+  const hostUri = Constants.expoConfig?.hostUri;
+  if (hostUri) {
+    const [host] = hostUri.split(':');
+    if (host) {
+      return host;
+    }
+  }
+
+  return 'localhost';
+};
+
+const lanHost = resolveDefaultHost();
 
 // Backend port is fixed at 8000
 const port = Constants.expoConfig?.extra?.apiPort ?? '8000';
@@ -459,12 +473,77 @@ export const getUserProfile = async (userId: number): Promise<UserProfile> => {
   }
 };
 
+const normalizeTasksResponse = (payload: unknown): TasksResponse => {
+  const empty: TasksResponse = {
+    count: 0,
+    next: null,
+    previous: null,
+    results: [],
+  };
+
+  if (Array.isArray(payload)) {
+    const tasks = payload as Task[];
+    return {
+      count: tasks.length,
+      next: null,
+      previous: null,
+      results: tasks,
+    };
+  }
+
+  if (payload && typeof payload === 'object') {
+    const dataObj = payload as Record<string, unknown>;
+
+    const resultsCandidate = dataObj['results'];
+    if (Array.isArray(resultsCandidate)) {
+      const results = resultsCandidate as Task[];
+      const count = typeof dataObj['count'] === 'number' ? dataObj['count'] as number : results.length;
+      const next = typeof dataObj['next'] === 'string' || dataObj['next'] === null ? dataObj['next'] as string | null : null;
+      const previous = typeof dataObj['previous'] === 'string' || dataObj['previous'] === null ? dataObj['previous'] as string | null : null;
+      return {
+        count,
+        next,
+        previous,
+        results,
+      };
+    }
+
+    const tasksCandidate = dataObj['tasks'];
+    if (Array.isArray(tasksCandidate)) {
+      const tasks = tasksCandidate as Task[];
+      const pagination = dataObj['pagination'];
+      let count = tasks.length;
+      if (pagination && typeof pagination === 'object' && pagination !== null) {
+        const paginationRecord = pagination as Record<string, unknown>;
+        if (typeof paginationRecord['count'] === 'number') {
+          count = paginationRecord['count'] as number;
+        } else if (typeof paginationRecord['total_records'] === 'number') {
+          count = paginationRecord['total_records'] as number;
+        }
+      }
+      return {
+        count,
+        next: null,
+        previous: null,
+        results: tasks,
+      };
+    }
+
+    if ('data' in dataObj) {
+      return normalizeTasksResponse(dataObj['data']);
+    }
+  }
+
+  return empty;
+};
+
 export const getTasks = async (): Promise<TasksResponse> => {
   try {
     console.log('Fetching tasks');
-    const response = await api.get<TasksResponse>('/tasks/');
-    console.log('Tasks response:', response.data);
-    return response.data;
+    const response = await api.get('/tasks/');
+    const normalized = normalizeTasksResponse(response.data);
+    console.log('Tasks response (normalized):', normalized);
+    return normalized;
   } catch (error) {
     if (error instanceof AxiosError) {
       console.error('Get tasks error details:', {
@@ -492,8 +571,41 @@ export const getCategories = async (): Promise<CategoriesResponse> => {
 export interface VolunteerApplicationResponse {
   status: string;
   message: string;
-  data: any; // Adjust based on actual VolunteerSerializer response structure if needed
+  data: Volunteer;
 }
+
+export interface WithdrawVolunteerResponse {
+  status: string;
+  message?: string;
+}
+
+export const listVolunteers = async (params?: Record<string, unknown>): Promise<Volunteer[]> => {
+  try {
+    const response = await api.get('/volunteers/', { params });
+    const payload = response.data;
+    if (Array.isArray(payload)) {
+      return payload as Volunteer[];
+    }
+    if (payload?.results && Array.isArray(payload.results)) {
+      return payload.results as Volunteer[];
+    }
+    if (payload?.data?.volunteers && Array.isArray(payload.data.volunteers)) {
+      return payload.data.volunteers as Volunteer[];
+    }
+    return [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('List volunteers error details:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers,
+      });
+    }
+    return [];
+  }
+};
 
 export const volunteerForTask = async (taskId: number): Promise<VolunteerApplicationResponse> => {
   try {
@@ -506,6 +618,26 @@ export const volunteerForTask = async (taskId: number): Promise<VolunteerApplica
       throw new Error(error.response.data.message || 'Failed to volunteer for task.');
     }
     throw new Error('Failed to volunteer for task. An unexpected error occurred.');
+  }
+};
+
+export const withdrawVolunteer = async (volunteerId: number): Promise<WithdrawVolunteerResponse> => {
+  try {
+    const response = await api.delete<WithdrawVolunteerResponse>(`/volunteers/${volunteerId}/`);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error(`Withdraw volunteer ${volunteerId} error:`, {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers,
+      });
+      const errMessage = error.response?.data?.message || 'Failed to withdraw volunteer request.';
+      throw new Error(errMessage);
+    }
+    throw new Error('Failed to withdraw volunteer request. An unexpected error occurred.');
   }
 };
 
