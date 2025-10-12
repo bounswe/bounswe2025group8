@@ -46,10 +46,10 @@ const CategoryCardDetailed = ({
       aria-label={`${title} category with ${requestCount} ${
         requestCount === 1 ? "request" : "requests"
       }`}
-      className={`flex items-center rounded-2xl cursor-pointer transition-all duration-200 overflow-hidden bg-white p-3 w-full sm:w-96 h-[90px] max-w-full shadow-sm hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${className}`}
+      className={`flex items-center rounded-2xl cursor-pointer transition-all duration-200 overflow-hidden bg-white p-3 sm:p-4 md:p-5 w-full max-w-sm sm:max-w-md md:max-w-lg h-20 sm:h-24 md:h-28 lg:h-32 shadow-sm hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${className}`}
     >
       {/* Image Container - Left Side */}
-      <div className="w-[70px] h-[70px] rounded-xl overflow-hidden border border-gray-200 flex-shrink-0 mr-4 bg-gray-100">
+      <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-xl overflow-hidden border border-gray-200 flex-shrink-0 mr-3 sm:mr-4 md:mr-5 bg-gray-100">
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -66,10 +66,12 @@ const CategoryCardDetailed = ({
       {/* Content Container - Right Side */}
       <div className="flex flex-col justify-center">
         {/* Title */}
-        <h3 className="text-base font-bold text-gray-900 mb-1">{title}</h3>
+        <h3 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 mb-1 sm:mb-2">
+          {title}
+        </h3>
 
         {/* Request Count */}
-        <p className="text-sm text-gray-600 flex items-center">
+        <p className="text-xs sm:text-sm md:text-base text-gray-600 flex items-center">
           {requestCount} {requestCount === 1 ? "request" : "requests"}
         </p>
       </div>

@@ -43,15 +43,6 @@ const Sidebar = () => {
     });
   }
 
-  // Add MockDataDemo menu item in development mode
-  if (import.meta.env.DEV) {
-    menuItems.push({
-      text: "Mock Data Demo",
-      icon: <DataObjectIcon />,
-      path: "/mock-data",
-    });
-  }
-
   return (
     <div className="w-64 h-screen flex flex-col border-r border-gray-200 bg-white fixed left-0 top-0 z-50 overflow-y-auto">
       {/* Logo */}
