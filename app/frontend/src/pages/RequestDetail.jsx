@@ -12,7 +12,9 @@ import {
   Grid,
   Card,
   CardContent,
-  IconButton
+  IconButton,
+  Alert,
+  Snackbar
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -25,6 +27,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import { getTaskById as getRequestById } from '../features/request/services/requestService';
+import { cancelTask } from '../features/request/services/createRequestService'; // Add this import
 import { useAppSelector } from '../store/hooks';
 import { selectCurrentUser, selectIsAuthenticated } from '../features/authentication/store/authSlice';
 import Sidebar from '../components/Sidebar';
@@ -45,6 +48,11 @@ const RequestDetail = () => {
   const [request, setRequest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Add these new state variables
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(null);
+  const [deleteSuccess, setDeleteSuccess] = useState(false);
   
   // Fetch request details
   useEffect(() => {
@@ -215,13 +223,26 @@ const RequestDetail = () => {
     }
   };
 
-  const handleDeleteTask = () => {
+  const handleDeleteTask = async () => {
     if (canDelete) {
-      console.log('Delete task:', request.id);
-      // TODO: Show confirmation dialog and delete task
       if (window.confirm('Are you sure you want to delete this task?')) {
-        // TODO: Implement delete API call
-        console.log('Deleting task...');
+        try {
+          setIsDeleting(true);
+          setDeleteError(null);
+          
+          await cancelTask(request.id);
+          
+          setDeleteSuccess(true);
+          // Redirect after a short delay
+          setTimeout(() => {
+            navigate('/requests');
+          }, 1500);
+        } catch (err) {
+          console.error('Error deleting request:', err);
+          setDeleteError(err.response?.data?.message || err.message || 'Failed to delete request');
+        } finally {
+          setIsDeleting(false);
+        }
       }
     }
   };
@@ -246,6 +267,30 @@ const RequestDetail = () => {
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f5f5f5' }}>
       {/* Sidebar */}
       <Sidebar />
+      
+      {/* Success message */}
+      <Snackbar
+        open={deleteSuccess}
+        autoHideDuration={5000}
+        onClose={() => setDeleteSuccess(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert severity="success" sx={{ width: '100%' }}>
+          Request deleted successfully! Redirecting...
+        </Alert>
+      </Snackbar>
+      
+      {/* Error message */}
+      <Snackbar
+        open={!!deleteError}
+        autoHideDuration={5000}
+        onClose={() => setDeleteError(null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert severity="error" sx={{ width: '100%' }}>
+          {deleteError}
+        </Alert>
+      </Snackbar>
       
       {/* Main Content */}
       <Box sx={{ flexGrow: 1, p: 3 }}>
@@ -455,8 +500,9 @@ const RequestDetail = () => {
                       </Button>
                       <Button 
                         variant="outlined"
-                        startIcon={<DeleteIcon />}
+                        startIcon={isDeleting ? <CircularProgress size={20} /> : <DeleteIcon />}
                         onClick={handleDeleteTask}
+                        disabled={isDeleting}
                         sx={{ 
                           flex: 1,
                           textTransform: 'none',
@@ -468,7 +514,7 @@ const RequestDetail = () => {
                           }
                         }}
                       >
-                        Delete
+                        {isDeleting ? 'Deleting...' : 'Delete'}
                       </Button>
                     </Box>
                   )}
