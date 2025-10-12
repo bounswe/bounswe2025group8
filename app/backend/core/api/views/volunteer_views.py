@@ -15,6 +15,12 @@ class VolunteerViewSet(viewsets.ModelViewSet):
     queryset = Volunteer.objects.all()
     serializer_class = VolunteerSerializer
     
+    def get_queryset(self):
+        """Filter volunteers by current user"""
+        if self.request.user.is_authenticated:
+            return Volunteer.objects.filter(user=self.request.user)
+        return Volunteer.objects.none()
+    
     def get_permissions(self):
         """
         Return appropriate permissions based on action.
