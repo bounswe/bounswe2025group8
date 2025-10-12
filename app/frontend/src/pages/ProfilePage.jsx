@@ -90,27 +90,7 @@ const ProfilePage = () => {
     badges = [],
     loading,
     error,
-  } = useSelector((state) => state.profile || {});
-  const auth = useSelector((s) => s.auth);
-  const authUserId = auth?.user?.id != null ? String(auth.user.id) : null;
-  const lsUserRaw = localStorage.getItem("user");
-  const lsUserObj = lsUserRaw ? JSON.parse(lsUserRaw) : null;
-  const lsUserId = lsUserObj?.id != null ? String(lsUserObj.id) : null;
-  const lsUserIdSimple = localStorage.getItem("userId");
-  const effectiveLoggedInId = authUserId ?? lsUserId ?? lsUserIdSimple ?? null;
-
-  // Resolve profile being viewed
-  const paramId = userId; // param from useParams
-  const effectiveProfileId =
-    paramId === "current" || paramId === "me" || !paramId
-      ? effectiveLoggedInId
-      : String(paramId);
-
-  const canEdit =
-    Boolean(auth?.isAuthenticated) &&
-    effectiveLoggedInId &&
-    effectiveProfileId &&
-    String(effectiveLoggedInId) === String(effectiveProfileId);
+  } = useSelector((state) => state.profile);
 
   const [roleTab, setRoleTab] = useState(0); // 0 for Volunteer, 1 for Requester
   const [requestsTab, setRequestsTab] = useState(0); // 0 for Active, 1 for Past
@@ -617,9 +597,21 @@ const ProfilePage = () => {
                   const effectiveLoggedInUserId =
                     loggedInUserId || loggedInUserIdFromObj;
 
-                  // Use computed canEdit flag to show edit control
-                  console.log("Profile pic edit button check:", { userId, canEdit });
-                  return canEdit ? (
+                  // Check if viewing own profile through multiple possible conditions
+                  const isOwnProfile =
+                    userId === "current" ||
+                    userId === "me" ||
+                    !userId ||
+                    (effectiveLoggedInUserId &&
+                      userId === effectiveLoggedInUserId) ||
+                    // Also handle the case where no userId is directly available but user is authenticated
+                    (!effectiveLoggedInUserId && authState?.isAuthenticated);
+                  console.log("Profile pic edit button check:", {
+                    userId,
+                    loggedInUserId,
+                    isOwnProfile,
+                  });
+                  return isOwnProfile ? (
                     <IconButton
                       component="label"
                       sx={{
@@ -676,8 +668,21 @@ const ProfilePage = () => {
               const effectiveLoggedInUserId =
                 loggedInUserId || loggedInUserIdFromObj;
 
-              console.log("Edit button check:", { userId, canEdit });
-              return canEdit ? (
+              // Check if viewing own profile through multiple possible conditions
+              const isOwnProfile =
+                userId === "current" ||
+                userId === "me" ||
+                !userId ||
+                (effectiveLoggedInUserId &&
+                  userId === effectiveLoggedInUserId) ||
+                // Also handle the case where no userId is directly available but user is authenticated
+                (!effectiveLoggedInUserId && authState?.isAuthenticated);
+              console.log("Edit button check:", {
+                userId,
+                loggedInUserId,
+                isOwnProfile,
+              });
+              return isOwnProfile ? (
                 <Button
                   variant="outlined"
                   startIcon={<Edit />}
