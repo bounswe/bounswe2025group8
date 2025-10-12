@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CategoryCardDetailed from "../components/CategoryCardDetailed";
-import * as categoryService from "../services/categoryService";
+import * as categoryService from "../features/category/services/categoryService";
 import { getCategoryImage, categoryMapping } from "../constants/categories";
 
 const Categories = () => {
