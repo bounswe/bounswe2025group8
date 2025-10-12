@@ -65,7 +65,7 @@ const ProfilePage = () => {
   const lsUserId = lsUserObj?.id != null ? String(lsUserObj.id) : null;
   const lsUserIdSimple = localStorage.getItem("userId");
   const effectiveLoggedInId = authUserId ?? lsUserId ?? lsUserIdSimple ?? null;
-
+  
   // Resolve profile being viewed
   const paramId = userId; // param from useParams
   const effectiveProfileId =
