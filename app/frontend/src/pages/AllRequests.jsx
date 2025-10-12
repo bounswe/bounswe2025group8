@@ -1,9 +1,9 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import RequestCardForHomePage from "../components/RequestCardForHomePage";
 import {
-  fetchPopularTasks,
+  fetchAllTasks,
   clearError,
 } from "../features/request/store/allRequestsSlice";
 import { categoryMapping, getCategoryImage } from "../constants/categories";
@@ -16,65 +16,55 @@ import filterIcon from "../assets/filter.svg";
 const AllRequests = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const { tasks, loading, error } = useSelector((state) => state.allRequests);
+  const { tasks, pagination, loading, error } = useSelector(
+    (state) => state.allRequests
+  );
+
+  // Get current page from URL params
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
 
   // Debug logs
-  console.log("AllRequests Component State:", { tasks, loading, error });
+  console.log("AllRequests Component State:", {
+    tasks,
+    pagination,
+    loading,
+    error,
+  });
 
   useEffect(() => {
-    console.log("AllRequests useEffect: Fetching popular tasks...");
-    // Fetch popular tasks when component mounts
-    dispatch(fetchPopularTasks(6));
+    console.log(
+      "AllRequests useEffect: Fetching all tasks for page:",
+      currentPage
+    );
+    // Fetch all tasks when component mounts or page changes
+    dispatch(fetchAllTasks({ page: currentPage }));
 
     // Clear any existing errors
     return () => {
       dispatch(clearError());
     };
-  }, [dispatch]);
+  }, [dispatch, currentPage]);
 
-  // TEMPORARY: Mock data for testing
-  const mockTasks = [
-    {
-      id: 1,
-      title: "Help me to see a doctor",
-      category: "HEALTHCARE",
-      urgency_level: 4,
-      location:
-        "Country: Turkey, State: Istanbul, City: Istanbul, Neighborhood: Besiktas",
-      created_at: "2025-10-12T10:00:00Z",
-    },
-    {
-      id: 2,
-      title: "Need grocery shopping",
-      category: "GROCERY_SHOPPING",
-      urgency_level: 2,
-      location:
-        "Country: Turkey, State: Istanbul, City: Istanbul, Neighborhood: Kadikoy",
-      created_at: "2025-10-12T09:00:00Z",
-    },
-    {
-      id: 3,
-      title: "Need grocery shopping",
-      category: "GROCERY_SHOPPING",
-      urgency_level: 2,
-      location:
-        "Country: Turkey, State: Istanbul, City: Istanbul, Neighborhood: Kadikoy",
-      created_at: "2025-10-12T09:00:00Z",
-    },
-    {
-      id: 4,
-      title: "Need grocery shopping",
-      category: "GROCERY_SHOPPING",
-      urgency_level: 2,
-      location:
-        "Country: Turkey, State: Istanbul, City: Istanbul, Neighborhood: Kadikoy",
-      created_at: "2025-10-12T09:00:00Z",
-    },
-  ];
+  // Handle pagination
+  const handlePageChange = (newPage) => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set("page", newPage.toString());
+    setSearchParams(newSearchParams);
+  };
 
-  // Use mock data if tasks array is empty (for testing)
-  const displayTasks = tasks.length > 0 ? tasks : mockTasks;
+  const handlePreviousPage = () => {
+    if (pagination.hasPreviousPage) {
+      handlePageChange(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (pagination.hasNextPage) {
+      handlePageChange(currentPage + 1);
+    }
+  };
 
   // Handle card navigation
   const handleCardClick = (taskId) => {
@@ -134,7 +124,7 @@ const AllRequests = () => {
           </h3>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
-            onClick={() => dispatch(fetchPopularTasks(6))}
+            onClick={() => dispatch(fetchAllTasks({ page: currentPage }))}
             className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
           >
             Try Again
@@ -190,7 +180,7 @@ const AllRequests = () => {
         ) : (
           // Actual content
           <div className="grid grid-cols-2 gap-5">
-            {displayTasks.map((task) => {
+            {tasks.map((task) => {
               const formattedTask = formatTaskForCard(task);
               return (
                 <RequestCardForHomePage
@@ -211,8 +201,8 @@ const AllRequests = () => {
             })}
 
             {/* Fill empty slots if less than 6 tasks */}
-            {displayTasks.length < 6 &&
-              [...Array(6 - displayTasks.length)].map((_, index) => (
+            {tasks.length < 6 &&
+              [...Array(6 - tasks.length)].map((_, index) => (
                 <div key={`empty-${index}`} className="w-[407px] h-[122px]">
                   {/* Empty slot - maintains grid layout */}
                 </div>
@@ -221,7 +211,7 @@ const AllRequests = () => {
         )}
 
         {/* Empty state when no tasks */}
-        {!loading && displayTasks.length === 0 && (
+        {!loading && tasks.length === 0 && (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -243,12 +233,87 @@ const AllRequests = () => {
                 No Requests Available
               </h3>
               <p className="text-gray-600">
-                There are currently no popular requests to display.
+                There are currently no requests to display.
               </p>
             </div>
           </div>
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {!loading && tasks.length > 0 && pagination.totalPages > 1 && (
+        <div className="flex justify-center items-center mt-8 space-x-4">
+          <button
+            onClick={handlePreviousPage}
+            disabled={!pagination.hasPreviousPage}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              pagination.hasPreviousPage
+                ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
+            }`}
+          >
+            Previous
+          </button>
+
+          <div className="flex items-center space-x-2">
+            {/* Page numbers */}
+            {Array.from(
+              { length: Math.min(5, pagination.totalPages) },
+              (_, i) => {
+                let pageNumber;
+                if (pagination.totalPages <= 5) {
+                  pageNumber = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNumber = i + 1;
+                } else if (currentPage >= pagination.totalPages - 2) {
+                  pageNumber = pagination.totalPages - 4 + i;
+                } else {
+                  pageNumber = currentPage - 2 + i;
+                }
+
+                return (
+                  <button
+                    key={pageNumber}
+                    onClick={() => handlePageChange(pageNumber)}
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      currentPage === pageNumber
+                        ? "bg-indigo-600 text-white"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
+                  >
+                    {pageNumber}
+                  </button>
+                );
+              }
+            )}
+          </div>
+
+          <button
+            onClick={handleNextPage}
+            disabled={!pagination.hasNextPage}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              pagination.hasNextPage
+                ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                : "bg-gray-200 text-gray-400 cursor-not-allowed"
+            }`}
+          >
+            Next
+          </button>
+        </div>
+      )}
+
+      {/* Pagination Info */}
+      {!loading && tasks.length > 0 && (
+        <div className="text-center mt-4 text-sm text-gray-600">
+          Showing {tasks.length} of {pagination.totalItems} requests
+          {pagination.totalPages > 1 && (
+            <span>
+              {" "}
+              (Page {currentPage} of {pagination.totalPages})
+            </span>
+          )}
+        </div>
+      )}
     </>
   );
 };
