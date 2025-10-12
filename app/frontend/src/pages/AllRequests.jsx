@@ -53,6 +53,24 @@ const AllRequests = () => {
         "Country: Turkey, State: Istanbul, City: Istanbul, Neighborhood: Kadikoy",
       created_at: "2025-10-12T09:00:00Z",
     },
+    {
+      id: 3,
+      title: "Need grocery shopping",
+      category: "GROCERY_SHOPPING",
+      urgency_level: 2,
+      location:
+        "Country: Turkey, State: Istanbul, City: Istanbul, Neighborhood: Kadikoy",
+      created_at: "2025-10-12T09:00:00Z",
+    },
+    {
+      id: 4,
+      title: "Need grocery shopping",
+      category: "GROCERY_SHOPPING",
+      urgency_level: 2,
+      location:
+        "Country: Turkey, State: Istanbul, City: Istanbul, Neighborhood: Kadikoy",
+      created_at: "2025-10-12T09:00:00Z",
+    },
   ];
 
   // Use mock data if tasks array is empty (for testing)
@@ -127,16 +145,16 @@ const AllRequests = () => {
   }
 
   return (
-    <div className="relative up-[10px] left-[125px] w-[873px] h-[572px] bg-transparent rounded-md shadow-sm border border-gray-100/[0.07]">
+    <>
       {/* Header Section */}
-      <div className="relative">
+      <div className="flex justify-between items-start my-8 ">
         {/* All Requests Title */}
-        <h1 className="absolute top-6 left-5 font-medium text-xl leading-[30px] text-gray-900 font-inter">
+        <h1 className="font-medium text-xl text-gray-900 font-inter">
           All Requests
         </h1>
 
         {/* Header Icons */}
-        <div className="absolute top-[27px] right-12 flex space-x-4">
+        <div className="flex space-x-4">
           {/* Sort Icon */}
           <button className="w-6 h-6 text-gray-900 hover:text-indigo-600 transition-colors">
             <img src={sortIcon} alt="Sort" className="w-full h-full" />
@@ -150,18 +168,18 @@ const AllRequests = () => {
       </div>
 
       {/* Request Cards Grid */}
-      <div className="absolute top-[70px] left-5 w-[833px] h-[482px] overflow-hidden">
+      <div className="px-5 overflow-hidden">
         {loading ? (
           // Loading state - show skeleton cards
           <div className="grid grid-cols-2 gap-5">
             {[...Array(6)].map((_, index) => (
               <div
                 key={index}
-                className="w-[407px] h-[122px] bg-gray-100 rounded-2xl animate-pulse"
+                className=" bg-gray-100 rounded-2xl animate-pulse"
               >
                 <div className="p-2">
-                  <div className="w-[72px] h-[72px] bg-gray-200 rounded-xl"></div>
-                  <div className="ml-[92px] mt-[-72px] space-y-2">
+                  <div className=" bg-gray-200 rounded-xl"></div>
+                  <div className="space-y-2">
                     <div className="h-4 bg-gray-200 rounded w-3/4"></div>
                     <div className="h-3 bg-gray-200 rounded w-1/2"></div>
                   </div>
@@ -231,7 +249,7 @@ const AllRequests = () => {
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 };
 
