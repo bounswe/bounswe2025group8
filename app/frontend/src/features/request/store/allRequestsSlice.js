@@ -1,19 +1,19 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getPopularTasks } from '../services/requestService';
+import { getTasks } from '../services/requestService';
 
-// Async thunk for fetching popular tasks
-export const fetchPopularTasks = createAsyncThunk(
-  'allRequests/fetchPopularTasks',
-  async (limit = 6, { rejectWithValue }) => {
+// Async thunk for fetching all tasks with pagination
+export const fetchAllTasks = createAsyncThunk(
+  'allRequests/fetchAllTasks',
+  async ({ filters = {}, page = 1 }, { rejectWithValue }) => {
     try {
-      console.log("Fetching popular tasks with limit:", limit);
-      const tasks = await getPopularTasks(limit);
-      console.log("Received tasks:", tasks);
-      return tasks;
+      console.log("Fetching all tasks with filters:", filters, "page:", page);
+      const response = await getTasks(filters, page);
+      console.log("Received tasks response:", response);
+      return response;
     } catch (error) {
-      console.error("Error in fetchPopularTasks:", error);
+      console.error("Error in fetchAllTasks:", error);
       return rejectWithValue(
-        error.response?.data || 'Error fetching popular tasks'
+        error.response?.data || 'Error fetching tasks'
       );
     }
   }
@@ -22,6 +22,13 @@ export const fetchPopularTasks = createAsyncThunk(
 // Initial state
 const initialState = {
   tasks: [],
+  pagination: {
+    page: 1,
+    totalPages: 1,
+    totalItems: 0,
+    hasNextPage: false,
+    hasPreviousPage: false,
+  },
   loading: false,
   error: null,
 };
@@ -35,25 +42,28 @@ const allRequestsSlice = createSlice({
     },
     resetTasks: (state) => {
       state.tasks = [];
+      state.pagination = initialState.pagination;
       state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
-      // Fetch popular tasks cases
-      .addCase(fetchPopularTasks.pending, (state) => {
+      // Fetch all tasks cases
+      .addCase(fetchAllTasks.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchPopularTasks.fulfilled, (state, action) => {
+      .addCase(fetchAllTasks.fulfilled, (state, action) => {
         state.loading = false;
-        state.tasks = action.payload;
+        state.tasks = action.payload.tasks;
+        state.pagination = action.payload.pagination;
         state.error = null;
       })
-      .addCase(fetchPopularTasks.rejected, (state, action) => {
+      .addCase(fetchAllTasks.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.tasks = [];
+        state.pagination = initialState.pagination;
       });
   },
 });

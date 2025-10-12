@@ -26,9 +26,9 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
-import { getTaskById as getRequestById } from '../features/request/services/requestService';
 import { updateTask } from '../features/request/services/createRequestService';
 import { cancelTask } from '../features/request/services/createRequestService'; // Add this import
+import { getTaskById as getRequestById, volunteerForTask, checkUserVolunteerStatus, withdrawFromTask } from '../features/request/services/requestService';
 import { useAppSelector } from '../store/hooks';
 import { selectCurrentUser, selectIsAuthenticated } from '../features/authentication/store/authSlice';
 import Sidebar from '../components/Sidebar';
@@ -59,17 +59,39 @@ const RequestDetail = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
   const [deleteSuccess, setDeleteSuccess] = useState(false);
+  const [isVolunteering, setIsVolunteering] = useState(false);
+  const [volunteerRecord, setVolunteerRecord] = useState(null);
   
-  // Fetch request details
+  // Fetch request details and volunteer status
   useEffect(() => {
     const fetchRequest = async () => {
       try {
         console.log('Fetching request with ID:', requestId);
         setLoading(true);
         setError(null);
+        
+        // Fetch request data
         const requestData = await getRequestById(requestId);
         console.log('Received request data:', requestData);
         setRequest(requestData);
+        
+        // Check if current user has volunteered for this task
+        if (isAuthenticated && currentUser) {
+          try {
+            console.log('Checking volunteer status for user:', currentUser.id, 'task:', requestId);
+            const volunteerRecord = await checkUserVolunteerStatus(requestId);
+            console.log('User volunteer status result:', volunteerRecord);
+            setVolunteerRecord(volunteerRecord);
+          } catch (volunteerError) {
+            console.warn('Could not check volunteer status:', volunteerError);
+            // Set to null if we can't determine status
+            setVolunteerRecord(null);
+          }
+        } else {
+          console.log('Not authenticated or no current user, skipping volunteer status check');
+          setVolunteerRecord(null);
+        }
+        
       } catch (err) {
         console.error('Error fetching request:', err);
         console.error('Error details:', err.response?.data);
@@ -97,7 +119,7 @@ const RequestDetail = () => {
     if (requestId) {
       fetchRequest();
     }
-  }, [requestId]);
+  }, [requestId, isAuthenticated, currentUser]);
 
 
   // Format date
@@ -212,7 +234,20 @@ const RequestDetail = () => {
   const isTaskCreator = currentUser && request && currentUser.id === request.creator?.id;
   const canEdit = isAuthenticated && isTaskCreator;
   const canDelete = isAuthenticated && isTaskCreator;
-  const canVolunteer = isAuthenticated && !isTaskCreator && request?.status === 'POSTED';
+  const canVolunteer = isAuthenticated && !isTaskCreator && request?.status === 'POSTED' && !volunteerRecord;
+  const canWithdraw = isAuthenticated && !isTaskCreator && volunteerRecord;
+
+  // Debug logging
+  console.log('Permission debug:', {
+    isAuthenticated,
+    currentUser: currentUser?.id,
+    requestCreator: request?.creator?.id,
+    isTaskCreator,
+    requestStatus: request?.status,
+    volunteerRecord: volunteerRecord?.id,
+    canVolunteer,
+    canWithdraw
+  });
 
   // Button handlers
   const handleEditTask = () => {
@@ -256,20 +291,69 @@ const RequestDetail = () => {
       alert(err?.response?.data?.message ?? err?.message ?? 'Failed to update task.');
     }
   };
+  const handleVolunteer = async () => {
+    if (!canVolunteer) return;
 
-  const handleVolunteer = () => {
-    if (canVolunteer) {
-      console.log('Volunteer for task:', request.id);
-      // TODO: Implement volunteer API call
-      console.log('Volunteering for task...');
+    try {
+      console.log('Volunteering for task:', request.id);
+      setIsVolunteering(true);
+      
+      const result = await volunteerForTask(request.id);
+      console.log('Volunteer result:', result);
+      
+      // Update volunteer status
+      const volunteerRecord = result.data || result;
+      setVolunteerRecord(volunteerRecord);
+      setIsVolunteering(false);
+      
+      alert('Successfully volunteered for this task!');
+      
+      // Refresh the request data to get updated status
+      const updatedRequest = await getRequestById(requestId);
+      setRequest(updatedRequest);
+      
+    } catch (error) {
+      console.error('Error volunteering for task:', error);
+      setIsVolunteering(false);
+      
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to volunteer for task';
+      alert(`Error: ${errorMessage}`);
+    }
+  };
+
+  const handleWithdrawVolunteer = async () => {
+    if (!volunteerRecord) return;
+
+    try {
+      console.log('Withdrawing from task:', request.id);
+      setIsVolunteering(true);
+      
+      await withdrawFromTask(volunteerRecord.id);
+      console.log('Withdrawn from task');
+      
+      // Update volunteer status
+      setVolunteerRecord(null);
+      setIsVolunteering(false);
+      
+      alert('Successfully withdrew from this task');
+      
+      // Refresh the request data
+      const updatedRequest = await getRequestById(requestId);
+      setRequest(updatedRequest);
+      
+    } catch (error) {
+      console.error('Error withdrawing from task:', error);
+      setIsVolunteering(false);
+      
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to withdraw from task';
+      alert(`Error: ${errorMessage}`);
     }
   };
 
   const handleSelectVolunteer = () => {
     if (canEdit) {
       console.log('Select volunteer for task:', request.id);
-      // TODO: Navigate to volunteer selection page or open modal
-      console.log('Opening volunteer selection...');
+      navigate(`/requests/${request.id}/select-volunteer`);
     }
   };
 
@@ -453,6 +537,7 @@ const RequestDetail = () => {
                       size="large"
                       startIcon={<VolunteerActivismIcon />}
                       onClick={handleVolunteer}
+                      disabled={isVolunteering}
                       sx={{ 
                         py: 1.5,
                         textTransform: 'none',
@@ -461,10 +546,42 @@ const RequestDetail = () => {
                         bgcolor: '#4caf50',
                         '&:hover': {
                           bgcolor: '#45a049'
+                        },
+                        '&:disabled': {
+                          bgcolor: '#ccc',
+                          color: '#666'
                         }
                       }}
                     >
-                      Volunteer for this Task
+                      {isVolunteering ? 'Volunteering...' : 'Volunteer for this Task'}
+                    </Button>
+                  )}
+
+                  {canWithdraw && (
+                    <Button 
+                      variant="outlined" 
+                      size="large"
+                      startIcon={<VolunteerActivismIcon />}
+                      onClick={handleWithdrawVolunteer}
+                      disabled={isVolunteering}
+                      sx={{ 
+                        py: 1.5,
+                        textTransform: 'none',
+                        fontWeight: 500,
+                        fontSize: '1rem',
+                        borderColor: '#f44336',
+                        color: '#f44336',
+                        '&:hover': {
+                          borderColor: '#d32f2f',
+                          bgcolor: '#ffebee'
+                        },
+                        '&:disabled': {
+                          borderColor: '#ccc',
+                          color: '#666'
+                        }
+                      }}
+                    >
+                      {isVolunteering ? 'Withdrawing...' : 'Withdraw from Task'}
                     </Button>
                   )}
 
