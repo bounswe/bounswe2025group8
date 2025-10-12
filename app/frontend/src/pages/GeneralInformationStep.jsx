@@ -165,7 +165,7 @@ const GeneralInformationStep = () => {
                     }}
                   >
                     {Object.entries(urgencyLevels).map(([key, value]) => (
-                      <option key={key} value={String(key)}>
+                      <option key={key} value={key}>
                         {value.name}
                       </option>
                     ))}
