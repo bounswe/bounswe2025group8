@@ -1,22 +1,30 @@
 import React from "react";
-import {
-  Card,
-  CardContent,
-  Typography,
-  Box,
-  Chip,
-  useTheme,
-  Divider,
-  Paper,
-} from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import PriorityHighIcon from "@mui/icons-material/PriorityHigh";
 import { categoryMapping } from "../constants/categories";
 import { formatRelativeTime } from "../utils/dateUtils";
 import { urgencyLevels } from "../constants/urgency_level";
-import {extractRegionFromLocation} from "../utils/taskUtils";
+import { extractRegionFromLocation } from "../utils/taskUtils";
+
+// Custom icons to replace Material-UI icons
+const AccessTimeIcon = ({ className }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" />
+    <path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+  </svg>
+);
+
+const LocationOnIcon = ({ className }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+  </svg>
+);
+
+const PriorityHighIcon = ({ className }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+    <circle cx="12" cy="19" r="2" />
+    <path d="M10 3h4v12h-4z" />
+  </svg>
+);
 /**
  * RequestCard component that displays a request with category, urgency, and other details.
  * @param {Object} props
@@ -29,10 +37,9 @@ import {extractRegionFromLocation} from "../utils/taskUtils";
  * @param {string} props.request.deadline - ISO timestamp for the request's deadline
  * @param {string} props.request.imageUrl - Optional image for the request
  * @param {Function} props.onClick - Function called when card is clicked
- * @param {Object} props.sx - Additional MUI sx styles to apply
+ * @param {string} props.className - Additional CSS classes to apply
  */
-const RequestCard = ({ request, onClick, sx = {} }) => {
-  const theme = useTheme();
+const RequestCard = ({ request, onClick, className = "" }) => {
   const navigate = useNavigate();
 
   const handleCategoryClick = (category, event) => {
@@ -40,7 +47,8 @@ const RequestCard = ({ request, onClick, sx = {} }) => {
     event.stopPropagation();
 
     navigate(`/requests?category=${category}`);
-  };  const handleUrgencyClick = (urgencyLevel, event) => {
+  };
+  const handleUrgencyClick = (urgencyLevel, event) => {
     // Prevent triggering the card's onClick
     event.stopPropagation();
     // Navigate to filtered requests by urgency using query params
@@ -49,9 +57,8 @@ const RequestCard = ({ request, onClick, sx = {} }) => {
   };
 
   return (
-    <Card
+    <div
       onClick={() => onClick?.(request.id)}
-      elevation={2}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
           e.preventDefault();
@@ -60,172 +67,88 @@ const RequestCard = ({ request, onClick, sx = {} }) => {
       }}
       role="button"
       tabIndex={0}
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        borderRadius: 2,
-        cursor: "pointer",
-        transition: "transform 0.2s, box-shadow 0.2s",
-        overflow: "hidden",
-        width: {
-          xs: "100%", // Full width on mobile
-          sm: "400px", // Increased width on tablet and up
-        },
-        mx: "auto", // Center card in parent container
-        backgroundColor: "white",
-        "&:hover": {
-          transform: "translateY(-4px)",
-          boxShadow: theme.shadows[4],
-        },
-        ...sx,
-      }}
+      className={`flex flex-col rounded-lg cursor-pointer transition-all duration-200 overflow-hidden
+        w-full sm:w-96 mx-auto bg-white shadow-md
+        hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500
+        ${className}`}
     >
       {/* Top section with image on left, title and time on right */}
-      <Box sx={{ display: "flex", p: 2 }}>
+      <div className="flex p-2">
         {/* Request Image with padding and rounded corners - smaller dimensions */}
-        <Box
-          sx={{
-            width: 90,
-            height: 90,
-            flexShrink: 0,
-            backgroundColor: theme.palette.grey[100],
-            borderRadius: 3.5, // More rounded corners
-            overflow: "hidden",
-            mr: 2.5, // Increased margin right to separate from text
-            border: `1px solid ${theme.palette.grey[200]}`, // Subtle border
-            p: 0.5, // Padding inside the image container
-          }}
-        >
+        <div className="w-[90px] h-[90px] flex-shrink-0 bg-gray-100 rounded-[14px] overflow-hidden mr-2.5 border border-gray-200 p-0.5">
           {request.imageUrl ? (
-            <Box
-              component="img"
+            <img
               src={request.imageUrl}
               alt={request.title}
-              sx={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                borderRadius: 3, // Rounded image corners
-              }}
+              className="w-full h-full object-cover rounded-xl"
             />
           ) : (
             // Placeholder when no image
-            <Box
-              sx={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Typography variant="body2" color="text.secondary">
-                No Image
-              </Typography>
-            </Box>
+            <div className="w-full h-full flex items-center justify-center">
+              <p className="text-sm text-gray-500">No Image</p>
+            </div>
           )}
-        </Box>
+        </div>
         {/* Title and time to the right of image - wider area */}
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            width: "calc(100% - 110px)", // Adjust width based on image size + margin
-          }}
-        >
+        <div className="flex flex-col justify-between w-[calc(100%-110px)]">
           {/* Title - left aligned and bold */}
-          <Typography
-            variant="subtitle1"
-            component="div"
-            fontWeight="bold"
-            align="left"
-            sx={{
-              mt: 0,
-              mb: 1,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              lineHeight: 1.3, // Tighter line height
-            }}
+          <div
+            className="mt-0 mb-1 overflow-hidden text-ellipsis text-left font-bold leading-[1.3] 
+                          [-webkit-line-clamp:2] [-webkit-box-orient:vertical] [display:-webkit-box]"
           >
             {request.title}
-          </Typography>
+          </div>
           {/* Deadline */}
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <PriorityHighIcon
-              fontSize="small"
-              sx={{ color: "text.secondary", mr: 0.5 }}
-            />
-            <Typography variant="body2" color="text.secondary">
+          <div className="flex items-center">
+            <PriorityHighIcon className="w-5 h-5 text-gray-600 mr-1" />
+            <p className="text-sm text-gray-600">
               Deadline{" "}
               {request.deadline
                 ? formatRelativeTime(request.deadline)
                 : "time is unknown"}
-            </Typography>
-          </Box>
+            </p>
+          </div>
 
           {/* Time Posted */}
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <AccessTimeIcon
-              fontSize="small"
-              sx={{ color: "text.secondary", mr: 0.5 }}
-            />
-            <Typography variant="body2" color="text.secondary">
+          <div className="flex items-center">
+            <AccessTimeIcon className="w-5 h-5 text-gray-600 mr-1" />
+            <p className="text-sm text-gray-600">
               Posted{" "}
               {request.created_at
                 ? formatRelativeTime(request.created_at)
                 : "time is unknown"}
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
-      <CardContent
-        sx={{ pt: 0, px: 2, pb: 2, display: "flex", flexDirection: "column" }}
-      >
-        <Divider sx={{ mt: 1, mb: 2 }} />
-        {/* Category and Urgency */}        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-evenly",
-            alignItems: "center",
-            mb: 1.5,
-          }}
-        >{/* Single Category chip */}
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="pt-0 px-2 pb-2 flex flex-col">
+        <div className="border-t border-gray-200 mt-1 mb-2" />
+        {/* Category and Urgency */}
+        <div className="flex justify-evenly items-center mb-1.5">
+          {/* Single Category chip */}
           {request.category && (
-            <Chip
-              label={categoryMapping[request.category] || request.category}
-              size="small"
+            <button
               onClick={(e) => handleCategoryClick(request.category, e)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+                if (
+                  e.key === "Enter" ||
+                  e.key === " " ||
+                  e.key === "Spacebar"
+                ) {
                   e.preventDefault();
                   e.stopPropagation(); // Prevent card's keyboard handler
                   handleCategoryClick(request.category, e);
                 }
               }}
-              tabIndex={0}              sx={{
-                borderRadius: "16px",
-                bgcolor: theme.palette.action.hover,
-                height: "24px", // Consistent height with urgency chip
-                fontSize: "0.75rem", // Consistent font size
-                fontWeight: "medium",
-                px: 1.5, // Wider horizontal padding
-                width: "50%", // Auto width to fit text
-                
-                "&:hover": {
-                  bgcolor: theme.palette.action.selected,
-                },
-              }}
-            />
+              tabIndex={0}
+              className="rounded-2xl bg-gray-100 hover:bg-gray-200 h-6 text-xs font-medium px-3 w-1/2 transition-colors"
+            >
+              {categoryMapping[request.category] || request.category}
+            </button>
           )}
 
           {/* Urgency chip/label */}
-          <Chip
-            label={"Urgency: " + urgencyLevels[request.urgency_level].name}
-            size="small"
+          <button
             onClick={(e) => handleUrgencyClick(request.urgency_level, e)}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
@@ -234,51 +157,36 @@ const RequestCard = ({ request, onClick, sx = {} }) => {
                 handleUrgencyClick(request.urgency_level, e);
               }
             }}
-            tabIndex={0}              sx={{
-              borderRadius: "16px",
-              color: "white",
-              height: "24px", // Consistent height with category chip
-              fontSize: "0.75rem", // Consistent font size
-              fontWeight: "medium",
-              px: 1.5, // Wider horizontal padding
-              width: "50%", // Auto width to fit text
-              
-              bgcolor: (request.urgency_level && urgencyLevels[request.urgency_level]) 
-                ? urgencyLevels[request.urgency_level].color
-                : theme.palette.grey[500],
-              "&:hover": {
-                opacity: 0.9,
-              },
-              // Special styling only for "Critical" urgency
-              ...(request.urgency_level && urgencyLevels[request.urgency_level] && 
-                urgencyLevels[request.urgency_level].name === "Critical" && {
-                fontWeight: "bold",
-              }),
+            tabIndex={0}
+            className={`rounded-2xl text-white h-6 text-xs font-medium px-3 w-1/2 hover:opacity-90 transition-opacity
+              ${
+                request.urgency_level &&
+                urgencyLevels[request.urgency_level] &&
+                urgencyLevels[request.urgency_level].name === "Critical"
+                  ? "font-bold"
+                  : ""
+              }`}
+            style={{
+              backgroundColor:
+                request.urgency_level && urgencyLevels[request.urgency_level]
+                  ? urgencyLevels[request.urgency_level].color
+                  : "#9e9e9e",
             }}
-          />
-        </Box>        {/* Location if available */}
+          >
+            {"Urgency: " + urgencyLevels[request.urgency_level].name}
+          </button>
+        </div>
+        {/* Location if available */}
         {request.location && (
-          <Box sx={{ display: "flex", alignItems: "center", mt: 0.5 }}>
-            <LocationOnIcon
-              fontSize="small"
-              sx={{ color: "text.secondary", mr: 0.5 }}
-            />
-            <Typography 
-              variant="body2" 
-              color="text.secondary"
-              sx={{
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-                maxWidth: "85%" // Ensure text doesn't overflow the card
-              }}
-            >
+          <div className="flex items-center mt-0.5">
+            <LocationOnIcon className="w-5 h-5 text-gray-600 mr-1" />
+            <p className="text-sm text-gray-600 overflow-hidden text-ellipsis whitespace-nowrap max-w-[85%]">
               {extractRegionFromLocation(request.location)}
-            </Typography>
-          </Box>
+            </p>
+          </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

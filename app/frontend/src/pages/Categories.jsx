@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CategoryCardDetailed from "../components/CategoryCardDetailed";
-import * as categoryService from "../services/categoryService";
+import * as categoryService from "../features/category/services/categoryService";
 import { getCategoryImage, categoryMapping } from "../constants/categories";
 
 const Categories = () => {
@@ -46,7 +46,7 @@ const Categories = () => {
 
   return (
     <>
-      <div className="my-8">
+      <div className="">
         <h1 className="text-4xl font-normal mb-4">Categories</h1>
         <p className="text-base text-gray-600 mb-4">
           Browse available service categories and find help with your tasks

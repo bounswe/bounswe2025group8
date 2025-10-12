@@ -11,6 +11,7 @@ import AllRequests from "./pages/AllRequests.jsx";
 import Categories from "./pages/Categories.jsx";
 import RequestDetail from "./pages/RequestDetail.jsx";
 import SelectVolunteer from "./pages/SelectVolunteer.jsx";
+import ProfilePage from "./pages/ProfilePage.jsx";
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
           <Route path="/requests/:requestId" element={<RequestDetail />} />
           <Route path="/requests/:requestId/select-volunteer" element={<SelectVolunteer />} />
 
+          <Route path="/profile/:userId" element={<ProfilePage />} />
         </Route>
       </Routes>
     </BrowserRouter>

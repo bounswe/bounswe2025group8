@@ -23,7 +23,7 @@ export const categoryImages = {
   GROCERY_SHOPPING: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&w=500&q=80',
   TUTORING: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&w=500&q=80',
   HOME_REPAIR: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?auto=format&w=500&q=80',
-  MOVING_HELP: 'https://images.unsplash.com/photo-1601106690038-c5048829de1e?auto=format&w=500&q=80',
+  MOVING_HELP: 'https://play-lh.googleusercontent.com/-ZovgAk0O6pmlSKXNxhGxas5sKdSNL9gzPsjB2WMKlx_GeJ4PxGRm8dSrUGhZFaCqP0=w480-h960-rw',
   HOUSE_CLEANING: 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?auto=format&w=500&q=80',
   HOME_CLEANING: 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?auto=format&w=500&q=80',
   TECHNICAL_SUPPORT: 'https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?auto=format&w=500&q=80',
