@@ -103,17 +103,17 @@ export default function Feed() {
           </View>
           {/* Always show notifications and settings buttons */}
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <TouchableOpacity onPress={() => Alert.alert('Coming soon', 'Notifications are not available yet.')} style={{ marginRight: 12 }}>
+            <TouchableOpacity onPress={() => router.push('/notifications')} style={{ marginRight: 12 }}>
               <Ionicons name="notifications-outline" size={24} color={colors.text} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => Alert.alert('Coming soon', 'Settings are not available yet.')}>
+            <TouchableOpacity onPress={() => router.push('/settings')}>
               <Ionicons name="settings-outline" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
         </View>
 
         {/* — Search bar — */}
-        <TouchableOpacity style={[styles.searchWrapper, { borderColor: '#CCC' }]} onPress={() => Alert.alert('Coming soon', 'Search is not available yet.')}>
+        <TouchableOpacity style={[styles.searchWrapper, { borderColor: '#CCC' }]} onPress={() => router.push('/search')}>
           <Ionicons name="search-outline" size={20} color="#888" />
           <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>What are you looking for?</Text>
         </TouchableOpacity>
@@ -127,14 +127,14 @@ export default function Feed() {
             <TouchableOpacity
               key={cat.id}
               style={[styles.card, { backgroundColor: colors.card }]}
-              onPress={() => Alert.alert('Coming soon', `Category ${cat.name} is not available yet.`)}
+              onPress={() => router.push('/category/' + cat.id as any)}
             >
               <Image source={require('../assets/images/help.png')} style={styles.cardImage} />
               <Text style={[styles.cardTitle, { color: colors.text }]}> {cat.name} </Text>
             </TouchableOpacity>
           ))}
         </View>
-        <TouchableOpacity onPress={() => Alert.alert('Coming soon', 'Categories will be available shortly.')} style={styles.seeAllLink}>
+        <TouchableOpacity onPress={() => router.push('/categories')} style={styles.seeAllLink}>
           <Text style={[styles.seeAllText, { color: colors.primary }]}>See all categories</Text>
         </TouchableOpacity>
 
@@ -146,7 +146,12 @@ export default function Feed() {
           <TouchableOpacity
             key={task.id}
             style={[styles.requestRow, { backgroundColor: colors.card }]}
-            onPress={() => Alert.alert('Coming soon', 'Request details are not available yet.')}
+            onPress={() =>
+              router.push({
+                pathname: (task.creator && task.creator.id === user?.id) ? '/r-request-details' : '/v-request-details',
+                params: { id: task.id }
+              })
+            }
           >
             <Image source={require('../assets/images/help.png')} style={styles.requestImage} />
             <View style={styles.requestInfo}>
@@ -172,7 +177,7 @@ export default function Feed() {
             <Ionicons name="chevron-forward" size={20} color={colors.text} />
           </TouchableOpacity>
         ))}
-        <TouchableOpacity onPress={() => Alert.alert('Coming soon', 'Requests will be available shortly.')} style={styles.seeAllLink}>
+        <TouchableOpacity onPress={() => router.push('/requests')} style={styles.seeAllLink}>
           <Text style={[styles.seeAllText, { color: colors.primary }]}>See all requests</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -191,10 +196,10 @@ export default function Feed() {
 
         <TouchableOpacity
           style={styles.tabItem}
-          onPress={() => Alert.alert('Coming soon', 'Categories will be available shortly.')}
+          onPress={() => router.push('/categories')}
         >
           <Ionicons name="pricetag-outline" size={24} color={colors.text} />
-          <Text style={[styles.tabLabel, { color: colors.text }]}> 
+          <Text style={[styles.tabLabel, { color: colors.text }]}>
             Categories
           </Text>
         </TouchableOpacity>
@@ -202,7 +207,7 @@ export default function Feed() {
         {user ? (
           <TouchableOpacity
             style={styles.tabItem}
-            onPress={() => Alert.alert('Coming soon', 'Create Request is not available yet.')}
+            onPress={() => { router.push('/create_request'); }}
           >
             <Ionicons name="add-circle-outline" size={24} color={colors.text} />
             <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
@@ -216,7 +221,7 @@ export default function Feed() {
 
         <TouchableOpacity
           style={styles.tabItem}
-          onPress={() => Alert.alert('Coming soon', 'Requests are not available yet.')}
+          onPress={() => router.push('/requests')}
         >
           <Ionicons name="list-outline" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Requests</Text>
@@ -224,7 +229,7 @@ export default function Feed() {
 
         <TouchableOpacity
           style={styles.tabItem}
-          onPress={() => Alert.alert('Coming soon', 'Profile is not available yet.')}
+          onPress={() => router.push('/profile')}
         >
           <Ionicons name="person-outline" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Profile</Text>
