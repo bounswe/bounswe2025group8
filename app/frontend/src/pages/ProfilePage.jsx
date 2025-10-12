@@ -106,8 +106,7 @@ const ProfilePage = () => {
     surname: "Doe",
     email: "john.doe@example.com",
     profilePicture: "https://randomuser.me/api/portraits/men/32.jpg",
-    rating: 4.5,
-    reviewCount: 12,
+    // rating will be calculated from reviews
     phone: "+90 555 123 4567",
     bio: "Experienced volunteer helping with various community tasks. Always happy to help neighbors!",
   };
@@ -156,9 +155,9 @@ const ProfilePage = () => {
           name: "David Miller",
           profilePicture: null,
         },
-        score: 4,
+        score: 3,
         comment:
-          "Quick response and very professional. Helped with transportation needs efficiently.",
+          "Good help, but was a bit late. Task was completed successfully though.",
         timestamp: "2025-10-03T11:20:00Z",
         task_title: "Transportation Help",
       },
@@ -174,11 +173,23 @@ const ProfilePage = () => {
         timestamp: "2025-09-28T15:45:00Z",
         task_title: "Medical Companion",
       },
+      {
+        id: 6,
+        reviewer: {
+          name: "Mike Thompson",
+          profilePicture: null,
+        },
+        score: 4,
+        comment:
+          "Reliable and helpful. Good communication throughout the process.",
+        timestamp: "2025-09-25T13:30:00Z",
+        task_title: "Pet Care Assistance",
+      },
     ],
     pagination: {
       current_page: 1,
       total_pages: 1,
-      total_reviews: 5,
+      total_reviews: 6,
     },
   };
 
@@ -470,13 +481,41 @@ const ProfilePage = () => {
     console.warn("Unknown structure for requests:", requests);
     return [];
   };
+  // Calculate average rating from reviews
+  const calculateAverageRating = (reviewsData) => {
+    if (
+      !reviewsData ||
+      !reviewsData.reviews ||
+      reviewsData.reviews.length === 0
+    ) {
+      return 0;
+    }
+
+    const totalScore = reviewsData.reviews.reduce((sum, review) => {
+      // Support both 'score' (mock data) and 'rating' (backend data) fields
+      const reviewRating = review.score || review.rating || 0;
+      return sum + reviewRating;
+    }, 0);
+
+    const average = totalScore / reviewsData.reviews.length;
+    return Number(average.toFixed(1));
+  };
+
   // Use mock data as fallback when backend data is unavailable (similar to AllRequests.jsx pattern)
   // More flexible check: use backend data if user exists and has name, otherwise use mock
-  const displayUser = user && user.name ? user : mockUser;
+  const baseUser = user && user.name ? user : mockUser;
   const displayReviews =
     reviews && reviews.reviews && reviews.reviews.length > 0
       ? reviews
       : mockReviews;
+
+  // Create displayUser with calculated rating from reviews
+  const calculatedRating = calculateAverageRating(displayReviews);
+  const displayUser = {
+    ...baseUser,
+    rating: calculatedRating,
+    reviewCount: displayReviews.reviews ? displayReviews.reviews.length : 0,
+  };
 
   // Debug logs (similar to AllRequests.jsx)
   console.log("ProfilePage Component State:", {
@@ -485,10 +524,12 @@ const ProfilePage = () => {
     createdRequests,
     volunteeredRequests,
     badges,
-    usingMockUser: displayUser === mockUser,
+    usingMockUser: baseUser === mockUser,
     usingMockReviews: displayReviews === mockReviews,
     displayUser: displayUser, // Show what displayUser contains
     userHasName: user && user.name, // Show if user has name property
+    calculatedRating: calculatedRating, // Show calculated rating
+    reviewCount: displayReviews.reviews ? displayReviews.reviews.length : 0,
   });
 
   // Use mock data for requests if backend data is empty (for testing)
@@ -502,20 +543,43 @@ const ProfilePage = () => {
   const requestsToUse =
     backendRequests.length > 0 ? backendRequests : mockRequestsToUse;
 
+  // Debug log for requests
+  console.log("Requests Debug:", {
+    roleTab,
+    requestsTab,
+    backendRequestsLength: backendRequests.length,
+    mockRequestsToUse: mockRequestsToUse.length,
+    requestsToUse: requestsToUse.length,
+    usingMockData: backendRequests.length === 0,
+  });
+
   // Filter requests based on active/past tab
-  const activeRequests = requestsToUse.filter((request) =>
-    requestsTab === 0
-      ? request.status === "ACTIVE" ||
-        request.status === "OPEN" ||
-        request.status === "IN_PROGRESS"
-      : false
+  const activeRequests = requestsToUse.filter(
+    (request) =>
+      request.status === "ACTIVE" ||
+      request.status === "OPEN" ||
+      request.status === "IN_PROGRESS"
   );
 
-  const pastRequests = requestsToUse.filter((request) =>
-    requestsTab === 1
-      ? request.status === "COMPLETED" || request.status === "CLOSED"
-      : false
+  const pastRequests = requestsToUse.filter(
+    (request) => request.status === "COMPLETED" || request.status === "CLOSED"
   );
+
+  // Debug filtered requests
+  console.log("Filtered Requests Debug:", {
+    activeRequestsCount: activeRequests.length,
+    pastRequestsCount: pastRequests.length,
+    activeRequestsStatuses: activeRequests.map((r) => ({
+      id: r.id,
+      status: r.status,
+      title: r.title,
+    })),
+    pastRequestsStatuses: pastRequests.map((r) => ({
+      id: r.id,
+      status: r.status,
+      title: r.title,
+    })),
+  });
 
   // Get earned and in-progress badges
   const badgesToUse = badges.length > 0 ? badges : mockBadges;
