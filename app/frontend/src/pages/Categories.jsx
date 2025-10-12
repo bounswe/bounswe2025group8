@@ -46,7 +46,7 @@ const Categories = () => {
 
   return (
     <>
-      <div className="my-8">
+      <div className="">
         <h1 className="text-4xl font-normal mb-4">Categories</h1>
         <p className="text-base text-gray-600 mb-4">
           Browse available service categories and find help with your tasks
