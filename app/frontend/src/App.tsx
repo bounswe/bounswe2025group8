@@ -8,7 +8,8 @@ import Test from "./pages/Test.tsx";
 import MainLayout from "./layouts/MainLayout.jsx";
 import CreateRequestPage from "./pages/CreateRequestPage.jsx";
 import AllRequests from "./pages/AllRequests.jsx";
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import Categories from "./pages/Categories.jsx";
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/test" element={<Test />} />
           <Route path="/create-request" element={<CreateRequestPage />} />
+          <Route path="/categories" element={<Categories />} />
           <Route path="/requests" element={<AllRequests />} />
         </Route>
       </Routes>

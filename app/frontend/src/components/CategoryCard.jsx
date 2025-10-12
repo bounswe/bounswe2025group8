@@ -1,5 +1,4 @@
-import React from 'react';
-import { Card, CardContent, CardMedia, Typography, Box, useTheme } from '@mui/material';
+import React from "react";
 
 /**
  * CategoryCard component that displays a category with an image
@@ -7,116 +6,46 @@ import { Card, CardContent, CardMedia, Typography, Box, useTheme } from '@mui/ma
  * @param {string} props.title - The title of the category
  * @param {string} props.image - The URL of the image to display
  * @param {Function} props.onClick - Function called when card is clicked
- * @param {Object} props.sx - Additional MUI sx styles to apply
+ * @param {string} props.className - Additional CSS classes to apply
  */
-const CategoryCard = ({ title, image, onClick, sx = {} }) => {
-  const theme = useTheme();
-
+const CategoryCard = ({ title, image, onClick, className = "" }) => {
   return (
-    <Card
-      elevation={2}
+    <div
       onClick={onClick}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+        if (e.key === "Enter" || e.key === " ") {
           onClick();
           e.preventDefault(); // Prevent page scroll on space
         }
       }}
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        borderRadius: 3, // Slightly reduced radius (12px) to match design
-        cursor: 'pointer',
-        transition: 'all 0.3s ease',
-        overflow: 'hidden',
-        // Fixed dimensions that adjust responsively
-        width: {
-          xs: '100%', // Full width on mobile
-          sm: '200px', // Fixed width on tablet and up
-        },
-        height: '270px', // Increased height to accommodate padding
-        backgroundColor: 'white',
-        mx: 'auto', // Center the card horizontally
-        '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: theme.shadows[8],
-        },
-        '&:focus': {
-          // Add focus styles
-          outline: `2px solid ${theme.palette.primary.main}`,
-          outlineOffset: '2px',
-        },
-        ...sx,
-      }}
+      className={`flex flex-col rounded-xl cursor-pointer transition-all duration-300 ease-out overflow-hidden
+        w-full sm:w-52 h-[270px] bg-white mx-auto shadow-md
+        hover:-translate-y-1 hover:shadow-2xl
+        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+        ${className}`}
     >
-      {/* Title at top with proper padding and styling */}{' '}
-      <CardContent
-        sx={{
-          p: 1.5,
-          pt: 2,
-          pb: 0,
-          pl: 3,
-          height: 'auto', // Remove fixed height to eliminate gaps
-          display: 'flex',
-          alignItems: 'flex-start', // Align to top instead of center
-          justifyContent: 'flex-start', // Left align content
-        }}
-      >
-        {' '}
-        <Typography
-          variant="h6"
-          component="div"
-          fontWeight="bold"
-          align="left"
-          sx={{
-            fontSize: '1.1rem',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            mt: 2,
-            mb: 1,
-            lineHeight: 1.3, // Tighter line height
-          }}
+      {/* Title at top with proper padding and styling */}
+      <div className="p-6 pt-8 pb-0 pl-12 h-auto flex items-start justify-start">
+        <h6
+          className="text-lg font-bold text-left overflow-hidden text-ellipsis 
+            line-clamp-2 mt-8 mb-4 leading-tight"
         >
           {title}
-        </Typography>
-      </CardContent>{' '}
+        </h6>
+      </div>
       {/* Image below title with proper sizing and rounded corners */}
-      <Box
-        sx={{
-          px: 3, // Add horizontal padding
-          pb: 3, // Add bottom padding
-          pt: 1, // Top padding
-          flexGrow: 1,
-          display: 'flex',
-        }}
-      >
-        <Box
-          sx={{
-            width: '100%',
-            height: '100%',
-            borderRadius: 3, // Add rounded corners
-            overflow: 'hidden',
-            flexGrow: 1,
-          }}
-        >
-          <CardMedia
-            component="img"
-            image={image}
+      <div className="px-12 pb-12 pt-4 flex-grow flex">
+        <div className="w-full h-full rounded-xl overflow-hidden flex-grow">
+          <img
+            src={image}
             alt={`${title}`}
-            sx={{
-              height: '100%',
-              width: '100%',
-              objectFit: 'cover',
-            }}
-          />{' '}
-        </Box>
-      </Box>
-    </Card>
+            className="h-full w-full object-cover"
+          />
+        </div>
+      </div>
+    </div>
   );
 };
 
