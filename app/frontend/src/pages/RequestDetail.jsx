@@ -25,9 +25,12 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
 import { getTaskById as getRequestById } from '../features/request/services/requestService';
+import { updateTask } from '../features/request/services/createRequestService';
 import { useAppSelector } from '../store/hooks';
 import { selectCurrentUser, selectIsAuthenticated } from '../features/authentication/store/authSlice';
 import Sidebar from '../components/Sidebar';
+import EditRequestModal from '../components/EditRequestModal';
+import { urgencyLevels } from '../constants/urgency_level';
 
 
 
@@ -45,6 +48,9 @@ const RequestDetail = () => {
   const [request, setRequest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Edit dialog state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   
   // Fetch request details
   useEffect(() => {
@@ -85,12 +91,6 @@ const RequestDetail = () => {
     }
   }, [requestId]);
 
-  // Urgency level mapping
-  const getUrgencyLevel = (level) => {
-    if (level >= 3) return { label: 'High', color: '#f44336' };
-    if (level >= 2) return { label: 'Medium', color: '#ff9800' };
-    return { label: 'Low', color: '#4caf50' };
-  };
 
   // Format date
   const formatDate = (dateString) => {
@@ -198,7 +198,7 @@ const RequestDetail = () => {
     );
   }
 
-  const urgency = getUrgencyLevel(request.urgency_level);
+  const urgency = urgencyLevels[request.urgency_level];
 
   // Permission checks
   const isTaskCreator = currentUser && request && currentUser.id === request.creator?.id;
@@ -209,9 +209,7 @@ const RequestDetail = () => {
   // Button handlers
   const handleEditTask = () => {
     if (canEdit) {
-      console.log('Edit task:', request.id);
-      // TODO: Navigate to edit page or open edit modal
-      navigate(`/requests/${request.id}/edit`);
+      setEditDialogOpen(true);
     }
   };
 
@@ -223,6 +221,18 @@ const RequestDetail = () => {
         // TODO: Implement delete API call
         console.log('Deleting task...');
       }
+    }
+  };
+
+  const handleEditSubmit = async (payload) => {
+    try {
+      const response = await updateTask(request.id, payload);
+      const updatedTask = response?.data ?? response;
+      setRequest((prev) => ({ ...prev, ...updatedTask }));
+      setEditDialogOpen(false);
+    } catch (err) {
+      console.error('Failed to update task:', err);
+      alert(err?.response?.data?.message ?? err?.message ?? 'Failed to update task.');
     }
   };
 
@@ -270,7 +280,7 @@ const RequestDetail = () => {
               }}
             />
             <Chip 
-              label={`${urgency.label} Urgency`}
+              label={`${urgency.name} Urgency`}
               sx={{ 
                 bgcolor: urgency.color,
                 color: 'white',
@@ -478,6 +488,12 @@ const RequestDetail = () => {
           </Grid>
         </Card>
       </Box>
+      <EditRequestModal
+        open={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
+        request={request}
+        onSubmit={handleEditSubmit}
+      />
     </Box>
   );
 };
