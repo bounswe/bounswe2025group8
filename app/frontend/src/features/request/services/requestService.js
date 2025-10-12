@@ -163,8 +163,228 @@ export const getMockTaskById = (taskId) => {
   return mockTasks[taskId] || null;
 };
 
+/**
+ * Get volunteers for a specific task
+ *
+ * @param {string|number} taskId - ID of the task
+ * @returns {Promise} Promise that resolves to volunteers array
+ */
+export const getTaskVolunteers = async (taskId) => {
+  try {
+    console.log(`Fetching volunteers for task ${taskId}`);
+    const response = await api.get(`/tasks/${taskId}/volunteers/`);
+    console.log('Volunteers API response:', response.data);
+    
+    // Handle different response formats
+    let volunteers;
+    if (response.data.data?.volunteers) {
+      volunteers = response.data.data.volunteers;
+    } else if (response.data.volunteers) {
+      volunteers = response.data.volunteers;
+    } else if (Array.isArray(response.data.data)) {
+      volunteers = response.data.data;
+    } else if (Array.isArray(response.data)) {
+      volunteers = response.data;
+    } else {
+      volunteers = [];
+    }
+    
+    console.log('Final volunteers data:', volunteers);
+    return volunteers;
+  } catch (error) {
+    console.error(`Error fetching volunteers for task ${taskId}:`, error);
+    console.error('Error response:', error.response?.data);
+    throw error;
+  }
+};
+
+/**
+ * Volunteer for a task
+ *
+ * @param {string|number} taskId - ID of the task to volunteer for
+ * @returns {Promise} Promise that resolves to volunteer result
+ */
+export const volunteerForTask = async (taskId) => {
+  try {
+    console.log(`Volunteering for task ${taskId}`);
+    const response = await api.post(`/volunteers/`, {
+      task_id: taskId
+    });
+    console.log('Volunteer API response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error volunteering for task ${taskId}:`, error);
+    console.error('Error response:', error.response?.data);
+    throw error;
+  }
+};
+
+/**
+ * Check if current user has volunteered for a task
+ * Uses a simple approach: try to get all volunteers and filter by task
+ *
+ * @param {string|number} taskId - ID of the task
+ * @returns {Promise} Promise that resolves to volunteer record or null
+ */
+export const checkUserVolunteerStatus = async (taskId) => {
+  try {
+    console.log(`Checking volunteer status for task ${taskId}`);
+    
+    // Get all volunteers for the current user
+    const response = await api.get(`/volunteers/`);
+    console.log('All volunteers API response:', response.data);
+    
+    // Handle different response formats
+    let volunteers;
+    if (response.data.data?.volunteers) {
+      volunteers = response.data.data.volunteers;
+    } else if (response.data.volunteers) {
+      volunteers = response.data.volunteers;
+    } else if (Array.isArray(response.data.data)) {
+      volunteers = response.data.data;
+    } else if (Array.isArray(response.data)) {
+      volunteers = response.data;
+    } else {
+      volunteers = [];
+    }
+    
+    console.log('All volunteers:', volunteers);
+    
+    // Filter by task ID to find if user has volunteered for this specific task
+    const volunteerRecord = volunteers.find(volunteer => {
+      // Check both possible field names for task ID
+      const volunteerTaskId = volunteer.task?.id || volunteer.task_id || volunteer.task;
+      console.log('Comparing task IDs:', volunteerTaskId, 'with', taskId);
+      return volunteerTaskId === parseInt(taskId);
+    });
+    
+    console.log('Found volunteer record for task:', volunteerRecord);
+    return volunteerRecord || null;
+    
+  } catch (error) {
+    console.error(`Error checking volunteer status for task ${taskId}:`, error);
+    console.error('Error response:', error.response?.data);
+    // Return null if there's an error (user hasn't volunteered)
+    return null;
+  }
+};
+
+/**
+ * Withdraw from volunteering for a task
+ *
+ * @param {string|number} volunteerId - ID of the volunteer record
+ * @returns {Promise} Promise that resolves to withdrawal result
+ */
+export const withdrawFromTask = async (volunteerId) => {
+  try {
+    console.log(`Withdrawing from volunteer record ${volunteerId}`);
+    const response = await api.delete(`/volunteers/${volunteerId}/`);
+    console.log('Withdraw API response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error withdrawing from task:`, error);
+    console.error('Error response:', error.response?.data);
+    throw error;
+  }
+};
+
+/**
+ * Assign volunteers to a task
+ *
+ * @param {string|number} taskId - ID of the task
+ * @param {Array} volunteerIds - Array of volunteer IDs to assign
+ * @returns {Promise} Promise that resolves to assignment result
+ */
+export const assignVolunteers = async (taskId, volunteerIds) => {
+  try {
+    console.log(`Assigning volunteers to task ${taskId}:`, volunteerIds);
+    const response = await api.post(`/tasks/${taskId}/volunteers/`, {
+      volunteer_ids: volunteerIds
+    });
+    console.log('Assign volunteers API response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error assigning volunteers to task ${taskId}:`, error);
+    console.error('Error response:', error.response?.data);
+    throw error;
+  }
+};
+
+/**
+ * Mock volunteers data for development
+ */
+export const getMockTaskVolunteers = (taskId) => {
+  const mockVolunteers = [
+    {
+      id: 1,
+      name: 'Anthony',
+      surname: 'Moore',
+      rating: 4.8,
+      reviewCount: 9,
+      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
+      skills: ['Cleaning', 'Organization'],
+      completedTasks: 15,
+      user: {
+        id: 1,
+        name: 'Anthony',
+        surname: 'Moore',
+        email: 'anthony.moore@email.com',
+        phone_number: '+1 234 567 8901',
+        rating: 4.8,
+        completed_task_count: 15
+      }
+    },
+    {
+      id: 2,
+      name: 'Elizabeth',
+      surname: 'Bailey',
+      rating: 4.4,
+      reviewCount: 5,
+      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
+      skills: ['Housekeeping', 'Time Management'],
+      completedTasks: 8,
+      user: {
+        id: 2,
+        name: 'Elizabeth',
+        surname: 'Bailey',
+        email: 'elizabeth.bailey@email.com',
+        phone_number: '+1 234 567 8902',
+        rating: 4.4,
+        completed_task_count: 8
+      }
+    },
+    {
+      id: 3,
+      name: 'Ashley',
+      surname: 'Robinson',
+      rating: 4.1,
+      reviewCount: 7,
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+      skills: ['Cleaning', 'Attention to Detail'],
+      completedTasks: 12,
+      user: {
+        id: 3,
+        name: 'Ashley',
+        surname: 'Robinson',
+        email: 'ashley.robinson@email.com',
+        phone_number: '+1 234 567 8903',
+        rating: 4.1,
+        completed_task_count: 12
+      }
+    }
+  ];
+  
+  return mockVolunteers;
+};
+
 export default {
   getTasks,
   getPopularTasks,
   getTaskById,
+  getTaskVolunteers,
+  volunteerForTask,
+  checkUserVolunteerStatus,
+  withdrawFromTask,
+  assignVolunteers,
+  getMockTaskVolunteers,
 };
