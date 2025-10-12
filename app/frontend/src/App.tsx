@@ -9,6 +9,7 @@ import MainLayout from "./layouts/MainLayout.jsx";
 import CreateRequestPage from "./pages/CreateRequestPage.jsx";
 import AllRequests from "./pages/AllRequests.jsx";
 import Categories from "./pages/Categories.jsx";
+import ProfilePage from "./pages/ProfilePage.jsx";
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
           <Route path="/create-request" element={<CreateRequestPage />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/requests" element={<AllRequests />} />
+          <Route path="/profile/:userId" element={<ProfilePage />} />
         </Route>
       </Routes>
     </BrowserRouter>
