@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Typography, 
   Box, 
@@ -7,243 +7,478 @@ import {
   Button, 
   Divider, 
   Avatar,
-  useTheme
+  useTheme,
+  CircularProgress,
+  Grid,
+  Card,
+  CardContent,
+  IconButton
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import PriorityHighIcon from '@mui/icons-material/PriorityHigh';
 import PersonIcon from '@mui/icons-material/Person';
+import PhoneIcon from '@mui/icons-material/Phone';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivism';
+import { getTaskById as getRequestById } from '../features/request/services/requestService';
+import { useAppSelector } from '../store/hooks';
+import { selectCurrentUser, selectIsAuthenticated } from '../features/authentication/store/authSlice';
+import Sidebar from '../components/Sidebar';
 
-// This would come from an API in a real application
-const getRequestById = (id) => {
-  // Sample data - in a real app, this would fetch from an API
-  const sampleRequests = [
-    {
-      id: '1',
-      title: 'Help me to see a doctor',
-      categories: ['Healthcare'],
-      urgency: 'High',
-      distance: '2 km away',
-      postedTime: '3 hours ago',
-      description: 'I need someone to accompany me to a doctor appointment tomorrow. I have difficulty walking and need assistance with transportation and getting around the hospital.',
-      location: '123 Main Street',
-      requesterName: 'Alex Johnson',
-      requesterAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-      imageUrl: 'https://images.unsplash.com/photo-1631815588090-d1bcbe9b4b22?q=80&w=1632&auto=format&fit=crop'
-    },
-    {
-      id: '2',
-      title: 'Need help moving furniture to my new apartment',
-      categories: ['Moving Help', 'Heavy Lifting'],
-      urgency: 'Medium',
-      distance: '1.5 km away',
-      postedTime: '5 hours ago',
-      description: 'I\'m moving to a new apartment and need help with moving a couch, bed, and some boxes. The building has an elevator, so it shouldn\'t be too difficult.',
-      location: '456 Oak Avenue',
-      requesterName: 'Jamie Smith',
-      requesterAvatar: 'https://randomuser.me/api/portraits/women/45.jpg',
-      imageUrl: 'https://images.unsplash.com/photo-1600566752355-35792bedcfea?q=80&w=1374&auto=format&fit=crop'
-    },
-    {
-      id: '3',
-      title: 'Looking for someone to help clean my house before guests arrive',
-      categories: ['House Cleaning', 'Home Maintenance'],
-      urgency: 'High',
-      distance: '0.8 km away',
-      postedTime: '2 hours ago',
-      description: 'I have family coming over this weekend and need help cleaning my 2-bedroom apartment. Tasks include vacuuming, dusting, bathroom cleaning, and kitchen cleaning.',
-      location: '789 Pine Street',
-      requesterName: 'Robin Taylor',
-      requesterAvatar: 'https://randomuser.me/api/portraits/women/22.jpg',
-    }
-  ];
 
-  return sampleRequests.find(request => request.id === id) || null;
-};
+
 
 const RequestDetail = () => {
   const { requestId } = useParams();
   const theme = useTheme();
   const navigate = useNavigate();
   
-  // Get request details
-  const request = getRequestById(requestId);
+  // Authentication state
+  const currentUser = useAppSelector(selectCurrentUser);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
   
-  // Color mapping for urgency levels
-  const urgencyColors = {
-    'High': theme.palette.error.main,
-    'Medium': theme.palette.warning.main,
-    'Low': theme.palette.info.main
+  // State for request data, loading, and error
+  const [request, setRequest] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Fetch request details
+  useEffect(() => {
+    const fetchRequest = async () => {
+      try {
+        console.log('Fetching request with ID:', requestId);
+        setLoading(true);
+        setError(null);
+        const requestData = await getRequestById(requestId);
+        console.log('Received request data:', requestData);
+        setRequest(requestData);
+      } catch (err) {
+        console.error('Error fetching request:', err);
+        console.error('Error details:', err.response?.data);
+        
+        // Fallback to mock data for development
+        console.log('Falling back to mock data...');
+        try {
+          const { getMockTaskById } = await import('../features/request/services/requestService');
+          const mockData = getMockTaskById(requestId);
+          if (mockData) {
+            console.log('Using mock data:', mockData);
+            setRequest(mockData);
+          } else {
+            setError(err.response?.data?.message || err.message || 'Failed to fetch request details');
+          }
+        } catch (mockError) {
+          console.error('Mock data fallback failed:', mockError);
+          setError(err.response?.data?.message || err.message || 'Failed to fetch request details');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (requestId) {
+      fetchRequest();
+    }
+  }, [requestId]);
+
+  // Urgency level mapping
+  const getUrgencyLevel = (level) => {
+    if (level >= 3) return { label: 'High', color: '#f44336' };
+    if (level >= 2) return { label: 'Medium', color: '#ff9800' };
+    return { label: 'Low', color: '#4caf50' };
   };
-  
-  if (!request) {
+
+  // Format date
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  };
+
+  // Format time
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
+  };
+
+  // Get time ago
+  const getTimeAgo = (dateString) => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours === 1) return '1 hour ago';
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays === 1) return '1 day ago';
+    return `${diffInDays} days ago`;
+  };
+
+  // Loading state
+  if (loading) {
     return (
-      <>
-        <Box sx={{ my: 4, textAlign: 'center' }}>
-          <Typography variant="h5">Request not found</Typography>
-          <Button 
-            startIcon={<ArrowBackIcon />}
-            onClick={() => navigate('/requests')}
-            sx={{ mt: 2 }}
-          >
-            Back to Requests
-          </Button>
-        </Box>
-      </>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '50vh',
+        flexDirection: 'column',
+        gap: 2
+      }}>
+        <CircularProgress />
+        <Typography variant="body1" color="text.secondary">
+          Loading request details...
+        </Typography>
+      </Box>
     );
   }
 
-  const handleCategoryClick = (category) => {
-    navigate(`/categories/${category.toLowerCase().replace(' ', '-')}`);
+  // Error state
+  if (error) {
+    return (
+      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f5f5f5' }}>
+        <Sidebar />
+        <Box sx={{ flexGrow: 1, p: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Box sx={{ textAlign: 'center', maxWidth: 400 }}>
+            <Typography variant="h5" color="error" gutterBottom>
+              Error loading request
+            </Typography>
+            <Typography variant="body1" color="text.secondary" paragraph>
+              {error}
+            </Typography>
+            <Button 
+              startIcon={<ArrowBackIcon />}
+              onClick={() => navigate('/requests')}
+              sx={{ mt: 2 }}
+            >
+              Back to Requests
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  // Request not found
+  if (!request) {
+    return (
+      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f5f5f5' }}>
+        <Sidebar />
+        <Box sx={{ flexGrow: 1, p: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Box sx={{ textAlign: 'center', maxWidth: 400 }}>
+            <Typography variant="h5" gutterBottom>
+              Request not found
+            </Typography>
+            <Typography variant="body1" color="text.secondary" paragraph>
+              The request you're looking for doesn't exist or has been removed.
+            </Typography>
+            <Button 
+              startIcon={<ArrowBackIcon />}
+              onClick={() => navigate('/requests')}
+              sx={{ mt: 2 }}
+            >
+              Back to Requests
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  const urgency = getUrgencyLevel(request.urgency_level);
+
+  // Permission checks
+  const isTaskCreator = currentUser && request && currentUser.id === request.creator?.id;
+  const canEdit = isAuthenticated && isTaskCreator;
+  const canDelete = isAuthenticated && isTaskCreator;
+  const canVolunteer = isAuthenticated && !isTaskCreator && request?.status === 'POSTED';
+
+  // Button handlers
+  const handleEditTask = () => {
+    if (canEdit) {
+      console.log('Edit task:', request.id);
+      // TODO: Navigate to edit page or open edit modal
+      navigate(`/requests/${request.id}/edit`);
+    }
+  };
+
+  const handleDeleteTask = () => {
+    if (canDelete) {
+      console.log('Delete task:', request.id);
+      // TODO: Show confirmation dialog and delete task
+      if (window.confirm('Are you sure you want to delete this task?')) {
+        // TODO: Implement delete API call
+        console.log('Deleting task...');
+      }
+    }
+  };
+
+  const handleVolunteer = () => {
+    if (canVolunteer) {
+      console.log('Volunteer for task:', request.id);
+      // TODO: Implement volunteer API call
+      console.log('Volunteering for task...');
+    }
+  };
+
+  const handleSelectVolunteer = () => {
+    if (canEdit) {
+      console.log('Select volunteer for task:', request.id);
+      // TODO: Navigate to volunteer selection page or open modal
+      console.log('Opening volunteer selection...');
+    }
   };
 
   return (
-    <>
-      <Button 
-        startIcon={<ArrowBackIcon />} 
-        onClick={() => navigate('/requests')}
-        sx={{ mb: 3 }}
-      >
-        Back to Requests
-      </Button>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f5f5f5' }}>
+      {/* Sidebar */}
+      <Sidebar />
       
-      <Box sx={{ maxWidth: 800, mx: 'auto' }}>
-        <Paper sx={{ p: 0, overflow: 'hidden', mb: 4, borderRadius: 2 }}>
-          {/* Request Image (if available) */}
-          {request.imageUrl && (
-            <Box 
-              component="img"
-              src={request.imageUrl}
-              alt={request.title}
+      {/* Main Content */}
+      <Box sx={{ flexGrow: 1, p: 3 }}>
+        {/* Back Button and Title */}
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+          <IconButton 
+            onClick={() => navigate('/requests')}
+            sx={{ mr: 2, color: 'text.secondary' }}
+          >
+            <ArrowBackIcon />
+          </IconButton>
+          <Typography variant="h4" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
+            {request.title}
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Chip 
+              label={request.category_display}
               sx={{ 
-                width: '100%',
-                height: 250,
-                objectFit: 'cover'
+                bgcolor: '#e3f2fd', 
+                color: '#1976d2',
+                fontWeight: 'medium'
               }}
             />
-          )}
-          
-          <Box sx={{ p: 3 }}>
-            {/* Title - left aligned and bold */}
-            <Typography variant="h5" component="h1" fontWeight="bold" align="left" gutterBottom>
-              {request.title}
-            </Typography>
-              {/* Posted Time */}
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mt: 2, mb: 2 }}>            
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <AccessTimeIcon fontSize="small" sx={{ color: 'text.secondary', mr: 1 }} />
-                <Typography variant="body2" color="text.secondary">
-                  Posted {request.postedTime}
-                </Typography>
-              </Box>
-              
-              {/* Location */}
-              {request.location && (
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <LocationOnIcon fontSize="small" sx={{ color: 'text.secondary', mr: 1 }} />
-                  <Typography variant="body2" color="text.secondary">
-                    {request.location}
-                  </Typography>
-                </Box>
-              )}
-              
-              {/* Urgency indicator */}
-              {request.urgency === 'High' && (
-                <Box 
-                  sx={{ 
-                    display: 'flex',
-                    alignItems: 'center',
-                    px: 1.5,
-                    py: 0.5,
-                    borderRadius: '16px',
-                    bgcolor: urgencyColors[request.urgency],
-                    color: 'white',
-                    fontSize: '0.75rem',
-                    fontWeight: 'medium'
-                  }}
-                >
-                  <PriorityHighIcon sx={{ fontSize: '1rem', mr: 0.5 }} />
-                  High Urgency
-                </Box>
-              )}
-            </Box>
-            
-            <Divider sx={{ my: 2 }} />
-            
-            {/* Description */}
-            <Typography variant="body1" paragraph>
-              {request.description}
-            </Typography>
-            
-            {/* Categories */}
-            <Box sx={{ mt: 3 }}>
-              <Typography variant="subtitle2" gutterBottom>
-                Categories
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
-                {request.categories.map((category) => (
-                  <Chip
-                    key={category}
-                    label={category}
-                    onClick={() => handleCategoryClick(category)}
-                    sx={{ 
-                      borderRadius: '16px',
-                      bgcolor: theme.palette.action.hover,
-                      '&:hover': {
-                        bgcolor: theme.palette.action.selected,
-                      }
-                    }}
-                  />
-                ))}
-              </Box>
-            </Box>
+            <Chip 
+              label={`${urgency.label} Urgency`}
+              sx={{ 
+                bgcolor: urgency.color,
+                color: 'white',
+                fontWeight: 'medium'
+              }}
+            />
+            <IconButton>
+              <MoreVertIcon />
+            </IconButton>
           </Box>
-        </Paper>
-        
-        {/* Requester Info */}
-        <Paper sx={{ p: 3, borderRadius: 2, mb: 4 }}>
-          <Typography variant="subtitle1" gutterBottom fontWeight="500">
-            Request Posted By
-          </Typography>
-          
-          <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-            {request.requesterAvatar ? (
-              <Avatar 
-                src={request.requesterAvatar} 
-                alt={request.requesterName}
-                sx={{ width: 50, height: 50, mr: 2 }}
+        </Box>
+
+        {/* Main Content Card */}
+        <Card sx={{ borderRadius: 2, overflow: 'hidden', mb: 3 }}>
+          <Grid container>
+            {/* Left Column - Image */}
+            <Grid item xs={12} md={6}>
+              <Box
+                component="img"
+                src={request.photos?.[0]?.image || request.photos?.[0]?.photo_url || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=500&h=500&fit=crop'}
+                alt={request.title}
+                sx={{
+                  width: '100%',
+                  height: 400,
+                  objectFit: 'cover'
+                }}
               />
-            ) : (
-              <Avatar sx={{ bgcolor: theme.palette.primary.main, mr: 2, width: 50, height: 50 }}>
-                <PersonIcon />
-              </Avatar>
-            )}
+            </Grid>
             
-            <Typography variant="body1">
-              {request.requesterName}
-            </Typography>
-          </Box>
-        </Paper>
-        
-        {/* Action Button */}
-        <Button 
-          variant="contained" 
-          size="large" 
-          fullWidth 
-          sx={{ 
-            py: 1.5,
-            textTransform: 'none',
-            fontWeight: 500,
-            fontSize: '1.1rem',
-            mb: 4
-          }}
-        >
-          Offer Help
-        </Button>
+            {/* Right Column - Details */}
+            <Grid item xs={12} md={6}>
+              <CardContent sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
+                {/* Requester Info */}
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                  <Avatar 
+                    sx={{ 
+                      width: 50, 
+                      height: 50, 
+                      mr: 2,
+                      bgcolor: theme.palette.primary.main
+                    }}
+                  >
+                    {request.creator.name.charAt(0)}
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h6" fontWeight="medium">
+                      {request.creator.name} {request.creator.surname}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {getTimeAgo(request.created_at)}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Description */}
+                <Typography variant="body1" paragraph sx={{ flexGrow: 1 }}>
+                  {request.description}
+                </Typography>
+
+                {/* Details */}
+                <Box sx={{ mb: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <AccessTimeIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                    <Typography variant="body2">
+                      {formatDate(request.deadline)} - {formatTime(request.deadline)}
+                    </Typography>
+                  </Box>
+                  
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <LocationOnIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                    <Typography variant="body2">
+                      {request.location}
+                    </Typography>
+                  </Box>
+                  
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <PersonIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                    <Typography variant="body2">
+                      {request.volunteer_number} person{request.volunteer_number > 1 ? 's' : ''} required
+                    </Typography>
+                  </Box>
+                  
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <PhoneIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                    <Typography variant="body2">
+                      {request.creator.phone_number}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Status */}
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  {request.status === 'POSTED' ? 'Waiting for Volunteers' : 
+                   request.status === 'ASSIGNED' ? 'Task Assigned' :
+                   request.status === 'IN_PROGRESS' ? 'In Progress' :
+                   request.status === 'COMPLETED' ? 'Completed' : 'Unknown Status'}
+                </Typography>
+
+                {/* Action Buttons */}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {/* Primary Action Button */}
+                  {canEdit && request.status === 'POSTED' && (
+                    <Button 
+                      variant="contained" 
+                      size="large"
+                      onClick={handleSelectVolunteer}
+                      sx={{ 
+                        py: 1.5,
+                        textTransform: 'none',
+                        fontWeight: 500,
+                        fontSize: '1rem',
+                        bgcolor: '#7c4dff',
+                        '&:hover': {
+                          bgcolor: '#6a3de8'
+                        }
+                      }}
+                    >
+                      Select Volunteer
+                    </Button>
+                  )}
+
+                  {canVolunteer && (
+                    <Button 
+                      variant="contained" 
+                      size="large"
+                      startIcon={<VolunteerActivismIcon />}
+                      onClick={handleVolunteer}
+                      sx={{ 
+                        py: 1.5,
+                        textTransform: 'none',
+                        fontWeight: 500,
+                        fontSize: '1rem',
+                        bgcolor: '#4caf50',
+                        '&:hover': {
+                          bgcolor: '#45a049'
+                        }
+                      }}
+                    >
+                      Volunteer for this Task
+                    </Button>
+                  )}
+
+                  {!isAuthenticated && (
+                    <Button 
+                      variant="contained" 
+                      size="large"
+                      onClick={() => navigate('/login')}
+                      sx={{ 
+                        py: 1.5,
+                        textTransform: 'none',
+                        fontWeight: 500,
+                        fontSize: '1rem',
+                        bgcolor: '#2196f3',
+                        '&:hover': {
+                          bgcolor: '#1976d2'
+                        }
+                      }}
+                    >
+                      Login to Volunteer
+                    </Button>
+                  )}
+                  
+                  {/* Secondary Action Buttons - Only for Task Creator */}
+                  {canEdit && (
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Button 
+                        variant="outlined"
+                        startIcon={<EditIcon />}
+                        onClick={handleEditTask}
+                        sx={{ 
+                          flex: 1,
+                          textTransform: 'none',
+                          borderColor: '#ffc107',
+                          color: '#ff8f00',
+                          '&:hover': {
+                            borderColor: '#ff8f00',
+                            bgcolor: '#fff3e0'
+                          }
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button 
+                        variant="outlined"
+                        startIcon={<DeleteIcon />}
+                        onClick={handleDeleteTask}
+                        sx={{ 
+                          flex: 1,
+                          textTransform: 'none',
+                          borderColor: '#f44336',
+                          color: '#f44336',
+                          '&:hover': {
+                            borderColor: '#d32f2f',
+                            bgcolor: '#ffebee'
+                          }
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </Box>
+                  )}
+                </Box>
+              </CardContent>
+            </Grid>
+          </Grid>
+        </Card>
       </Box>
-    </>
+    </Box>
   );
 };
 
