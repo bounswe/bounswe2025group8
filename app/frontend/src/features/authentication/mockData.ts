@@ -1,6 +1,5 @@
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import type { ApiResponse,User,RegisterRequest, LoginRequest, PasswordResetRequest, ResetPasswordRequest } from "./types";
+import type { ApiResponse, User } from "./types";
 
 // Mock Users Database
 export const mockUsers: User[] = [
@@ -120,9 +119,10 @@ export const mockLoginValidationErrorResponse: ApiResponse = {
 
 // ============= LOGOUT MOCK DATA =============
 
-export const mockLogoutSuccessResponse: ApiResponse = {
+export const mockLogoutSuccessResponse: ApiResponse<{ success: true }> = {
   status: 'success',
-  message: 'Logout successful.'
+  message: 'Logout successful.',
+  data: { success: true }
 };
 
 export const mockLogoutUnauthorizedResponse: ApiResponse = {
@@ -132,9 +132,10 @@ export const mockLogoutUnauthorizedResponse: ApiResponse = {
 
 // ============= PASSWORD RESET REQUEST MOCK DATA =============
 
-export const mockPasswordResetRequestSuccessResponse: ApiResponse = {
+export const mockPasswordResetRequestSuccessResponse: ApiResponse<{ success: true }> = {
   status: 'success',
-  message: 'If your email exists in our system, you will receive a password reset link shortly.'
+  message: 'If your email exists in our system, you will receive a password reset link shortly.',
+  data: { success: true }
 };
 
 export const mockPasswordResetRequestErrorResponse: ApiResponse = {
@@ -160,9 +161,10 @@ export const mockVerifyTokenErrorResponse: ApiResponse = {
 
 // ============= RESET PASSWORD MOCK DATA =============
 
-export const mockResetPasswordSuccessResponse: ApiResponse = {
+export const mockResetPasswordSuccessResponse: ApiResponse<{ success: true }> = {
   status: 'success',
-  message: 'Password has been reset successfully. You can now log in with your new password.'
+  message: 'Password has been reset successfully. You can now log in with your new password.',
+  data: { success: true }
 };
 
 export const mockResetPasswordErrorResponse: ApiResponse = {
