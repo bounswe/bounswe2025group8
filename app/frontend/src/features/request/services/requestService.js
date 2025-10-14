@@ -181,6 +181,9 @@ export const getTaskVolunteers = async (taskId) => {
       volunteers = response.data.data.volunteers;
     } else if (response.data.volunteers) {
       volunteers = response.data.volunteers;
+    } else if (Array.isArray(response.data.results)) {
+      // DRF paginated default
+      volunteers = response.data.results;
     } else if (Array.isArray(response.data.data)) {
       volunteers = response.data.data;
     } else if (Array.isArray(response.data)) {
@@ -240,6 +243,9 @@ export const checkUserVolunteerStatus = async (taskId) => {
       volunteers = response.data.data.volunteers;
     } else if (response.data.volunteers) {
       volunteers = response.data.volunteers;
+    } else if (Array.isArray(response.data.results)) {
+      // DRF paginated default: { count, next, previous, results: [...] }
+      volunteers = response.data.results;
     } else if (Array.isArray(response.data.data)) {
       volunteers = response.data.data;
     } else if (Array.isArray(response.data)) {
@@ -249,9 +255,14 @@ export const checkUserVolunteerStatus = async (taskId) => {
     }
     
     console.log('All volunteers:', volunteers);
-    
-    // Filter by task ID to find if user has volunteered for this specific task
-    const volunteerRecord = volunteers.find(volunteer => {
+    // Consider only active applications (pending or accepted)
+    const activeVolunteers = volunteers.filter(v => {
+      const status = v.status || v.status_display;
+      return status === 'PENDING' || status === 'ACCEPTED';
+    });
+
+    // Filter by task ID to find if user has an active volunteer record for this specific task
+    const volunteerRecord = activeVolunteers.find(volunteer => {
       // Check both possible field names for task ID
       const volunteerTaskId = volunteer.task?.id || volunteer.task_id || volunteer.task;
       console.log('Comparing task IDs:', volunteerTaskId, 'with', taskId);
