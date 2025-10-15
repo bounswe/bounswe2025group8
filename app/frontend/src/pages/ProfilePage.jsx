@@ -36,6 +36,12 @@ import {
   uploadProfilePicture,
   clearUpdateSuccess,
 } from "../features/profile/store/profileSlice";
+import {
+  selectUpdateSuccess,
+  clearSuccess as clearEditProfileSuccess,
+  fetchCurrentUserProfile,
+  updateUserLocally,
+} from "../features/profile/store/editProfileSlice";
 import RequestCard from "../components/RequestCard";
 import ReviewCard from "../components/ReviewCard";
 import Badge from "../components/Badge";
@@ -213,6 +219,8 @@ const ProfilePage = () => {
 
   // Close edit profile dialog and refresh data when update is successful
   const { updateSuccess } = useSelector((state) => state.profile);
+  const editProfileUpdateSuccess = useSelector(selectUpdateSuccess);
+
   useEffect(() => {
     if (updateSuccess) {
       setEditProfileOpen(false);
@@ -221,12 +229,28 @@ const ProfilePage = () => {
     }
   }, [updateSuccess, dispatch]);
 
+  // Handle edit profile dialog success
+  useEffect(() => {
+    if (editProfileUpdateSuccess) {
+      setEditProfileOpen(false);
+      setRefreshData(true);
+      dispatch(clearEditProfileSuccess());
+    }
+  }, [editProfileUpdateSuccess, dispatch]);
+
   // Update review page when user changes
   useEffect(() => {
     if (userId) {
       setReviewPage(1); // Reset to first page when user changes
     }
   }, [userId]);
+
+  // Sync user data with editProfile slice when user data changes
+  useEffect(() => {
+    if (user && canEdit) {
+      dispatch(updateUserLocally(user));
+    }
+  }, [user, canEdit, dispatch]);
   const handleRoleChange = (event, newValue) => {
     setRoleTab(newValue);
     setRequestsTab(0); // Reset to active requests whenever role changes
@@ -741,6 +765,10 @@ const ProfilePage = () => {
       <EditProfileDialog
         open={editProfileOpen}
         onClose={() => setEditProfileOpen(false)}
+        onSuccess={() => {
+          // Refresh profile data after successful update
+          setRefreshData(true);
+        }}
         user={user}
       />
     </Box>
