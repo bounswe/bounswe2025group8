@@ -50,6 +50,24 @@ const useAuth = (redirectTo: string | null = null): UseAuthReturn => {
     }
   }, [isAuthenticated, navigate, redirectTo]);
 
+  // Fetch user profile on app load if user is authenticated but missing profile data
+  useEffect(() => {
+    const fetchProfileOnLoad = async () => {
+      if (isAuthenticated && currentUser && currentUser.id && !currentUser.surname) {
+        console.log('Fetching complete user profile on app load...');
+        try {
+          // Import the fetchUserProfileAsync action
+          const { fetchUserProfileAsync } = await import('../store/authSlice');
+          await (dispatch as AppDispatch)(fetchUserProfileAsync(currentUser.id));
+        } catch (error) {
+          console.warn('Could not fetch user profile on app load:', error);
+        }
+      }
+    };
+
+    fetchProfileOnLoad();
+  }, [isAuthenticated, currentUser, dispatch]);
+
   // Handle login submission
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
     console.log('Attempting login with:', { email: credentials.email });

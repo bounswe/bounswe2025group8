@@ -155,7 +155,9 @@ const Sidebar = () => {
               className="font-medium text-sm cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => navigate(`/profile/${currentUser?.id}`)}
             >
-              {currentUser?.name || "User"}
+              {currentUser?.name && currentUser?.surname
+                ? `${currentUser.name} ${currentUser.surname}`
+                : currentUser?.name || "User"}
             </h3>
 
             {/* Buttons below username */}
