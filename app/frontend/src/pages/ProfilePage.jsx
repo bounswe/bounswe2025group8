@@ -428,46 +428,29 @@ const ProfilePage = () => {
                 </Box>
               </Box>
             </Box>
-            {/* Only show edit profile button for current user */}
-            {(() => {
-              // Get logged-in user ID with fallback to user object if direct ID is not available
-              const loggedInUserId = localStorage.getItem("userId");
-              const loggedInUserObj = localStorage.getItem("user")
-                ? JSON.parse(localStorage.getItem("user"))
-                : null;
-              const loggedInUserIdFromObj = loggedInUserObj?.id;
-              const effectiveLoggedInUserId =
-                loggedInUserId || loggedInUserIdFromObj;
-
-              // Check if viewing own profile through multiple possible conditions
-              const isOwnProfile =
-                userId === "current" ||
-                userId === "me" ||
-                !userId ||
-                (effectiveLoggedInUserId &&
-                  userId === effectiveLoggedInUserId) ||
-                // Also handle the case where no userId is directly available but user is authenticated
-                (!effectiveLoggedInUserId && authState?.isAuthenticated);
-              console.log("Edit button check:", {
-                userId,
-                loggedInUserId,
-                isOwnProfile,
-              });
-              return isOwnProfile ? (
-                <Button
-                  variant="outlined"
-                  startIcon={<Edit />}
-                  sx={{
-                    borderRadius: "20px",
-                    borderColor: "#ccc",
-                    color: "#333",
-                  }}
-                  onClick={() => setEditProfileOpen(true)}
-                >
-                  Edit Profile
-                </Button>
-              ) : null;
-            })()}
+            {/* Edit Profile Button - Only show for current user */}
+            {canEdit && (
+              <Button
+                variant="outlined"
+                startIcon={<Edit />}
+                onClick={() => setEditProfileOpen(true)}
+                sx={{
+                  borderRadius: "20px",
+                  borderColor: "#5C69FF",
+                  color: "#5C69FF",
+                  "&:hover": {
+                    borderColor: "#4A56E2",
+                    backgroundColor: "rgba(92, 105, 255, 0.04)",
+                  },
+                  px: 3,
+                  py: 1,
+                  textTransform: "none",
+                  fontWeight: 500,
+                }}
+              >
+                Edit Profile
+              </Button>
+            )}
           </Box>
           {/* Badges section */}
           <Paper
