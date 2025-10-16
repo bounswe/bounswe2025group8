@@ -429,7 +429,7 @@ const RequestDetail = () => {
             <Grid item xs={12} md={6}>
               <Box
                 component="img"
-                src={request.photos?.[0]?.image || request.photos?.[0]?.photo_url || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=500&h=500&fit=crop'}
+                src={request.photos?.[0]?.url || request.photos?.[0]?.photo_url || 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=500&h=500&fit=crop'}
                 alt={request.title}
                 sx={{
                   width: '100%',
