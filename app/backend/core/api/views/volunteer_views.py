@@ -148,10 +148,10 @@ class TaskVolunteersView(views.APIView):
         if status_param:
             volunteers = Volunteer.objects.filter(task=task, status=status_param)
         else:
-            # Show PENDING and ACCEPTED volunteers (for change volunteers functionality)
-            # Exclude only WITHDRAWN and REJECTED
+            # Show all volunteers who have applied (PENDING, ACCEPTED, REJECTED)
+            # Exclude only WITHDRAWN (users who withdrew themselves)
             volunteers = Volunteer.objects.filter(task=task).exclude(
-                status__in=[VolunteerStatus.WITHDRAWN, VolunteerStatus.REJECTED]
+                status=VolunteerStatus.WITHDRAWN
             )
         
         # Get page and limit parameters

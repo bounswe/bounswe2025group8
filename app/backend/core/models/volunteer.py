@@ -113,10 +113,10 @@ class Volunteer(models.Model):
         if len(volunteer_ids) > task.volunteer_number:
             return False, f"Cannot accept {len(volunteer_ids)} volunteers. Task only needs {task.volunteer_number}."
         
-        # Get all current volunteers for this task (both PENDING and ACCEPTED)
+        # Get all current volunteers for this task (PENDING, ACCEPTED, and REJECTED)
         all_volunteers = cls.objects.filter(
             task=task,
-            status__in=[VolunteerStatus.PENDING, VolunteerStatus.ACCEPTED]
+            status__in=[VolunteerStatus.PENDING, VolunteerStatus.ACCEPTED, VolunteerStatus.REJECTED]
         )
         
         # Get volunteers that should be accepted (from the provided IDs)
@@ -137,12 +137,12 @@ class Volunteer(models.Model):
         
         # First, unassign volunteers that are no longer selected
         for volunteer in volunteers_to_unassign:
-            volunteer.withdraw_volunteer()
-            unassigned_volunteers.append(volunteer)
+            if volunteer.unassign_volunteer():
+                unassigned_volunteers.append(volunteer)
         
         # Then, accept the selected volunteers
         for volunteer in volunteers_to_accept:
-            if volunteer.status == VolunteerStatus.PENDING:
+            if volunteer.status == VolunteerStatus.PENDING or volunteer.status == VolunteerStatus.REJECTED:
                 if volunteer.accept_volunteer(skip_capacity_check=True):
                     accepted_volunteers.append(volunteer)
             elif volunteer.status == VolunteerStatus.ACCEPTED:
@@ -190,9 +190,27 @@ class Volunteer(models.Model):
         self.save()
         return True
     
+    def unassign_volunteer(self):
+        """Unassign volunteer from task (but keep them as volunteer, just change status to PENDING)"""
+        if self.status == VolunteerStatus.ACCEPTED:
+            # Remove user from task assignees
+            task = self.task
+            task.remove_assignee(self.user)
+            
+            # Change status to PENDING so they can be selected again
+            self.status = VolunteerStatus.PENDING
+            self.save()
+            
+            # If no more assignees, set task status back to POSTED
+            if not task.get_assignees().exists():
+                task.set_status('POSTED')
+            
+            return True
+        return False
+    
     def accept_volunteer(self, skip_capacity_check=False):
         """Accept this volunteer for the task"""
-        if self.status != VolunteerStatus.PENDING:
+        if self.status not in [VolunteerStatus.PENDING, VolunteerStatus.REJECTED]:
             return False
         
         # Check if task still has space for more volunteers (unless skipped for batch operations)

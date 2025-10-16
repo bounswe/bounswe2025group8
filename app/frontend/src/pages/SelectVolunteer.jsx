@@ -180,9 +180,11 @@ const SelectVolunteer = () => {
       // Call API to assign volunteers
       await assignVolunteers(requestId, selectedVolunteers);
 
-      alert(
-        `Successfully assigned ${selectedVolunteers.length} volunteer(s) to this task`
-      );
+      const message =
+        task?.status === "ASSIGNED"
+          ? `Successfully updated volunteer selection. ${selectedVolunteers.length} volunteer(s) assigned.`
+          : `Successfully assigned ${selectedVolunteers.length} volunteer(s) to this task.`;
+      alert(message);
       navigate(`/requests/${requestId}`);
     } catch (error) {
       console.error("Error assigning volunteers:", error);
@@ -312,11 +314,19 @@ const SelectVolunteer = () => {
           </Typography>
           <Typography variant="body1" color="text.secondary">
             Select up to <strong>{maxVolunteers}</strong> volunteer
-            {maxVolunteers > 1 ? "s" : ""} to assign
+            {maxVolunteers > 1 ? "s" : ""} to assign to this task
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Currently selected: <strong>{selectedVolunteers.length}</strong> of{" "}
+            Currently selecting: <strong>{selectedVolunteers.length}</strong> of{" "}
             {maxVolunteers}
+          </Typography>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mt: 1, fontStyle: "italic" }}
+          >
+            Volunteers with "Selected" badge are currently assigned. You can
+            change your selection anytime.
           </Typography>
         </Box>
 
@@ -348,6 +358,8 @@ const SelectVolunteer = () => {
                 selectedVolunteers.length < maxVolunteers || isSelected;
               const isCurrentlyAccepted =
                 volunteer.volunteerRecord?.status === "ACCEPTED";
+              const isCurrentlyRejected =
+                volunteer.volunteerRecord?.status === "REJECTED";
 
               return (
                 <Grid item xs={12} sm={6} md={4} key={volunteer.id}>
@@ -371,16 +383,32 @@ const SelectVolunteer = () => {
                       canSelect && handleVolunteerSelect(volunteer.id)
                     }
                   >
-                    {/* Currently Accepted Badge */}
+                    {/* Status Badges */}
                     {isCurrentlyAccepted && (
                       <Chip
-                        label="Currently Assigned"
+                        label="Selected"
                         size="small"
                         sx={{
                           position: "absolute",
                           top: 8,
                           right: 8,
                           bgcolor: "#4caf50",
+                          color: "white",
+                          fontSize: "0.7rem",
+                          height: 20,
+                          zIndex: 1,
+                        }}
+                      />
+                    )}
+                    {isCurrentlyRejected && (
+                      <Chip
+                        label="Previously Rejected"
+                        size="small"
+                        sx={{
+                          position: "absolute",
+                          top: 8,
+                          right: 8,
+                          bgcolor: "#ff9800",
                           color: "white",
                           fontSize: "0.7rem",
                           height: 20,
@@ -517,7 +545,9 @@ const SelectVolunteer = () => {
               },
             }}
           >
-            Select{" "}
+            {task?.status === "ASSIGNED"
+              ? "Update Selection"
+              : "Assign Volunteers"}{" "}
             {selectedVolunteers.length > 0
               ? `(${selectedVolunteers.length})`
               : ""}
