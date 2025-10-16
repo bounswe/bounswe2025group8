@@ -43,24 +43,61 @@ const initialState: AuthState = {
 };
 
 // Async thunks for authentication actions
+// New async thunk to fetch user profile after login
+export const fetchUserProfileAsync = createAsyncThunk<
+  AuthUser,
+  number,
+  { rejectValue: string }
+>(
+  'auth/fetchUserProfileAsync',
+  async (userId, { rejectWithValue }) => {
+    try {
+      // Import api from the common api service
+      const { default: api } = await import('../../../services/api');
+      const response = await api.get(`/users/${userId}/`);
+      
+      const userData = response.data?.data || response.data;
+      
+      const profileUser: AuthUser = {
+        id: userData.id,
+        email: userData.email,
+        name: userData.name || userData.first_name || '',
+        surname: userData.surname || userData.last_name || '',
+        username: userData.username || '',
+        phone: userData.phone || userData.phone_number || '',
+        profilePicture: userData.profilePicture || userData.photo || null,
+        rating: userData.rating || 0,
+      };
+      
+      // Update localStorage with complete user data
+      authStorage.updateUser(profileUser);
+      
+      return profileUser;
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      return rejectWithValue('Failed to fetch user profile');
+    }
+  }
+);
+
 export const loginAsync = createAsyncThunk<
   LoginAsyncReturn,
   LoginCredentials,
   { rejectValue: string }
 >(
   'auth/loginAsync',
-  async ({ email, password }, { rejectWithValue }) => {
+  async ({ email, password }, { rejectWithValue, dispatch }) => {
     try {
       const response = await authAPI.login({ email, password });
       
       if (response.status === 'success' && response.data) {
         const responseData = response.data; 
 
-        // Mock user data - replace with actual data after implementing User Profile Management 
+        // Initial user data with minimal info
         const userData: AuthUser = {
           id: responseData.user_id,
           email: email,
-          name: email.split('@')[0]
+          name: email.split('@')[0] // Temporary until profile is fetched
         };
         
         const token = responseData.token as string;
@@ -68,6 +105,14 @@ export const loginAsync = createAsyncThunk<
         
         // Store auth data using centralized helper
         authStorage.setAuthData(userData, token, role);
+        
+        // Fetch complete user profile after login
+        try {
+          await dispatch(fetchUserProfileAsync(responseData.user_id));
+        } catch (profileError) {
+          console.warn('Could not fetch user profile after login:', profileError);
+          // Continue with login even if profile fetch fails
+        }
         
         return { user: userData, token, role };
       } else {
@@ -271,6 +316,12 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.token = action.payload.token;
         state.role = action.payload.role;
+      })
+      
+      // Fetch user profile cases
+      .addCase(fetchUserProfileAsync.fulfilled, (state, action) => {
+        // Update user with complete profile data
+        state.user = action.payload;
       })
       .addCase(loginAsync.rejected, (state, action) => {
         state.loading = false;

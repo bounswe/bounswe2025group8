@@ -36,6 +36,12 @@ import {
   uploadProfilePicture,
   clearUpdateSuccess,
 } from "../features/profile/store/profileSlice";
+import {
+  selectUpdateSuccess,
+  clearSuccess as clearEditProfileSuccess,
+  fetchCurrentUserProfile,
+  updateUserLocally,
+} from "../features/profile/store/editProfileSlice";
 import RequestCard from "../components/RequestCard";
 import ReviewCard from "../components/ReviewCard";
 import Badge from "../components/Badge";
@@ -213,6 +219,8 @@ const ProfilePage = () => {
 
   // Close edit profile dialog and refresh data when update is successful
   const { updateSuccess } = useSelector((state) => state.profile);
+  const editProfileUpdateSuccess = useSelector(selectUpdateSuccess);
+
   useEffect(() => {
     if (updateSuccess) {
       setEditProfileOpen(false);
@@ -221,12 +229,28 @@ const ProfilePage = () => {
     }
   }, [updateSuccess, dispatch]);
 
+  // Handle edit profile dialog success
+  useEffect(() => {
+    if (editProfileUpdateSuccess) {
+      setEditProfileOpen(false);
+      setRefreshData(true);
+      dispatch(clearEditProfileSuccess());
+    }
+  }, [editProfileUpdateSuccess, dispatch]);
+
   // Update review page when user changes
   useEffect(() => {
     if (userId) {
       setReviewPage(1); // Reset to first page when user changes
     }
   }, [userId]);
+
+  // Sync user data with editProfile slice when user data changes
+  useEffect(() => {
+    if (user && canEdit) {
+      dispatch(updateUserLocally(user));
+    }
+  }, [user, canEdit, dispatch]);
   const handleRoleChange = (event, newValue) => {
     setRoleTab(newValue);
     setRequestsTab(0); // Reset to active requests whenever role changes
@@ -428,46 +452,29 @@ const ProfilePage = () => {
                 </Box>
               </Box>
             </Box>
-            {/* Only show edit profile button for current user */}
-            {(() => {
-              // Get logged-in user ID with fallback to user object if direct ID is not available
-              const loggedInUserId = localStorage.getItem("userId");
-              const loggedInUserObj = localStorage.getItem("user")
-                ? JSON.parse(localStorage.getItem("user"))
-                : null;
-              const loggedInUserIdFromObj = loggedInUserObj?.id;
-              const effectiveLoggedInUserId =
-                loggedInUserId || loggedInUserIdFromObj;
-
-              // Check if viewing own profile through multiple possible conditions
-              const isOwnProfile =
-                userId === "current" ||
-                userId === "me" ||
-                !userId ||
-                (effectiveLoggedInUserId &&
-                  userId === effectiveLoggedInUserId) ||
-                // Also handle the case where no userId is directly available but user is authenticated
-                (!effectiveLoggedInUserId && authState?.isAuthenticated);
-              console.log("Edit button check:", {
-                userId,
-                loggedInUserId,
-                isOwnProfile,
-              });
-              return isOwnProfile ? (
-                <Button
-                  variant="outlined"
-                  startIcon={<Edit />}
-                  sx={{
-                    borderRadius: "20px",
-                    borderColor: "#ccc",
-                    color: "#333",
-                  }}
-                  onClick={() => setEditProfileOpen(true)}
-                >
-                  Edit Profile
-                </Button>
-              ) : null;
-            })()}
+            {/* Edit Profile Button - Only show for current user */}
+            {canEdit && (
+              <Button
+                variant="outlined"
+                startIcon={<Edit />}
+                onClick={() => setEditProfileOpen(true)}
+                sx={{
+                  borderRadius: "20px",
+                  borderColor: "#5C69FF",
+                  color: "#5C69FF",
+                  "&:hover": {
+                    borderColor: "#4A56E2",
+                    backgroundColor: "rgba(92, 105, 255, 0.04)",
+                  },
+                  px: 3,
+                  py: 1,
+                  textTransform: "none",
+                  fontWeight: 500,
+                }}
+              >
+                Edit Profile
+              </Button>
+            )}
           </Box>
           {/* Badges section */}
           <Paper
@@ -758,6 +765,10 @@ const ProfilePage = () => {
       <EditProfileDialog
         open={editProfileOpen}
         onClose={() => setEditProfileOpen(false)}
+        onSuccess={() => {
+          // Refresh profile data after successful update
+          setRefreshData(true);
+        }}
         user={user}
       />
     </Box>
