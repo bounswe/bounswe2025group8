@@ -148,7 +148,8 @@ class TaskVolunteersView(views.APIView):
         if status_param:
             volunteers = Volunteer.objects.filter(task=task, status=status_param)
         else:
-            volunteers = Volunteer.objects.filter(task=task)
+            # Only show PENDING volunteers (exclude WITHDRAWN, REJECTED, and ACCEPTED)
+            volunteers = Volunteer.objects.filter(task=task, status=VolunteerStatus.PENDING)
         
         # Get page and limit parameters
         page = int(request.query_params.get('page', 1))
