@@ -443,7 +443,19 @@ const RequestDetail = () => {
             <Grid item xs={12} md={6}>
               <CardContent sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
                 {/* Requester Info */}
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    mb: 3,
+                    cursor: 'pointer',
+                    borderRadius: 2,
+                    transition: 'background-color 150ms ease',
+                    '&:hover': {
+                      bgcolor: 'action.hover',
+                    },
+                  }} 
+                  onClick={() => navigate(`/profile/${request.creator.id}`)}>
                   <Avatar 
                     sx={{ 
                       width: 50, 
