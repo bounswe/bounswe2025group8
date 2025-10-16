@@ -32,7 +32,7 @@ const PriorityHighIcon = ({ className }) => (
  * @param {string} props.request.id - Unique identifier for the request
  * @param {string} props.request.title - Title of the request
  * @param {string} props.request.category - Category this request belongs to
- * @param {string} props.request.urgency_level - Urgency level (e.g. 'High', 'Medium', 'Low')
+ * @param {string} props.request?.task?.urgency_level - Urgency level (e.g. 'High', 'Medium', 'Low')
  * @param {string} props.request.created_at - ISO timestamp when the request was created
  * @param {string} props.request.deadline - ISO timestamp for the request's deadline
  * @param {string} props.request.imageUrl - Optional image for the request
@@ -149,31 +149,32 @@ const RequestCard = ({ request, onClick, className = "" }) => {
 
           {/* Urgency chip/label */}
           <button
-            onClick={(e) => handleUrgencyClick(request.urgency_level, e)}
+            onClick={(e) => handleUrgencyClick(request?.task?.urgency_level, e)}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
                 e.preventDefault();
                 e.stopPropagation(); // Prevent card's keyboard handler
-                handleUrgencyClick(request.urgency_level, e);
+                handleUrgencyClick(request?.task?.urgency_level, e);
               }
             }}
             tabIndex={0}
             className={`rounded-2xl text-white h-6 text-xs font-medium px-3 w-1/2 hover:opacity-90 transition-opacity
               ${
-                request.urgency_level &&
-                urgencyLevels[request.urgency_level] &&
-                urgencyLevels[request.urgency_level].name === "Critical"
+                urgencyLevels[request?.task?.urgency_level] &&
+                urgencyLevels[request?.task?.urgency_level].name === "Critical"
                   ? "font-bold"
                   : ""
               }`}
             style={{
-              backgroundColor:
-                request.urgency_level && urgencyLevels[request.urgency_level]
-                  ? urgencyLevels[request.urgency_level].color
-                  : "#9e9e9e",
+              backgroundColor: urgencyLevels[request?.task?.urgency_level]
+                ? urgencyLevels[request?.task?.urgency_level].color
+                : "#9e9e9e",
             }}
           >
-            {"Urgency: " + urgencyLevels[request.urgency_level].name}
+            {"Urgency: " +
+              (urgencyLevels[request?.task?.urgency_level]
+                ? urgencyLevels[request?.task?.urgency_level].name
+                : "Unknown")}
           </button>
         </div>
         {/* Location if available */}
