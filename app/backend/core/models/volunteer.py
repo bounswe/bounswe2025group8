@@ -66,12 +66,16 @@ class Volunteer(models.Model):
         # Check if task is still open for volunteers
         if task.status != 'POSTED':
             return None
-        
+
         # Check if user is already volunteering for this task
         existing = cls.objects.filter(user=user, task=task).first()
         if existing:
+            # If they previously withdrew or were rejected, reset to PENDING
+            if existing.status in [VolunteerStatus.WITHDRAWN, VolunteerStatus.REJECTED]:
+                existing.status = VolunteerStatus.PENDING
+                existing.save()
             return existing
-        
+
         volunteer = cls(user=user, task=task)
         volunteer.save()
         return volunteer
