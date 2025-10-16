@@ -170,7 +170,7 @@ class TaskVolunteersView(views.APIView):
         ))
     
     def post(self, request, task_id):
-        """Handle POST requests to update volunteer status"""
+        """Handle POST requests to update volunteer status or assign multiple volunteers"""
         # Get task
         task = get_object_or_404(Task, id=task_id)
         
@@ -181,6 +181,51 @@ class TaskVolunteersView(views.APIView):
                 message='Only the task creator can update volunteer status.'
             ), status=status.HTTP_403_FORBIDDEN)
         
+        # Check if this is a batch assignment request
+        volunteer_ids = request.data.get('volunteer_ids')
+        if volunteer_ids is not None:
+            # Handle batch assignment
+            if not isinstance(volunteer_ids, list):
+                return Response(format_response(
+                    status='error',
+                    message='volunteer_ids must be a list of volunteer IDs.'
+                ), status=status.HTTP_400_BAD_REQUEST)
+            
+            # Accept multiple volunteers
+            success, message = Volunteer.accept_multiple_volunteers(task, volunteer_ids)
+            
+            if not success:
+                return Response(format_response(
+                    status='error',
+                    message=message
+                ), status=status.HTTP_400_BAD_REQUEST)
+            
+            # Get the accepted volunteers for response
+            accepted_volunteers = Volunteer.objects.filter(
+                task=task,
+                id__in=volunteer_ids,
+                status=VolunteerStatus.ACCEPTED
+            )
+            
+            # Send notifications to accepted volunteers
+            from core.models import Notification, NotificationType
+            for volunteer in accepted_volunteers:
+                Notification.send_task_assigned_notification(task, volunteer)
+            
+            # Serialize accepted volunteers
+            serializer = VolunteerSerializer(accepted_volunteers, many=True)
+            
+            return Response(format_response(
+                status='success',
+                message=message,
+                data={
+                    'assigned_volunteers': serializer.data,
+                    'task_status': task.status,
+                    'total_assigned': accepted_volunteers.count()
+                }
+            ))
+        
+        # Handle single volunteer action (existing logic)
         # Get volunteer
         volunteer_id = request.data.get('volunteer_id')
         if not volunteer_id:
@@ -211,7 +256,7 @@ class TaskVolunteersView(views.APIView):
             if not success:
                 return Response(format_response(
                     status='error',
-                    message='Failed to accept volunteer.'
+                    message='Failed to accept volunteer. Task may be at capacity.'
                 ), status=status.HTTP_400_BAD_REQUEST)
                 
             # Send notification

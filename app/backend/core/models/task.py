@@ -58,6 +58,12 @@ class Task(models.Model):
         blank=True,
         related_name='assigned_tasks'
     )
+    # Many-to-many relationship for multiple assignees
+    assignees = models.ManyToManyField(
+        'RegisteredUser',
+        blank=True,
+        related_name='assigned_tasks_multiple'
+    )
     
     def __str__(self):
         """Return string representation of task"""
@@ -113,8 +119,17 @@ class Task(models.Model):
         return self.creator
     
     def get_assignee(self):
-        """Get task assignee"""
+        """Get task assignee (for backward compatibility)"""
         return self.assignee
+    
+    def get_assignees(self):
+        """Get all task assignees"""
+        return self.assignees.all()
+    
+    def get_assigned_volunteers(self):
+        """Get all accepted volunteers for this task"""
+        from .volunteer import Volunteer, VolunteerStatus
+        return Volunteer.objects.filter(task=self, status=VolunteerStatus.ACCEPTED)
     
     def get_photos(self):
         """Get photos attached to this task"""
@@ -176,8 +191,31 @@ class Task(models.Model):
         self.save()
     
     def set_assignee(self, assignee):
-        """Set task assignee"""
+        """Set task assignee (for backward compatibility)"""
         self.assignee = assignee
+        self.save()
+    
+    def add_assignee(self, assignee):
+        """Add an assignee to the task"""
+        self.assignees.add(assignee)
+        # Also set the single assignee field for backward compatibility
+        if not self.assignee:
+            self.assignee = assignee
+            self.save()
+    
+    def remove_assignee(self, assignee):
+        """Remove an assignee from the task"""
+        self.assignees.remove(assignee)
+        # If this was the main assignee, clear it or set to another assignee
+        if self.assignee == assignee:
+            remaining_assignees = self.assignees.all()
+            self.assignee = remaining_assignees.first() if remaining_assignees.exists() else None
+            self.save()
+    
+    def clear_assignees(self):
+        """Clear all assignees"""
+        self.assignees.clear()
+        self.assignee = None
         self.save()
     
     # Business logic methods
@@ -208,8 +246,13 @@ class Task(models.Model):
         self.status = TaskStatus.COMPLETED
         self.save()
         
-        # Update the assignee's completed task count
-        if self.assignee:
+        # Update all assignees' completed task count
+        assignees = self.get_assignees()
+        for assignee in assignees:
+            assignee.increment_completed_task_count()
+        
+        # Also update the main assignee if set (backward compatibility)
+        if self.assignee and self.assignee not in assignees:
             self.assignee.increment_completed_task_count()
         
         return True
