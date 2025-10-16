@@ -586,7 +586,10 @@ const RequestDetail = () => {
                   {request.status === "POSTED"
                     ? "Waiting for Volunteers"
                     : request.status === "ASSIGNED"
-                    ? // Check if the current user is assigned to this task
+                    ? // For task creators, don't show status - they'll see the Change Volunteers button instead
+                      isTaskCreator
+                      ? null
+                      : // Check if the current user is assigned to this task
                       volunteerRecord && volunteerRecord.status === "ACCEPTED"
                       ? "Task Assigned to You"
                       : "Task Assigned"
@@ -599,26 +602,30 @@ const RequestDetail = () => {
 
                 {/* Action Buttons */}
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  {/* Primary Action Button */}
-                  {canEdit && request.status === "POSTED" && (
-                    <Button
-                      variant="contained"
-                      size="large"
-                      onClick={handleSelectVolunteer}
-                      sx={{
-                        py: 1.5,
-                        textTransform: "none",
-                        fontWeight: 500,
-                        fontSize: "1rem",
-                        bgcolor: "#7c4dff",
-                        "&:hover": {
-                          bgcolor: "#6a3de8",
-                        },
-                      }}
-                    >
-                      Select Volunteer
-                    </Button>
-                  )}
+                  {/* Primary Action Button for Task Creator */}
+                  {canEdit &&
+                    (request.status === "POSTED" ||
+                      request.status === "ASSIGNED") && (
+                      <Button
+                        variant="contained"
+                        size="large"
+                        onClick={handleSelectVolunteer}
+                        sx={{
+                          py: 1.5,
+                          textTransform: "none",
+                          fontWeight: 500,
+                          fontSize: "1rem",
+                          bgcolor: "#7c4dff",
+                          "&:hover": {
+                            bgcolor: "#6a3de8",
+                          },
+                        }}
+                      >
+                        {request.status === "ASSIGNED"
+                          ? "Change Volunteers"
+                          : "Select Volunteer"}
+                      </Button>
+                    )}
 
                   {canVolunteer && (
                     <Button

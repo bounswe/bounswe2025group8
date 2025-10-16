@@ -105,6 +105,23 @@ const SelectVolunteer = () => {
 
         setTask(taskData);
         setVolunteers(volunteersData);
+
+        // Pre-select volunteers who are already accepted for this task
+        if (volunteersData && Array.isArray(volunteersData)) {
+          const alreadyAcceptedVolunteers = volunteersData
+            .filter(
+              (volunteer) => volunteer.volunteerRecord?.status === "ACCEPTED"
+            )
+            .map((volunteer) => volunteer.id);
+
+          if (alreadyAcceptedVolunteers.length > 0) {
+            console.log(
+              "Pre-selecting already accepted volunteers:",
+              alreadyAcceptedVolunteers
+            );
+            setSelectedVolunteers(alreadyAcceptedVolunteers);
+          }
+        }
       } catch (err) {
         console.error("Error fetching data:", err);
         setError(err.message || "Failed to fetch data");
@@ -329,6 +346,8 @@ const SelectVolunteer = () => {
               const isSelected = selectedVolunteers.includes(volunteer.id);
               const canSelect =
                 selectedVolunteers.length < maxVolunteers || isSelected;
+              const isCurrentlyAccepted =
+                volunteer.volunteerRecord?.status === "ACCEPTED";
 
               return (
                 <Grid item xs={12} sm={6} md={4} key={volunteer.id}>
@@ -340,6 +359,7 @@ const SelectVolunteer = () => {
                         ? "2px solid #7c4dff"
                         : "1px solid #e0e0e0",
                       transition: "all 0.2s ease-in-out",
+                      position: "relative",
                       "&:hover": canSelect
                         ? {
                             transform: "translateY(-2px)",
@@ -351,6 +371,23 @@ const SelectVolunteer = () => {
                       canSelect && handleVolunteerSelect(volunteer.id)
                     }
                   >
+                    {/* Currently Accepted Badge */}
+                    {isCurrentlyAccepted && (
+                      <Chip
+                        label="Currently Assigned"
+                        size="small"
+                        sx={{
+                          position: "absolute",
+                          top: 8,
+                          right: 8,
+                          bgcolor: "#4caf50",
+                          color: "white",
+                          fontSize: "0.7rem",
+                          height: 20,
+                          zIndex: 1,
+                        }}
+                      />
+                    )}
                     <CardContent sx={{ p: 3, textAlign: "center" }}>
                       {/* Avatar and Selection Indicator */}
                       <Box sx={{ position: "relative", mb: 2 }}>

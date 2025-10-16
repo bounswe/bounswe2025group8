@@ -148,8 +148,11 @@ class TaskVolunteersView(views.APIView):
         if status_param:
             volunteers = Volunteer.objects.filter(task=task, status=status_param)
         else:
-            # Only show PENDING volunteers (exclude WITHDRAWN, REJECTED, and ACCEPTED)
-            volunteers = Volunteer.objects.filter(task=task, status=VolunteerStatus.PENDING)
+            # Show PENDING and ACCEPTED volunteers (for change volunteers functionality)
+            # Exclude only WITHDRAWN and REJECTED
+            volunteers = Volunteer.objects.filter(task=task).exclude(
+                status__in=[VolunteerStatus.WITHDRAWN, VolunteerStatus.REJECTED]
+            )
         
         # Get page and limit parameters
         page = int(request.query_params.get('page', 1))
@@ -184,15 +187,15 @@ class TaskVolunteersView(views.APIView):
         # Check if this is a batch assignment request
         volunteer_ids = request.data.get('volunteer_ids')
         if volunteer_ids is not None:
-            # Handle batch assignment
+            # Handle batch assignment/update
             if not isinstance(volunteer_ids, list):
                 return Response(format_response(
                     status='error',
                     message='volunteer_ids must be a list of volunteer IDs.'
                 ), status=status.HTTP_400_BAD_REQUEST)
             
-            # Accept multiple volunteers
-            success, message = Volunteer.accept_multiple_volunteers(task, volunteer_ids)
+            # Update task volunteers (accept new ones, unassign removed ones)
+            success, message = Volunteer.update_task_volunteers(task, volunteer_ids)
             
             if not success:
                 return Response(format_response(

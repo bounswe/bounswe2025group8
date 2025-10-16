@@ -101,6 +101,61 @@ class Volunteer(models.Model):
         return True, f"Successfully accepted {len(accepted_volunteers)} volunteers"
 
     @classmethod
+    def update_task_volunteers(cls, task, volunteer_ids):
+        """Update task volunteers - accept new ones and unassign removed ones"""
+        if not volunteer_ids:
+            volunteer_ids = []
+        
+        # Ensure task has a valid volunteer_number
+        if task.volunteer_number <= 0:
+            return False, f"Task volunteer_number is invalid: {task.volunteer_number}"
+        
+        if len(volunteer_ids) > task.volunteer_number:
+            return False, f"Cannot accept {len(volunteer_ids)} volunteers. Task only needs {task.volunteer_number}."
+        
+        # Get all current volunteers for this task (both PENDING and ACCEPTED)
+        all_volunteers = cls.objects.filter(
+            task=task,
+            status__in=[VolunteerStatus.PENDING, VolunteerStatus.ACCEPTED]
+        )
+        
+        # Get volunteers that should be accepted (from the provided IDs)
+        volunteers_to_accept = all_volunteers.filter(id__in=volunteer_ids)
+        
+        # Get currently accepted volunteers that are NOT in the new selection
+        volunteers_to_unassign = all_volunteers.filter(
+            status=VolunteerStatus.ACCEPTED
+        ).exclude(id__in=volunteer_ids)
+        
+        # Validate that all requested volunteer IDs exist and are available
+        if volunteers_to_accept.count() != len(volunteer_ids):
+            missing_count = len(volunteer_ids) - volunteers_to_accept.count()
+            return False, f"{missing_count} volunteer(s) not available for assignment"
+        
+        accepted_volunteers = []
+        unassigned_volunteers = []
+        
+        # First, unassign volunteers that are no longer selected
+        for volunteer in volunteers_to_unassign:
+            volunteer.withdraw_volunteer()
+            unassigned_volunteers.append(volunteer)
+        
+        # Then, accept the selected volunteers
+        for volunteer in volunteers_to_accept:
+            if volunteer.status == VolunteerStatus.PENDING:
+                if volunteer.accept_volunteer(skip_capacity_check=True):
+                    accepted_volunteers.append(volunteer)
+            elif volunteer.status == VolunteerStatus.ACCEPTED:
+                # Already accepted, just add to the list
+                accepted_volunteers.append(volunteer)
+        
+        message = f"Successfully updated volunteers. Accepted: {len(accepted_volunteers)}"
+        if unassigned_volunteers:
+            message += f", Unassigned: {len(unassigned_volunteers)}"
+        
+        return True, message
+
+    @classmethod
     def volunteer_for_task(cls, user, task):
         """Create a volunteer entry for a task"""
         # Check if task is still open for volunteers
