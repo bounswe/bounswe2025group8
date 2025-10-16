@@ -16,9 +16,20 @@ class VolunteerViewSet(viewsets.ModelViewSet):
     serializer_class = VolunteerSerializer
     
     def get_queryset(self):
-        """Filter volunteers by current user"""
+        """Filter volunteers by current user, excluding withdrawn and rejected for list"""
         if self.request.user.is_authenticated:
-            return Volunteer.objects.filter(user=self.request.user)
+            # For list/retrieve actions, exclude WITHDRAWN and REJECTED
+            # For destroy action, include all records (needed to access the record to withdraw)
+            if self.action in ['destroy', 'retrieve']:
+                # Allow access to all user's volunteer records
+                return Volunteer.objects.filter(user=self.request.user)
+            else:
+                # Only return active volunteer records (PENDING or ACCEPTED)
+                return Volunteer.objects.filter(
+                    user=self.request.user
+                ).exclude(
+                    status__in=[VolunteerStatus.WITHDRAWN, VolunteerStatus.REJECTED]
+                )
         return Volunteer.objects.none()
     
     def get_permissions(self):
@@ -43,7 +54,17 @@ class VolunteerViewSet(viewsets.ModelViewSet):
         elif self.action in ['update', 'partial_update', 'accept', 'reject', 'withdraw']:
             return VolunteerStatusUpdateSerializer
         return VolunteerSerializer
-    
+
+    def list(self, request, *args, **kwargs):
+        """Handle GET requests to list all volunteer records for the current user"""
+        queryset = self.get_queryset()
+
+        # Serialize volunteers
+        serializer = self.get_serializer(queryset, many=True)
+
+        # Return as array directly (not wrapped in pagination)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def create(self, request, *args, **kwargs):
         """Handle POST requests to volunteer for a task"""
         serializer = self.get_serializer(data=request.data, context={'request': request})

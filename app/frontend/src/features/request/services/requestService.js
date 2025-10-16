@@ -249,7 +249,7 @@ export const checkUserVolunteerStatus = async (taskId) => {
     }
     
     console.log('All volunteers:', volunteers);
-    
+
     // Filter by task ID to find if user has volunteered for this specific task
     const volunteerRecord = volunteers.find(volunteer => {
       // Check both possible field names for task ID
@@ -257,7 +257,7 @@ export const checkUserVolunteerStatus = async (taskId) => {
       console.log('Comparing task IDs:', volunteerTaskId, 'with', taskId);
       return volunteerTaskId === parseInt(taskId);
     });
-    
+
     console.log('Found volunteer record for task:', volunteerRecord);
     return volunteerRecord || null;
     
