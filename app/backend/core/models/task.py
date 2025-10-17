@@ -202,6 +202,9 @@ class Task(models.Model):
         if not self.assignee:
             self.assignee = assignee
             self.save()
+        
+        # Update status based on assignee count
+        self.update_status_based_on_assignees()
     
     def remove_assignee(self, assignee):
         """Remove an assignee from the task"""
@@ -211,12 +214,18 @@ class Task(models.Model):
             remaining_assignees = self.assignees.all()
             self.assignee = remaining_assignees.first() if remaining_assignees.exists() else None
             self.save()
+        
+        # Update status based on assignee count
+        self.update_status_based_on_assignees()
     
     def clear_assignees(self):
         """Clear all assignees"""
         self.assignees.clear()
         self.assignee = None
         self.save()
+        
+        # Update status based on assignee count
+        self.update_status_based_on_assignees()
     
     # Business logic methods
     def create_task(self):
@@ -269,4 +278,23 @@ class Task(models.Model):
             self.status = TaskStatus.EXPIRED
             self.save()
             return True
+        return False
+    
+    def update_status_based_on_assignees(self):
+        """Update task status based on assignee count vs volunteer_number requirement"""
+        current_assignee_count = self.assignees.count()
+        
+        # If we have fewer assignees than required, status should be POSTED
+        if current_assignee_count < self.volunteer_number:
+            if self.status == TaskStatus.ASSIGNED:
+                self.status = TaskStatus.POSTED
+                self.save()
+                return True
+        # If we have enough assignees, status should be ASSIGNED
+        elif current_assignee_count >= self.volunteer_number:
+            if self.status == TaskStatus.POSTED:
+                self.status = TaskStatus.ASSIGNED
+                self.save()
+                return True
+        
         return False
