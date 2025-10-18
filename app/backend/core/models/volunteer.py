@@ -159,7 +159,13 @@ class Volunteer(models.Model):
     def volunteer_for_task(cls, user, task):
         """Create a volunteer entry for a task"""
         # Check if task is still open for volunteers (needs more volunteers)
-        if task.assignees.count() >= task.volunteer_number:
+        # Count only ACCEPTED volunteers, not all assignees
+        current_accepted = cls.objects.filter(
+            task=task, 
+            status=VolunteerStatus.ACCEPTED
+        ).count()
+        
+        if current_accepted >= task.volunteer_number:
             return None
 
         # Check if user is already volunteering for this task

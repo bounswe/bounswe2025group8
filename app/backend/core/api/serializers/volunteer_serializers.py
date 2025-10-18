@@ -38,7 +38,14 @@ class VolunteerCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Task not found.")
         
         # Check if task is still accepting volunteers (needs more volunteers)
-        if task.assignees.count() >= task.volunteer_number:
+        # Count only ACCEPTED volunteers, not all assignees
+        from core.models import Volunteer, VolunteerStatus
+        current_accepted = Volunteer.objects.filter(
+            task=task, 
+            status=VolunteerStatus.ACCEPTED
+        ).count()
+        
+        if current_accepted >= task.volunteer_number:
             raise serializers.ValidationError("This task is not available for volunteers.")
         
         # Check if task deadline has passed
