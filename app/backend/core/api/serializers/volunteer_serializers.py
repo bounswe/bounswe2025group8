@@ -37,8 +37,8 @@ class VolunteerCreateSerializer(serializers.ModelSerializer):
         except Task.DoesNotExist:
             raise serializers.ValidationError("Task not found.")
         
-        # Check if task is still accepting volunteers
-        if task.status != 'POSTED':
+        # Check if task is still accepting volunteers (needs more volunteers)
+        if task.assignees.count() >= task.volunteer_number:
             raise serializers.ValidationError("This task is not available for volunteers.")
         
         # Check if task deadline has passed
