@@ -83,7 +83,13 @@ export default function SignIn() {
         style={styles.keyboardAvoidingView}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.backButton} onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace('/');}
+            }
+            }>
             <Ionicons name="arrow-back" size={24} color={colors.primary} />
             <Text style={[styles.backText, { color: colors.primary }]}>Back</Text>
           </TouchableOpacity>
