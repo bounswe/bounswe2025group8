@@ -273,10 +273,13 @@ const RequestDetail = () => {
     currentUser && request && currentUser.id === request.creator?.id;
   const canEdit = isAuthenticated && isTaskCreator;
   const canDelete = isAuthenticated && isTaskCreator;
+  const acceptedVolunteersCount =
+    request.volunteers?.filter((v) => v.status === "ACCEPTED").length || 0;
   const canVolunteer =
     isAuthenticated &&
     !isTaskCreator &&
-    request?.status === "POSTED" &&
+    (request?.status === "POSTED" || request?.status === "ASSIGNED") &&
+    acceptedVolunteersCount < request.volunteer_number &&
     !volunteerRecord;
   const canWithdraw = isAuthenticated && !isTaskCreator && volunteerRecord;
 
@@ -586,12 +589,12 @@ const RequestDetail = () => {
                   {request.status === "POSTED"
                     ? "Waiting for Volunteers"
                     : request.status === "ASSIGNED"
-                    ? // For task creators, don't show status - they'll see the Change Volunteers button instead
-                      isTaskCreator
+                    ? isTaskCreator
                       ? null
-                      : // Check if the current user is assigned to this task
-                      volunteerRecord && volunteerRecord.status === "ACCEPTED"
+                      : volunteerRecord && volunteerRecord.status === "ACCEPTED"
                       ? "Task Assigned to You"
+                      : acceptedVolunteersCount < request.volunteer_number
+                      ? "Waiting for More Volunteers"
                       : "Task Assigned"
                     : request.status === "IN_PROGRESS"
                     ? "In Progress"
