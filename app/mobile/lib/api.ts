@@ -677,6 +677,12 @@ export const logout = async (): Promise<void> => {
     await api.post('/auth/logout/');
   } catch (error) {
     if (error instanceof AxiosError) {
+      // Don't throw 401/403 errors - they indicate we're already logged out on the backend
+      // or the token is invalid. Either way, we should proceed with local logout.
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        console.log('Already logged out on backend or token invalid - proceeding with local logout');
+        return; // Continue with local logout
+      }
       console.error('Logout error details:', {
         error: error.message,
         request: error.config,
@@ -685,7 +691,8 @@ export const logout = async (): Promise<void> => {
         headers: error.response?.headers
       });
     }
-    throw error;
+    // For any other errors, just log but don't throw - we still want to logout locally
+    console.warn('Backend logout failed, but proceeding with local logout');
   }
 };
 
