@@ -84,7 +84,12 @@ export default function RequestDetailsVolunteer() {
       const isCreatorView = user?.id && details.creator?.id === user.id;
       const currentRecord = volunteerRecordRef.current;
 
-      const volunteers = await listVolunteers(id, {limit: 100 });
+      const taskVolunteers = await listVolunteers( {task:id,limit: 100 });
+
+      const volunteers = taskVolunteers.filter((vol) => {
+        const taskField = typeof (vol as any).task === 'number' ? (vol as any).task : (vol.task as any)?.id;
+        return taskField === id;
+      });
 
       const acceptedList = volunteers.filter((vol) => (vol.status || '').toUpperCase() === 'ACCEPTED');
       const pendingList = volunteers.filter((vol) => (vol.status || '').toUpperCase() === 'PENDING');
@@ -94,7 +99,7 @@ export default function RequestDetailsVolunteer() {
         ? volunteers.find((vol) => vol.user?.id === user.id)
         : null;
 
-      const assignedToCurrentUser = user?.id && details.assignee?.id === user.id;
+      const assignedToCurrentUser = user?.id && acceptedList.some((vol) => vol.user?.id === user.id);
       if (assignedToCurrentUser) {
         setHasVolunteered(true);
         setVolunteerRecord((prev) => {
