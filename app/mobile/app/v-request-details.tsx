@@ -332,7 +332,7 @@ useEffect(() => {
     .map((vol) => vol.user?.id)
     .filter((id): id is number => typeof id === 'number');
   const volunteerStatusLabel = normalizeStatus(volunteerRecord?.status).toLowerCase() || (hasVolunteered ? 'pending' : undefined);
-  const userAssigned = request.assignee?.id === user?.id;
+  const userAssigned = user && (request.assignee?.id === user?.id);
   const isAlreadyVolunteered =
     hasVolunteered || userAssigned || (!!user && acceptedIds.includes(user.id));
   const acceptedCount = acceptedVolunteers.length;
@@ -348,6 +348,10 @@ useEffect(() => {
   const volunteerStatusMessage = !isCreatorView && (userAssigned || ['pending', 'accepted', 'rejected', 'withdrawn'].includes(volunteerStatusLabel ?? ''))
     ? (() => {
         if (userAssigned || volunteerStatusLabel === 'accepted') {
+          console.log("userAssigned", userAssigned);
+          console.log("volunteerStatusLabel", volunteerStatusLabel);
+          console.log(request);
+          console.log(user);
           return 'You have been assigned to this request.';
         }
         if (volunteerStatusLabel === 'rejected') {
@@ -460,7 +464,7 @@ useEffect(() => {
             {(statusDisplayLower === 'accepted' ||
               statusDisplayLower === 'completed' ||
               isCreator ||
-              isAlreadyVolunteered
+              userAssigned
             ) &&
               phoneNumber && (
                 <DetailRow icon="call-outline" value={phoneNumber} themeColors={themeColors} />
