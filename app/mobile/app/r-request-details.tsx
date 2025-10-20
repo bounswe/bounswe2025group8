@@ -283,7 +283,7 @@ export default function RequestDetails() {
         {isCreator && (
           <TouchableOpacity
             style={[styles.primaryButton, { backgroundColor: themeColors.primary }]}
-            onPress={() => router.push({ pathname: '/select-volunteer', params: { id } })}
+            onPress={() => router.push({ pathname: '/select-volunteer', params: { id, requiredVolunteers: String(request.volunteer_number) } })}
           >
             <Text style={[styles.buttonText, { color: themeColors.card }]}>
               {canAssignMore ? 'Select Volunteers' : 'Manage Volunteers'}
