@@ -1,11 +1,17 @@
 import { configureStore } from '@reduxjs/toolkit'
 import authReducer from '../features/authentication/store/authSlice'
 import createRequestReducer from '../features/request/store/createRequestSlice'
+import allRequestsReducer from '../features/request/store/allRequestsSlice'
+import profileReducer from '../features/profile/store/profileSlice'
+import editProfileReducer from '../features/profile/store/editProfileSlice'
 
 const store = configureStore({
   reducer: {
     auth: authReducer,
     createRequest: createRequestReducer,
+    allRequests: allRequestsReducer,
+    profile: profileReducer,
+    editProfile: editProfileReducer,
   },
 })
 

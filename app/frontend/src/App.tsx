@@ -7,7 +7,12 @@ import Home from "./pages/Home.jsx";
 import Test from "./pages/Test.tsx";
 import MainLayout from "./layouts/MainLayout.jsx";
 import CreateRequestPage from "./pages/CreateRequestPage.jsx";
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import AllRequests from "./pages/AllRequests.jsx";
+import Categories from "./pages/Categories.jsx";
+import RequestDetail from "./pages/RequestDetail.jsx";
+import SelectVolunteer from "./pages/SelectVolunteer.jsx";
+import ProfilePage from "./pages/ProfilePage.jsx";
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 function App() {
   return (
@@ -25,6 +30,12 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/test" element={<Test />} />
           <Route path="/create-request" element={<CreateRequestPage />} />
+          <Route path="/categories" element={<Categories />} />
+          <Route path="/requests" element={<AllRequests />} />
+          <Route path="/requests/:requestId" element={<RequestDetail />} />
+          <Route path="/requests/:requestId/select-volunteer" element={<SelectVolunteer />} />
+
+          <Route path="/profile/:userId" element={<ProfilePage />} />
         </Route>
       </Routes>
     </BrowserRouter>

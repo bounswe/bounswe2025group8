@@ -77,6 +77,11 @@ export interface AuthUser {
   id: number;
   email: string;
   name: string;
+  surname?: string;
+  username?: string;
+  phone?: string;
+  profilePicture?: string | null;
+  rating?: number;
 }
 
 export interface AuthState {

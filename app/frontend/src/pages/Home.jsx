@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-// import CategoryCard from "../components/CategoryCard";
-// import RequestCard from "../components/RequestCard"; // Import the RequestCard component
-// import * as categoryService from "../services/categoryService";
-// import * as taskService from "../services/taskService";
-// import { getCategoryImage } from "../constants/categories";
+import CategoryCard from "../components/CategoryCard";
+import RequestCard from "../components/RequestCard"; 
+import * as categoryService from "../features/category/services/categoryService";
+import * as requestService from "../features/request/services/requestService";
+import { getCategoryImage } from "../constants/categories";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -52,7 +52,7 @@ const Home = () => {
       // Fetch popular requests
       setLoading((prev) => ({ ...prev, requests: true }));
       try {
-        const popularTasks = await taskService.getPopularTasks(6);
+        const popularTasks = await requestService.getPopularTasks(6);
         setRequests(popularTasks);
         setError((prev) => ({ ...prev, requests: null }));
       } catch (err) {
@@ -172,7 +172,7 @@ const Home = () => {
               className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
               onClick={() => {
                 setLoading((prev) => ({ ...prev, requests: true }));
-                taskService
+                requestService
                   .getPopularTasks(6)
                   .then((data) => {
                     setRequests(data);
