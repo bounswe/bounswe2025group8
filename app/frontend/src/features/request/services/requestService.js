@@ -12,7 +12,7 @@ export const getTasks = async (filters = {}, page = 1) => {
     const apiFilters = { ...filters };
     
     // Convert from urgency_level to urgency parameter expected by the backend
-    // Backend uses 'urgency' parameter to filter tasks with urgency_level >= specified value
+    // Backend uses 'urgency' parameter to filter tasks with exact urgency_level match
     if (apiFilters.urgency_level) {
       apiFilters.urgency = apiFilters.urgency_level;
       delete apiFilters.urgency_level;

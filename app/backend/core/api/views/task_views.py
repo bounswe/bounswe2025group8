@@ -59,7 +59,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         # Filter by urgency
         urgency_param = self.request.query_params.get('urgency')
         if urgency_param:
-            queryset = queryset.filter(urgency_level__gte=int(urgency_param))
+            queryset = queryset.filter(urgency_level=int(urgency_param))
         
         # Filter by tag
         tag_param = self.request.query_params.get('tag')
