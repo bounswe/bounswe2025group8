@@ -188,3 +188,135 @@ class TaskEnumTests(TestCase):
         choices = TaskCategory.choices
         self.assertTrue(('GROCERY_SHOPPING', 'Grocery Shopping') in choices)
         self.assertTrue(('HOME_REPAIR', 'Home Repair') in choices)
+
+    def test_status_update_based_on_assignee_count(self):
+        """Test that task status is updated based on assignee count vs volunteer_number"""
+        # Create additional users for testing
+        user2 = RegisteredUser.objects.create_user(
+            email='user2@example.com',
+            name='User2',
+            surname='Test',
+            username='user2',
+            phone_number='1111111111',
+            password='password123'
+        )
+        user3 = RegisteredUser.objects.create_user(
+            email='user3@example.com',
+            name='User3',
+            surname='Test',
+            username='user3',
+            phone_number='2222222222',
+            password='password123'
+        )
+        
+        # Create a task that requires 3 volunteers
+        task = Task.objects.create(
+            title='Multi-Volunteer Task',
+            description='Task requiring 3 volunteers',
+            category=TaskCategory.OTHER,
+            location='Test Location',
+            deadline=timezone.now() + datetime.timedelta(days=3),
+            volunteer_number=3,
+            creator=self.user
+        )
+        
+        # Initially, task should be POSTED
+        self.assertEqual(task.status, TaskStatus.POSTED)
+        
+        # Add first assignee - should still be POSTED (need 3, have 1)
+        task.add_assignee(self.assignee)
+        task.refresh_from_db()
+        self.assertEqual(task.status, TaskStatus.POSTED)
+        self.assertEqual(task.assignees.count(), 1)
+        
+        # Add second assignee - should still be POSTED (need 3, have 2)
+        task.add_assignee(user2)
+        task.refresh_from_db()
+        self.assertEqual(task.status, TaskStatus.POSTED)
+        self.assertEqual(task.assignees.count(), 2)
+        
+        # Add third assignee - should now be ASSIGNED (need 3, have 3)
+        task.add_assignee(user3)
+        task.refresh_from_db()
+        self.assertEqual(task.status, TaskStatus.ASSIGNED)
+        self.assertEqual(task.assignees.count(), 3)
+        
+        # Remove one assignee - should go back to POSTED (need 3, have 2)
+        task.remove_assignee(self.assignee)
+        task.refresh_from_db()
+        self.assertEqual(task.status, TaskStatus.POSTED)
+        self.assertEqual(task.assignees.count(), 2)
+        
+        # Remove another assignee - should still be POSTED (need 3, have 1)
+        task.remove_assignee(user2)
+        task.refresh_from_db()
+        self.assertEqual(task.status, TaskStatus.POSTED)
+        self.assertEqual(task.assignees.count(), 1)
+        
+    # Remove last assignee - should still be POSTED (need 3, have 0)
+    task.remove_assignee(user3)
+    task.refresh_from_db()
+    self.assertEqual(task.status, TaskStatus.POSTED)
+    self.assertEqual(task.assignees.count(), 0)
+
+def test_volunteer_application_with_assignee_count_check(self):
+    """Test that volunteers can apply when assignee count < volunteer_number, even if status is ASSIGNED"""
+    # Create additional users
+    user2 = RegisteredUser.objects.create_user(
+        email='user2@example.com',
+        name='User2',
+        surname='Test',
+        username='user2',
+        phone_number='1111111111',
+        password='password123'
+    )
+    user3 = RegisteredUser.objects.create_user(
+        email='user3@example.com',
+        name='User3',
+        surname='Test',
+        username='user3',
+        phone_number='2222222222',
+        password='password123'
+    )
+    
+    # Create a task requiring 3 volunteers
+    task = Task.objects.create(
+        title='Multi-Volunteer Task',
+        description='Task requiring 3 volunteers',
+        category=TaskCategory.OTHER,
+        location='Test Location',
+        deadline=timezone.now() + datetime.timedelta(days=3),
+        volunteer_number=3,
+        creator=self.user
+    )
+    
+    # Add 2 assignees (2/3) - status should be POSTED
+    task.add_assignee(self.assignee)
+    task.add_assignee(user2)
+    task.refresh_from_db()
+    self.assertEqual(task.status, TaskStatus.POSTED)
+    self.assertEqual(task.assignees.count(), 2)
+    
+    # Volunteers should still be able to apply (2 < 3)
+    from core.models import Volunteer
+    volunteer = Volunteer.volunteer_for_task(user=user3, task=task)
+    self.assertIsNotNone(volunteer)
+    self.assertEqual(volunteer.status, 'PENDING')
+    
+    # Accept the volunteer - should now have 3/3 and status becomes ASSIGNED
+    volunteer.accept_volunteer()
+    task.refresh_from_db()
+    self.assertEqual(task.status, TaskStatus.ASSIGNED)
+    self.assertEqual(task.assignees.count(), 3)
+    
+    # Now volunteers should NOT be able to apply (3 >= 3)
+    user4 = RegisteredUser.objects.create_user(
+        email='user4@example.com',
+        name='User4',
+        surname='Test',
+        username='user4',
+        phone_number='3333333333',
+        password='password123'
+    )
+    volunteer2 = Volunteer.volunteer_for_task(user=user4, task=task)
+    self.assertIsNone(volunteer2)  # Should return None when task is full

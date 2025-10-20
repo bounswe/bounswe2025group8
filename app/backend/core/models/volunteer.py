@@ -158,8 +158,14 @@ class Volunteer(models.Model):
     @classmethod
     def volunteer_for_task(cls, user, task):
         """Create a volunteer entry for a task"""
-        # Check if task is still open for volunteers
-        if task.status != 'POSTED':
+        # Check if task is still open for volunteers (needs more volunteers)
+        # Count only ACCEPTED volunteers, not all assignees
+        current_accepted = cls.objects.filter(
+            task=task, 
+            status=VolunteerStatus.ACCEPTED
+        ).count()
+        
+        if current_accepted >= task.volunteer_number:
             return None
 
         # Check if user is already volunteering for this task
@@ -181,10 +187,7 @@ class Volunteer(models.Model):
             # Remove user from task assignees
             task = self.task
             task.remove_assignee(self.user)
-            
-            # If no more assignees, set task status back to POSTED
-            if not task.get_assignees().exists():
-                task.set_status('POSTED')
+            # Status will be updated automatically by remove_assignee method
         
         self.status = VolunteerStatus.WITHDRAWN
         self.save()
@@ -200,10 +203,7 @@ class Volunteer(models.Model):
             # Change status to PENDING so they can be selected again
             self.status = VolunteerStatus.PENDING
             self.save()
-            
-            # If no more assignees, set task status back to POSTED
-            if not task.get_assignees().exists():
-                task.set_status('POSTED')
+            # Task status will be updated automatically by remove_assignee method
             
             return True
         return False
@@ -231,14 +231,7 @@ class Volunteer(models.Model):
         # Add user to task assignees
         task = self.task
         task.add_assignee(self.user)
-        
-        # Update task status if this is the first accepted volunteer
-        current_accepted = Volunteer.objects.filter(
-            task=task, 
-            status=VolunteerStatus.ACCEPTED
-        ).count()
-        if current_accepted == 1:
-            task.set_status('ASSIGNED')
+        # Task status will be updated automatically by add_assignee method
         
         return True
     
