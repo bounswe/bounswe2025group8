@@ -167,12 +167,12 @@ AUTH_USER_MODEL = 'core.RegisteredUser'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = True  # In development, allow all origins
-#For production, specify allowed origins:
+# For production, specify allowed origins:
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Vite default port
-    "http://165.227.152.202:5173",
+    "http://35.222.191.20:5173",  # New server IP
 ]
+CORS_ALLOW_ALL_ORIGINS = True  
 CORS_ALLOW_METHODS = [
     'DELETE',
     'GET',
