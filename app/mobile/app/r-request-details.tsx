@@ -319,8 +319,11 @@ export default function RequestDetails() {
 
         <TouchableOpacity
           style={[styles.secondaryButton, { borderColor: themeColors.primary }]}
-          onPress={() => setModalVisible(true)}
-        >
+          onPress={() => {
+            setModalVisible(true);
+            setIsEdit(false);
+          }
+        }>
           <Text style={[styles.buttonText, { color: themeColors.primary }]}>Leave a Review</Text>
         </TouchableOpacity>
       </ScrollView>
