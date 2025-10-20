@@ -1,22 +1,6 @@
 import React, { useState, useEffect } from "react";
-import {
-  Typography,
-  Box,
-  Paper,
-  Chip,
-  Button,
-  Divider,
-  Avatar,
-  useTheme,
-  CircularProgress,
-  Grid,
-  Card,
-  CardContent,
-  IconButton,
-  Alert,
-  Snackbar,
-} from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
+// Icons - keeping MUI icons for now as they provide good icon support
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PersonIcon from "@mui/icons-material/Person";
@@ -42,10 +26,10 @@ import {
 import Sidebar from "../components/Sidebar";
 import EditRequestModal from "../components/EditRequestModal";
 import { urgencyLevels } from "../constants/urgency_level";
+import { getCategoryImage } from "../constants/categories";
 
 const RequestDetail = () => {
   const { requestId } = useParams();
-  const theme = useTheme();
   const navigate = useNavigate();
 
   // Authentication state
@@ -142,6 +126,26 @@ const RequestDetail = () => {
     }
   }, [requestId, isAuthenticated, currentUser]);
 
+  // Auto-hide success message after 5 seconds
+  useEffect(() => {
+    if (deleteSuccess) {
+      const timer = setTimeout(() => {
+        setDeleteSuccess(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [deleteSuccess]);
+
+  // Auto-hide error message after 5 seconds
+  useEffect(() => {
+    if (deleteError) {
+      const timer = setTimeout(() => {
+        setDeleteError(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [deleteError]);
+
   // Format date
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -180,89 +184,60 @@ const RequestDetail = () => {
   // Loading state
   if (loading) {
     return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "50vh",
-          flexDirection: "column",
-          gap: 2,
-        }}
-      >
-        <CircularProgress />
-        <Typography variant="body1" color="text.secondary">
-          Loading request details...
-        </Typography>
-      </Box>
+      <div className="flex justify-center items-center min-h-[50vh] flex-col gap-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <p className="text-gray-600">Loading request details...</p>
+      </div>
     );
   }
 
   // Error state
   if (error) {
     return (
-      <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f5f5f5" }}>
+      <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
-        <Box
-          sx={{
-            flexGrow: 1,
-            p: 3,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Box sx={{ textAlign: "center", maxWidth: 400 }}>
-            <Typography variant="h5" color="error" gutterBottom>
+        <div className="flex-grow p-6 flex items-center justify-center">
+          <div className="text-center max-w-md">
+            <h2 className="text-2xl font-semibold text-red-600 mb-4">
               Error loading request
-            </Typography>
-            <Typography variant="body1" color="text.secondary" paragraph>
-              {error}
-            </Typography>
-            <Button
-              startIcon={<ArrowBackIcon />}
+            </h2>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <button
               onClick={() => navigate("/requests")}
-              sx={{ mt: 2 }}
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
+              <ArrowBackIcon className="mr-2 w-4 h-4" />
               Back to Requests
-            </Button>
-          </Box>
-        </Box>
-      </Box>
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
   // Request not found
   if (!request) {
     return (
-      <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f5f5f5" }}>
+      <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
-        <Box
-          sx={{
-            flexGrow: 1,
-            p: 3,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Box sx={{ textAlign: "center", maxWidth: 400 }}>
-            <Typography variant="h5" gutterBottom>
+        <div className="flex-grow p-6 flex items-center justify-center">
+          <div className="text-center max-w-md">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
               Request not found
-            </Typography>
-            <Typography variant="body1" color="text.secondary" paragraph>
+            </h2>
+            <p className="text-gray-600 mb-6">
               The request you're looking for doesn't exist or has been removed.
-            </Typography>
-            <Button
-              startIcon={<ArrowBackIcon />}
+            </p>
+            <button
               onClick={() => navigate("/requests")}
-              sx={{ mt: 2 }}
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
             >
+              <ArrowBackIcon className="mr-2 w-4 h-4" />
               Back to Requests
-            </Button>
-          </Box>
-        </Box>
-      </Box>
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -414,357 +389,261 @@ const RequestDetail = () => {
   };
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f5f5f5" }}>
+    <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
       <Sidebar />
 
-      {/* Success message */}
-      <Snackbar
-        open={deleteSuccess}
-        autoHideDuration={5000}
-        onClose={() => setDeleteSuccess(false)}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert severity="success" sx={{ width: "100%" }}>
-          Request deleted successfully! Redirecting...
-        </Alert>
-      </Snackbar>
+      {/* Success/Error Messages */}
+      {deleteSuccess && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg flex items-center">
+            <span>Request deleted successfully! Redirecting...</span>
+            <button
+              onClick={() => setDeleteSuccess(false)}
+              className="ml-4 text-green-700 hover:text-green-900"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
 
-      {/* Error message */}
-      <Snackbar
-        open={!!deleteError}
-        autoHideDuration={5000}
-        onClose={() => setDeleteError(null)}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert severity="error" sx={{ width: "100%" }}>
-          {deleteError}
-        </Alert>
-      </Snackbar>
+      {deleteError && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg flex items-center">
+            <span>{deleteError}</span>
+            <button
+              onClick={() => setDeleteError(null)}
+              className="ml-4 text-red-700 hover:text-red-900"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
-      <Box sx={{ flexGrow: 1, p: 3 }}>
+      <div className="flex-grow p-6">
         {/* Back Button and Title */}
-        <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-          <IconButton
+        <div className="flex items-center mb-6">
+          <button
             onClick={() => navigate("/requests")}
-            sx={{ mr: 2, color: "text.secondary" }}
+            className="mr-4 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
           >
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography variant="h4" sx={{ flexGrow: 1, fontWeight: "bold" }}>
+            <ArrowBackIcon className="w-6 h-6" />
+          </button>
+          <h1 className="flex-grow text-3xl font-bold text-gray-900">
             {request.title}
-          </Typography>
-          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-            <Chip
-              label={request.category_display}
-              sx={{
-                bgcolor: "#e3f2fd",
-                color: "#1976d2",
-                fontWeight: "medium",
-              }}
-            />
-            <Chip
-              label={`${urgency.name} Urgency`}
-              sx={{
-                bgcolor: urgency.color,
-                color: "white",
-                fontWeight: "medium",
-              }}
-            />
-            <IconButton>
-              <MoreVertIcon />
-            </IconButton>
-          </Box>
-        </Box>
+          </h1>
+          <div className="flex gap-2 items-center">
+            <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+              {request.category_display}
+            </span>
+            <span
+              className="px-3 py-1 text-white text-sm font-medium rounded-full"
+              style={{ backgroundColor: urgency.color }}
+            >
+              {urgency.name} Urgency
+            </span>
+            <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors">
+              <MoreVertIcon className="w-6 h-6" />
+            </button>
+          </div>
+        </div>
 
-        {/* Main Content Card */}
-        <Card sx={{ borderRadius: 2, overflow: "hidden", mb: 3 }}>
-          <Grid container>
+        {/* Main Content Card - Improved Layout */}
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2">
             {/* Left Column - Image */}
-            <Grid item xs={12} md={6}>
-              <Box
-                component="img"
+            <div className="relative h-120">
+              <img
                 src={
                   request.photos?.[0]?.image ||
                   request.photos?.[0]?.photo_url ||
-                  "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=500&h=500&fit=crop"
+                  getCategoryImage(request.category)
                 }
                 alt={request.title}
-                sx={{
-                  width: "100%",
-                  height: 400,
-                  objectFit: "cover",
-                }}
+                className="w-full h-full object-cover"
               />
-            </Grid>
+              {/* Image overlay with category */}
+              <div className="absolute bottom-4 left-4">
+                <span className="px-3 py-2 bg-black bg-opacity-60 text-white text-sm font-medium rounded-lg">
+                  {request.category_display}
+                </span>
+              </div>
+            </div>
 
             {/* Right Column - Details */}
-            <Grid item xs={12} md={6}>
-              <CardContent
-                sx={{
-                  p: 3,
-                  height: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
+            <div className="p-6 flex flex-col justify-between">
+              {/* Requester Info */}
+              <div
+                className="flex items-center mb-6 p-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => navigate(`/profile/${request.creator.id}`)}
               >
-                {/* Requester Info */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    mb: 3,
-                    cursor: "pointer",
-                    borderRadius: 2,
-                    transition: "background-color 150ms ease",
-                    "&:hover": {
-                      bgcolor: "action.hover",
-                    },
-                  }}
-                  onClick={() => navigate(`/profile/${request.creator.id}`)}
-                >
-                  <Avatar
-                    sx={{
-                      width: 50,
-                      height: 50,
-                      mr: 2,
-                      bgcolor: theme.palette.primary.main,
-                    }}
-                  >
-                    {request.creator.name.charAt(0)}
-                  </Avatar>
-                  <Box>
-                    <Typography variant="h6" fontWeight="medium">
-                      {request.creator.name} {request.creator.surname}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {getTimeAgo(request.created_at)}
-                    </Typography>
-                  </Box>
-                </Box>
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg mr-4">
+                  {request.creator.name.charAt(0)}
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {request.creator.name} {request.creator.surname}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    {getTimeAgo(request.created_at)}
+                  </p>
+                </div>
+              </div>
 
-                {/* Description */}
-                <Typography variant="body1" paragraph sx={{ flexGrow: 1 }}>
+              {/* Description */}
+              <div className="mb-6 flex-grow">
+                <p className="text-gray-700 leading-relaxed">
                   {request.description}
-                </Typography>
+                </p>
+              </div>
 
-                {/* Details */}
-                <Box sx={{ mb: 3 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                    <AccessTimeIcon sx={{ mr: 1, color: "text.secondary" }} />
-                    <Typography variant="body2">
-                      {formatDate(request.deadline)} -{" "}
-                      {formatTime(request.deadline)}
-                    </Typography>
-                  </Box>
+              {/* Details Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <div className="flex items-center text-gray-600">
+                  <AccessTimeIcon className="w-5 h-5 mr-3 text-gray-400" />
+                  <span className="text-sm">
+                    {formatDate(request.deadline)} -{" "}
+                    {formatTime(request.deadline)}
+                  </span>
+                </div>
 
-                  <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                    <LocationOnIcon sx={{ mr: 1, color: "text.secondary" }} />
-                    <Typography variant="body2">{request.location}</Typography>
-                  </Box>
+                <div className="flex items-center text-gray-600">
+                  <LocationOnIcon className="w-5 h-5 mr-3 text-gray-400" />
+                  <span className="text-sm">{request.location}</span>
+                </div>
 
-                  <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                    <PersonIcon sx={{ mr: 1, color: "text.secondary" }} />
-                    <Typography variant="body2">
-                      {request.volunteer_number} person
-                      {request.volunteer_number > 1 ? "s" : ""} required
-                    </Typography>
-                  </Box>
+                <div className="flex items-center text-gray-600">
+                  <PersonIcon className="w-5 h-5 mr-3 text-gray-400" />
+                  <span className="text-sm">
+                    {request.volunteer_number} person
+                    {request.volunteer_number > 1 ? "s" : ""} required
+                  </span>
+                </div>
 
-                  <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                    <PhoneIcon sx={{ mr: 1, color: "text.secondary" }} />
-                    <Typography variant="body2">
-                      {request.creator.phone_number}
-                    </Typography>
-                  </Box>
-                </Box>
+                <div className="flex items-center text-gray-600">
+                  <PhoneIcon className="w-5 h-5 mr-3 text-gray-400" />
+                  <span className="text-sm">
+                    {request.creator.phone_number}
+                  </span>
+                </div>
+              </div>
 
-                {/* Status */}
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ mb: 2 }}
-                >
-                  {request.status === "POSTED"
-                    ? "Waiting for Volunteers"
-                    : request.status === "ASSIGNED"
-                    ? isTaskCreator
-                      ? null
-                      : volunteerRecord && volunteerRecord.status === "ACCEPTED"
-                      ? "Task Assigned to You"
-                      : acceptedVolunteersCount < request.volunteer_number
-                      ? "Waiting for More Volunteers"
-                      : "Task Assigned"
-                    : request.status === "IN_PROGRESS"
-                    ? "In Progress"
-                    : request.status === "COMPLETED"
-                    ? "Completed"
-                    : "Unknown Status"}
-                </Typography>
+              {/* Status */}
+              {(request.status === "POSTED" ||
+                request.status === "ASSIGNED" ||
+                request.status === "IN_PROGRESS" ||
+                request.status === "COMPLETED") && (
+                <div className="mb-6">
+                  <p className="text-sm text-gray-500">
+                    {request.status === "POSTED"
+                      ? "Waiting for Volunteers"
+                      : request.status === "ASSIGNED"
+                      ? isTaskCreator
+                        ? null
+                        : volunteerRecord &&
+                          volunteerRecord.status === "ACCEPTED"
+                        ? "Task Assigned to You"
+                        : acceptedVolunteersCount < request.volunteer_number
+                        ? "Waiting for More Volunteers"
+                        : "Task Assigned"
+                      : request.status === "IN_PROGRESS"
+                      ? "In Progress"
+                      : request.status === "COMPLETED"
+                      ? "Completed"
+                      : "Unknown Status"}
+                  </p>
+                </div>
+              )}
 
-                {/* Action Buttons */}
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  {/* Primary Action Button for Task Creator */}
-                  {canEdit &&
-                    (request.status === "POSTED" ||
-                      request.status === "ASSIGNED") && (
-                      <Button
-                        variant="contained"
-                        size="large"
-                        onClick={handleSelectVolunteer}
-                        sx={{
-                          py: 1.5,
-                          textTransform: "none",
-                          fontWeight: 500,
-                          fontSize: "1rem",
-                          bgcolor: "#7c4dff",
-                          "&:hover": {
-                            bgcolor: "#6a3de8",
-                          },
-                        }}
-                      >
-                        {request.status === "ASSIGNED"
-                          ? "Change Volunteers"
-                          : "Select Volunteer"}
-                      </Button>
-                    )}
-
-                  {canVolunteer && (
-                    <Button
-                      variant="contained"
-                      size="large"
-                      startIcon={<VolunteerActivismIcon />}
-                      onClick={handleVolunteer}
-                      disabled={isVolunteering}
-                      sx={{
-                        py: 1.5,
-                        textTransform: "none",
-                        fontWeight: 500,
-                        fontSize: "1rem",
-                        bgcolor: "#4caf50",
-                        "&:hover": {
-                          bgcolor: "#45a049",
-                        },
-                        "&:disabled": {
-                          bgcolor: "#ccc",
-                          color: "#666",
-                        },
-                      }}
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                {/* Primary Action Button for Task Creator */}
+                {canEdit &&
+                  (request.status === "POSTED" ||
+                    request.status === "ASSIGNED") && (
+                    <button
+                      onClick={handleSelectVolunteer}
+                      className="w-full py-3 px-6 bg-purple-600 text-white text-base font-medium rounded-lg hover:bg-purple-700 transition-colors"
                     >
-                      {isVolunteering
-                        ? "Volunteering..."
-                        : "Volunteer for this Task"}
-                    </Button>
+                      {request.status === "ASSIGNED"
+                        ? "Change Volunteers"
+                        : "Select Volunteer"}
+                    </button>
                   )}
 
-                  {canWithdraw && (
-                    <Button
-                      variant="outlined"
-                      size="large"
-                      startIcon={<VolunteerActivismIcon />}
-                      onClick={handleWithdrawVolunteer}
-                      disabled={isVolunteering}
-                      sx={{
-                        py: 1.5,
-                        textTransform: "none",
-                        fontWeight: 500,
-                        fontSize: "1rem",
-                        borderColor: "#f44336",
-                        color: "#f44336",
-                        "&:hover": {
-                          borderColor: "#d32f2f",
-                          bgcolor: "#ffebee",
-                        },
-                        "&:disabled": {
-                          borderColor: "#ccc",
-                          color: "#666",
-                        },
-                      }}
+                {canVolunteer && (
+                  <button
+                    onClick={handleVolunteer}
+                    disabled={isVolunteering}
+                    className="w-full py-3 px-6 bg-green-600 text-white text-base font-medium rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                  >
+                    <VolunteerActivismIcon className="w-5 h-5 mr-2" />
+                    {isVolunteering
+                      ? "Volunteering..."
+                      : "Volunteer for this Task"}
+                  </button>
+                )}
+
+                {canWithdraw && (
+                  <button
+                    onClick={handleWithdrawVolunteer}
+                    disabled={isVolunteering}
+                    className="w-full py-3 px-6 border-2 border-red-500 text-red-600 text-base font-medium rounded-lg hover:bg-red-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                  >
+                    <VolunteerActivismIcon className="w-5 h-5 mr-2" />
+                    {isVolunteering ? "Withdrawing..." : "Withdraw from Task"}
+                  </button>
+                )}
+
+                {!isAuthenticated && (
+                  <button
+                    onClick={() => navigate("/login")}
+                    className="w-full py-3 px-6 bg-blue-600 text-white text-base font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Login to Volunteer
+                  </button>
+                )}
+
+                {/* Secondary Action Buttons - Only for Task Creator */}
+                {canEdit && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={handleEditTask}
+                      className="py-2 px-4 border-2 border-amber-500 text-amber-600 text-sm font-medium rounded-lg hover:bg-amber-50 transition-colors flex items-center justify-center"
                     >
-                      {isVolunteering ? "Withdrawing..." : "Withdraw from Task"}
-                    </Button>
-                  )}
-
-                  {!isAuthenticated && (
-                    <Button
-                      variant="contained"
-                      size="large"
-                      onClick={() => navigate("/login")}
-                      sx={{
-                        py: 1.5,
-                        textTransform: "none",
-                        fontWeight: 500,
-                        fontSize: "1rem",
-                        bgcolor: "#2196f3",
-                        "&:hover": {
-                          bgcolor: "#1976d2",
-                        },
-                      }}
+                      <EditIcon className="w-4 h-4 mr-2" />
+                      Edit
+                    </button>
+                    <button
+                      onClick={handleDeleteTask}
+                      disabled={isDeleting}
+                      className="py-2 px-4 border-2 border-red-500 text-red-600 text-sm font-medium rounded-lg hover:bg-red-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
                     >
-                      Login to Volunteer
-                    </Button>
-                  )}
+                      {isDeleting ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500 mr-2"></div>
+                      ) : (
+                        <DeleteIcon className="w-4 h-4 mr-2" />
+                      )}
+                      {isDeleting ? "Deleting..." : "Delete"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-                  {/* Secondary Action Buttons - Only for Task Creator */}
-                  {canEdit && (
-                    <Box sx={{ display: "flex", gap: 1 }}>
-                      <Button
-                        variant="outlined"
-                        startIcon={<EditIcon />}
-                        onClick={handleEditTask}
-                        sx={{
-                          flex: 1,
-                          textTransform: "none",
-                          borderColor: "#ffc107",
-                          color: "#ff8f00",
-                          "&:hover": {
-                            borderColor: "#ff8f00",
-                            bgcolor: "#fff3e0",
-                          },
-                        }}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        startIcon={
-                          isDeleting ? (
-                            <CircularProgress size={20} />
-                          ) : (
-                            <DeleteIcon />
-                          )
-                        }
-                        onClick={handleDeleteTask}
-                        disabled={isDeleting}
-                        sx={{
-                          flex: 1,
-                          textTransform: "none",
-                          borderColor: "#f44336",
-                          color: "#f44336",
-                          "&:hover": {
-                            borderColor: "#d32f2f",
-                            bgcolor: "#ffebee",
-                          },
-                        }}
-                      >
-                        {isDeleting ? "Deleting..." : "Delete"}
-                      </Button>
-                    </Box>
-                  )}
-                </Box>
-              </CardContent>
-            </Grid>
-          </Grid>
-        </Card>
-      </Box>
       <EditRequestModal
         open={editDialogOpen}
         onClose={() => setEditDialogOpen(false)}
         request={request}
         onSubmit={handleEditSubmit}
       />
-    </Box>
+    </div>
   );
 };
 
