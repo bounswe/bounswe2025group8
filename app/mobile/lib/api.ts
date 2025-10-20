@@ -560,7 +560,7 @@ export const getTasks = async (): Promise<TasksResponse> => {
 
 export const getCategories = async (): Promise<CategoriesResponse> => {
   try {
-    const response = await api.get<CategoriesResponse>('/categories/');
+    const response = await api.get<CategoriesResponse>('/tasks/categories/');
     return response.data;
   } catch (error) {
     console.error('Error fetching categories:', error);
