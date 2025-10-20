@@ -4,8 +4,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
 import { useAuth } from '../lib/auth';
+import { getCategories } from '../lib/api';
 
-const categories = [
+const fallbackCategories = [
   { value: 'GROCERY_SHOPPING', label: 'Grocery Shopping' },
   { value: 'TUTORING', label: 'Tutoring' },
   { value: 'HOME_REPAIR', label: 'Home Repair' },
@@ -21,11 +22,35 @@ export default function CreateRequest() {
   const { user } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState(categories[0].value);
   const [urgency, setUrgency] = useState(urgencies[0]);
   const [people, setPeople] = useState(1);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showUrgencyModal, setShowUrgencyModal] = useState(false);
+  const [categories, setCategories] = useState(fallbackCategories);
+  const [category, setCategory] = useState(categories[0].value);
+
+  
+useEffect(() => {
+  let cancelled = false;
+  getCategories()
+    .then(({ results }) => {
+      if (!cancelled && results?.length) {
+        console.log("Fetched categories:", results);
+        const mapped = results.map(c => ({ value: c.id, label: c.name }));
+        setCategories(mapped);
+        setCategory(prev => {
+        const stillThere = mapped.find(c => c.value === prev);
+        return stillThere ? prev : mapped[0].value;
+        })
+      }
+})
+    .catch(() => {
+      console.log("Error fetching categories, using fallback.");
+    });
+  return () => {
+    cancelled = true;
+  };
+}, []);
 
   useEffect(() => {
     if (!user) {
