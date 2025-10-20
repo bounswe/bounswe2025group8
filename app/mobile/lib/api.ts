@@ -271,7 +271,7 @@ export const register = async (
     // Split full name into name and surname
     const nameParts = fullName.trim().split(' ');
     const name = nameParts[0];
-    const surname = nameParts.slice(1).join(' ') || name; // Use first name as surname if no surname provided
+    const surname = nameParts.slice(1).join(' ') || ''; // Use first name as surname if no surname provided
     
     // Validate phone number format (10-15 digits, optional + prefix)
     const phoneRegex = /^\+?[0-9]{10,15}$/;
@@ -580,9 +580,9 @@ export interface WithdrawVolunteerResponse {
   message?: string;
 }
 
-export const listVolunteers = async (params?: Record<string, unknown>): Promise<Volunteer[]> => {
+export const listVolunteers = async (taskId: number, params?: Record<string, unknown>): Promise<Volunteer[]> => {
   try {
-    const response = await api.get('/volunteers/', { params });
+    const response = await api.get(`/tasks/${taskId}/volunteers/`, { params });
     const payload = response.data;
     if (Array.isArray(payload)) {
       return payload as Volunteer[];
@@ -596,7 +596,7 @@ export const listVolunteers = async (params?: Record<string, unknown>): Promise<
     return [];
   } catch (error) {
     if (error instanceof AxiosError) {
-      console.error('List volunteers error details:', {
+      console.error(`List volunteers for task ${taskId} error details:`, {
         error: error.message,
         request: error.config,
         response: error.response?.data,
