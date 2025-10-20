@@ -31,7 +31,8 @@ const API_HOST = Platform.select({
   default: lanHost,   // Mobile (ios/Android) uses LAN IP
 });
 
-export const API_BASE_URL = `http://${API_HOST}:${port}/api`;
+//export const API_BASE_URL = `http://${API_HOST}:${port}/api`;
+export const API_BASE_URL = `http://35.222.191.20:8000/api`;
 
 interface LoginResponse {
   status: string;

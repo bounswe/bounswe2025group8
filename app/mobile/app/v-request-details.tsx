@@ -40,7 +40,6 @@ export default function RequestDetailsVolunteer() {
   const [acceptedVolunteers, setAcceptedVolunteers] = useState<Volunteer[]>([]);
   const [hasVolunteered, setHasVolunteered] = useState(false);
   const [volunteerRecord, setVolunteerRecord] = useState<{ id: number; status?: string } | null>(null);
-  const [pendingCount, setPendingCount] = useState(0);
   const storageKey = id && user?.id ? `volunteer-record-${id}-${user.id}` : null;
   const legacyStorageKey = id ? `volunteer-record-${id}` : null;
   const volunteerRecordRef = useRef<{ id: number; status?: string } | null>(null);
@@ -85,23 +84,22 @@ export default function RequestDetailsVolunteer() {
       const isCreatorView = user?.id && details.creator?.id === user.id;
       const currentRecord = volunteerRecordRef.current;
 
-      const volunteers = await listVolunteers({ task: id, limit: 100 });
+      const taskVolunteers = await listVolunteers( {task:id,limit: 100 });
 
-      const taskVolunteers = volunteers.filter((vol) => {
+      const volunteers = taskVolunteers.filter((vol) => {
         const taskField = typeof (vol as any).task === 'number' ? (vol as any).task : (vol.task as any)?.id;
         return taskField === id;
       });
 
-      const acceptedList = taskVolunteers.filter((vol) => (vol.status || '').toUpperCase() === 'ACCEPTED');
-      const pendingList = taskVolunteers.filter((vol) => (vol.status || '').toUpperCase() === 'PENDING');
+      const acceptedList = volunteers.filter((vol) => (vol.status || '').toUpperCase() === 'ACCEPTED');
+      const pendingList = volunteers.filter((vol) => (vol.status || '').toUpperCase() === 'PENDING');
       setAcceptedVolunteers(acceptedList);
-      setPendingCount(pendingList.length);
 
       const volunteerForUser = user
-        ? taskVolunteers.find((vol) => vol.user?.id === user.id)
+        ? volunteers.find((vol) => vol.user?.id === user.id)
         : null;
 
-      const assignedToCurrentUser = user?.id && details.assignee?.id === user.id;
+      const assignedToCurrentUser = user?.id && acceptedList.some((vol) => vol.user?.id === user.id);
       if (assignedToCurrentUser) {
         setHasVolunteered(true);
         setVolunteerRecord((prev) => {
@@ -313,7 +311,6 @@ useEffect(() => {
     );
   }
 
-  const totalSlots = request.volunteer_number || 0;
 
   const urgencyLevelDisplay =
     request.urgency_level === 3 ? 'High' : request.urgency_level === 2 ? 'Medium' : request.urgency_level === 1 ? 'Low' : 'Medium';
@@ -323,7 +320,7 @@ useEffect(() => {
   const requesterAvatar = request.creator?.photo || 'https://placehold.co/70x70';
   const datetime = request.deadline ? new Date(request.deadline).toLocaleString() : '';
   const locationDisplay = request.location || 'N/A';
-  const requiredPerson = totalSlots || 1;
+  const requiredPerson = request.volunteer_number || 1;
   const phoneNumber = request.creator?.phone_number || '';
   const isCreatorView = user?.id === request.creator?.id;
 
@@ -336,14 +333,11 @@ useEffect(() => {
   const isAlreadyVolunteered =
     hasVolunteered || userAssigned || (!!user && acceptedIds.includes(user.id));
   const acceptedCount = acceptedVolunteers.length;
-  const hasCapacity = totalSlots === 0 || acceptedCount < totalSlots;
+  const hasCapacity = acceptedCount < request.volunteer_number;
   const statusNormalized = normalizeStatus(request.status);
   const isTaskOpen = statusNormalized === 'POSTED';
   const canVolunteer = !isCreator && isTaskOpen && !isAlreadyVolunteered && hasCapacity;
 
-  const volunteersInfoText = totalSlots > 0
-    ? `Slots filled: ${Math.min(acceptedCount, totalSlots)}/${totalSlots}`
-    : `Volunteers needed: ${requiredPerson}`;
 
   const volunteerStatusMessage = !isCreatorView && (userAssigned || ['pending', 'accepted', 'rejected', 'withdrawn'].includes(volunteerStatusLabel ?? ''))
     ? (() => {
@@ -441,7 +435,6 @@ useEffect(() => {
               value={`Volunteers needed: ${requiredPerson}`}
               themeColors={themeColors}
             />
-            <DetailRow icon="people-outline" value={volunteersInfoText} themeColors={themeColors} />
             {!isTaskOpen && (
               <DetailRow
                 icon="remove-circle-outline"
@@ -449,11 +442,6 @@ useEffect(() => {
                 themeColors={themeColors}
               />
             )}
-            <DetailRow
-              icon="hourglass-outline"
-              value={pendingCount > 0 ? `${pendingCount} pending volunteer request${pendingCount === 1 ? '' : 's'}` : 'No pending volunteer requests'}
-              themeColors={themeColors}
-            />
             {volunteerStatusMessage && (
               <DetailRow
                 icon="checkmark-circle-outline"
