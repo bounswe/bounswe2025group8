@@ -9,6 +9,8 @@ import {
   startOfMonth,
   endOfMonth,
   eachDayOfInterval,
+  startOfWeek,
+  endOfWeek,
   isToday,
   getDay,
   isSameDay,
@@ -16,6 +18,7 @@ import {
   addMinutes,
   isBefore,
   startOfDay,
+  isSameMonth,
 } from "date-fns";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
@@ -173,44 +176,16 @@ const DetermineDeadlineStep = () => {
   const renderCalendar = () => {
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(currentMonth);
-    const startDate = monthStart;
-    const endDate = monthEnd;
-    const days = eachDayOfInterval({ start: startDate, end: endDate });
+    const gridStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+    const gridEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+    const days = eachDayOfInterval({ start: gridStart, end: gridEnd });
 
     const dayOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-    // Create day cells for the current month
     const minSelectableDate = startOfDay(minDeadline);
 
-    const dayCells = days.map((date) => {
-      const dayNum = getDay(date);
-      // Adjust day number to match the UI (Monday as the first day)
-      const adjustedDayNum = dayNum === 0 ? 6 : dayNum - 1;
-
-      return {
-        date,
-        dayOfWeek: adjustedDayNum,
-      };
-    });
-
-    // Group by weeks
     const weeks = [];
-    let currentWeek = [];
-
-    dayCells.forEach((cell) => {
-      if (
-        currentWeek.length === 0 ||
-        cell.dayOfWeek > currentWeek[currentWeek.length - 1].dayOfWeek
-      ) {
-        currentWeek.push(cell);
-      } else {
-        weeks.push(currentWeek);
-        currentWeek = [cell];
-      }
-    });
-
-    if (currentWeek.length > 0) {
-      weeks.push(currentWeek);
+    for (let i = 0; i < days.length; i += 7) {
+      weeks.push(days.slice(i, i + 7));
     }
 
     return (
@@ -230,79 +205,53 @@ const DetermineDeadlineStep = () => {
           </thead>
           <tbody>
             {weeks.map((week, weekIndex) => {
-              const fullWeek = [];
-
-              // Fill in empty cells for days before the first day of the week
-              if (weekIndex === 0) {
-                const firstDayOfWeek = week[0].dayOfWeek;
-                for (let i = 0; i < firstDayOfWeek; i++) {
-                  fullWeek.push({ empty: true, dayOfWeek: i });
-                }
-              }
-
-              // Add actual days
-              week.forEach((cell) => {
-                fullWeek.push(cell);
-              });
-
-              // Fill in empty cells for days after the last day of the week
-              const lastDayOfWeek = fullWeek[fullWeek.length - 1].dayOfWeek;
-              for (let i = lastDayOfWeek + 1; i < 7; i++) {
-                fullWeek.push({ empty: true, dayOfWeek: i });
-              }
-
               return (
                 <tr key={`week-${weekIndex}`}>
-                  {fullWeek.map((cell, cellIndex) => {
-                    const isSelected =
-                      cell.date && selectedDate
-                        ? isSameDay(cell.date, selectedDate)
-                        : false;
-                    const isDisabled =
-                      cell.empty ||
-                      (cell.date
-                        ? isBefore(cell.date, minSelectableDate)
-                        : true);
-                    const isClickable = !isDisabled && !!cell.date;
-                    const isTodayCell =
-                      cell.date && isToday(cell.date) && !isSelected;
+                  {week.map((date, cellIndex) => {
+                    const isSelected = selectedDate
+                      ? isSameDay(date, selectedDate)
+                      : false;
+                    const isOutsideMonth = !isSameMonth(date, monthStart);
+                    const isBeforeMin = isBefore(date, minSelectableDate);
+                    const isDisabled = isOutsideMonth || isBeforeMin;
+                    const isClickable = !isDisabled;
+                    const isTodayCell = isToday(date) && !isSelected;
 
                     const cellClasses = [
-                      "py-2 text-center",
+                      "py-2 text-center align-middle",
                       isClickable ? "cursor-pointer" : "cursor-not-allowed",
-                      cell.empty ? "opacity-30" : "",
-                      !isClickable && !cell.empty && !isSelected
+                      isOutsideMonth ? "text-gray-300" : "",
+                      !isClickable && !isOutsideMonth && !isSelected
                         ? "text-gray-300"
                         : "",
                       isTodayCell ? "font-bold text-blue-600" : "",
-                      isSelected
-                        ? "bg-blue-600 text-white font-bold rounded-full w-9 h-9 mx-auto flex items-center justify-center"
-                        : "",
                     ]
                       .filter(Boolean)
                       .join(" ");
 
-                    const innerClasses = isSelected
-                      ? ""
-                      : [
-                          "w-9 h-9 flex items-center justify-center rounded-full",
-                          isClickable ? "hover:bg-gray-100" : "",
-                        ]
-                          .filter(Boolean)
-                          .join(" ");
+                    const innerClasses = [
+                      "w-9 h-9 flex items-center justify-center rounded-full mx-auto",
+                      isSelected ? "bg-blue-600 text-white font-bold" : "",
+                      !isSelected && isTodayCell && !isOutsideMonth
+                        ? "font-bold text-blue-600"
+                        : "",
+                      !isSelected && isClickable ? "hover:bg-gray-100" : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ");
 
                     return (
                       <td
                         key={`cell-${cellIndex}`}
                         className={cellClasses}
                         onClick={() => {
-                          if (isClickable && cell.date) {
-                            handleDateChange(cell.date);
+                          if (isClickable) {
+                            handleDateChange(date);
                           }
                         }}
                       >
                         <div className={innerClasses}>
-                          {cell.empty ? "" : format(cell.date, "d")}
+                          {format(date, "d")}
                         </div>
                       </td>
                     );
