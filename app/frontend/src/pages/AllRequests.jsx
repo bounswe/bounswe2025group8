@@ -24,6 +24,10 @@ const AllRequests = () => {
 
   // Get current page from URL params
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
+  
+  // Get filter parameters from URL
+  const categoryFilter = searchParams.get("category");
+  const urgencyFilter = searchParams.get("urgency_level");
 
   // Debug logs
   console.log("AllRequests Component State:", {
@@ -31,21 +35,35 @@ const AllRequests = () => {
     pagination,
     loading,
     error,
+    categoryFilter,
+    urgencyFilter,
   });
 
   useEffect(() => {
+    // Build filters object from URL parameters
+    const filters = {};
+    if (categoryFilter) {
+      filters.category = categoryFilter;
+    }
+    if (urgencyFilter) {
+      filters.urgency_level = urgencyFilter;
+    }
+
     console.log(
-      "AllRequests useEffect: Fetching all tasks for page:",
-      currentPage
+      "AllRequests useEffect: Fetching tasks for page:",
+      currentPage,
+      "with filters:",
+      filters
     );
-    // Fetch all tasks when component mounts or page changes
-    dispatch(fetchAllTasks({ page: currentPage }));
+    
+    // Fetch tasks with filters and pagination
+    dispatch(fetchAllTasks({ filters, page: currentPage }));
 
     // Clear any existing errors
     return () => {
       dispatch(clearError());
     };
-  }, [dispatch, currentPage]);
+  }, [dispatch, currentPage, categoryFilter, urgencyFilter]);
 
   // Handle pagination
   const handlePageChange = (newPage) => {
@@ -139,9 +157,29 @@ const AllRequests = () => {
       {/* Header Section */}
       <div className="flex justify-between items-start my-8 ">
         {/* All Requests Title */}
-        <h1 className="font-medium text-xl text-gray-900 font-inter">
-          All Requests
-        </h1>
+        <div>
+          <h1 className="font-medium text-xl text-gray-900 font-inter">
+            {categoryFilter 
+              ? `${categoryMapping[categoryFilter] || categoryFilter} Requests` 
+              : urgencyFilter
+                ? `${urgencyLevels[urgencyFilter]?.name || urgencyFilter} Priority Requests`
+                : "All Requests"
+            }
+          </h1>
+          {(categoryFilter || urgencyFilter) && (
+            <p className="text-sm text-gray-600 mt-1">
+              {categoryFilter && `Showing requests in ${categoryMapping[categoryFilter] || categoryFilter} category`}
+              {urgencyFilter && `Showing ${urgencyLevels[urgencyFilter]?.name || urgencyFilter} priority requests`}
+              {categoryFilter && urgencyFilter && " • "}
+              <button
+                onClick={() => navigate('/requests')}
+                className="text-blue-600 hover:text-blue-800 underline ml-2"
+              >
+                Clear filters
+              </button>
+            </p>
+          )}
+        </div>
 
         {/* Header Icons */}
         <div className="flex space-x-4">
