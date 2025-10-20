@@ -281,27 +281,31 @@ const ProfilePage = () => {
     }
   };
   const getCurrentRequests = () => {
-    // Check if response contains items list (pagination structure) or is an array directly
     const requests = roleTab === 0 ? volunteeredRequests : createdRequests;
-
-    // Return an empty array if no data
     if (!requests) return [];
 
-    // If it's an array, use it directly
-    if (Array.isArray(requests)) return requests;
+    let dataArray = [];
 
-    // If it's a paginated response with 'tasks' field (from the API), return the tasks array
-    if (requests.tasks && Array.isArray(requests.tasks)) return requests.tasks;
+    if (Array.isArray(requests)) {
+      dataArray = requests;
+    } else if (requests.tasks) {
+      dataArray = requests.tasks;
+    } else if (requests.items) {
+      dataArray = requests.items;
+    } else if (requests.data) {
+      dataArray = requests.data;
+    }
 
-    // If it's a paginated response with 'items' field, return the items array
-    if (requests.items && Array.isArray(requests.items)) return requests.items;
+    // Normalize volunteer tasks (they wrap the actual task)
+    if (roleTab === 0) {
+      return dataArray.map((item) =>
+        item.task
+          ? { ...item.task, volunteerStatus: item.status, volunteerId: item.id }
+          : item
+      );
+    }
 
-    // If it's a different structure, check for common fields like 'data'
-    if (requests.data && Array.isArray(requests.data)) return requests.data;
-
-    // If we can't determine the structure, return empty array
-    console.warn("Unknown structure for requests:", requests);
-    return [];
+    return dataArray;
   };
   // Get active and past requests for the current role tab
   // We're now fetching requests directly from the API with appropriate status
