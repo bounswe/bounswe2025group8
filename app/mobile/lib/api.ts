@@ -579,9 +579,9 @@ export interface WithdrawVolunteerResponse {
   message?: string;
 }
 
-export const listVolunteers = async (params?: Record<string, unknown>): Promise<Volunteer[]> => {
+export const listVolunteers = async (taskId: number, params?: Record<string, unknown>): Promise<Volunteer[]> => {
   try {
-    const response = await api.get('/volunteers/', { params });
+    const response = await api.get(`/tasks/${taskId}/volunteers/`, { params });
     const payload = response.data;
     if (Array.isArray(payload)) {
       return payload as Volunteer[];
@@ -595,7 +595,7 @@ export const listVolunteers = async (params?: Record<string, unknown>): Promise<
     return [];
   } catch (error) {
     if (error instanceof AxiosError) {
-      console.error('List volunteers error details:', {
+      console.error(`List volunteers for task ${taskId} error details:`, {
         error: error.message,
         request: error.config,
         response: error.response?.data,
