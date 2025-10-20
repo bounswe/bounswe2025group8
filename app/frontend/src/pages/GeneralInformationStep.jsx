@@ -1,4 +1,4 @@
-import React from "react";
+import React, { forwardRef, useImperativeHandle } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
 import {
@@ -11,7 +11,7 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import CreateIcon from "@mui/icons-material/Create";
 import { urgencyLevels } from "../constants/urgency_level";
 
-const GeneralInformationStep = () => {
+const GeneralInformationStep = (props, ref) => {
   const dispatch = useDispatch();
   const { formData, categories } = useSelector((state) => state.createRequest);
 
@@ -19,7 +19,10 @@ const GeneralInformationStep = () => {
     control,
     handleSubmit,
     formState: { errors },
+    trigger,
   } = useForm({
+    mode: "onChange",
+    shouldFocusError: true,
     defaultValues: {
       title: formData.title,
       description: formData.description,
@@ -28,6 +31,17 @@ const GeneralInformationStep = () => {
       requiredPeople: formData.requiredPeople,
     },
   });
+
+  useImperativeHandle(ref, () => ({
+    async validateForm() {
+      const isValid = await trigger(["title", "description"]);
+      if (!isValid)
+        console.log(
+          "Validation failed: title/description missing or too short"
+        );
+      return isValid;
+    },
+  }));
 
   // Handle form data changes
   const onSubmit = (data) => {
@@ -52,35 +66,39 @@ const GeneralInformationStep = () => {
                 name="title"
                 control={control}
                 rules={{
-                  required: "Title is required",
+                  required: { value: true, message: "Title is required" },
                   minLength: {
                     value: 3,
                     message: "Title must be at least 3 characters",
                   },
                 }}
                 render={({ field }) => (
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <CreateIcon sx={{ color: "#5C69FF" }} />
+                  <>
+                    <div className="relative mb-1">
+                      <div className="absolute left-0 top-1/2 -translate-y-1/2 pl-3 flex items-center pointer-events-none">
+                        <CreateIcon sx={{ color: "#5C69FF" }} />
+                      </div>
+                      <input
+                        {...field}
+                        type="text"
+                        className={`w-full pl-12 pr-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                          errors.title ? "border-red-500" : "border-gray-300"
+                        }`}
+                        placeholder="Help me to see a doctor"
+                        onChange={(e) => {
+                          field.onChange(e);
+                          handleFieldChange("title", e.target.value);
+                          trigger("title");
+                        }}
+                        onBlur={() => trigger("title")}
+                      />
                     </div>
-                    <input
-                      {...field}
-                      type="text"
-                      className={`w-full pl-12 pr-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        errors.title ? "border-red-500" : "border-gray-300"
-                      }`}
-                      placeholder="Help me to see a doctor"
-                      onChange={(e) => {
-                        field.onChange(e);
-                        handleFieldChange("title", e.target.value);
-                      }}
-                    />
                     {errors.title && (
                       <p className="mt-1 text-sm text-red-600">
                         {errors.title.message}
                       </p>
                     )}
-                  </div>
+                  </>
                 )}
               />
             </div>
@@ -121,7 +139,11 @@ const GeneralInformationStep = () => {
                 name="description"
                 control={control}
                 rules={{
-                  required: "Description is required",
+                  required: { value: true, message: "Description is required" },
+                  minLength: {
+                    value: 10,
+                    message: "Description must be at least 10 characters",
+                  },
                 }}
                 render={({ field }) => (
                   <div>
@@ -137,7 +159,9 @@ const GeneralInformationStep = () => {
                       onChange={(e) => {
                         field.onChange(e);
                         handleFieldChange("description", e.target.value);
+                        trigger("description");
                       }}
+                      onBlur={() => trigger("description")}
                     />
                     {errors.description && (
                       <p className="mt-1 text-sm text-red-600">
@@ -209,4 +233,4 @@ const GeneralInformationStep = () => {
   );
 };
 
-export default GeneralInformationStep;
+export default forwardRef(GeneralInformationStep);
