@@ -270,7 +270,7 @@ export const register = async (
     // Split full name into name and surname
     const nameParts = fullName.trim().split(' ');
     const name = nameParts[0];
-    const surname = nameParts.slice(1).join(' ') || name; // Use first name as surname if no surname provided
+    const surname = nameParts.slice(1).join(' ') || ''; // Use first name as surname if no surname provided
     
     // Validate phone number format (10-15 digits, optional + prefix)
     const phoneRegex = /^\+?[0-9]{10,15}$/;
