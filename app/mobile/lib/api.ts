@@ -604,6 +604,7 @@ export const listVolunteers = async (params?: Record<string, unknown>): Promise<
         headers: error.response?.headers,
       });
     }
+    
     return [];
   }
 };

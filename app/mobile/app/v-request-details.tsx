@@ -89,6 +89,7 @@ export default function RequestDetailsVolunteer() {
       const volunteers = taskVolunteers.filter((vol) => {
         const taskField = typeof (vol as any).task === 'number' ? (vol as any).task : (vol.task as any)?.id;
         return taskField === id;
+        
       });
 
       const acceptedList = volunteers.filter((vol) => (vol.status || '').toUpperCase() === 'ACCEPTED');
