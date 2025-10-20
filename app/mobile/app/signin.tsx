@@ -17,7 +17,7 @@ import {
   ScrollView,
   Platform
 } from 'react-native';
-import { login, getUserProfile } from '../lib/api';
+import { login } from '../lib/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../lib/auth';
 
@@ -43,17 +43,9 @@ export default function SignIn() {
       const response = await login(email, password);
       console.log('Login successful:', response);
       
-      // Fetch user profile after successful login
+      // The login function already fetches and stores the user profile
+      // Just set the user in auth context and navigate
       if (response.data?.user_id) {
-        const profileResponse = await getUserProfile(response.data.user_id);
-        console.log('User profile:', profileResponse);
-        // Store user profile data only if defined
-        if (profileResponse && profileResponse) {
-          await AsyncStorage.setItem('userProfile', JSON.stringify(profileResponse));
-        } else {
-          await AsyncStorage.removeItem('userProfile');
-        }
-        // Store user object for useAuth context
         await setUser({ id: response.data.user_id, email });
       }
       

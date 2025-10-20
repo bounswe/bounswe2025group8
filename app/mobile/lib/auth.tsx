@@ -46,6 +46,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const handleLogout = async () => {
     await handleSetUser(null); // This will clear user and userProfile from storage
+    await AsyncStorage.removeItem('token'); // Clear authentication token
+    
+    // Optional: Clear all volunteer state keys
+    try {
+      const allKeys = await AsyncStorage.getAllKeys();
+      const volunteerKeys = allKeys.filter(key => key.startsWith('volunteerState_'));
+      if (volunteerKeys.length > 0) {
+        await AsyncStorage.multiRemove(volunteerKeys);
+      }
+    } catch (error) {
+      console.error('Error clearing volunteer state:', error);
+    }
+    
     // Navigation will be handled by the component calling logout or a root navigator effect
     // For example, by using router.replace('/signin') or a similar mechanism.
   };
