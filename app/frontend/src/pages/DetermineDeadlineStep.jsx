@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -12,11 +12,12 @@ import {
   isToday,
   getDay,
   isSameDay,
+  parse,
 } from "date-fns";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { updateFormData } from "../features/request/store/createRequestSlice";
-import { deserializeDate, serializeDate } from "../utils/dateUtils";
+import { deserializeDate } from "../utils/dateUtils";
 
 const DetermineDeadlineStep = () => {
   const dispatch = useDispatch();
@@ -28,19 +29,59 @@ const DetermineDeadlineStep = () => {
   );
   const [selectedTime, setSelectedTime] = useState(formData.deadlineTime);
 
+  const buildDeadlineDateTime = (date, timeString) => {
+    if (!date) return null;
+
+    try {
+      const baseDate = new Date(date);
+      if (Number.isNaN(baseDate.getTime())) {
+        return null;
+      }
+
+      if (!timeString) {
+        return baseDate;
+      }
+
+      const parsedTime = parse(timeString, "hh:mm a", baseDate);
+      if (Number.isNaN(parsedTime.getTime())) {
+        return baseDate;
+      }
+
+      return parsedTime;
+    } catch (error) {
+      console.error("Failed to build deadline datetime:", error);
+      return null;
+    }
+  };
+
+  const updateDeadlineInStore = useCallback(
+    (date, timeString) => {
+      const combined = buildDeadlineDateTime(date, timeString);
+      if (combined) {
+        dispatch(updateFormData({ deadlineDate: combined.toISOString() }));
+      }
+    },
+    [dispatch]
+  );
+
   // Handle date selection
   const handleDateChange = (date) => {
     setSelectedDate(date);
-    // Serialize the date before dispatching to Redux
-    dispatch(updateFormData({ deadlineDate: serializeDate(date) }));
   };
 
   // Handle time selection
   const handleTimeChange = (time) => {
+    if (!time) {
+      return;
+    }
     const formattedTime = format(time, "hh:mm a");
     setSelectedTime(formattedTime);
     dispatch(updateFormData({ deadlineTime: formattedTime }));
   };
+
+  useEffect(() => {
+    updateDeadlineInStore(selectedDate, selectedTime);
+  }, [selectedDate, selectedTime, updateDeadlineInStore]);
 
   // Navigate to previous month
   const prevMonth = () => {
