@@ -219,6 +219,18 @@ export interface UpdateVolunteerStatusResponse {
   data: Volunteer; 
 }
 
+// Log the API URL being used for debugging
+console.log('API Configuration:', {
+  API_BASE_URL,
+  API_HOST,
+  port,
+  platform: Platform.OS,
+  expoConfig: {
+    apiHost: Constants.expoConfig?.extra?.apiHost,
+    apiPort: Constants.expoConfig?.extra?.apiPort,
+  }
+});
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -229,6 +241,7 @@ const api = axios.create({
 // Add a request interceptor to add auth token
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
+    console.log('Making request to:', (config.baseURL || '') + (config.url || ''));
     const token = await AsyncStorage.getItem('token');
     if (token && config.headers) {
       // Django Rest Framework expects "Token" prefix, not "Bearer"
@@ -239,6 +252,36 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
+    console.error('Request interceptor error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Add a response interceptor to handle errors
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.code === 'ECONNABORTED') {
+      console.error('Request timeout - server took too long to respond');
+    } else if (error.message === 'Network Error') {
+      console.error('Network Error - Details:', {
+        message: error.message,
+        config: {
+          url: error.config?.url,
+          baseURL: error.config?.baseURL,
+          method: error.config?.method,
+        },
+        code: error.code,
+      });
+    } else if (!error.response) {
+      console.error('No response from server - Details:', {
+        message: error.message,
+        code: error.code,
+        url: error.config?.url,
+      });
+    }
     return Promise.reject(error);
   }
 );
