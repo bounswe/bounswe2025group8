@@ -10,10 +10,14 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
-import { updateTask } from "../features/request/services/createRequestService";
+import {
+  updateTask,
+  updateTaskStatus,
+} from "../features/request/services/createRequestService";
 import { cancelTask } from "../features/request/services/createRequestService"; // Add this import
 import {
   getTaskById as getRequestById,
+  getTaskVolunteers,
   volunteerForTask,
   checkUserVolunteerStatus,
   withdrawFromTask,
@@ -50,6 +54,15 @@ const RequestDetail = () => {
   const [deleteSuccess, setDeleteSuccess] = useState(false);
   const [isVolunteering, setIsVolunteering] = useState(false);
   const [volunteerRecord, setVolunteerRecord] = useState(null);
+  const [isMarkingComplete, setIsMarkingComplete] = useState(false);
+
+  // Helper function to check if deadline has passed
+  const isDeadlinePassed = (deadline) => {
+    if (!deadline) return false;
+    const now = new Date();
+    const deadlineDate = new Date(deadline);
+    return now > deadlineDate;
+  };
 
   // Fetch request details and volunteer status
   useEffect(() => {
@@ -62,6 +75,17 @@ const RequestDetail = () => {
         // Fetch request data
         const requestData = await getRequestById(requestId);
         console.log("Received request data:", requestData);
+
+        // Fetch volunteers for the task
+        try {
+          const volunteers = await getTaskVolunteers(requestId);
+          console.log("Received volunteers data:", volunteers);
+          requestData.volunteers = volunteers;
+        } catch (volunteersError) {
+          console.warn(`Could not fetch volunteers for task ${requestId}:`, volunteersError);
+          requestData.volunteers = [];
+        }
+
         setRequest(requestData);
 
         // Check if current user has volunteered for this task
@@ -257,6 +281,12 @@ const RequestDetail = () => {
     acceptedVolunteersCount < request.volunteer_number &&
     !volunteerRecord;
   const canWithdraw = isAuthenticated && !isTaskCreator && volunteerRecord;
+  const canMarkAsComplete =
+    isAuthenticated &&
+    isTaskCreator &&
+    (request?.status === "ASSIGNED" || request?.status === "IN_PROGRESS") &&
+    acceptedVolunteersCount > 0 &&
+    request?.status !== "COMPLETED";
 
   // Debug logging
   console.log("Permission debug:", {
@@ -268,6 +298,9 @@ const RequestDetail = () => {
     volunteerRecord: volunteerRecord?.id,
     canVolunteer,
     canWithdraw,
+    canMarkAsComplete,
+    isDeadlinePassed: isDeadlinePassed(request.deadline),
+    deadline: request?.deadline,
   });
 
   // Button handlers
@@ -385,6 +418,53 @@ const RequestDetail = () => {
     if (canEdit) {
       console.log("Select volunteer for task:", request.id);
       navigate(`/requests/${request.id}/select-volunteer`);
+    }
+  };
+
+  const handleMarkAsComplete = async () => {
+    if (!canMarkAsComplete) return;
+
+    try {
+      console.log("Marking task as completed:", request.id);
+      console.log("Current task status:", request.status);
+      setIsMarkingComplete(true);
+
+      // According to backend validation, tasks can only be marked as COMPLETED from IN_PROGRESS status
+      // So if the task is in ASSIGNED status, we need to first transition to IN_PROGRESS
+      if (request.status === "ASSIGNED") {
+        console.log("Task is ASSIGNED, first transitioning to IN_PROGRESS...");
+        await updateTaskStatus(request.id, "IN_PROGRESS");
+        console.log("Successfully transitioned to IN_PROGRESS");
+      }
+
+      // Now transition to COMPLETED
+      console.log("Transitioning to COMPLETED...");
+      const statusUpdateResult = await updateTaskStatus(
+        request.id,
+        "COMPLETED"
+      );
+      console.log("Task status updated to COMPLETED:", statusUpdateResult);
+
+      // Refresh the task data from the backend to get the latest state
+      console.log("Refreshing task data after marking complete...");
+      const refreshedTask = await getRequestById(request.id);
+      console.log("Refreshed task data:", refreshedTask);
+
+      // Update the request state with the refreshed data
+      setRequest(refreshedTask);
+
+      alert("Task marked as completed successfully!");
+    } catch (error) {
+      console.error("Error marking task as completed:", error);
+      console.error("Error details:", error.response?.data);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Failed to mark task as completed";
+      alert(`Error: ${errorMessage}`);
+    } finally {
+      setIsMarkingComplete(false);
     }
   };
 
@@ -542,7 +622,9 @@ const RequestDetail = () => {
                       ? "Waiting for Volunteers"
                       : request.status === "ASSIGNED"
                       ? isTaskCreator
-                        ? null
+                        ? acceptedVolunteersCount > 0
+                          ? "Ready to mark as complete"
+                          : null
                         : volunteerRecord &&
                           volunteerRecord.status === "ACCEPTED"
                         ? "Task Assigned to You"
@@ -550,9 +632,11 @@ const RequestDetail = () => {
                         ? "Waiting for More Volunteers"
                         : "Task Assigned"
                       : request.status === "IN_PROGRESS"
-                      ? "In Progress"
+                      ? isTaskCreator && acceptedVolunteersCount > 0
+                        ? "Ready to mark as complete"
+                        : "In Progress"
                       : request.status === "COMPLETED"
-                      ? "Completed"
+                      ? "Task Completed"
                       : "Unknown Status"}
                   </p>
                 </div>
@@ -560,17 +644,61 @@ const RequestDetail = () => {
 
               {/* Action Buttons */}
               <div className="space-y-3">
-                {/* Primary Action Button for Task Creator */}
+                {/* Primary Action Buttons for Task Creator - Mark as Complete and Select Volunteer */}
                 {canEdit &&
                   (request.status === "POSTED" ||
                     request.status === "ASSIGNED") && (
+                    <div className={canMarkAsComplete ? "grid grid-cols-2 gap-3" : ""}>
+                      {/* Select Volunteer Button */}
+                      <button
+                        onClick={handleSelectVolunteer}
+                        className={`py-3 px-6 bg-purple-600 text-white text-base font-medium rounded-lg hover:bg-purple-700 transition-colors ${
+                          canMarkAsComplete ? "" : "w-full"
+                        }`}
+                      >
+                        {request.status === "ASSIGNED"
+                          ? "Change Volunteers"
+                          : "Select Volunteer"}
+                      </button>
+
+                      {/* Mark as Complete Button */}
+                      {canMarkAsComplete && (
+                        <button
+                          onClick={handleMarkAsComplete}
+                          disabled={isMarkingComplete}
+                          className="py-3 px-6 bg-green-600 text-white text-base font-medium rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                        >
+                          {isMarkingComplete ? (
+                            <>
+                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                              Marking...
+                            </>
+                          ) : (
+                            "Mark as Complete"
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                {/* Mark as Complete Button (when not in Edit mode) */}
+                {canMarkAsComplete &&
+                  (!canEdit ||
+                    (request.status !== "POSTED" &&
+                      request.status !== "ASSIGNED")) && (
                     <button
-                      onClick={handleSelectVolunteer}
-                      className="w-full py-3 px-6 bg-purple-600 text-white text-base font-medium rounded-lg hover:bg-purple-700 transition-colors"
+                      onClick={handleMarkAsComplete}
+                      disabled={isMarkingComplete}
+                      className="w-full py-3 px-6 bg-green-600 text-white text-base font-medium rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
                     >
-                      {request.status === "ASSIGNED"
-                        ? "Change Volunteers"
-                        : "Select Volunteer"}
+                      {isMarkingComplete ? (
+                        <>
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                          Marking Complete...
+                        </>
+                      ) : (
+                        "Mark as Complete"
+                      )}
                     </button>
                   )}
 
@@ -607,8 +735,8 @@ const RequestDetail = () => {
                   </button>
                 )}
 
-                {/* Secondary Action Buttons - Only for Task Creator */}
-                {canEdit && (
+                {/* Secondary Action Buttons - Only for Task Creator and not completed */}
+                {canEdit && request.status !== "COMPLETED" && (
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={handleEditTask}
