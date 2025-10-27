@@ -70,6 +70,24 @@ services:
     networks:
       - app-network
 
+  caddy:
+    image: caddy:2-alpine
+    container_name: neighborhood_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - app-network
+
 networks:
   app-network:
     driver: bridge
@@ -77,3 +95,5 @@ networks:
 volumes:
   postgres_data:
   node_modules:
+  caddy_data:
+  caddy_config:

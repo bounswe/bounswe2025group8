@@ -1,0 +1,9 @@
+neighborhood.chickenkiller.com {
+    reverse_proxy frontend:5173 {
+        header_up Host neighborhood.chickenkiller.com
+    }
+    
+    handle /api/* {
+        reverse_proxy backend:8000
+    }
+}
