@@ -14,15 +14,24 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(true);
   const [allTasks, setAllTasks] = useState<Task[]>([]);
 
+  // Filter out completed and cancelled tasks
+  const filterActiveTasks = (tasksList: Task[]): Task[] => {
+    return tasksList.filter(task => {
+      const status = task.status?.toUpperCase() || '';
+      return status !== 'COMPLETED' && status !== 'CANCELLED';
+    });
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         const tasksResponse = await getTasks();
         const fetchedTasks = tasksResponse.results || [];
-        setAllTasks(fetchedTasks);
+        const activeTasks = filterActiveTasks(fetchedTasks);
+        setAllTasks(activeTasks);
         setRequests(
-          fetchedTasks.map((task) => ({
+          activeTasks.map((task) => ({
             id: String(task.id),
             title: task.title,
             urgency: task.urgency_level === 3 ? 'High' : task.urgency_level === 2 ? 'Medium' : 'Low',
@@ -32,16 +41,16 @@ export default function SearchPage() {
           }))
         );
 
-        if (fetchedTasks.length > 0) {
+        if (activeTasks.length > 0) {
           const uniqueCategoriesMap = new Map<string, Category>();
-          fetchedTasks.forEach((task) => {
+          activeTasks.forEach((task) => {
             if (task.category && task.category_display) {
               if (!uniqueCategoriesMap.has(task.category)) {
                 uniqueCategoriesMap.set(task.category, {
                   id: task.category,
                   title: task.category_display,
                   image: require('../assets/images/help.png'),
-                  count: fetchedTasks.filter((t) => t.category === task.category).length,
+                  count: activeTasks.filter((t) => t.category === task.category).length,
                 });
               }
             }
