@@ -6,7 +6,7 @@ import RatingPill from '../components/ui/RatingPill';
 import ReviewCard from '../components/ui/ReviewCard';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../lib/auth';
-import { getUserProfile, type UserProfile, getTasks, type Task, getUserReviews, type Review } from '../lib/api';
+import { getUserProfile, type UserProfile, getTasks, type Task, getUserReviews, type Review, listVolunteers, type Volunteer } from '../lib/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RequestCard from '../components/ui/RequestCard';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,6 +30,7 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [allTasks, setAllTasks] = useState<Task[]>([]);
+  const [userVolunteers, setUserVolunteers] = useState<Volunteer[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewsError, setReviewsError] = useState<string | null>(null);
@@ -126,8 +127,11 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (!targetUserId) {
       setAllTasks([]);
+      setUserVolunteers([]);
       return;
     }
+    
+    // Fetch tasks
     getTasks()
       .then((res) => {
         setAllTasks(res.results || []);
@@ -136,7 +140,25 @@ export default function ProfileScreen() {
         Alert.alert('Error', 'Could not load task lists.');
         setAllTasks([]);
       });
-  }, [targetUserId]);
+    
+    // Fetch user's volunteer records if viewing own profile or if user is logged in
+    if (user && (targetUserId === user.id || !viewedUserId)) {
+      listVolunteers()
+        .then((volunteers) => {
+          // Only include ACCEPTED volunteers for completed tasks
+          setUserVolunteers(volunteers.filter(v => {
+            const status = v.status?.toUpperCase() || '';
+            return status === 'ACCEPTED';
+          }));
+        })
+        .catch((err) => {
+          console.error('Error fetching volunteers:', err);
+          setUserVolunteers([]);
+        });
+    } else {
+      setUserVolunteers([]);
+    }
+  }, [targetUserId, user?.id, viewedUserId]);
 
   const normalizeStatus = (status?: string) => (status || '').toLowerCase();
   const isActiveStatus = (status?: string) => {
@@ -148,8 +170,29 @@ export default function ProfileScreen() {
     return ['completed', 'past', 'cancelled', 'expired'].includes(value);
   };
 
+  // Helper function to check if a task is assigned to the target user
+  const isTaskAssignedToUser = (task: Task): boolean => {
+    if (!targetUserId) return false;
+    
+    // Check single assignee field
+    if (task.assignee && task.assignee.id === targetUserId) {
+      return true;
+    }
+    
+    // Check if user has an ACCEPTED volunteer record for this task
+    if (user && targetUserId === user.id) {
+      const volunteerRecord = userVolunteers.find(v => {
+        const taskId = typeof v.task === 'number' ? v.task : (v.task as Task)?.id;
+        return taskId === task.id;
+      });
+      return volunteerRecord !== undefined;
+    }
+    
+    return false;
+  };
+
   const volunteerTasks = targetUserId
-    ? allTasks.filter((task) => task.assignee && task.assignee.id === targetUserId)
+    ? allTasks.filter((task) => isTaskAssignedToUser(task))
     : [];
   const requesterTasks = targetUserId
     ? allTasks.filter((task) => task.creator && task.creator.id === targetUserId)
