@@ -17,7 +17,7 @@ import { useTheme, useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
 import { useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getTaskDetails, getTaskApplicants, type Task, type Volunteer } from '../lib/api';
+import { getTaskDetails, getTaskApplicants, completeTask, type Task, type Volunteer } from '../lib/api';
 import { useAuth } from '../lib/auth';
 
 export default function RequestDetails() {
@@ -35,6 +35,7 @@ export default function RequestDetails() {
   const [loading, setLoading] = useState(true);
   const [assigneesLoading, setAssigneesLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [completingTask, setCompletingTask] = useState(false);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
@@ -120,6 +121,40 @@ export default function RequestDetails() {
 
   const handleStarPress = (star: number) => setRating(star);
 
+  const handleMarkAsComplete = () => {
+    Alert.alert(
+      'Mark as Complete',
+      'Are you sure you want to mark this request as completed? This action cannot be undone.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Mark as Complete',
+          style: 'destructive',
+          onPress: async () => {
+            if (!id || !request) return;
+            
+            setCompletingTask(true);
+            try {
+              const response = await completeTask(id);
+              Alert.alert('Success', response.message || 'Request marked as completed successfully!');
+              
+              // Refresh task data to get updated status
+              await fetchTaskData();
+            } catch (err: any) {
+              const errorMessage = err?.message || 'Failed to mark request as completed. Please try again.';
+              Alert.alert('Error', errorMessage);
+            } finally {
+              setCompletingTask(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   if (loading) {
     return (
       <ActivityIndicator
@@ -159,6 +194,9 @@ export default function RequestDetails() {
   const isCreator = user?.id === request?.creator?.id;
   const numAssigned = assignedVolunteers.length;
   const canAssignMore = numAssigned < request.volunteer_number;
+  const taskStatus = request?.status?.toUpperCase() || '';
+  const isCompleted = taskStatus === 'COMPLETED';
+  const canMarkComplete = isCreator && !isCompleted && (taskStatus === 'ASSIGNED' || taskStatus === 'IN_PROGRESS');
 
   const currentStatusKey = statusDisplayToKey(statusDisplay);
   const statusLabelBackgroundColor =
@@ -280,7 +318,7 @@ export default function RequestDetails() {
           )}
         </View>
 
-        {isCreator && (
+        {isCreator && !isCompleted && (
           <TouchableOpacity
             style={[styles.primaryButton, { backgroundColor: themeColors.primary }]}
             onPress={() => router.push({ pathname: '/select-volunteer', params: { id, requiredVolunteers: String(request.volunteer_number) } })}
@@ -291,7 +329,7 @@ export default function RequestDetails() {
           </TouchableOpacity>
         )}
 
-        {isCreator && (
+        {isCreator && !isCompleted && (
           <TouchableOpacity
             style={[styles.secondaryButton, { borderColor: themeColors.primary }]}
             onPress={() => {
@@ -300,6 +338,20 @@ export default function RequestDetails() {
             }}
           >
             <Text style={[styles.buttonText, { color: themeColors.primary }]}>Edit Request</Text>
+          </TouchableOpacity>
+        )}
+
+        {canMarkComplete && (
+          <TouchableOpacity
+            style={[styles.primaryButton, { backgroundColor: themeColors.primary }]}
+            onPress={handleMarkAsComplete}
+            disabled={completingTask}
+          >
+            {completingTask ? (
+              <ActivityIndicator size="small" color={themeColors.card} />
+            ) : (
+              <Text style={[styles.buttonText, { color: themeColors.card }]}>Mark as Complete</Text>
+            )}
           </TouchableOpacity>
         )}
 
