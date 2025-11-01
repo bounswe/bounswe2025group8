@@ -17,7 +17,7 @@ import { useTheme, useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
 import { useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getTaskDetails, listVolunteers, type Task, type Volunteer, volunteerForTask, withdrawVolunteer } from '../lib/api';
+import { getTaskDetails, listVolunteers, type Task, type Volunteer, volunteerForTask, withdrawVolunteer, createReview, getTaskReviews, type Review } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -37,6 +37,8 @@ export default function RequestDetailsVolunteer() {
   const [modalVisible, setModalVisible] = useState(false);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [existingReviews, setExistingReviews] = useState<Review[]>([]);
   const [acceptedVolunteers, setAcceptedVolunteers] = useState<Volunteer[]>([]);
   const [hasVolunteered, setHasVolunteered] = useState(false);
   const [volunteerRecord, setVolunteerRecord] = useState<{ id: number; status?: string } | null>(null);
@@ -139,6 +141,21 @@ export default function RequestDetailsVolunteer() {
           AsyncStorage.removeItem(storageKey).catch(() => {});
         }
       }
+
+      // Fetch reviews if task is completed and user is an assigned volunteer
+      if (details.status === 'COMPLETED' && user?.id && assignedToCurrentUser) {
+        try {
+          const reviewsResponse = await getTaskReviews(id);
+          if (reviewsResponse.status === 'success') {
+            setExistingReviews(reviewsResponse.data.reviews || []);
+          }
+        } catch (reviewError: any) {
+          console.warn('Error fetching reviews:', reviewError.message);
+          setExistingReviews([]);
+        }
+      } else {
+        setExistingReviews([]);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load request.';
       setError(message);
@@ -214,6 +231,75 @@ useEffect(() => {
 }, [storageKey]);
 
   const handleStarPress = (star: number) => setRating(star);
+
+  const getExistingReviewForRequester = (): Review | undefined => {
+    if (!request?.creator?.id || !user?.id) return undefined;
+    return existingReviews.find(
+      (review) => review.reviewee.id === request.creator.id && review.reviewer.id === user.id
+    );
+  };
+
+  const handleOpenReviewModal = () => {
+    const existingReview = getExistingReviewForRequester();
+    if (existingReview) {
+      setRating(existingReview.score);
+      setReviewText(existingReview.comment);
+    } else {
+      setRating(0);
+      setReviewText('');
+    }
+    setModalVisible(true);
+  };
+
+  const handleSubmitReview = async () => {
+    if (!rating || rating < 1 || rating > 5) {
+      Alert.alert('Rating Required', 'Please select a rating from 1 to 5 stars.');
+      return;
+    }
+    if (!reviewText.trim()) {
+      Alert.alert('Review Required', 'Please write a review comment.');
+      return;
+    }
+    if (!id || !request || !request.creator?.id) {
+      Alert.alert('Error', 'Unable to submit review. Missing information.');
+      return;
+    }
+
+    setSubmittingReview(true);
+
+    try {
+      await createReview({
+        score: Number(rating), // Ensure it's a number
+        comment: reviewText.trim(),
+        reviewee_id: request.creator.id,
+        task_id: id,
+      });
+
+      // Refresh reviews to get updated list
+      try {
+        const reviewsResponse = await getTaskReviews(id);
+        if (reviewsResponse.status === 'success') {
+          setExistingReviews(reviewsResponse.data.reviews || []);
+        }
+      } catch (reviewError) {
+        console.warn('Error refreshing reviews:', reviewError);
+      }
+
+      Alert.alert('Success', 'Review submitted successfully!');
+      setModalVisible(false);
+      setRating(0);
+      setReviewText('');
+      
+      // Refresh task data to show updated reviews
+      await fetchRequestDetails();
+    } catch (err: any) {
+      const errorMessage = err?.message || 'Failed to submit review. Please try again.';
+      Alert.alert('Error', errorMessage);
+      console.error('Review submission error:', err);
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   const handleBeVolunteer = async () => {
     if (!user) {
@@ -492,10 +578,12 @@ useEffect(() => {
                   ]);
                   return;
                 }
-                setModalVisible(true);
+                handleOpenReviewModal();
               }}
             >
-              <Text style={[styles.buttonText, { color: themeColors.card }]}>Rate & Review Requester</Text>
+              <Text style={[styles.buttonText, { color: themeColors.card }]}>
+                {getExistingReviewForRequester() ? 'Edit Rate & Review Requester' : 'Rate & Review Requester'}
+              </Text>
             </TouchableOpacity>
           ) : canVolunteer ? (
             <TouchableOpacity
@@ -531,7 +619,11 @@ useEffect(() => {
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: themeColors.card }]}>
-            <Text style={[styles.modalTitle, { color: themeColors.text }]}>Rate Request</Text>
+            <Text style={[styles.modalTitle, { color: themeColors.text }]}>
+              {getExistingReviewForRequester() 
+                ? `Edit Rate & Review ${request?.creator?.name || 'Requester'}` 
+                : `Rate & Review ${request?.creator?.name || 'Requester'}`}
+            </Text>
             <TextInput
               style={[
                 styles.modalInput,
@@ -549,7 +641,7 @@ useEffect(() => {
                   <Ionicons
                     name={star <= rating ? 'star' : 'star-outline'}
                     size={28}
-                    color={star <= rating ? themeColors.primary : themeColors.border}
+                    color={star <= rating ? themeColors.pink : themeColors.border}
                   />
                 </TouchableOpacity>
               ))}
@@ -557,24 +649,25 @@ useEffect(() => {
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}
-                onPress={() => setModalVisible(false)}
+                onPress={() => {
+                  setModalVisible(false);
+                  setRating(0);
+                  setReviewText('');
+                }}
+                disabled={submittingReview}
               >
                 <Text style={{ color: themeColors.text }}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: themeColors.primary }]}
-                onPress={() => {
-                  if (!reviewText.trim()) {
-                    Alert.alert('Error', 'Review cannot be empty.');
-                    return;
-                  }
-                  Alert.alert('Success', 'Review submitted!');
-                  setModalVisible(false);
-                  setReviewText('');
-                  setRating(0);
-                }}
+                style={[styles.modalButton, { backgroundColor: themeColors.pink }]}
+                onPress={handleSubmitReview}
+                disabled={submittingReview}
               >
-                <Text style={{ color: themeColors.card }}>Submit</Text>
+                {submittingReview ? (
+                  <ActivityIndicator size="small" color={themeColors.card} />
+                ) : (
+                  <Text style={{ color: themeColors.card }}>Submit</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>

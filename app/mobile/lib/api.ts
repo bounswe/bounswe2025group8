@@ -746,6 +746,96 @@ export const getUserReviews = async (userId: number, page = 1, limit = 10): Prom
   }
 };
 
+export interface TaskReviewsResponse {
+  status: string;
+  data: {
+    reviews: Review[];
+    pagination: PaginationInfo;
+  };
+}
+
+export const getTaskReviews = async (taskId: number, page = 1, limit = 20): Promise<TaskReviewsResponse> => {
+  try {
+    const response = await api.get<TaskReviewsResponse>(`/tasks/${taskId}/reviews/`, {
+      params: { page, limit }
+    });
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get task reviews error:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+    }
+    throw error;
+  }
+};
+
+export interface CreateReviewRequest {
+  score: number;
+  comment: string;
+  reviewee_id: number;
+  task_id: number;
+}
+
+export interface CreateReviewResponse {
+  status: string;
+  message: string;
+  data: Review;
+}
+
+export const createReview = async (data: CreateReviewRequest): Promise<CreateReviewResponse> => {
+  try {
+    const response = await api.post<CreateReviewResponse>('/reviews/', data);
+    console.log('Create review response:', response.data);
+    if (response.data.status !== 'success') {
+      throw new Error(response.data.message || 'Failed to create review.');
+    }
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Create review error:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers,
+      });
+      // Extract detailed error message from backend
+      const errorData = error.response?.data;
+      let errMessage = 'Failed to create review.';
+      
+      if (errorData?.message) {
+        errMessage = errorData.message;
+      } else if (errorData?.error) {
+        errMessage = errorData.error;
+      } else if (typeof errorData === 'string') {
+        errMessage = errorData;
+      } else if (errorData) {
+        // Try to extract validation errors
+        const validationErrors = Object.values(errorData).flat();
+        if (validationErrors.length > 0) {
+          errMessage = Array.isArray(validationErrors[0]) 
+            ? validationErrors[0][0] 
+            : String(validationErrors[0]);
+        }
+      }
+      
+      // Add helpful context for the known limitation
+      if (errMessage.includes('Only task participants can submit reviews') || 
+          errMessage.includes('task participants')) {
+        errMessage = 'Only task participants can submit reviews. Note: For tasks with multiple volunteers, only the first assigned volunteer can currently submit reviews due to backend limitations.';
+      }
+      
+      throw new Error(errMessage);
+    }
+    const errMessage = (error as Error).message || 'An unexpected error occurred while trying to create review.';
+    throw new Error(errMessage);
+  }
+};
+
 export const searchUsers = async (query?: string): Promise<UsersResponse> => {
   try {
     const params = query ? { search: query } : {};

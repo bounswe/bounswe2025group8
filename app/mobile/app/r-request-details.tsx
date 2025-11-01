@@ -17,7 +17,7 @@ import { useTheme, useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
 import { useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getTaskDetails, getTaskApplicants, completeTask, cancelTask, type Task, type Volunteer } from '../lib/api';
+import { getTaskDetails, getTaskApplicants, completeTask, cancelTask, createReview, getTaskReviews, type Task, type Volunteer, type Review } from '../lib/api';
 import { useAuth } from '../lib/auth';
 
 export default function RequestDetails() {
@@ -42,6 +42,10 @@ export default function RequestDetails() {
   const [isEdit, setIsEdit] = useState(false);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
+  const [currentVolunteerIndex, setCurrentVolunteerIndex] = useState(0);
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [existingReviews, setExistingReviews] = useState<Review[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
 
   const getLabelColors = (type: string, property: 'Background' | 'Text' | 'Border') => {
     const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
@@ -97,6 +101,24 @@ export default function RequestDetails() {
       } finally {
         setAssigneesLoading(false);
       }
+
+      // Fetch reviews if task is completed and user is creator
+      if (taskDetails.status === 'COMPLETED' && user?.id === taskDetails.creator?.id) {
+        try {
+          setReviewsLoading(true);
+          const reviewsResponse = await getTaskReviews(id);
+          if (reviewsResponse.status === 'success') {
+            setExistingReviews(reviewsResponse.data.reviews || []);
+          }
+        } catch (reviewError: any) {
+          console.warn('Error fetching reviews:', reviewError.message);
+          setExistingReviews([]);
+        } finally {
+          setReviewsLoading(false);
+        }
+      } else {
+        setExistingReviews([]);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to load request details.');
       setRequest(null);
@@ -104,7 +126,7 @@ export default function RequestDetails() {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, user]);
 
   useEffect(() => {
     if (id) {
@@ -121,6 +143,129 @@ export default function RequestDetails() {
   );
 
   const handleStarPress = (star: number) => setRating(star);
+
+  const handleOpenReviewModal = () => {
+    if (assignedVolunteers.length === 0) {
+      Alert.alert('No Volunteers', 'There are no volunteers to review.');
+      return;
+    }
+    setCurrentVolunteerIndex(0);
+    const currentVolunteer = assignedVolunteers[0];
+    
+    // Check if review already exists for this volunteer
+    const existingReview = existingReviews.find(
+      (review) => review.reviewee.id === currentVolunteer.user.id && review.reviewer.id === user?.id
+    );
+    
+    if (existingReview) {
+      setRating(existingReview.score);
+      setReviewText(existingReview.comment);
+    } else {
+      setRating(0);
+      setReviewText('');
+    }
+    
+    setModalVisible(true);
+    setIsEdit(false);
+  };
+
+  const getExistingReviewForVolunteer = (volunteerId: number): Review | undefined => {
+    return existingReviews.find(
+      (review) => review.reviewee.id === volunteerId && review.reviewer.id === user?.id
+    );
+  };
+
+  const hasReviewedAnyVolunteer = (): boolean => {
+    if (assignedVolunteers.length === 0) return false;
+    return assignedVolunteers.some((volunteer) => 
+      existingReviews.some((review) => 
+        review.reviewee.id === volunteer.user.id && review.reviewer.id === user?.id
+      )
+    );
+  };
+
+  const handleSubmitReview = async () => {
+    if (!rating || rating < 1 || rating > 5) {
+      Alert.alert('Rating Required', 'Please select a rating from 1 to 5 stars.');
+      return;
+    }
+    if (!reviewText.trim()) {
+      Alert.alert('Review Required', 'Please write a review comment.');
+      return;
+    }
+    if (!id || !request || currentVolunteerIndex >= assignedVolunteers.length) {
+      return;
+    }
+
+    const currentVolunteer = assignedVolunteers[currentVolunteerIndex];
+    setSubmittingReview(true);
+
+    try {
+      await createReview({
+        score: Number(rating), // Ensure it's a number
+        comment: reviewText.trim(),
+        reviewee_id: currentVolunteer.user.id,
+        task_id: id,
+      });
+
+      // Refresh reviews to get updated list
+      let updatedReviews = existingReviews;
+      try {
+        const reviewsResponse = await getTaskReviews(id);
+        if (reviewsResponse.status === 'success') {
+          updatedReviews = reviewsResponse.data.reviews || [];
+          setExistingReviews(updatedReviews);
+        }
+      } catch (reviewError) {
+        console.warn('Error refreshing reviews:', reviewError);
+      }
+
+      // Move to next volunteer or close modal
+      if (currentVolunteerIndex < assignedVolunteers.length - 1) {
+        // Move to next volunteer
+        const nextIndex = currentVolunteerIndex + 1;
+        setCurrentVolunteerIndex(nextIndex);
+        const nextVolunteer = assignedVolunteers[nextIndex];
+        
+        // Load existing review for next volunteer if it exists
+        const nextReview = updatedReviews.find(
+          (review) => review.reviewee.id === nextVolunteer.user.id && review.reviewer.id === user?.id
+        );
+        
+        if (nextReview) {
+          setRating(nextReview.score);
+          setReviewText(nextReview.comment);
+        } else {
+          setRating(0);
+          setReviewText('');
+        }
+        
+        Alert.alert('Success', `Review submitted for ${currentVolunteer.user.name}!`);
+      } else {
+        // All volunteers reviewed
+        Alert.alert('Success', 'All reviews submitted successfully!');
+        setModalVisible(false);
+        setRating(0);
+        setReviewText('');
+        setCurrentVolunteerIndex(0);
+        // Refresh task data to show updated reviews
+        await fetchTaskData();
+      }
+    } catch (err: any) {
+      const errorMessage = err?.message || 'Failed to submit review. Please try again.';
+      Alert.alert('Error', errorMessage);
+      console.error('Review submission error:', err);
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  const handleCloseReviewModal = () => {
+    setModalVisible(false);
+    setRating(0);
+    setReviewText('');
+    setCurrentVolunteerIndex(0);
+  };
 
   const handleMarkAsComplete = () => {
     Alert.alert(
@@ -437,13 +582,13 @@ export default function RequestDetails() {
             </Text>
             <TouchableOpacity
               style={[styles.primaryButton, { backgroundColor: themeColors.pink }]}
-              onPress={() => {
-                setModalVisible(true);
-                setIsEdit(false);
-              }}
+              onPress={handleOpenReviewModal}
             >
               <Text style={[styles.buttonText, { color: themeColors.card }]}>
-                Rate & Review {numAssigned === 1 ? 'Volunteer' : 'Volunteers'}
+                {hasReviewedAnyVolunteer() 
+                  ? `Edit Rate & Review ${numAssigned === 1 ? 'Volunteer' : 'Volunteers'}`
+                  : `Rate & Review ${numAssigned === 1 ? 'Volunteer' : 'Volunteers'}`
+                }
               </Text>
             </TouchableOpacity>
           </>
@@ -453,18 +598,51 @@ export default function RequestDetails() {
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: themeColors.card }]}>
-            <Text style={[styles.modalTitle, { color: themeColors.text }]}>{isEdit ? 'Edit Request' : 'Rate Request'}</Text>
-            <TextInput
-              style={[
-                styles.modalInput,
-                { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background },
-              ]}
-              placeholder={isEdit ? 'Update request details...' : 'Leave your review...'}
-              placeholderTextColor={themeColors.textMuted}
-              multiline
-              value={reviewText}
-              onChangeText={setReviewText}
-            />
+            <Text style={[styles.modalTitle, { color: themeColors.text }]}>
+              {isEdit 
+                ? 'Edit Request' 
+                : assignedVolunteers.length > 0 
+                  ? (() => {
+                      const currentVolunteer = assignedVolunteers[currentVolunteerIndex];
+                      const existingReview = getExistingReviewForVolunteer(currentVolunteer?.user?.id);
+                      return existingReview 
+                        ? `Edit Rate & Review ${currentVolunteer?.user?.name || 'Volunteer'}`
+                        : `Rate & Review ${currentVolunteer?.user?.name || 'Volunteer'}`;
+                    })()
+                  : 'Rate Request'
+              }
+            </Text>
+            {!isEdit && assignedVolunteers.length > 1 && (
+              <Text style={[styles.modalSubtitle, { color: themeColors.textMuted }]}>
+                {currentVolunteerIndex + 1} of {assignedVolunteers.length}
+              </Text>
+            )}
+            {!isEdit && (
+              <TextInput
+                style={[
+                  styles.modalInput,
+                  { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background },
+                ]}
+                placeholder="Leave your review..."
+                placeholderTextColor={themeColors.textMuted}
+                multiline
+                value={reviewText}
+                onChangeText={setReviewText}
+              />
+            )}
+            {isEdit && (
+              <TextInput
+                style={[
+                  styles.modalInput,
+                  { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background },
+                ]}
+                placeholder="Update request details..."
+                placeholderTextColor={themeColors.textMuted}
+                multiline
+                value={reviewText}
+                onChangeText={setReviewText}
+              />
+            )}
             {!isEdit && (
               <View style={styles.starRow}>
                 {[1, 2, 3, 4, 5].map((star) => (
@@ -472,7 +650,7 @@ export default function RequestDetails() {
                     <Ionicons
                       name={star <= rating ? 'star' : 'star-outline'}
                       size={28}
-                      color={star <= rating ? themeColors.primary : themeColors.border}
+                      color={star <= rating ? themeColors.pink : themeColors.border}
                     />
                   </TouchableOpacity>
                 ))}
@@ -481,24 +659,28 @@ export default function RequestDetails() {
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}
-                onPress={() => setModalVisible(false)}
+                onPress={isEdit ? () => setModalVisible(false) : handleCloseReviewModal}
+                disabled={submittingReview}
               >
                 <Text style={{ color: themeColors.text }}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: themeColors.primary }]}
-                onPress={() => {
-                  if (!reviewText.trim()) {
-                    Alert.alert('Error', 'Review cannot be empty.');
-                    return;
-                  }
-                  Alert.alert('Success', isEdit ? 'Request updated!' : 'Review submitted!');
+                style={[styles.modalButton, { backgroundColor: isEdit ? themeColors.primary : themeColors.pink }]}
+                onPress={isEdit ? () => {
+                  // Handle edit request - placeholder for now
+                  Alert.alert('Success', 'Request updated!');
                   setModalVisible(false);
                   setReviewText('');
-                  setRating(0);
-                }}
+                } : handleSubmitReview}
+                disabled={submittingReview}
               >
-                <Text style={{ color: themeColors.card }}>{isEdit ? 'Save' : 'Submit'}</Text>
+                {submittingReview ? (
+                  <ActivityIndicator size="small" color={themeColors.card} />
+                ) : (
+                  <Text style={{ color: themeColors.card }}>
+                    {isEdit ? 'Save' : currentVolunteerIndex < assignedVolunteers.length - 1 ? 'Next' : 'Submit'}
+                  </Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -664,6 +846,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 12,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    fontWeight: '400',
+    marginBottom: 12,
+    textAlign: 'center',
   },
   modalInput: {
     borderWidth: 1,
