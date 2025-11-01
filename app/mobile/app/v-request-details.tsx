@@ -330,6 +330,7 @@ useEffect(() => {
     .filter((id): id is number => typeof id === 'number');
   const volunteerStatusLabel = normalizeStatus(volunteerRecord?.status).toLowerCase() || (hasVolunteered ? 'pending' : undefined);
   const userAssigned = user && (request.assignee?.id === user?.id);
+  const isAssignedVolunteer = user && acceptedIds.includes(user.id);
   const isAlreadyVolunteered =
     hasVolunteered || userAssigned || (!!user && acceptedIds.includes(user.id));
   const acceptedCount = acceptedVolunteers.length;
@@ -449,10 +450,10 @@ useEffect(() => {
                 themeColors={themeColors}
               />
             )}
-            {(statusDisplayLower === 'accepted' ||
-              statusDisplayLower === 'completed' ||
+            {(statusDisplayLower === 'completed' ||
               isCreator ||
-              userAssigned
+              userAssigned ||
+              isAssignedVolunteer
             ) &&
               phoneNumber && (
                 <DetailRow icon="call-outline" value={phoneNumber} themeColors={themeColors} />
