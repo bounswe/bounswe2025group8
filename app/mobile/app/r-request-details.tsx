@@ -424,17 +424,29 @@ export default function RequestDetails() {
         )}
 
         {isCreator && isCompleted && (
-          <TouchableOpacity
-            style={[styles.primaryButton, { backgroundColor: themeColors.pink }]}
-            onPress={() => {
-              setModalVisible(true);
-              setIsEdit(false);
-            }}
-          >
-            <Text style={[styles.buttonText, { color: themeColors.card }]}>
-              Rate & Review {numAssigned === 1 ? 'Volunteer' : 'Volunteers'}
+          <>
+            <Text
+              style={[
+                styles.statusText,
+                {
+                  color: getLabelColors(statusDisplay, 'Text'),
+                },
+              ]}
+            >
+              {statusDisplay}
             </Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.primaryButton, { backgroundColor: themeColors.pink }]}
+              onPress={() => {
+                setModalVisible(true);
+                setIsEdit(false);
+              }}
+            >
+              <Text style={[styles.buttonText, { color: themeColors.card }]}>
+                Rate & Review {numAssigned === 1 ? 'Volunteer' : 'Volunteers'}
+              </Text>
+            </TouchableOpacity>
+          </>
         )}
       </ScrollView>
 
@@ -675,5 +687,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 12,
     borderWidth: 1,
+  },
+  statusText: {
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 16,
+    marginHorizontal: 16,
   },
 });
