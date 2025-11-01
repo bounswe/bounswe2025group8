@@ -237,7 +237,12 @@ export default function ProfileScreen() {
               status={task.status_display || task.status}
               distance={task.location || 'N/A'}
               time={task.deadline ? new Date(task.deadline).toLocaleDateString() : ''}
-              onPress={() => router.push({ pathname: routePath, params: { id: task.id } })}
+              onPress={() => {
+                // Check if current user is the creator of the task
+                const isCreator = task.creator && task.creator.id === user?.id;
+                const actualRoute = isCreator ? '/r-request-details' : '/v-request-details';
+                router.push({ pathname: actualRoute, params: { id: task.id } });
+              }}
             />
           ))
         )}
