@@ -359,7 +359,7 @@ export default function ProfileScreen() {
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
               <RatingPill
                 rating={profile.rating}
-                reviewCount={profile.completed_task_count}
+                reviewCount={reviews.length}
                 backgroundColor={themeColors.pink}
                 textColor="#fff"
                 iconColor="#fff"
