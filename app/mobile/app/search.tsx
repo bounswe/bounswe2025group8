@@ -105,8 +105,15 @@ export default function SearchPage() {
           else if (type === 'Requests') mappedType = 'request';
           else if (type === 'Profiles') mappedType = 'profile';
           if (mappedType === 'category') router.push(('/category/' + item.id) as any);
-          else if (mappedType === 'request')
-            router.push({ pathname: '/v-request-details', params: { id: item.id } });
+          else if (mappedType === 'request') {
+            // Find the full task object to check if user is creator
+            const task = allTasks.find(t => String(t.id) === String(item.id));
+            if (task && task.creator && task.creator.id === user?.id) {
+              router.push({ pathname: '/r-request-details', params: { id: item.id } });
+            } else {
+              router.push({ pathname: '/v-request-details', params: { id: item.id } });
+            }
+          }
           else if (mappedType === 'profile')
             router.push({ pathname: '/profile', params: { userId: item.id } });
         }}
