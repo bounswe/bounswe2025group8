@@ -378,43 +378,56 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {isOwnProfile && (
-            <View style={[styles.tabSelectorContainer, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-              <TouchableOpacity
-                style={[styles.tabButton, { backgroundColor: selectedTab === 'volunteer' ? themeColors.primary : 'transparent' } ]}
-                onPress={() => setSelectedTab('volunteer')}
-              >
-                <Text style={[styles.tabButtonText, { color: selectedTab === 'volunteer' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'volunteer' ? 'bold' : 'normal' }]}>My Volunteer Tasks</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.tabButton, { backgroundColor: selectedTab === 'requester' ? themeColors.primary : 'transparent' } ]}
-                onPress={() => setSelectedTab('requester')}
-              >
-                <Text style={[styles.tabButtonText, { color: selectedTab === 'requester' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'requester' ? 'bold' : 'normal' }]}>My Created Tasks</Text>
-              </TouchableOpacity>
-            </View>
-        )}
+        <View style={[styles.tabSelectorContainer, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+          <TouchableOpacity
+            style={[styles.tabButton, { backgroundColor: selectedTab === 'volunteer' ? themeColors.primary : 'transparent' } ]}
+            onPress={() => setSelectedTab('volunteer')}
+          >
+            <Text style={[styles.tabButtonText, { color: selectedTab === 'volunteer' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'volunteer' ? 'bold' : 'normal' }]}>
+              {isOwnProfile ? 'My Volunteer Tasks' : 'Volunteer Tasks'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tabButton, { backgroundColor: selectedTab === 'requester' ? themeColors.primary : 'transparent' } ]}
+            onPress={() => setSelectedTab('requester')}
+          >
+            <Text style={[styles.tabButtonText, { color: selectedTab === 'requester' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'requester' ? 'bold' : 'normal' }]}>
+              {isOwnProfile ? 'My Created Tasks' : 'Created Tasks'}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-        {isOwnProfile && selectedTab === 'volunteer' && (
+        {selectedTab === 'volunteer' && (
           <>
-            {renderTaskSection('Active Tasks as Volunteer', activeVolunteerTasks, 'No active volunteer tasks.', '/v-request-details')}
-            {renderTaskSection('Past Tasks as Volunteer', pastVolunteerTasks, 'No past volunteer tasks.', '/v-request-details')}
+            {renderTaskSection(
+              isOwnProfile ? 'Active Tasks as Volunteer' : 'Active Volunteer Tasks',
+              activeVolunteerTasks,
+              'No active volunteer tasks.',
+              '/v-request-details'
+            )}
+            {renderTaskSection(
+              isOwnProfile ? 'Past Tasks as Volunteer' : 'Past Volunteer Tasks',
+              pastVolunteerTasks,
+              'No past volunteer tasks.',
+              '/v-request-details'
+            )}
           </>
         )}
 
-        {isOwnProfile && selectedTab === 'requester' && (
+        {selectedTab === 'requester' && (
           <>
-            {renderTaskSection('Active Tasks as Requester', activeRequesterTasks, 'No active requester tasks.', '/r-request-details')}
-            {renderTaskSection('Past Tasks as Requester', pastRequesterTasks, 'No past requester tasks.', '/r-request-details')}
-          </>
-        )}
-
-        {!isOwnProfile && (
-          <>
-            {renderTaskSection('Active Volunteer Tasks', activeVolunteerTasks, 'No active volunteer tasks.', '/v-request-details')}
-            {renderTaskSection('Past Volunteer Tasks', pastVolunteerTasks, 'No past volunteer tasks.', '/v-request-details')}
-            {renderTaskSection('Active Requests', activeRequesterTasks, 'No active requests.', '/r-request-details')}
-            {renderTaskSection('Past Requests', pastRequesterTasks, 'No past requests.', '/r-request-details')}
+            {renderTaskSection(
+              isOwnProfile ? 'Active Tasks as Requester' : 'Active Requests',
+              activeRequesterTasks,
+              isOwnProfile ? 'No active requester tasks.' : 'No active requests.',
+              '/r-request-details'
+            )}
+            {renderTaskSection(
+              isOwnProfile ? 'Past Tasks as Requester' : 'Past Requests',
+              pastRequesterTasks,
+              isOwnProfile ? 'No past requester tasks.' : 'No past requests.',
+              '/r-request-details'
+            )}
           </>
         )}
 
