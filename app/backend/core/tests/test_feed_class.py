@@ -137,10 +137,10 @@ class FeedClassTests(TestCase):
         self.assertIn(self.task2, filtered)
         self.assertIn(self.task3, filtered)
         
-        # Filter by urgency
-        filtered = self.feed.filter_feed({'urgency': 4})
+        # Filter by urgency - should match exact urgency level
+        filtered = self.feed.filter_feed({'urgency': 3})
         self.assertEqual(filtered.count(), 1)
-        self.assertEqual(filtered.first(), self.task1)
+        self.assertEqual(filtered.first(), self.task2)
         
         # Filter by deadline
         tomorrow = timezone.now() + datetime.timedelta(days=2)

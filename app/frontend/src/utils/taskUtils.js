@@ -15,7 +15,7 @@ export const mapFormToTaskApiFormat = (formData) => {
       ? formData.deadlineDate 
       : serializeDate(formData.deadlineDate),
     requirements: formData.requirements || '',
-    urgency_level: getUrgencyLevel(formData.urgency),
+    urgency_level: formData.urgency,
     volunteer_number: formData.requiredPeople || 1,
     is_recurring: !!formData.isRecurring
   };
@@ -49,24 +49,6 @@ export const getFormattedLocation = (formData) => {
   let locationString = addressParts.join(', ');
   
   return locationString;
-};
-
-/**
- * Maps urgency text to its numerical level
- * 
- * @param {string} urgencyText - Urgency text label (e.g., 'High', 'Medium')
- * @returns {number} Urgency level (1-5)
- */
-export const getUrgencyLevel = (urgencyText) => {
-  const urgencyMap = {
-    'Critical': 5,
-    'High': 4,
-    'Medium': 3,
-    'Low': 2,
-    'Very Low': 1
-  };
-  
-  return urgencyMap[urgencyText] || 3; // Default to Medium (3) if not found
 };
 
 /**
@@ -139,7 +121,6 @@ export const extractRegionFromLocation = (locationString) => {
 export default {
   mapFormToTaskApiFormat,
   getFormattedLocation,
-  getUrgencyLevel,
   getUrgencyText,
   extractRegionFromLocation
 };
