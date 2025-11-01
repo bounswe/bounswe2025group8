@@ -6,7 +6,7 @@ import RatingPill from '../components/ui/RatingPill';
 import ReviewCard from '../components/ui/ReviewCard';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../lib/auth';
-import { getUserProfile, type UserProfile, getTasks, type Task, getUserReviews, type Review } from '../lib/api';
+import { getUserProfile, type UserProfile, getTasks, type Task, getUserReviews, type Review, listVolunteers, type Volunteer } from '../lib/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RequestCard from '../components/ui/RequestCard';
 import { Ionicons } from '@expo/vector-icons';
@@ -30,6 +30,7 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [allTasks, setAllTasks] = useState<Task[]>([]);
+  const [userVolunteers, setUserVolunteers] = useState<Volunteer[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewsError, setReviewsError] = useState<string | null>(null);
@@ -126,8 +127,11 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (!targetUserId) {
       setAllTasks([]);
+      setUserVolunteers([]);
       return;
     }
+    
+    // Fetch tasks
     getTasks()
       .then((res) => {
         setAllTasks(res.results || []);
@@ -136,7 +140,25 @@ export default function ProfileScreen() {
         Alert.alert('Error', 'Could not load task lists.');
         setAllTasks([]);
       });
-  }, [targetUserId]);
+    
+    // Fetch user's volunteer records if viewing own profile or if user is logged in
+    if (user && (targetUserId === user.id || !viewedUserId)) {
+      listVolunteers()
+        .then((volunteers) => {
+          // Only include ACCEPTED volunteers for completed tasks
+          setUserVolunteers(volunteers.filter(v => {
+            const status = v.status?.toUpperCase() || '';
+            return status === 'ACCEPTED';
+          }));
+        })
+        .catch((err) => {
+          console.error('Error fetching volunteers:', err);
+          setUserVolunteers([]);
+        });
+    } else {
+      setUserVolunteers([]);
+    }
+  }, [targetUserId, user?.id, viewedUserId]);
 
   const normalizeStatus = (status?: string) => (status || '').toLowerCase();
   const isActiveStatus = (status?: string) => {
@@ -148,8 +170,29 @@ export default function ProfileScreen() {
     return ['completed', 'past', 'cancelled', 'expired'].includes(value);
   };
 
+  // Helper function to check if a task is assigned to the target user
+  const isTaskAssignedToUser = (task: Task): boolean => {
+    if (!targetUserId) return false;
+    
+    // Check single assignee field
+    if (task.assignee && task.assignee.id === targetUserId) {
+      return true;
+    }
+    
+    // Check if user has an ACCEPTED volunteer record for this task
+    if (user && targetUserId === user.id) {
+      const volunteerRecord = userVolunteers.find(v => {
+        const taskId = typeof v.task === 'number' ? v.task : (v.task as Task)?.id;
+        return taskId === task.id;
+      });
+      return volunteerRecord !== undefined;
+    }
+    
+    return false;
+  };
+
   const volunteerTasks = targetUserId
-    ? allTasks.filter((task) => task.assignee && task.assignee.id === targetUserId)
+    ? allTasks.filter((task) => isTaskAssignedToUser(task))
     : [];
   const requesterTasks = targetUserId
     ? allTasks.filter((task) => task.creator && task.creator.id === targetUserId)
@@ -335,43 +378,56 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {isOwnProfile && (
-            <View style={[styles.tabSelectorContainer, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-              <TouchableOpacity
-                style={[styles.tabButton, { backgroundColor: selectedTab === 'volunteer' ? themeColors.primary : 'transparent' } ]}
-                onPress={() => setSelectedTab('volunteer')}
-              >
-                <Text style={[styles.tabButtonText, { color: selectedTab === 'volunteer' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'volunteer' ? 'bold' : 'normal' }]}>My Volunteer Tasks</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.tabButton, { backgroundColor: selectedTab === 'requester' ? themeColors.primary : 'transparent' } ]}
-                onPress={() => setSelectedTab('requester')}
-              >
-                <Text style={[styles.tabButtonText, { color: selectedTab === 'requester' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'requester' ? 'bold' : 'normal' }]}>My Created Tasks</Text>
-              </TouchableOpacity>
-            </View>
-        )}
+        <View style={[styles.tabSelectorContainer, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+          <TouchableOpacity
+            style={[styles.tabButton, { backgroundColor: selectedTab === 'volunteer' ? themeColors.primary : 'transparent' } ]}
+            onPress={() => setSelectedTab('volunteer')}
+          >
+            <Text style={[styles.tabButtonText, { color: selectedTab === 'volunteer' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'volunteer' ? 'bold' : 'normal' }]}>
+              {isOwnProfile ? 'My Volunteer Tasks' : 'Volunteer Tasks'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tabButton, { backgroundColor: selectedTab === 'requester' ? themeColors.primary : 'transparent' } ]}
+            onPress={() => setSelectedTab('requester')}
+          >
+            <Text style={[styles.tabButtonText, { color: selectedTab === 'requester' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'requester' ? 'bold' : 'normal' }]}>
+              {isOwnProfile ? 'My Created Tasks' : 'Created Tasks'}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-        {isOwnProfile && selectedTab === 'volunteer' && (
+        {selectedTab === 'volunteer' && (
           <>
-            {renderTaskSection('Active Tasks as Volunteer', activeVolunteerTasks, 'No active volunteer tasks.', '/v-request-details')}
-            {renderTaskSection('Past Tasks as Volunteer', pastVolunteerTasks, 'No past volunteer tasks.', '/v-request-details')}
+            {renderTaskSection(
+              isOwnProfile ? 'Active Tasks as Volunteer' : 'Active Volunteer Tasks',
+              activeVolunteerTasks,
+              'No active volunteer tasks.',
+              '/v-request-details'
+            )}
+            {renderTaskSection(
+              isOwnProfile ? 'Past Tasks as Volunteer' : 'Past Volunteer Tasks',
+              pastVolunteerTasks,
+              'No past volunteer tasks.',
+              '/v-request-details'
+            )}
           </>
         )}
 
-        {isOwnProfile && selectedTab === 'requester' && (
+        {selectedTab === 'requester' && (
           <>
-            {renderTaskSection('Active Tasks as Requester', activeRequesterTasks, 'No active requester tasks.', '/r-request-details')}
-            {renderTaskSection('Past Tasks as Requester', pastRequesterTasks, 'No past requester tasks.', '/r-request-details')}
-          </>
-        )}
-
-        {!isOwnProfile && (
-          <>
-            {renderTaskSection('Active Volunteer Tasks', activeVolunteerTasks, 'No active volunteer tasks.', '/v-request-details')}
-            {renderTaskSection('Past Volunteer Tasks', pastVolunteerTasks, 'No past volunteer tasks.', '/v-request-details')}
-            {renderTaskSection('Active Requests', activeRequesterTasks, 'No active requests.', '/r-request-details')}
-            {renderTaskSection('Past Requests', pastRequesterTasks, 'No past requests.', '/r-request-details')}
+            {renderTaskSection(
+              isOwnProfile ? 'Active Tasks as Requester' : 'Active Requests',
+              activeRequesterTasks,
+              isOwnProfile ? 'No active requester tasks.' : 'No active requests.',
+              '/r-request-details'
+            )}
+            {renderTaskSection(
+              isOwnProfile ? 'Past Tasks as Requester' : 'Past Requests',
+              pastRequesterTasks,
+              isOwnProfile ? 'No past requester tasks.' : 'No past requests.',
+              '/r-request-details'
+            )}
           </>
         )}
 

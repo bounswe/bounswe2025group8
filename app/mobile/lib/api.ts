@@ -559,6 +559,36 @@ export const getTasks = async (): Promise<TasksResponse> => {
   }
 };
 
+export const getPopularTasks = async (limit: number = 6): Promise<Task[]> => {
+  try {
+    console.log(`Fetching popular tasks with limit: ${limit}`);
+    const response = await api.get('/tasks/popular/', {
+      params: { limit },
+    });
+    console.log('Popular tasks response:', response.data);
+    
+    // Handle different response formats
+    if (response.data?.data && Array.isArray(response.data.data)) {
+      return response.data.data as Task[];
+    }
+    if (Array.isArray(response.data)) {
+      return response.data as Task[];
+    }
+    return [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get popular tasks error details:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+    }
+    return [];
+  }
+};
+
 export const getCategories = async (): Promise<CategoriesResponse> => {
   try {
     const response = await api.get<CategoriesResponse>('/tasks/categories/');
@@ -866,6 +896,41 @@ export const updateVolunteerAssignmentStatus = async (taskId: number, volunteerI
       throw new Error(errMessage);
     }
     const errMessage = (error as Error).message || `An unexpected error occurred while trying to ${action} volunteer.`;
+    throw new Error(errMessage);
+  }
+};
+
+export interface CompleteTaskResponse {
+  status: string;
+  message: string;
+  data: {
+    task_id: number;
+    status: string;
+    completed_at: string;
+  };
+}
+
+export const completeTask = async (taskId: number): Promise<CompleteTaskResponse> => {
+  try {
+    const response = await api.post<CompleteTaskResponse>(`/tasks/${taskId}/complete/`);
+    console.log(`Complete task ${taskId} response:`, response.data);
+    if (response.data.status !== 'success') {
+      throw new Error(response.data.message || 'Failed to complete task.');
+    }
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error(`Complete task ${taskId} error:`, {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers,
+      });
+      const errMessage = error.response?.data?.message || 'Failed to complete task.';
+      throw new Error(errMessage);
+    }
+    const errMessage = (error as Error).message || 'An unexpected error occurred while trying to complete task.';
     throw new Error(errMessage);
   }
 };

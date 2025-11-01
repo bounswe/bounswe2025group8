@@ -26,10 +26,20 @@ export default function Requests() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Filter out completed and cancelled tasks
+  const filterActiveTasks = (tasksList: Task[]): Task[] => {
+    return tasksList.filter(task => {
+      const status = task.status?.toUpperCase() || '';
+      return status !== 'COMPLETED' && status !== 'CANCELLED';
+    });
+  };
+
   const fetchTasks = async () => {
     try {
       const response = await getTasks();
-      setTasks(response.results || []);
+      const fetchedTasks = response.results || [];
+      const activeTasks = filterActiveTasks(fetchedTasks);
+      setTasks(activeTasks);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       Alert.alert('Error', 'Failed to load tasks. Please try again.');
