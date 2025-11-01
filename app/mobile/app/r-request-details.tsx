@@ -425,13 +425,15 @@ export default function RequestDetails() {
 
         {isCreator && isCompleted && (
           <TouchableOpacity
-            style={[styles.secondaryButton, { borderColor: themeColors.primary }]}
+            style={[styles.primaryButton, { backgroundColor: themeColors.pink }]}
             onPress={() => {
               setModalVisible(true);
               setIsEdit(false);
             }}
           >
-            <Text style={[styles.buttonText, { color: themeColors.primary }]}>Leave a Review</Text>
+            <Text style={[styles.buttonText, { color: themeColors.card }]}>
+              Rate & Review {numAssigned === 1 ? 'Volunteer' : 'Volunteers'}
+            </Text>
           </TouchableOpacity>
         )}
       </ScrollView>
