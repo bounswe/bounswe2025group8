@@ -17,7 +17,7 @@ import { useTheme, useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
 import { useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getTaskDetails, getTaskApplicants, completeTask, type Task, type Volunteer } from '../lib/api';
+import { getTaskDetails, getTaskApplicants, completeTask, cancelTask, type Task, type Volunteer } from '../lib/api';
 import { useAuth } from '../lib/auth';
 
 export default function RequestDetails() {
@@ -36,6 +36,7 @@ export default function RequestDetails() {
   const [assigneesLoading, setAssigneesLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [completingTask, setCompletingTask] = useState(false);
+  const [cancellingTask, setCancellingTask] = useState(false);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
@@ -148,6 +149,40 @@ export default function RequestDetails() {
               Alert.alert('Error', errorMessage);
             } finally {
               setCompletingTask(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDeleteRequest = () => {
+    Alert.alert(
+      'Delete Request',
+      'Are you sure you want to delete this request? This action cannot be undone.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            if (!id || !request) return;
+            
+            setCancellingTask(true);
+            try {
+              const response = await cancelTask(id);
+              Alert.alert('Success', response.message || 'Request deleted successfully!');
+              
+              // Navigate back to feed
+              router.back();
+            } catch (err: any) {
+              const errorMessage = err?.message || 'Failed to delete request. Please try again.';
+              Alert.alert('Error', errorMessage);
+            } finally {
+              setCancellingTask(false);
             }
           },
         },
@@ -329,18 +364,6 @@ export default function RequestDetails() {
           </TouchableOpacity>
         )}
 
-        {isCreator && !isCompleted && (
-          <TouchableOpacity
-            style={[styles.secondaryButton, { borderColor: themeColors.primary }]}
-            onPress={() => {
-              setIsEdit(true);
-              setModalVisible(true);
-            }}
-          >
-            <Text style={[styles.buttonText, { color: themeColors.primary }]}>Edit Request</Text>
-          </TouchableOpacity>
-        )}
-
         {canMarkComplete && (
           <TouchableOpacity
             style={[styles.primaryButton, { backgroundColor: themeColors.primary }]}
@@ -353,6 +376,37 @@ export default function RequestDetails() {
               <Text style={[styles.buttonText, { color: themeColors.card }]}>Mark as Complete</Text>
             )}
           </TouchableOpacity>
+        )}
+
+        {isCreator && !isCompleted && (
+          <View style={styles.buttonRow}>
+            <TouchableOpacity
+              style={[styles.halfButton, { borderColor: '#FF9800' }]}
+              onPress={() => {
+                setIsEdit(true);
+                setModalVisible(true);
+              }}
+            >
+              <View style={styles.buttonContent}>
+                <Ionicons name="pencil" size={18} color="#FF9800" style={{ marginRight: 6 }} />
+                <Text style={[styles.buttonText, { color: '#FF9800' }]}>Edit Request</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.halfButton, { borderColor: themeColors.error, marginLeft: 12 }]}
+              onPress={handleDeleteRequest}
+              disabled={cancellingTask}
+            >
+              {cancellingTask ? (
+                <ActivityIndicator size="small" color={themeColors.error} />
+              ) : (
+                <View style={styles.buttonContent}>
+                  <Ionicons name="close" size={18} color={themeColors.error} style={{ marginRight: 6 }} />
+                  <Text style={[styles.buttonText, { color: themeColors.error }]}>Delete Request</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
         )}
 
         {!isCreator && (
@@ -369,15 +423,17 @@ export default function RequestDetails() {
           </TouchableOpacity>
         )}
 
-        <TouchableOpacity
-          style={[styles.secondaryButton, { borderColor: themeColors.primary }]}
-          onPress={() => {
-            setModalVisible(true);
-            setIsEdit(false);
-          }
-        }>
-          <Text style={[styles.buttonText, { color: themeColors.primary }]}>Leave a Review</Text>
-        </TouchableOpacity>
+        {isCreator && isCompleted && (
+          <TouchableOpacity
+            style={[styles.secondaryButton, { borderColor: themeColors.primary }]}
+            onPress={() => {
+              setModalVisible(true);
+              setIsEdit(false);
+            }}
+          >
+            <Text style={[styles.buttonText, { color: themeColors.primary }]}>Leave a Review</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
 
       <Modal visible={modalVisible} animationType="slide" transparent>
@@ -558,9 +614,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
   },
+  buttonRow: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginTop: 16,
+  },
+  halfButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
   buttonText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   modalOverlay: {
     flex: 1,
