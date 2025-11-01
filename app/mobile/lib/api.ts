@@ -935,4 +935,40 @@ export const completeTask = async (taskId: number): Promise<CompleteTaskResponse
   }
 };
 
+export interface CancelTaskResponse {
+  status: string;
+  message: string;
+  data: {
+    task_id: number;
+    title: string;
+    status: string;
+    cancelled_at: string;
+  };
+}
+
+export const cancelTask = async (taskId: number): Promise<CancelTaskResponse> => {
+  try {
+    const response = await api.delete<CancelTaskResponse>(`/tasks/${taskId}/`);
+    console.log(`Cancel task ${taskId} response:`, response.data);
+    if (response.data.status !== 'success') {
+      throw new Error(response.data.message || 'Failed to cancel task.');
+    }
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error(`Cancel task ${taskId} error:`, {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers,
+      });
+      const errMessage = error.response?.data?.message || 'Failed to cancel task.';
+      throw new Error(errMessage);
+    }
+    const errMessage = (error as Error).message || 'An unexpected error occurred while trying to cancel task.';
+    throw new Error(errMessage);
+  }
+};
+
 export default api;
