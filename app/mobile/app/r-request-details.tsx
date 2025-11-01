@@ -359,7 +359,7 @@ export default function RequestDetails() {
             onPress={() => router.push({ pathname: '/select-volunteer', params: { id, requiredVolunteers: String(request.volunteer_number) } })}
           >
             <Text style={[styles.buttonText, { color: themeColors.card }]}>
-              {canAssignMore ? 'Select Volunteers' : 'Manage Volunteers'}
+              {requiredPerson === 1 ? 'Select Volunteer' : 'Select Volunteers'}
             </Text>
           </TouchableOpacity>
         )}
