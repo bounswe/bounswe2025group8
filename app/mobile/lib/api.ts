@@ -900,6 +900,43 @@ export const updateVolunteerAssignmentStatus = async (taskId: number, volunteerI
   }
 };
 
+export interface BatchAssignVolunteersResponse {
+  status: string;
+  message: string;
+  data: {
+    assigned_volunteers: Volunteer[];
+    task_status: string;
+    total_assigned: number;
+  };
+}
+
+export const batchAssignVolunteers = async (taskId: number, volunteerIds: number[]): Promise<BatchAssignVolunteersResponse> => {
+  try {
+    const response = await api.post<BatchAssignVolunteersResponse>(`/tasks/${taskId}/volunteers/`, {
+      volunteer_ids: volunteerIds,
+    });
+    console.log(`Batch assign volunteers to task ${taskId} response:`, response.data);
+    if (response.data.status !== 'success') {
+      throw new Error(response.data.message || 'Failed to assign volunteers.');
+    }
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error(`Batch assign volunteers to task ${taskId} error:`, {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers,
+      });
+      const errMessage = error.response?.data?.message || 'Failed to assign volunteers.';
+      throw new Error(errMessage);
+    }
+    const errMessage = (error as Error).message || 'An unexpected error occurred while trying to assign volunteers.';
+    throw new Error(errMessage);
+  }
+};
+
 export interface CompleteTaskResponse {
   status: string;
   message: string;
