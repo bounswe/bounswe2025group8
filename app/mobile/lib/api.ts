@@ -26,13 +26,22 @@ const lanHost = resolveDefaultHost();
 // Backend port is fixed at 8000
 const port = Constants.expoConfig?.extra?.apiPort ?? '8000';
 
+// LOCAL DEVELOPMENT: Use your computer's LAN IP for iOS simulator and physical devices
+// Replace '172.20.10.3' with your actual LAN IP if different
+// Find your LAN IP with: ifconfig | grep "inet " | grep -v 127.0.0.1
+const LOCAL_LAN_IP = '172.20.10.3'; // Change this to your LAN IP if needed
+
 const API_HOST = Platform.select({
-  web: 'localhost',  // Web uses localhost (faster, more reliable)
-  default: lanHost,   // Mobile (ios/Android) uses LAN IP
+  web: 'localhost',           // Web uses localhost
+  android: '10.0.2.2',        // Android emulator uses special IP to access host machine
+  ios: LOCAL_LAN_IP,          // iOS simulator: use LAN IP instead of localhost
+  default: LOCAL_LAN_IP,      // Physical devices: use LAN IP
 });
 
+// For local development, use dynamic host detection
+// For production, comment out the line below and uncomment the hardcoded Production URL
 //export const API_BASE_URL = `http://${API_HOST}:${port}/api`;
-export const API_BASE_URL = `http://35.222.191.20:8000/api`;
+export const API_BASE_URL = `http://35.222.191.20:8000/api`; // Production URL
 
 interface LoginResponse {
   status: string;
@@ -219,11 +228,20 @@ export interface UpdateVolunteerStatusResponse {
   data: Volunteer; 
 }
 
+// Log the API configuration on module load
+console.log('=== API Configuration ===');
+console.log('Platform:', Platform.OS);
+console.log('API_HOST:', API_HOST);
+console.log('Port:', port);
+console.log('API_BASE_URL:', API_BASE_URL);
+console.log('========================');
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 10000, // 10 second timeout
 });
 
 // Add a request interceptor to add auth token
@@ -236,9 +254,37 @@ api.interceptors.request.use(
     } else if (config.headers && 'Authorization' in config.headers) {
       delete config.headers.Authorization;
     }
+    console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`);
     return config;
   },
   (error) => {
+    console.error('[API Request Error]', error);
+    return Promise.reject(error);
+  }
+);
+
+// Add a response interceptor to handle network errors
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error: AxiosError) => {
+    // Enhanced error logging for network issues
+    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || error.message.includes('Network Error')) {
+      console.error('[API Network Error]', {
+        message: error.message,
+        code: error.code,
+        url: error.config?.url,
+        baseURL: error.config?.baseURL,
+        fullURL: `${error.config?.baseURL}${error.config?.url}`,
+        platform: Platform.OS,
+        suggestion: Platform.OS === 'android' 
+          ? 'Make sure backend is running and use 10.0.2.2 for Android emulator'
+          : Platform.OS === 'ios'
+          ? 'Try using your LAN IP address instead of localhost for iOS simulator'
+          : 'Check if backend is accessible from your device'
+      });
+    }
     return Promise.reject(error);
   }
 );
@@ -421,13 +467,39 @@ export const login = async (email: string, password: string): Promise<LoginRespo
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {
-      console.error('Login error details:', {
-        error,
-        request: error.config,
-        response: error.response?.data,
-        status: error.response?.status,
-        headers: error.response?.headers
-      });
+      // Enhanced error logging for network errors
+      if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || error.message.includes('Network Error')) {
+        console.error('Login failed - Network Error:', {
+          message: error.message,
+          code: error.code,
+          attemptedURL: `${API_BASE_URL}/auth/login/`,
+          platform: Platform.OS,
+          suggestion: Platform.OS === 'android' 
+            ? 'Android emulator needs 10.0.2.2 instead of localhost'
+            : Platform.OS === 'ios'
+            ? 'iOS simulator may need your LAN IP instead of localhost'
+            : 'Check if backend is running and accessible'
+        });
+      } else {
+        console.error('Login error details:', {
+          error: error.message,
+          code: error.code,
+          request: error.config,
+          response: error.response?.data,
+          status: error.response?.status,
+          headers: error.response?.headers
+        });
+      }
+      
+      // Provide more helpful error messages
+      if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
+        const helpfulMessage = Platform.OS === 'android'
+          ? 'Cannot connect to backend. Make sure backend is running and try using 10.0.2.2 if on Android emulator.'
+          : Platform.OS === 'ios'
+          ? 'Cannot connect to backend. Try using your computer\'s LAN IP address instead of localhost.'
+          : 'Cannot connect to backend. Check if backend is running and accessible.';
+        throw new Error(helpfulMessage);
+      }
     }
     throw error;
   }
@@ -821,12 +893,6 @@ export const createReview = async (data: CreateReviewRequest): Promise<CreateRev
             ? validationErrors[0][0] 
             : String(validationErrors[0]);
         }
-      }
-      
-      // Add helpful context for the known limitation
-      if (errMessage.includes('Only task participants can submit reviews') || 
-          errMessage.includes('task participants')) {
-        errMessage = 'Only task participants can submit reviews. Note: For tasks with multiple volunteers, only the first assigned volunteer can currently submit reviews due to backend limitations.';
       }
       
       throw new Error(errMessage);
