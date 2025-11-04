@@ -175,9 +175,9 @@ export default function RequestDetails() {
     );
   };
 
-  const hasReviewedAnyVolunteer = (): boolean => {
+  const hasReviewedAllVolunteers = (): boolean => {
     if (assignedVolunteers.length === 0) return false;
-    return assignedVolunteers.some((volunteer) => 
+    return assignedVolunteers.every((volunteer) => 
       existingReviews.some((review) => 
         review.reviewee.id === volunteer.user.id && review.reviewer.id === user?.id
       )
@@ -585,7 +585,7 @@ export default function RequestDetails() {
               onPress={handleOpenReviewModal}
             >
               <Text style={[styles.buttonText, { color: themeColors.card }]}>
-                {hasReviewedAnyVolunteer() 
+                {hasReviewedAllVolunteers() 
                   ? `Edit Rate & Review ${numAssigned === 1 ? 'Volunteer' : 'Volunteers'}`
                   : `Rate & Review ${numAssigned === 1 ? 'Volunteer' : 'Volunteers'}`
                 }
