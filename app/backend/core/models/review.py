@@ -85,12 +85,18 @@ class Review(models.Model):
         if task.status != 'COMPLETED':
             raise ValueError("Cannot review a task that is not completed")
         
-        # Check if reviewer is the task creator or assignee
-        if reviewer != task.creator and reviewer != task.assignee:
+        # Determine task participants (creator + all assignees)
+        participant_ids = set(task.get_assignees().values_list('id', flat=True))
+        if task.assignee_id:
+            participant_ids.add(task.assignee_id)
+        participant_ids.add(task.creator_id)
+        
+        # Check if reviewer is one of the task participants
+        if reviewer.id not in participant_ids:
             raise ValueError("Only task participants can submit reviews")
         
-        # Check if reviewee is the task creator or assignee
-        if reviewee != task.creator and reviewee != task.assignee:
+        # Check if reviewee is one of the task participants
+        if reviewee.id not in participant_ids:
             raise ValueError("Can only review task participants")
         
         # Check if reviewer and reviewee are different users
