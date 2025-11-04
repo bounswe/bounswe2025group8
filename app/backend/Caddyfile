@@ -1,6 +1,6 @@
-neighborhood.chickenkiller.com {
+neighborhelp.duckdns.org {
     reverse_proxy frontend:5173 {
-        header_up Host neighborhood.chickenkiller.com
+        header_up Host neighborhelp.duckdns.org
     }
     
     handle /api/* {
