@@ -17,7 +17,7 @@ import { useTheme, useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
 import { useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getTaskDetails, listVolunteers, type Task, type Volunteer, volunteerForTask, withdrawVolunteer, createReview, getTaskReviews, type Review } from '../lib/api';
+import { getTaskDetails, listVolunteers, type Task, type Volunteer, volunteerForTask, withdrawVolunteer, createReview, getTaskReviews, type Review, type UserProfile } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -40,6 +40,8 @@ export default function RequestDetailsVolunteer() {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [existingReviews, setExistingReviews] = useState<Review[]>([]);
   const [acceptedVolunteers, setAcceptedVolunteers] = useState<Volunteer[]>([]);
+  const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+  const [reviewableParticipants, setReviewableParticipants] = useState<UserProfile[]>([]);
   const [hasVolunteered, setHasVolunteered] = useState(false);
   const [volunteerRecord, setVolunteerRecord] = useState<{ id: number; status?: string } | null>(null);
   const storageKey = id && user?.id ? `volunteer-record-${id}-${user.id}` : null;
@@ -149,12 +151,27 @@ export default function RequestDetailsVolunteer() {
           if (reviewsResponse.status === 'success') {
             setExistingReviews(reviewsResponse.data.reviews || []);
           }
+          
+          // Build list of reviewable participants (creator + other volunteers, excluding self)
+          const participants: UserProfile[] = [];
+          if (details.creator && details.creator.id !== user.id) {
+            participants.push(details.creator);
+          }
+          // Add other volunteers (excluding self)
+          acceptedList.forEach((vol) => {
+            if (vol.user?.id && vol.user.id !== user.id && !participants.find(p => p.id === vol.user.id)) {
+              participants.push(vol.user);
+            }
+          });
+          setReviewableParticipants(participants);
         } catch (reviewError: any) {
           console.warn('Error fetching reviews:', reviewError.message);
           setExistingReviews([]);
+          setReviewableParticipants([]);
         }
       } else {
         setExistingReviews([]);
+        setReviewableParticipants([]);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load request.';
@@ -232,15 +249,33 @@ useEffect(() => {
 
   const handleStarPress = (star: number) => setRating(star);
 
-  const getExistingReviewForRequester = (): Review | undefined => {
-    if (!request?.creator?.id || !user?.id) return undefined;
+  const getExistingReviewForParticipant = (participantId: number): Review | undefined => {
+    if (!user?.id) return undefined;
     return existingReviews.find(
-      (review) => review.reviewee.id === request.creator.id && review.reviewer.id === user.id
+      (review) => review.reviewee.id === participantId && review.reviewer.id === user.id
+    );
+  };
+
+  const hasReviewedAllParticipants = (): boolean => {
+    if (reviewableParticipants.length === 0) return false;
+    return reviewableParticipants.every((participant) => 
+      existingReviews.some((review) => 
+        review.reviewee.id === participant.id && review.reviewer.id === user?.id
+      )
     );
   };
 
   const handleOpenReviewModal = () => {
-    const existingReview = getExistingReviewForRequester();
+    if (reviewableParticipants.length === 0) {
+      Alert.alert('No Participants', 'There are no participants to review.');
+      return;
+    }
+    setCurrentReviewIndex(0);
+    const currentParticipant = reviewableParticipants[0];
+    
+    // Check if review already exists for this participant
+    const existingReview = getExistingReviewForParticipant(currentParticipant.id);
+    
     if (existingReview) {
       setRating(existingReview.score);
       setReviewText(existingReview.comment);
@@ -260,38 +295,65 @@ useEffect(() => {
       Alert.alert('Review Required', 'Please write a review comment.');
       return;
     }
-    if (!id || !request || !request.creator?.id) {
+    if (!id || !request || currentReviewIndex >= reviewableParticipants.length) {
       Alert.alert('Error', 'Unable to submit review. Missing information.');
       return;
     }
 
+    const currentParticipant = reviewableParticipants[currentReviewIndex];
     setSubmittingReview(true);
 
     try {
       await createReview({
         score: Number(rating), // Ensure it's a number
         comment: reviewText.trim(),
-        reviewee_id: request.creator.id,
+        reviewee_id: currentParticipant.id,
         task_id: id,
       });
 
       // Refresh reviews to get updated list
+      let updatedReviews = existingReviews;
       try {
         const reviewsResponse = await getTaskReviews(id);
         if (reviewsResponse.status === 'success') {
-          setExistingReviews(reviewsResponse.data.reviews || []);
+          updatedReviews = reviewsResponse.data.reviews || [];
+          setExistingReviews(updatedReviews);
         }
       } catch (reviewError) {
         console.warn('Error refreshing reviews:', reviewError);
       }
 
-      Alert.alert('Success', 'Review submitted successfully!');
-      setModalVisible(false);
-      setRating(0);
-      setReviewText('');
-      
-      // Refresh task data to show updated reviews
-      await fetchRequestDetails();
+      // Move to next participant or close modal
+      if (currentReviewIndex < reviewableParticipants.length - 1) {
+        // Move to next participant
+        const nextIndex = currentReviewIndex + 1;
+        setCurrentReviewIndex(nextIndex);
+        const nextParticipant = reviewableParticipants[nextIndex];
+        
+        // Load existing review for next participant if it exists
+        const nextReview = updatedReviews.find(
+          (review) => review.reviewee.id === nextParticipant.id && review.reviewer.id === user?.id
+        );
+        
+        if (nextReview) {
+          setRating(nextReview.score);
+          setReviewText(nextReview.comment);
+        } else {
+          setRating(0);
+          setReviewText('');
+        }
+        
+        Alert.alert('Success', `Review submitted for ${currentParticipant.name}!`);
+      } else {
+        // All participants reviewed
+        Alert.alert('Success', 'All reviews submitted successfully!');
+        setModalVisible(false);
+        setRating(0);
+        setReviewText('');
+        setCurrentReviewIndex(0);
+        // Refresh task data to show updated reviews
+        await fetchRequestDetails();
+      }
     } catch (err: any) {
       const errorMessage = err?.message || 'Failed to submit review. Please try again.';
       Alert.alert('Error', errorMessage);
@@ -582,7 +644,10 @@ useEffect(() => {
               }}
             >
               <Text style={[styles.buttonText, { color: themeColors.card }]}>
-                {getExistingReviewForRequester() ? 'Edit Rate & Review Requester' : 'Rate & Review Requester'}
+                {hasReviewedAllParticipants() 
+                  ? `Edit Rate & Review ${reviewableParticipants.length === 1 ? 'Participant' : 'Participants'}`
+                  : `Rate & Review ${reviewableParticipants.length === 1 ? 'Participant' : 'Participants'}`
+                }
               </Text>
             </TouchableOpacity>
           ) : canVolunteer ? (
@@ -620,10 +685,22 @@ useEffect(() => {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: themeColors.card }]}>
             <Text style={[styles.modalTitle, { color: themeColors.text }]}>
-              {getExistingReviewForRequester() 
-                ? `Edit Rate & Review ${request?.creator?.name || 'Requester'}` 
-                : `Rate & Review ${request?.creator?.name || 'Requester'}`}
+              {reviewableParticipants.length > 0 
+                ? (() => {
+                    const currentParticipant = reviewableParticipants[currentReviewIndex];
+                    const existingReview = getExistingReviewForParticipant(currentParticipant?.id);
+                    return existingReview 
+                      ? `Edit Rate & Review ${currentParticipant?.name || 'Participant'}`
+                      : `Rate & Review ${currentParticipant?.name || 'Participant'}`;
+                  })()
+                : 'Rate & Review'
+              }
             </Text>
+            {reviewableParticipants.length > 1 && (
+              <Text style={[styles.modalSubtitle, { color: themeColors.textMuted }]}>
+                {currentReviewIndex + 1} of {reviewableParticipants.length}
+              </Text>
+            )}
             <TextInput
               style={[
                 styles.modalInput,
@@ -653,6 +730,7 @@ useEffect(() => {
                   setModalVisible(false);
                   setRating(0);
                   setReviewText('');
+                  setCurrentReviewIndex(0);
                 }}
                 disabled={submittingReview}
               >
@@ -666,7 +744,9 @@ useEffect(() => {
                 {submittingReview ? (
                   <ActivityIndicator size="small" color={themeColors.card} />
                 ) : (
-                  <Text style={{ color: themeColors.card }}>Submit</Text>
+                  <Text style={{ color: themeColors.card }}>
+                    {currentReviewIndex < reviewableParticipants.length - 1 ? 'Next' : 'Submit'}
+                  </Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -814,6 +894,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginBottom: 12,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    fontWeight: '400',
+    marginBottom: 12,
+    textAlign: 'center',
   },
   modalInput: {
     borderWidth: 1,
