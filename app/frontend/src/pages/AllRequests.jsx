@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import RequestCardForHomePage from "../components/RequestCardForHomePage";
@@ -12,6 +12,7 @@ import { formatRelativeTime } from "../utils/dateUtils";
 import { extractRegionFromLocation } from "../utils/taskUtils";
 import sortIcon from "../assets/sort.svg";
 import filterIcon from "../assets/filter.svg";
+import AddressFilterDialog from "../components/AddressFilterDialog";
 
 const AllRequests = () => {
   const dispatch = useDispatch();
@@ -24,10 +25,24 @@ const AllRequests = () => {
 
   // Get current page from URL params
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
-  
+
   // Get filter parameters from URL
   const categoryFilter = searchParams.get("category");
   const urgencyFilter = searchParams.get("urgency_level");
+  const locationFilter = searchParams.get("location");
+
+  const [locationInput, setLocationInput] = useState(locationFilter || "");
+  const [addressDialogOpen, setAddressDialogOpen] = useState(false);
+  const filteredTasks = useMemo(() => {
+    if (!locationFilter) return tasks;
+    const needle = locationFilter.toLowerCase();
+    return tasks.filter((task) => {
+      const region = task.location
+        ? extractRegionFromLocation(task.location).toLowerCase()
+        : "";
+      return region.includes(needle);
+    });
+  }, [tasks, locationFilter]);
 
   // Debug logs
   console.log("AllRequests Component State:", {
@@ -48,6 +63,9 @@ const AllRequests = () => {
     if (urgencyFilter) {
       filters.urgency_level = urgencyFilter;
     }
+    if (locationFilter) {
+      filters.location = locationFilter;
+    }
 
     console.log(
       "AllRequests useEffect: Fetching tasks for page:",
@@ -55,7 +73,7 @@ const AllRequests = () => {
       "with filters:",
       filters
     );
-    
+
     // Fetch tasks with filters and pagination
     dispatch(fetchAllTasks({ filters, page: currentPage }));
 
@@ -63,7 +81,7 @@ const AllRequests = () => {
     return () => {
       dispatch(clearError());
     };
-  }, [dispatch, currentPage, categoryFilter, urgencyFilter]);
+  }, [dispatch, currentPage, categoryFilter, urgencyFilter, locationFilter]);
 
   // Handle pagination
   const handlePageChange = (newPage) => {
@@ -91,12 +109,29 @@ const AllRequests = () => {
 
   // Handle category filter navigation
   const handleCategoryClick = (category) => {
-    navigate(`/requests?category=${category}`);
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set("category", category);
+    newSearchParams.set("page", "1");
+    setSearchParams(newSearchParams);
   };
 
   // Handle urgency filter navigation
   const handleUrgencyClick = (urgencyLevel) => {
-    navigate(`/requests?urgency_level=${urgencyLevel}`);
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set("urgency_level", urgencyLevel);
+    newSearchParams.set("page", "1");
+    setSearchParams(newSearchParams);
+  };
+
+  const applyLocationFilter = () => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    if (locationInput && locationInput.trim()) {
+      newSearchParams.set("location", locationInput.trim());
+    } else {
+      newSearchParams.delete("location");
+    }
+    newSearchParams.set("page", "1");
+    setSearchParams(newSearchParams);
   };
 
   // Handle navigate button click
@@ -159,20 +194,30 @@ const AllRequests = () => {
         {/* All Requests Title */}
         <div>
           <h1 className="font-medium text-xl text-gray-900 font-inter">
-            {categoryFilter 
-              ? `${categoryMapping[categoryFilter] || categoryFilter} Requests` 
+            {categoryFilter
+              ? `${categoryMapping[categoryFilter] || categoryFilter} Requests`
               : urgencyFilter
-                ? `${urgencyLevels[urgencyFilter]?.name || urgencyFilter} Priority Requests`
-                : "All Requests"
-            }
+              ? `${
+                  urgencyLevels[urgencyFilter]?.name || urgencyFilter
+                } Priority Requests`
+              : "All Requests"}
           </h1>
-          {(categoryFilter || urgencyFilter) && (
+          {(categoryFilter || urgencyFilter || locationFilter) && (
             <p className="text-sm text-gray-600 mt-1">
-              {categoryFilter && `Showing requests in ${categoryMapping[categoryFilter] || categoryFilter} category`}
-              {urgencyFilter && `Showing ${urgencyLevels[urgencyFilter]?.name || urgencyFilter} priority requests`}
-              {categoryFilter && urgencyFilter && " • "}
+              {categoryFilter &&
+                `Showing requests in ${
+                  categoryMapping[categoryFilter] || categoryFilter
+                } category`}
+              {urgencyFilter &&
+                `${categoryFilter ? " • " : ""}Showing ${
+                  urgencyLevels[urgencyFilter]?.name || urgencyFilter
+                } priority requests`}
+              {locationFilter &&
+                `${
+                  categoryFilter || urgencyFilter ? " • " : ""
+                }Near: ${locationFilter}`}
               <button
-                onClick={() => navigate('/requests')}
+                onClick={() => navigate("/requests")}
                 className="text-blue-600 hover:text-blue-800 underline ml-2"
               >
                 Clear filters
@@ -182,14 +227,37 @@ const AllRequests = () => {
         </div>
 
         {/* Header Icons */}
-        <div className="flex space-x-4">
+        <div className="flex items-center space-x-4">
+          {/* Location filter */}
+          <div className="flex items-center bg-white border border-gray-300 rounded-full overflow-hidden">
+            <input
+              type="text"
+              placeholder="Filter by location (city/region)"
+              className="px-4 py-2 text-sm outline-none min-w-[220px]"
+              value={locationInput}
+              onChange={(e) => setLocationInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") applyLocationFilter();
+              }}
+            />
+            <button
+              onClick={applyLocationFilter}
+              className="px-4 py-2 text-sm bg-indigo-600 text-white hover:bg-indigo-700"
+            >
+              Apply
+            </button>
+          </div>
           {/* Sort Icon */}
           <button className="w-6 h-6 text-gray-900 hover:text-indigo-600 transition-colors">
             <img src={sortIcon} alt="Sort" className="w-full h-full" />
           </button>
 
           {/* Filter Icon */}
-          <button className="w-6 h-6 text-gray-900 hover:text-indigo-600 transition-colors">
+          <button
+            className="w-6 h-6 text-gray-900 hover:text-indigo-600 transition-colors"
+            onClick={() => setAddressDialogOpen(true)}
+            aria-label="Open address filter"
+          >
             <img src={filterIcon} alt="Filter" className="w-full h-full" />
           </button>
         </div>
@@ -218,7 +286,7 @@ const AllRequests = () => {
         ) : (
           // Actual content
           <div className="grid grid-cols-2 gap-5">
-            {tasks.map((task) => {
+            {filteredTasks.map((task) => {
               const formattedTask = formatTaskForCard(task);
               return (
                 <RequestCardForHomePage
@@ -239,12 +307,14 @@ const AllRequests = () => {
             })}
 
             {/* Fill empty slots if less than 6 tasks */}
-            {tasks.length < 6 &&
-              [...Array(6 - tasks.length)].map((_, index) => (
-                <div key={`empty-${index}`} className="w-[407px] h-[122px]">
-                  {/* Empty slot - maintains grid layout */}
-                </div>
-              ))}
+            {filteredTasks.length < 6 &&
+              [...Array(Math.max(0, 6 - filteredTasks.length))].map(
+                (_, index) => (
+                  <div key={`empty-${index}`} className="w-[407px] h-[122px]">
+                    {/* Empty slot - maintains grid layout */}
+                  </div>
+                )
+              )}
           </div>
         )}
 
@@ -352,6 +422,23 @@ const AllRequests = () => {
           )}
         </div>
       )}
+
+      {/* Address filter modal */}
+      <AddressFilterDialog
+        open={addressDialogOpen}
+        onClose={() => setAddressDialogOpen(false)}
+        onApply={(selectedLocation) => {
+          setLocationInput(selectedLocation);
+          const newSearchParams = new URLSearchParams(searchParams);
+          if (selectedLocation && selectedLocation.trim()) {
+            newSearchParams.set("location", selectedLocation.trim());
+          } else {
+            newSearchParams.delete("location");
+          }
+          newSearchParams.set("page", "1");
+          setSearchParams(newSearchParams);
+        }}
+      />
     </>
   );
 };
