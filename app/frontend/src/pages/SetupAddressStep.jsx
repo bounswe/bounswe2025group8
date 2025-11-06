@@ -1,10 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, {
+  useState,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
 import { updateFormData } from "../features/request/store/createRequestSlice";
 import * as createRequestService from "../features/request/services/createRequestService";
 
-const SetupAddressStep = () => {
+const SetupAddressStep = (props, ref) => {
   const dispatch = useDispatch();
   const { formData } = useSelector((state) => state.createRequest);
 
@@ -24,6 +29,7 @@ const SetupAddressStep = () => {
     watch,
     formState: { errors },
     setValue,
+    trigger,
   } = useForm({
     defaultValues: {
       country: formData.country || "",
@@ -128,6 +134,15 @@ const SetupAddressStep = () => {
   const handleFieldChange = (field, value) => {
     dispatch(updateFormData({ [field]: value }));
   };
+
+  // Expose a validate method to parent using ref (to block submission when invalid)
+  useImperativeHandle(ref, () => ({
+    async validateForm() {
+      // Validate the required address fields
+      const isValid = await trigger(["country", "state", "city"]);
+      return isValid;
+    },
+  }));
 
   return (
     <div className="w-full">
@@ -248,7 +263,7 @@ const SetupAddressStep = () => {
             <Controller
               name="city"
               control={control}
-              rules={{ required: "City is required" }}
+              rules={{ required: "City/District is required" }}
               render={({ field }) => (
                 <div>
                   <div className="relative">
@@ -401,4 +416,4 @@ const SetupAddressStep = () => {
   );
 };
 
-export default SetupAddressStep;
+export default forwardRef(SetupAddressStep);
