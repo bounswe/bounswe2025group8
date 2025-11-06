@@ -33,16 +33,6 @@ const AllRequests = () => {
 
   const [locationInput, setLocationInput] = useState(locationFilter || "");
   const [addressDialogOpen, setAddressDialogOpen] = useState(false);
-  const filteredTasks = useMemo(() => {
-    if (!locationFilter) return tasks;
-    const needle = locationFilter.toLowerCase();
-    return tasks.filter((task) => {
-      const region = task.location
-        ? extractRegionFromLocation(task.location).toLowerCase()
-        : "";
-      return region.includes(needle);
-    });
-  }, [tasks, locationFilter]);
 
   // Debug logs
   console.log("AllRequests Component State:", {
@@ -232,7 +222,7 @@ const AllRequests = () => {
           <div className="flex items-center bg-white border border-gray-300 rounded-full overflow-hidden">
             <input
               type="text"
-              placeholder="Filter by location (city/region)"
+              placeholder="Filter by location (district/city)"
               className="px-4 py-2 text-sm outline-none min-w-[220px]"
               value={locationInput}
               onChange={(e) => setLocationInput(e.target.value)}
@@ -286,7 +276,7 @@ const AllRequests = () => {
         ) : (
           // Actual content
           <div className="grid grid-cols-2 gap-5">
-            {filteredTasks.map((task) => {
+            {tasks.map((task) => {
               const formattedTask = formatTaskForCard(task);
               return (
                 <RequestCardForHomePage
@@ -307,14 +297,12 @@ const AllRequests = () => {
             })}
 
             {/* Fill empty slots if less than 6 tasks */}
-            {filteredTasks.length < 6 &&
-              [...Array(Math.max(0, 6 - filteredTasks.length))].map(
-                (_, index) => (
-                  <div key={`empty-${index}`} className="w-[407px] h-[122px]">
-                    {/* Empty slot - maintains grid layout */}
-                  </div>
-                )
-              )}
+            {tasks.length < 6 &&
+              [...Array(Math.max(0, 6 - tasks.length))].map((_, index) => (
+                <div key={`empty-${index}`} className="w-[407px] h-[122px]">
+                  {/* Empty slot - maintains grid layout */}
+                </div>
+              ))}
           </div>
         )}
 
