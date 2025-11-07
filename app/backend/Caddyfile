@@ -1,6 +1,6 @@
-neighborhelp.duckdns.org {
+neighborhelp.webhop.me {
     reverse_proxy frontend:5173 {
-        header_up Host neighborhelp.duckdns.org
+        header_up Host neighborhelp.webhop.me
     }
     
     handle /api/* {

@@ -9,6 +9,6 @@ export default defineConfig({
     host: true,
     port: 5173,
     strictPort: true,
-    allowedHosts: ['localhost', '172.18.0.4', 'neighborhelp.duckdns.org', 'frontend']
+    allowedHosts: ['localhost', '172.18.0.4', 'neighborhelp.webhop.me', 'frontend']
   }
 })
