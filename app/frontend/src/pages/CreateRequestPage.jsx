@@ -13,6 +13,7 @@ import GeneralInformationStep from "./GeneralInformationStep";
 import UploadPhotosStep from "./UploadPhotosStep";
 import DetermineDeadlineStep from "./DetermineDeadlineStep";
 import SetupAddressStep from "./SetupAddressStep";
+import { useAttachTaskPhoto } from "../features/photo";
 
 const steps = [
   "General Information",
@@ -24,6 +25,9 @@ const steps = [
 const CreateRequestPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { currentStep, loading, success, error, formData } =
+    useSelector((state) => state.createRequest);
+  const { attachPhoto } = useAttachTaskPhoto();
   const generalInfoRef = useRef();
   const { currentStep, loading, success, error } = useSelector(
     (state) => state.createRequest
@@ -34,16 +38,26 @@ const CreateRequestPage = () => {
     dispatch(fetchCategories());
   }, [dispatch]);
   // Get form data from redux store
-  const { formData } = useSelector((state) => state.createRequest); // Handle form submission
-  const handleSubmit = () => {
-    // Prepare data for submission
-    // Note: Photo upload functionality is temporarily disabled
-    const requestData = {
-      ...formData,
-      photos: [], // Photo upload is disabled, so we pass an empty array
-    };
+  // Handle form submission
+  const handleSubmit = async () => {
+    try {
+      const result = await dispatch(submitRequest(formData)).unwrap();
+      const createdTaskId = result?.task?.id ?? result?.requestId;
 
-    dispatch(submitRequest(requestData));
+      if (createdTaskId && Array.isArray(formData.photos)) {
+        for (const photo of formData.photos) {
+          if (photo instanceof File) {
+            try {
+              await attachPhoto(photo, createdTaskId);
+            } catch (attachmentError) {
+              console.error("Failed to attach photo:", attachmentError);
+            }
+          }
+        }
+      }
+    } catch (submissionError) {
+      console.error("Request submission failed:", submissionError);
+    }
   };
 
   // Handle step navigation
@@ -67,13 +81,12 @@ const CreateRequestPage = () => {
   // Navigate to home page if submission was successful
   useEffect(() => {
     if (success) {
-      // Reset the form data immediately when the submission is successful
-      dispatch(resetForm());
-
-      // Navigate to home page after a short delay to show success message
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
+        dispatch(resetForm());
         navigate("/");
       }, 1000);
+
+      return () => clearTimeout(timeoutId);
     }
   }, [success, navigate, dispatch]);
 
