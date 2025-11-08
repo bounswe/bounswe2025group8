@@ -27,6 +27,7 @@ import Sidebar from "../components/Sidebar";
 import EditRequestModal from "../components/EditRequestModal";
 import { urgencyLevels } from "../constants/urgency_level";
 import { getCategoryImage } from "../constants/categories";
+import { toAbsoluteUrl } from "../utils/url";
 
 const RequestDetail = () => {
   const { requestId } = useParams();
@@ -50,6 +51,8 @@ const RequestDetail = () => {
   const [deleteSuccess, setDeleteSuccess] = useState(false);
   const [isVolunteering, setIsVolunteering] = useState(false);
   const [volunteerRecord, setVolunteerRecord] = useState(null);
+  // Gallery state must be declared before any conditional returns
+  const [activePhotoIdx, setActivePhotoIdx] = useState(0);
 
   // Fetch request details and volunteer status
   useEffect(() => {
@@ -242,6 +245,16 @@ const RequestDetail = () => {
   }
 
   const urgency = urgencyLevels[request.urgency_level];
+  // Normalize photos for gallery
+  const photos = Array.isArray(request?.photos)
+    ? request.photos
+        .map((p) => ({
+          src:
+            toAbsoluteUrl(p?.url || p?.image || p?.photo_url) || undefined,
+          alt: p?.alt_text || request.title,
+        }))
+        .filter((p) => !!p.src)
+    : [];
 
   // Permission checks
   const isTaskCreator =
@@ -454,17 +467,49 @@ const RequestDetail = () => {
         {/* Main Content Card - Improved Layout */}
         <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
           <div className="grid grid-cols-1 lg:grid-cols-2">
-            {/* Left Column - Image */}
+            {/* Left Column - Image/Gallery */}
             <div className="relative h-120">
-              <img
-                src={
-                  request.photos?.[0]?.image ||
-                  request.photos?.[0]?.photo_url ||
-                  getCategoryImage(request.category)
-                }
-                alt={request.title}
-                className="w-full h-full object-cover"
-              />
+              {photos.length > 0 ? (
+                <>
+                  <img
+                    src={photos[Math.min(activePhotoIdx, photos.length - 1)]?.src}
+                    alt={photos[Math.min(activePhotoIdx, photos.length - 1)]?.alt}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  {/* Thumbnails */}
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 bg-black/40 rounded-md px-2 py-1 overflow-x-auto max-w-[90%]">
+                    {photos.map((ph, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActivePhotoIdx(idx);
+                        }}
+                        className={`h-12 w-12 rounded overflow-hidden border ${
+                          idx === activePhotoIdx ? 'border-white' : 'border-transparent'
+                        }`}
+                        aria-label={`Show photo ${idx + 1}`}
+                      >
+                        <img
+                          src={ph.src}
+                          alt={ph.alt}
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <img
+                  src={getCategoryImage(request.category)}
+                  alt={request.title}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              )}
               {/* Image overlay with category */}
               <div className="absolute bottom-4 left-4">
                 <span className="px-3 py-2 bg-black bg-opacity-60 text-white text-sm font-medium rounded-lg">

@@ -29,9 +29,6 @@ const CreateRequestPage = () => {
     useSelector((state) => state.createRequest);
   const { attachPhoto } = useAttachTaskPhoto();
   const generalInfoRef = useRef();
-  const { currentStep, loading, success, error } = useSelector(
-    (state) => state.createRequest
-  );
 
   useEffect(() => {
     // Fetch categories when component mounts

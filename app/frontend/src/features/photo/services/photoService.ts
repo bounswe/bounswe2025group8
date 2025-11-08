@@ -1,4 +1,5 @@
 import api from '../../../services/api';
+import type { AxiosError } from 'axios';
 import type {
   AttachPhotoPayload,
   AttachPhotoResult,
@@ -38,9 +39,15 @@ const isTaskPhoto = (value: unknown): value is TaskPhoto => {
 /**
  * Upload a single photo for a given task.
  */
+type AttachPhotoOptions = {
+  onProgress?: (percent: number) => void;
+  signal?: AbortSignal;
+};
+
 export const attachPhotoToTask = async (
   taskId: number | string,
-  photo: File
+  photo: File,
+  options: AttachPhotoOptions = {}
 ): Promise<AttachPhotoResult> => {
   if (!taskId) {
     throw new Error('Task ID is required to attach a photo.');
@@ -53,32 +60,56 @@ export const attachPhotoToTask = async (
   const formData = new FormData();
   formData.append('photo', photo);
 
-  const response = await api.post(
-    `/tasks/${taskId}/photo/`,
-    formData,
-    {
-      headers: { 'Content-Type': 'multipart/form-data' },
+  try {
+    const response = await api.post(
+      `/tasks/${taskId}/photo/`,
+      formData,
+      {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        signal: options.signal,
+        onUploadProgress: (pe) => {
+          const { loaded, total } = pe;
+          if (typeof total === 'number' && total > 0 && options.onProgress) {
+            options.onProgress(Math.round((loaded / total) * 100));
+          }
+        },
+      }
+    );
+
+    const payload = response.data ?? {};
+    const maybeData = (payload && typeof payload === 'object'
+      ? (payload as Record<string, unknown>).data
+      : null) ?? payload;
+
+    const data = isAttachPhotoPayload(maybeData) ? maybeData : null;
+
+    return {
+      data,
+      status:
+        payload && typeof payload === 'object' && 'status' in payload
+          ? (payload as Record<string, unknown>).status as string | undefined
+          : undefined,
+      message:
+        payload && typeof payload === 'object' && 'message' in payload
+          ? (payload as Record<string, unknown>).message as string | undefined
+          : undefined,
+    };
+  } catch (err) {
+    // Map common backend error codes to friendly messages
+    const axErr = err as AxiosError;
+    const status = axErr.response?.status;
+    let msg: string | undefined;
+    if (status === 413) msg = 'The image is too large. Please use a smaller file.';
+    if (status === 415) msg = 'Unsupported file type. Please upload an image.';
+    if (status === 401) msg = 'You must be logged in to upload photos.';
+    if (status === 429) msg = 'Too many requests. Please wait and try again.';
+    if (msg) {
+      const error = new Error(msg);
+      (error as any).code = status;
+      throw error;
     }
-  );
-
-  const payload = response.data ?? {};
-  const maybeData = (payload && typeof payload === 'object'
-    ? (payload as Record<string, unknown>).data
-    : null) ?? payload;
-
-  const data = isAttachPhotoPayload(maybeData) ? maybeData : null;
-
-  return {
-    data,
-    status:
-      payload && typeof payload === 'object' && 'status' in payload
-        ? (payload as Record<string, unknown>).status as string | undefined
-        : undefined,
-    message:
-      payload && typeof payload === 'object' && 'message' in payload
-        ? (payload as Record<string, unknown>).message as string | undefined
-        : undefined,
-  };
+    throw err;
+  }
 };
 
 /**
