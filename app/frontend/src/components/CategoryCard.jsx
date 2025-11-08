@@ -1,4 +1,5 @@
 import React from "react";
+import { useTheme } from "../hooks/useTheme";
 
 /**
  * CategoryCard component that displays a category with an image
@@ -9,6 +10,8 @@ import React from "react";
  * @param {string} props.className - Additional CSS classes to apply
  */
 const CategoryCard = ({ title, image, onClick, className = "" }) => {
+  const { colors } = useTheme();
+
   return (
     <div
       onClick={onClick}
@@ -21,16 +24,34 @@ const CategoryCard = ({ title, image, onClick, className = "" }) => {
         }
       }}
       className={`flex flex-col rounded-xl cursor-pointer transition-all duration-300 ease-out overflow-hidden
-        w-full sm:w-52 h-[270px] bg-white mx-auto shadow-md
-        hover:-translate-y-1 hover:shadow-2xl
-        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+        w-full sm:w-52 h-[270px] mx-auto
+        hover:-translate-y-1
         ${className}`}
+      style={{
+        backgroundColor: colors.background.elevated,
+        boxShadow: `0 4px 6px -1px ${colors.shadow.sm}, 0 2px 4px -1px ${colors.shadow.sm}`,
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = `0 20px 25px -5px ${colors.shadow.lg}, 0 10px 10px -5px ${colors.shadow.md}`;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = `0 4px 6px -1px ${colors.shadow.sm}, 0 2px 4px -1px ${colors.shadow.sm}`;
+      }}
+      onFocus={(e) => {
+        e.currentTarget.style.outline = `3px solid ${colors.border.focus}`;
+        e.currentTarget.style.outlineOffset = "2px";
+      }}
+      onBlur={(e) => {
+        e.currentTarget.style.outline = "none";
+      }}
+      aria-label={`View ${title} category`}
     >
       {/* Title at top with proper padding and styling */}
       <div className="p-6 pt-8 pb-0 pl-12 h-auto flex items-start justify-start">
         <h6
           className="text-lg font-bold text-left overflow-hidden text-ellipsis 
             line-clamp-2 mt-8 mb-4 leading-tight"
+          style={{ color: colors.text.primary }}
         >
           {title}
         </h6>

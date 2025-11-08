@@ -13,11 +13,13 @@ import { extractRegionFromLocation } from "../utils/taskUtils";
 import sortIcon from "../assets/sort.svg";
 import filterIcon from "../assets/filter.svg";
 import AddressFilterDialog from "../components/AddressFilterDialog";
+import { useTheme } from "../hooks/useTheme";
 
 const AllRequests = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { colors } = useTheme();
 
   const { tasks, pagination, loading, error } = useSelector(
     (state) => state.allRequests
@@ -160,15 +162,46 @@ const AllRequests = () => {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "24rem",
+        }}
+      >
+        <div style={{ textAlign: "center" }}>
+          <h3
+            style={{
+              fontSize: "1.125rem",
+              fontWeight: 500,
+              color: colors.text.primary,
+              marginBottom: "8px",
+            }}
+          >
             Error Loading Requests
           </h3>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <p style={{ color: colors.text.secondary, marginBottom: "16px" }}>
+            {error}
+          </p>
           <button
             onClick={() => dispatch(fetchAllTasks({ page: currentPage }))}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+            style={{
+              padding: "8px 16px",
+              backgroundColor: colors.brand.primary,
+              color: "#FFFFFF",
+              borderRadius: "6px",
+              border: "none",
+              cursor: "pointer",
+              transition: "background-color 0.2s",
+            }}
+            onMouseOver={(e) =>
+              (e.currentTarget.style.backgroundColor =
+                colors.brand.primaryHover)
+            }
+            onMouseOut={(e) =>
+              (e.currentTarget.style.backgroundColor = colors.brand.primary)
+            }
           >
             Try Again
           </button>
@@ -180,10 +213,24 @@ const AllRequests = () => {
   return (
     <>
       {/* Header Section */}
-      <div className="flex justify-between items-start my-8 ">
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "start",
+          margin: "32px 0",
+        }}
+      >
         {/* All Requests Title */}
         <div>
-          <h1 className="font-medium text-xl text-gray-900 font-inter">
+          <h1
+            style={{
+              fontWeight: 500,
+              fontSize: "1.25rem",
+              color: colors.text.primary,
+              fontFamily: "Inter, sans-serif",
+            }}
+          >
             {categoryFilter
               ? `${categoryMapping[categoryFilter] || categoryFilter} Requests`
               : urgencyFilter
@@ -193,7 +240,13 @@ const AllRequests = () => {
               : "All Requests"}
           </h1>
           {(categoryFilter || urgencyFilter || locationFilter) && (
-            <p className="text-sm text-gray-600 mt-1">
+            <p
+              style={{
+                fontSize: "0.875rem",
+                color: colors.text.secondary,
+                marginTop: "4px",
+              }}
+            >
               {categoryFilter &&
                 `Showing requests in ${
                   categoryMapping[categoryFilter] || categoryFilter
@@ -208,7 +261,21 @@ const AllRequests = () => {
                 }Near: ${locationFilter}`}
               <button
                 onClick={() => navigate("/requests")}
-                className="text-blue-600 hover:text-blue-800 underline ml-2"
+                style={{
+                  color: colors.brand.primary,
+                  textDecoration: "underline",
+                  marginLeft: "8px",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: "0.875rem",
+                }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.color = colors.brand.primaryHover)
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.color = colors.brand.primary)
+                }
               >
                 Clear filters
               </button>
@@ -217,13 +284,30 @@ const AllRequests = () => {
         </div>
 
         {/* Header Icons */}
-        <div className="flex items-center space-x-4">
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
           {/* Location filter */}
-          <div className="flex items-center bg-white border border-gray-300 rounded-full overflow-hidden">
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              backgroundColor: colors.background.elevated,
+              border: `1px solid ${colors.border.primary}`,
+              borderRadius: "9999px",
+              overflow: "hidden",
+            }}
+          >
             <input
               type="text"
               placeholder="Filter by location (district/city)"
-              className="px-4 py-2 text-sm outline-none min-w-[220px]"
+              style={{
+                padding: "8px 16px",
+                fontSize: "0.875rem",
+                outline: "none",
+                minWidth: "220px",
+                backgroundColor: "transparent",
+                color: colors.text.primary,
+                border: "none",
+              }}
               value={locationInput}
               onChange={(e) => setLocationInput(e.target.value)}
               onKeyDown={(e) => {
@@ -232,42 +316,145 @@ const AllRequests = () => {
             />
             <button
               onClick={applyLocationFilter}
-              className="px-4 py-2 text-sm bg-indigo-600 text-white hover:bg-indigo-700"
+              style={{
+                padding: "8px 16px",
+                fontSize: "0.875rem",
+                backgroundColor: colors.brand.primary,
+                color: "#FFFFFF",
+                border: "none",
+                cursor: "pointer",
+                transition: "background-color 0.2s",
+              }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor =
+                  colors.brand.primaryHover)
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = colors.brand.primary)
+              }
             >
               Apply
             </button>
           </div>
           {/* Sort Icon */}
-          <button className="w-6 h-6 text-gray-900 hover:text-indigo-600 transition-colors">
-            <img src={sortIcon} alt="Sort" className="w-full h-full" />
+          <button
+            style={{
+              width: "24px",
+              height: "24px",
+              color: colors.text.primary,
+              transition: "color 0.2s",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+            }}
+            onMouseOver={(e) =>
+              (e.currentTarget.style.color = colors.brand.primary)
+            }
+            onMouseOut={(e) =>
+              (e.currentTarget.style.color = colors.text.primary)
+            }
+            aria-label="Sort requests"
+          >
+            <img
+              src={sortIcon}
+              alt="Sort"
+              style={{
+                width: "100%",
+                height: "100%",
+                filter:
+                  colors.text.primary === "#FFFFFF" ? "invert(1)" : "none",
+              }}
+            />
           </button>
 
           {/* Filter Icon */}
           <button
-            className="w-6 h-6 text-gray-900 hover:text-indigo-600 transition-colors"
+            style={{
+              width: "24px",
+              height: "24px",
+              color: colors.text.primary,
+              transition: "color 0.2s",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+            }}
             onClick={() => setAddressDialogOpen(true)}
+            onMouseOver={(e) =>
+              (e.currentTarget.style.color = colors.brand.primary)
+            }
+            onMouseOut={(e) =>
+              (e.currentTarget.style.color = colors.text.primary)
+            }
             aria-label="Open address filter"
           >
-            <img src={filterIcon} alt="Filter" className="w-full h-full" />
+            <img
+              src={filterIcon}
+              alt="Filter"
+              style={{
+                width: "100%",
+                height: "100%",
+                filter:
+                  colors.text.primary === "#FFFFFF" ? "invert(1)" : "none",
+              }}
+            />
           </button>
         </div>
       </div>
 
       {/* Request Cards Grid */}
-      <div className="px-5 overflow-hidden">
+      <div style={{ padding: "0 20px", overflow: "hidden" }}>
         {loading ? (
           // Loading state - show skeleton cards
-          <div className="grid grid-cols-2 gap-5">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(2, 1fr)",
+              gap: "20px",
+            }}
+          >
             {[...Array(6)].map((_, index) => (
               <div
                 key={index}
-                className=" bg-gray-100 rounded-2xl animate-pulse"
+                style={{
+                  backgroundColor: colors.background.secondary,
+                  borderRadius: "16px",
+                  animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                }}
               >
-                <div className="p-2">
-                  <div className=" bg-gray-200 rounded-xl"></div>
-                  <div className="space-y-2">
-                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                <div style={{ padding: "8px" }}>
+                  <div
+                    style={{
+                      backgroundColor: colors.background.tertiary,
+                      borderRadius: "12px",
+                      height: "64px",
+                      marginBottom: "8px",
+                    }}
+                  ></div>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "8px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: "16px",
+                        backgroundColor: colors.background.tertiary,
+                        borderRadius: "4px",
+                        width: "75%",
+                      }}
+                    ></div>
+                    <div
+                      style={{
+                        height: "12px",
+                        backgroundColor: colors.background.tertiary,
+                        borderRadius: "4px",
+                        width: "50%",
+                      }}
+                    ></div>
                   </div>
                 </div>
               </div>
@@ -275,7 +462,13 @@ const AllRequests = () => {
           </div>
         ) : (
           // Actual content
-          <div className="grid grid-cols-2 gap-5">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(2, 1fr)",
+              gap: "20px",
+            }}
+          >
             {tasks.map((task) => {
               const formattedTask = formatTaskForCard(task);
               return (
@@ -299,7 +492,10 @@ const AllRequests = () => {
             {/* Fill empty slots if less than 6 tasks */}
             {tasks.length < 6 &&
               [...Array(Math.max(0, 6 - tasks.length))].map((_, index) => (
-                <div key={`empty-${index}`} className="w-[407px] h-[122px]">
+                <div
+                  key={`empty-${index}`}
+                  style={{ width: "407px", height: "122px" }}
+                >
                   {/* Empty slot - maintains grid layout */}
                 </div>
               ))}
@@ -308,11 +504,33 @@ const AllRequests = () => {
 
         {/* Empty state when no tasks */}
         {!loading && tasks.length === 0 && (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+            }}
+          >
+            <div style={{ textAlign: "center" }}>
+              <div
+                style={{
+                  width: "64px",
+                  height: "64px",
+                  backgroundColor: colors.background.secondary,
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 16px",
+                }}
+              >
                 <svg
-                  className="w-8 h-8 text-gray-400"
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    color: colors.text.tertiary,
+                  }}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -325,10 +543,17 @@ const AllRequests = () => {
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3
+                style={{
+                  fontSize: "1.125rem",
+                  fontWeight: 500,
+                  color: colors.text.primary,
+                  marginBottom: "8px",
+                }}
+              >
                 No Requests Available
               </h3>
-              <p className="text-gray-600">
+              <p style={{ color: colors.text.secondary }}>
                 There are currently no requests to display.
               </p>
             </div>
@@ -338,20 +563,49 @@ const AllRequests = () => {
 
       {/* Pagination Controls */}
       {!loading && tasks.length > 0 && pagination.totalPages > 1 && (
-        <div className="flex justify-center items-center mt-8 space-x-4">
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: "32px",
+            gap: "16px",
+          }}
+        >
           <button
             onClick={handlePreviousPage}
             disabled={!pagination.hasPreviousPage}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              pagination.hasPreviousPage
-                ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                : "bg-gray-200 text-gray-400 cursor-not-allowed"
-            }`}
+            style={{
+              padding: "8px 16px",
+              borderRadius: "6px",
+              fontSize: "0.875rem",
+              fontWeight: 500,
+              transition: "all 0.2s",
+              backgroundColor: pagination.hasPreviousPage
+                ? colors.brand.primary
+                : colors.interactive.disabled,
+              color: pagination.hasPreviousPage
+                ? colors.text.inverse
+                : colors.text.tertiary,
+              cursor: pagination.hasPreviousPage ? "pointer" : "not-allowed",
+              border: "none",
+            }}
+            onMouseOver={(e) => {
+              if (pagination.hasPreviousPage) {
+                e.currentTarget.style.backgroundColor =
+                  colors.brand.primaryHover;
+              }
+            }}
+            onMouseOut={(e) => {
+              if (pagination.hasPreviousPage) {
+                e.currentTarget.style.backgroundColor = colors.brand.primary;
+              }
+            }}
           >
             Previous
           </button>
 
-          <div className="flex items-center space-x-2">
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             {/* Page numbers */}
             {Array.from(
               { length: Math.min(5, pagination.totalPages) },
@@ -367,15 +621,38 @@ const AllRequests = () => {
                   pageNumber = currentPage - 2 + i;
                 }
 
+                const isActive = currentPage === pageNumber;
                 return (
                   <button
                     key={pageNumber}
                     onClick={() => handlePageChange(pageNumber)}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                      currentPage === pageNumber
-                        ? "bg-indigo-600 text-white"
-                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    }`}
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      fontSize: "0.875rem",
+                      fontWeight: 500,
+                      transition: "all 0.2s",
+                      backgroundColor: isActive
+                        ? colors.brand.primary
+                        : colors.background.secondary,
+                      color: isActive
+                        ? colors.text.inverse
+                        : colors.text.primary,
+                      cursor: "pointer",
+                      border: "none",
+                    }}
+                    onMouseOver={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.backgroundColor =
+                          colors.interactive.hover;
+                      }
+                    }}
+                    onMouseOut={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.backgroundColor =
+                          colors.background.secondary;
+                      }
+                    }}
                   >
                     {pageNumber}
                   </button>
@@ -387,11 +664,32 @@ const AllRequests = () => {
           <button
             onClick={handleNextPage}
             disabled={!pagination.hasNextPage}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              pagination.hasNextPage
-                ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                : "bg-gray-200 text-gray-400 cursor-not-allowed"
-            }`}
+            style={{
+              padding: "8px 16px",
+              borderRadius: "6px",
+              fontSize: "0.875rem",
+              fontWeight: 500,
+              transition: "all 0.2s",
+              backgroundColor: pagination.hasNextPage
+                ? colors.brand.primary
+                : colors.interactive.disabled,
+              color: pagination.hasNextPage
+                ? colors.text.inverse
+                : colors.text.tertiary,
+              cursor: pagination.hasNextPage ? "pointer" : "not-allowed",
+              border: "none",
+            }}
+            onMouseOver={(e) => {
+              if (pagination.hasNextPage) {
+                e.currentTarget.style.backgroundColor =
+                  colors.brand.primaryHover;
+              }
+            }}
+            onMouseOut={(e) => {
+              if (pagination.hasNextPage) {
+                e.currentTarget.style.backgroundColor = colors.brand.primary;
+              }
+            }}
           >
             Next
           </button>
@@ -400,7 +698,14 @@ const AllRequests = () => {
 
       {/* Pagination Info */}
       {!loading && tasks.length > 0 && (
-        <div className="text-center mt-4 text-sm text-gray-600">
+        <div
+          style={{
+            textAlign: "center",
+            marginTop: "16px",
+            fontSize: "0.875rem",
+            color: colors.text.secondary,
+          }}
+        >
           Showing {tasks.length} of {pagination.totalItems} requests
           {pagination.totalPages > 1 && (
             <span>
