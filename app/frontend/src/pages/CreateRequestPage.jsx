@@ -26,15 +26,13 @@ const steps = [
 const CreateRequestPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { currentStep, loading, success, error, formData } =
-    useSelector((state) => state.createRequest);
+  const { currentStep, loading, success, error, formData } = useSelector(
+    (state) => state.createRequest
+  );
   const { attachPhoto } = useAttachTaskPhoto();
   const generalInfoRef = useRef();
   const setupAddressRef = useRef();
   const [validationError, setValidationError] = useState(null);
-  const { currentStep, loading, success, error } = useSelector(
-    (state) => state.createRequest
-  );
   const { colors } = useTheme();
 
   useEffect(() => {
