@@ -31,7 +31,7 @@ const port = Constants.expoConfig?.extra?.apiPort ?? '8000';
 // Find your LAN IP with: ifconfig | grep "inet " | grep -v 127.0.0.1
 // use the first one returned by the command
 // do not forget to also change the export const API_BASE_URL constant below.
-const LOCAL_LAN_IP = '172.20.10.3'; // Change this to your LAN IP if needed
+const LOCAL_LAN_IP = '192.168.1.107'; // Change this to your LAN IP if needed
 
 const API_HOST = Platform.select({
   web: 'localhost',           // Web uses localhost
@@ -42,8 +42,9 @@ const API_HOST = Platform.select({
 
 // For local development, use dynamic host detection
 // For production, comment out the line below and uncomment the hardcoded Production URL
-//export const API_BASE_URL = `http://${API_HOST}:${port}/api`;
-export const API_BASE_URL = `http://35.222.191.20:8000/api`; // Production URL
+export const BACKEND_BASE_URL = `http://${API_HOST}:${port}`;
+export const API_BASE_URL = `${BACKEND_BASE_URL}/api`;
+//export const API_BASE_URL = `http://35.222.191.20:8000/api`; // Production URL
 
 interface LoginResponse {
   status: string;

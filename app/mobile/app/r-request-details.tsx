@@ -474,6 +474,7 @@ export default function RequestDetails() {
             {(() => {
               const firstPhoto = photos[0];
               const photoUrl = firstPhoto.photo_url || firstPhoto.url || firstPhoto.image || '';
+              console.log(photoUrl);
               const absoluteUrl = photoUrl.startsWith('http') 
                 ? photoUrl 
                 : `${BACKEND_BASE_URL}${photoUrl}`;
