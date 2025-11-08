@@ -4,6 +4,7 @@ import CategoryCard from "../components/CategoryCard";
 import RequestCard from "../components/RequestCard";
 import * as categoryService from "../features/category/services/categoryService";
 import * as requestService from "../features/request/services/requestService";
+import { toAbsoluteUrl } from "../utils/url";
 import { getCategoryImage } from "../constants/categories";
 import { useTheme } from "../hooks/useTheme";
 
@@ -55,7 +56,12 @@ const Home = () => {
       setLoading((prev) => ({ ...prev, requests: true }));
       try {
         const popularTasks = await requestService.getPopularTasks(6);
-        setRequests(popularTasks);
+        const withImages = popularTasks.map((t) => {
+          const photoFromList = t.photos?.[0]?.url || t.photos?.[0]?.image || t.photos?.[0]?.photo_url;
+          const preferred = t.primary_photo_url || photoFromList || null;
+          return { ...t, imageUrl: toAbsoluteUrl(preferred) };
+        });
+        setRequests(withImages);
         setError((prev) => ({ ...prev, requests: null }));
       } catch (err) {
         console.error("Failed to fetch popular requests:", err);

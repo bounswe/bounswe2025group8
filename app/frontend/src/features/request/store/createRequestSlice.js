@@ -43,7 +43,7 @@ export const fetchCategories = createAsyncThunk(
 
 // Async thunk for processing photos for preview
 export const uploadPhotos = createAsyncThunk(
-  'createRequest/uploadPhotos',
+  'createRequest/uploadPhotos', 
   async (photos, { rejectWithValue }) => {
     try {
       // Ensure photos is always an array
@@ -152,6 +152,9 @@ const createRequestSlice = createSlice({
       state.uploadedPhotos = state.uploadedPhotos.filter(
         photo => photo.id !== action.payload
       );
+      state.formData.photos = state.uploadedPhotos
+        .map(photo => photo.file)
+        .filter(Boolean);
     }
   },
   extraReducers: (builder) => {
@@ -187,13 +190,18 @@ const createRequestSlice = createSlice({
       // Upload photos cases
       .addCase(uploadPhotos.pending, (state) => {
         state.loading = true;
-      })      .addCase(uploadPhotos.fulfilled, (state, action) => {
+      })
+      .addCase(uploadPhotos.fulfilled, (state, action) => {
         state.loading = false;
         // Ensure action.payload is always treated as an array
         const payloadArray = Array.isArray(action.payload) ? action.payload : [action.payload];
         state.uploadedPhotos = [...state.uploadedPhotos, ...payloadArray];
+        state.formData.photos = state.uploadedPhotos
+          .map(photo => photo.file)
+          .filter(Boolean);
         state.error = null;
-      })      .addCase(uploadPhotos.rejected, (state, action) => {
+      })
+      .addCase(uploadPhotos.rejected, (state, action) => {
         state.loading = false;
         // Handle the error message safely
         state.error = action.payload || 'Failed to upload photos';

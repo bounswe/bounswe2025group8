@@ -2,7 +2,8 @@ import axios, { type AxiosResponse, type InternalAxiosRequestConfig, AxiosError 
 import { authStorage } from '../features/authentication/utils';
 
 // Create an axios instance with base URL
-const API_BASE_URL: string = 'http://localhost:8000/api';
+export const API_BASE_URL: string = 'http://localhost:8000/api';
+export const API_ORIGIN: string = new URL(API_BASE_URL).origin;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
