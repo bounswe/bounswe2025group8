@@ -47,6 +47,7 @@ import ReviewCard from "../components/ReviewCard";
 import Badge from "../components/Badge";
 import EditProfileDialog from "../components/EditProfileDialog";
 import { useTheme } from "../hooks/useTheme";
+import { toAbsoluteUrl } from "../utils/url";
 // No need for CSS module import as we're using Material UI's sx prop
 
 const ProfilePage = () => {
@@ -302,16 +303,37 @@ const ProfilePage = () => {
     if (roleTab === 0) {
       return dataArray
         .filter((item) => item.task) // Only include items that have a task
-        .map((item) => ({
-          ...item.task,
-          volunteerStatus: item.status,
-          volunteerId: item.id,
-          // Ensure we only show tasks where this user is actually a volunteer
-          isVolunteer: true,
-        }));
+        .map((item) => {
+          const task = item.task;
+          // Process image URL similar to Home page
+          const photoFromList =
+            task.photos?.[0]?.url ||
+            task.photos?.[0]?.image ||
+            task.photos?.[0]?.photo_url;
+          const preferred = task.primary_photo_url || photoFromList || null;
+          return {
+            ...task,
+            imageUrl: toAbsoluteUrl(preferred),
+            volunteerStatus: item.status,
+            volunteerId: item.id,
+            // Ensure we only show tasks where this user is actually a volunteer
+            isVolunteer: true,
+          };
+        });
     }
 
-    return dataArray;
+    // For requester tab, process images for created requests
+    return dataArray.map((task) => {
+      const photoFromList =
+        task.photos?.[0]?.url ||
+        task.photos?.[0]?.image ||
+        task.photos?.[0]?.photo_url;
+      const preferred = task.primary_photo_url || photoFromList || null;
+      return {
+        ...task,
+        imageUrl: toAbsoluteUrl(preferred),
+      };
+    });
   };
   // Get current requests based on the selected tab
   // The API call already filters by active/completed status based on requestsTab
