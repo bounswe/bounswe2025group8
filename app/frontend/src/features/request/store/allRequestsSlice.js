@@ -7,25 +7,28 @@ export const fetchAllTasks = createAsyncThunk(
   'allRequests/fetchAllTasks',
   async ({ filters = {}, page = 1, includeStatus = [] }, { rejectWithValue }) => {
     try {
-      // Add default status filtering to exclude cancelled tasks if no status is specified
+      // Add default status filtering to exclude cancelled and completed tasks if no status is specified
       const enhancedFilters = { ...filters };
       
       // If no specific status filter is provided and includeStatus is empty,
-      // exclude cancelled tasks by default for the AllRequests page
+      // exclude cancelled and completed tasks by default for the AllRequests page
       if (!enhancedFilters.status && includeStatus.length === 0) {
         // We'll filter on the frontend since the backend expects single status values
-        // and we want to exclude CANCELLED specifically
+        // and we want to exclude CANCELLED and COMPLETED specifically
       }
       
       console.log("Fetching all tasks with filters:", enhancedFilters, "page:", page);
       const response = await getTasks(enhancedFilters, page);
       console.log("Received tasks response:", response);
       
-      // Filter out cancelled tasks if not explicitly included
-      const shouldExcludeCancelled = !includeStatus.includes('CANCELLED') && !enhancedFilters.status;
-      if (shouldExcludeCancelled && response.tasks) {
+      // Filter out cancelled and completed tasks if not explicitly included
+      const shouldExcludeStatuses = !enhancedFilters.status && includeStatus.length === 0;
+      if (shouldExcludeStatuses && response.tasks) {
         const originalTasks = response.tasks;
-        const filteredTasks = originalTasks.filter(task => task.status !== 'CANCELLED');
+        // Exclude CANCELLED, COMPLETED, and EXPIRED tasks from AllRequests page
+        const filteredTasks = originalTasks.filter(task => 
+          task.status !== 'CANCELLED' && task.status !== 'COMPLETED' && task.status !== 'EXPIRED'
+        );
         
         return {
           ...response,

@@ -461,6 +461,9 @@ const RequestDetail = () => {
       // Update the request state with the refreshed data
       setRequest(refreshedTask);
 
+      // Remove the completed task from AllRequests list immediately
+      dispatch(removeTaskFromList(request.id));
+
       alert("Task marked as completed successfully!");
     } catch (error) {
       console.error("Error marking task as completed:", error);
