@@ -45,6 +45,8 @@ const API_HOST = Platform.select({
 export const BACKEND_BASE_URL = `http://${API_HOST}:${port}`;
 export const API_BASE_URL = `${BACKEND_BASE_URL}/api`;
 //export const API_BASE_URL = `http://35.222.191.20:8000/api`; // Production URL
+//export const BACKEND_BASE_URL = `http://35.222.191.20:${port}`; // Production URL
+
 
 interface LoginResponse {
   status: string;
