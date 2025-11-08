@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
-import useAuth from "../features/authentication/hooks/useAuth"; 
+import useAuth from "../features/authentication/hooks/useAuth";
 import logoImage from "../assets/logo.png";
 import lockIcon from "../assets/lock.svg";
 import mailIcon from "../assets/mail.svg";
+import { useTheme } from "../hooks/useTheme";
 
 // Eye icons for password visibility (you may need to replace these with actual SVG icons or use different icons)
 const EyeIcon = () => (
@@ -29,6 +30,7 @@ const EyeOffIcon = () => (
 );
 
 const LoginPage = () => {
+  const { colors, theme, setTheme } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -44,14 +46,16 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoginError("");
-    
+
     try {
       const success = await login({ email, password });
-      
+
       if (success) {
         navigate("/"); // Only redirect on successful login
       } else {
-        setLoginError("Invalid credentials. Please check your email and password.");
+        setLoginError(
+          "Invalid credentials. Please check your email and password."
+        );
       }
     } catch (error) {
       setLoginError(
@@ -62,47 +66,123 @@ const LoginPage = () => {
 
   // The rest of the component remains the same
   return (
-    <div className="flex min-h-screen bg-white items-center justify-center">
+    <div
+      className="flex min-h-screen items-center justify-center"
+      style={{ backgroundColor: colors.background.primary }}
+    >
+      {/* Theme Toggle Button */}
+      <div className="fixed top-4 right-4 z-50">
+        <select
+          value={theme}
+          onChange={(e) => setTheme(e.target.value)}
+          className="px-3 py-2 rounded-md border text-sm focus:outline-none"
+          style={{
+            backgroundColor: colors.background.secondary,
+            color: colors.text.primary,
+            borderColor: colors.border.primary,
+          }}
+          onFocus={(e) =>
+            (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+          }
+          onBlur={(e) => (e.target.style.boxShadow = "none")}
+        >
+          <option value="light">Light Mode</option>
+          <option value="dark">Dark Mode</option>
+          <option value="high-contrast">High Contrast</option>
+        </select>
+      </div>
+
       <div className="w-full max-w-md">
         {/* Logo and Title updated to be side by side */}
         <div className="flex flex-row items-center justify-center mb-1">
           <img src={logoImage} alt="Logo" width="160" height="160" />
-          <h1 className="text-4xl font-bold ml-2">
+          <h1
+            className="text-4xl font-bold ml-2"
+            style={{ color: colors.text.primary }}
+          >
             Neighborhood
             <br />
             Assistance Board
           </h1>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div
+          className="rounded-lg overflow-hidden"
+          style={{
+            backgroundColor: colors.background.secondary,
+            boxShadow: colors.shadow.medium,
+          }}
+        >
           <div className="flex flex-col items-center p-8">
+            {" "}
             {/* Tab buttons - Updated to match the second image design */}
             <div className="w-full mb-6 flex justify-center">
-              <div className="flex border border-indigo-500 rounded overflow-hidden w-fit">
+              <div
+                className="flex border rounded overflow-hidden w-fit"
+                style={{ borderColor: colors.brand.primary }}
+              >
                 <RouterLink
                   to="/login"
-                  className="bg-indigo-500 text-white px-8 py-2 no-underline hover:bg-indigo-600 transition-colors"
+                  className="px-8 py-2 no-underline transition-colors"
+                  style={{
+                    backgroundColor: colors.brand.primary,
+                    color: colors.text.inverted,
+                  }}
+                  onMouseOver={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      colors.brand.secondary)
+                  }
+                  onMouseOut={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      colors.brand.primary)
+                  }
                 >
                   LOGIN
                 </RouterLink>
                 <RouterLink
                   to="/register"
-                  className="text-indigo-500 bg-white px-8 py-2 no-underline hover:bg-gray-50 transition-colors"
+                  className="px-8 py-2 no-underline transition-colors"
+                  style={{
+                    color: colors.brand.primary,
+                    backgroundColor: colors.background.secondary,
+                  }}
+                  onMouseOver={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      colors.background.tertiary)
+                  }
+                  onMouseOut={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      colors.background.secondary)
+                  }
                 >
                   REGISTER
                 </RouterLink>
               </div>
             </div>
-
             <div className="w-full">
-              <h2 className="text-lg font-bold mb-1">Welcome back</h2>
-              <p className="text-gray-500 text-sm mb-6">
+              <h2
+                className="text-lg font-bold mb-1"
+                style={{ color: colors.text.primary }}
+              >
+                Welcome back
+              </h2>
+              <p
+                className="text-sm mb-6"
+                style={{ color: colors.text.secondary }}
+              >
                 Enter your details to sign in to your account
               </p>
 
               {/* Show registration success message if applicable */}
               {registrationSuccess && (
-                <div className="mb-4 w-full p-3 bg-green-100 border border-green-400 text-green-700 rounded">
+                <div
+                  className="mb-4 w-full p-3 border rounded"
+                  style={{
+                    backgroundColor: colors.semantic.successBackground,
+                    borderColor: colors.semantic.success,
+                    color: colors.semantic.success,
+                  }}
+                >
                   Registration successful! You can now log in with your
                   credentials.
                 </div>
@@ -110,14 +190,27 @@ const LoginPage = () => {
 
               {/* Show either the login error or the Redux error */}
               {(loginError || error) && (
-                <p className="text-red-500 mb-4">{loginError || error}</p>
+                <p className="mb-4" style={{ color: colors.semantic.error }}>
+                  {loginError || error}
+                </p>
               )}
 
               <form onSubmit={handleSubmit} noValidate className="w-full">
                 <div className="mb-4">
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <img src={mailIcon} alt="Email" width="16" height="16" />
+                      <img
+                        src={mailIcon}
+                        alt="Email"
+                        width="16"
+                        height="16"
+                        style={{
+                          filter:
+                            theme === "light"
+                              ? "brightness(0) saturate(100%) invert(0.3) sepia(100%) hue-rotate(0deg)"
+                              : "brightness(0) invert(1)",
+                        }}
+                      />
                     </div>
                     <input
                       type="email"
@@ -129,7 +222,16 @@ const LoginPage = () => {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                      className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none text-sm"
+                      style={{
+                        backgroundColor: colors.background.secondary,
+                        color: colors.text.primary,
+                        borderColor: colors.border.primary,
+                      }}
+                      onFocus={(e) =>
+                        (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                      }
+                      onBlur={(e) => (e.target.style.boxShadow = "none")}
                     />
                   </div>
                 </div>
@@ -142,6 +244,12 @@ const LoginPage = () => {
                         alt="Password"
                         width="16"
                         height="16"
+                        style={{
+                          filter:
+                            theme === "light"
+                              ? "brightness(0) saturate(100%) invert(0.3) sepia(100%) hue-rotate(0deg)"
+                              : "brightness(0) invert(1)",
+                        }}
                       />
                     </div>
                     <input
@@ -153,13 +261,29 @@ const LoginPage = () => {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                      className="w-full pl-10 pr-10 py-2 border rounded-md focus:outline-none text-sm"
+                      style={{
+                        backgroundColor: colors.background.secondary,
+                        color: colors.text.primary,
+                        borderColor: colors.border.primary,
+                      }}
+                      onFocus={(e) =>
+                        (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                      }
+                      onBlur={(e) => (e.target.style.boxShadow = "none")}
                     />
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                        className="focus:outline-none"
+                        style={{ color: colors.text.tertiary }}
+                        onMouseOver={(e) =>
+                          (e.currentTarget.style.color = colors.text.secondary)
+                        }
+                        onMouseOut={(e) =>
+                          (e.currentTarget.style.color = colors.text.tertiary)
+                        }
                       >
                         {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                       </button>
@@ -173,9 +297,16 @@ const LoginPage = () => {
                       type="checkbox"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
-                      className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                      className="w-4 h-4 rounded"
+                      style={{
+                        accentColor: colors.brand.primary,
+                        borderColor: colors.border.primary,
+                      }}
                     />
-                    <span className="ml-2 text-sm text-gray-700">
+                    <span
+                      className="ml-2 text-sm"
+                      style={{ color: colors.text.primary }}
+                    >
                       Remember me
                     </span>
                   </label>
@@ -184,7 +315,27 @@ const LoginPage = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full mt-2 mb-4 py-3 px-4 bg-indigo-500 text-white rounded-full hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="w-full mt-2 mb-4 py-3 px-4 rounded-full focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  style={{
+                    backgroundColor: loading
+                      ? colors.interactive.disabled
+                      : colors.brand.primary,
+                    color: colors.text.inverted,
+                  }}
+                  onMouseOver={(e) =>
+                    !loading &&
+                    (e.currentTarget.style.backgroundColor =
+                      colors.brand.secondary)
+                  }
+                  onMouseOut={(e) =>
+                    !loading &&
+                    (e.currentTarget.style.backgroundColor =
+                      colors.brand.primary)
+                  }
+                  onFocus={(e) =>
+                    (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                  }
+                  onBlur={(e) => (e.target.style.boxShadow = "none")}
                 >
                   Login
                 </button>
@@ -192,7 +343,14 @@ const LoginPage = () => {
                 <div className="text-center mb-4">
                   <RouterLink
                     to="/forgot-password"
-                    className="text-sm text-indigo-500 hover:text-indigo-600 no-underline"
+                    className="text-sm no-underline"
+                    style={{ color: colors.brand.primary }}
+                    onMouseOver={(e) =>
+                      (e.currentTarget.style.color = colors.brand.secondary)
+                    }
+                    onMouseOut={(e) =>
+                      (e.currentTarget.style.color = colors.brand.primary)
+                    }
                   >
                     Forgot my password
                   </RouterLink>
@@ -203,13 +361,22 @@ const LoginPage = () => {
         </div>
 
         <div className="text-center my-4">
-          <p className="text-sm text-gray-500">OR</p>
+          <p className="text-sm" style={{ color: colors.text.secondary }}>
+            OR
+          </p>
         </div>
 
         <div className="text-center mb-8">
           <RouterLink
             to="/"
-            className="text-sm text-indigo-500 no-underline hover:text-indigo-600"
+            className="text-sm no-underline"
+            style={{ color: colors.brand.primary }}
+            onMouseOver={(e) =>
+              (e.currentTarget.style.color = colors.brand.secondary)
+            }
+            onMouseOut={(e) =>
+              (e.currentTarget.style.color = colors.brand.primary)
+            }
           >
             Continue as a guest
           </RouterLink>

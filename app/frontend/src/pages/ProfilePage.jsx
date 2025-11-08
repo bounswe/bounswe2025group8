@@ -46,9 +46,11 @@ import RequestCard from "../components/RequestCard";
 import ReviewCard from "../components/ReviewCard";
 import Badge from "../components/Badge";
 import EditProfileDialog from "../components/EditProfileDialog";
+import { useTheme } from "../hooks/useTheme";
 // No need for CSS module import as we're using Material UI's sx prop
 
 const ProfilePage = () => {
+  const { colors } = useTheme();
   const { userId } = useParams();
 
   // Get logged-in user data from localStorage and Redux store
@@ -337,26 +339,45 @@ const ProfilePage = () => {
           justifyContent: "center",
           alignItems: "center",
           height: "100vh",
+          backgroundColor: colors.background.primary,
         }}
       >
-        <CircularProgress />
+        <CircularProgress sx={{ color: colors.brand.primary }} />
       </Box>
     );
   }
 
   if (error) {
     return (
-      <Box sx={{ p: 3, textAlign: "center" }}>
-        <Typography color="error" variant="h6" gutterBottom>
+      <Box
+        sx={{
+          p: 3,
+          textAlign: "center",
+          backgroundColor: colors.background.primary,
+          minHeight: "100vh",
+        }}
+      >
+        <Typography
+          variant="h6"
+          gutterBottom
+          sx={{ color: colors.semantic.error }}
+        >
           Failed to load profile
         </Typography>
-        <Typography color="text.secondary" paragraph>
+        <Typography paragraph sx={{ color: colors.text.secondary }}>
           {error}
         </Typography>
         <Button
           variant="contained"
           onClick={() => setRefreshData(true)}
-          sx={{ mt: 2 }}
+          sx={{
+            mt: 2,
+            backgroundColor: colors.brand.primary,
+            color: colors.text.inverted,
+            "&:hover": {
+              backgroundColor: colors.brand.secondary,
+            },
+          }}
         >
           Retry
         </Button>
@@ -365,7 +386,13 @@ const ProfilePage = () => {
   }
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box
+      sx={{
+        display: "flex",
+        backgroundColor: colors.background.primary,
+        minHeight: "100vh",
+      }}
+    >
       {/* Main content */}
       <Box component="main" sx={{ flexGrow: 1, p: 3, overflow: "auto" }}>
         <Container maxWidth="lg">
@@ -436,20 +463,31 @@ const ProfilePage = () => {
                 <Typography
                   variant="h5"
                   component="h1"
-                  sx={{ textAlign: "left" }}
+                  sx={{ textAlign: "left", color: colors.text.primary }}
                 >
                   {user.name} {user.surname}
                 </Typography>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Rating value={user.rating} precision={0.1} readOnly />
+                  <Rating
+                    value={user.rating}
+                    precision={0.1}
+                    readOnly
+                    sx={{
+                      "& .MuiRating-iconFilled": {
+                        color: colors.semantic.warning,
+                      },
+                      "& .MuiRating-iconEmpty": {
+                        color: colors.border.secondary,
+                      },
+                    }}
+                  />
                   <Chip
                     label={`${user.rating} (${
                       user.reviewCount || reviews.length
                     } reviews)`}
-                    color="secondary"
                     sx={{
-                      backgroundColor: "#F06292",
-                      color: "#fff",
+                      backgroundColor: colors.brand.primary,
+                      color: colors.text.inverted,
                       "& .MuiChip-label": { px: 2 },
                     }}
                   />
@@ -460,15 +498,15 @@ const ProfilePage = () => {
             {canEdit && (
               <Button
                 variant="outlined"
-                startIcon={<Edit />}
+                startIcon={<Edit sx={{ color: colors.brand.primary }} />}
                 onClick={() => setEditProfileOpen(true)}
                 sx={{
                   borderRadius: "20px",
-                  borderColor: "#5C69FF",
-                  color: "#5C69FF",
+                  borderColor: colors.brand.primary,
+                  color: colors.brand.primary,
                   "&:hover": {
-                    borderColor: "#4A56E2",
-                    backgroundColor: "rgba(92, 105, 255, 0.04)",
+                    borderColor: colors.brand.secondary,
+                    backgroundColor: `${colors.brand.primary}0A`,
                   },
                   px: 3,
                   py: 1,
@@ -487,23 +525,28 @@ const ProfilePage = () => {
               p: 2,
               mb: 4,
               borderRadius: 2,
-              border: "1px solid #f0f0f0",
-              bgcolor: "#fcfcfc",
+              border: `1px solid ${colors.border.primary}`,
+              backgroundColor: colors.background.secondary,
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-              <EmojiEvents sx={{ color: "#FFD700", mr: 1 }} />
+              <EmojiEvents sx={{ color: colors.semantic.warning, mr: 1 }} />
               <Typography
                 variant="h6"
                 component="h2"
-                sx={{ fontWeight: "bold" }}
+                sx={{ fontWeight: "bold", color: colors.text.primary }}
               >
                 Badges
               </Typography>
               <MuiBadge
                 badgeContent={earnedBadges.length}
-                color="primary"
-                sx={{ ml: 4 }}
+                sx={{
+                  ml: 4,
+                  "& .MuiBadge-badge": {
+                    backgroundColor: colors.brand.primary,
+                    color: colors.text.inverted,
+                  },
+                }}
               />
             </Box>
 
@@ -511,7 +554,7 @@ const ProfilePage = () => {
             <Box>
               <Typography
                 variant="subtitle2"
-                sx={{ mb: 1, color: "text.secondary" }}
+                sx={{ mb: 1, color: colors.text.secondary }}
               >
                 Earned Achievements
               </Typography>
@@ -521,7 +564,10 @@ const ProfilePage = () => {
                     <Badge key={badge.id} badge={badge} />
                   ))
                 ) : (
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography
+                    variant="body2"
+                    sx={{ color: colors.text.secondary }}
+                  >
                     No badges earned yet. Complete tasks to earn badges!
                   </Typography>
                 )}
@@ -529,14 +575,16 @@ const ProfilePage = () => {
             </Box>
 
             {/* Divider if there are in-progress badges */}
-            {inProgressBadges.length > 0 && <Divider sx={{ my: 2 }} />}
+            {inProgressBadges.length > 0 && (
+              <Divider sx={{ my: 2, borderColor: colors.border.secondary }} />
+            )}
 
             {/* In-progress badges */}
             {inProgressBadges.length > 0 && (
               <Box>
                 <Typography
                   variant="subtitle2"
-                  sx={{ mb: 1, color: "text.secondary" }}
+                  sx={{ mb: 1, color: colors.text.secondary }}
                 >
                   In Progress
                 </Typography>
@@ -572,20 +620,44 @@ const ProfilePage = () => {
                   label="Volunteer"
                   sx={{
                     borderRadius: "4px",
-                    backgroundColor: roleTab === 0 ? "#5C69FF" : "transparent",
-                    color: roleTab === 0 ? "white" : "inherit",
+                    backgroundColor:
+                      roleTab === 0 ? colors.brand.primary : "transparent",
+                    color: roleTab === 0 ? "#FFFFFF" : colors.text.primary,
                     width: "50%",
-                    "&.Mui-selected": { color: "white" },
+                    "&.Mui-selected": {
+                      color: "#FFFFFF",
+                    },
+                    "&:focus": {
+                      color: "#FFFFFF",
+                    },
+                    "&:hover": {
+                      backgroundColor:
+                        roleTab === 0
+                          ? colors.brand.secondary
+                          : colors.background.tertiary,
+                    },
                   }}
                 />
                 <Tab
                   label="Requester"
                   sx={{
                     borderRadius: "4px",
-                    backgroundColor: roleTab === 1 ? "#5C69FF" : "transparent",
-                    color: roleTab === 1 ? "white" : "inherit",
+                    backgroundColor:
+                      roleTab === 1 ? colors.brand.primary : "transparent",
+                    color: roleTab === 1 ? "#FFFFFF" : colors.text.primary,
                     width: "50%",
-                    "&.Mui-selected": { color: "white" },
+                    "&.Mui-selected": {
+                      color: "#FFFFFF",
+                    },
+                    "&:focus": {
+                      color: "#FFFFFF",
+                    },
+                    "&:hover": {
+                      backgroundColor:
+                        roleTab === 1
+                          ? colors.brand.secondary
+                          : colors.background.tertiary,
+                    },
                   }}
                 />
               </Tabs>
@@ -609,6 +681,13 @@ const ProfilePage = () => {
                   cursor: "pointer",
                   fontWeight: requestsTab === 0 ? "bold" : "normal",
                   mr: 4,
+                  color:
+                    requestsTab === 0
+                      ? colors.text.primary
+                      : colors.text.secondary,
+                  "&:hover": {
+                    color: colors.text.primary,
+                  },
                 }}
               >
                 {roleTab === 0 ? "Active Volunteering" : "Active Requests"}
@@ -620,6 +699,13 @@ const ProfilePage = () => {
                 sx={{
                   cursor: "pointer",
                   fontWeight: requestsTab === 1 ? "bold" : "normal",
+                  color:
+                    requestsTab === 1
+                      ? colors.text.primary
+                      : colors.text.secondary,
+                  "&:hover": {
+                    color: colors.text.primary,
+                  },
                 }}
               >
                 {roleTab === 0 ? "Past Volunteering" : "Past Requests"}
@@ -630,12 +716,26 @@ const ProfilePage = () => {
               activeRequests.length === 0 &&
               requestsTab === 0 && (
                 <Box sx={{ textAlign: "center", py: 4, mb: 2 }}>
-                  <Typography variant="h6" color="text.secondary" gutterBottom>
+                  <Typography
+                    variant="h6"
+                    gutterBottom
+                    sx={{ color: colors.text.secondary }}
+                  >
                     You haven't made any requests yet
                   </Typography>
                   <Button
                     variant="contained"
-                    sx={{ mt: 2, borderRadius: "20px", px: 3, py: 1 }}
+                    sx={{
+                      mt: 2,
+                      borderRadius: "20px",
+                      px: 3,
+                      py: 1,
+                      backgroundColor: colors.brand.primary,
+                      color: colors.text.inverted,
+                      "&:hover": {
+                        backgroundColor: colors.brand.secondary,
+                      },
+                    }}
                     href="/create-request"
                   >
                     Create New Request
@@ -647,12 +747,26 @@ const ProfilePage = () => {
               activeRequests.length === 0 &&
               requestsTab === 0 && (
                 <Box sx={{ textAlign: "center", py: 4, mb: 2 }}>
-                  <Typography variant="h6" color="text.secondary" gutterBottom>
+                  <Typography
+                    variant="h6"
+                    gutterBottom
+                    sx={{ color: colors.text.secondary }}
+                  >
                     You're not volunteering for any tasks yet
                   </Typography>
                   <Button
                     variant="contained"
-                    sx={{ mt: 2, borderRadius: "20px", px: 3, py: 1 }}
+                    sx={{
+                      mt: 2,
+                      borderRadius: "20px",
+                      px: 3,
+                      py: 1,
+                      backgroundColor: colors.brand.primary,
+                      color: colors.text.inverted,
+                      "&:hover": {
+                        backgroundColor: colors.brand.secondary,
+                      },
+                    }}
                     href="/requests"
                   >
                     Find Tasks to Help With
@@ -701,8 +815,7 @@ const ProfilePage = () => {
                     <Grid item xs={12}>
                       <Typography
                         align="center"
-                        color="text.secondary"
-                        sx={{ mb: 4, mt: 2 }}
+                        sx={{ mb: 4, mt: 2, color: colors.text.secondary }}
                       >
                         No past {roleTab === 0 ? "volunteering" : "requests"}.
                       </Typography>
@@ -718,7 +831,7 @@ const ProfilePage = () => {
               <Typography
                 variant="h6"
                 component="h2"
-                sx={{ fontWeight: "bold", mr: 2 }}
+                sx={{ fontWeight: "bold", mr: 2, color: colors.text.primary }}
               >
                 Reviews
               </Typography>
@@ -726,11 +839,10 @@ const ProfilePage = () => {
                 label={`${user.rating || 0} (${
                   reviews?.reviews?.length || 0
                 } reviews)`}
-                color="primary"
                 size="small"
                 sx={{
-                  backgroundColor: "#FFB6C1",
-                  color: "#333",
+                  backgroundColor: colors.brand.primary,
+                  color: colors.text.inverted,
                   "& .MuiChip-label": { px: 1 },
                 }}
               />
@@ -752,13 +864,30 @@ const ProfilePage = () => {
                         count={reviews.pagination.total_pages}
                         page={reviewPage}
                         onChange={handleReviewPageChange}
-                        color="primary"
+                        sx={{
+                          "& .MuiPaginationItem-root": {
+                            color: colors.text.primary,
+                            borderColor: colors.border.primary,
+                            "&:hover": {
+                              backgroundColor: colors.background.tertiary,
+                            },
+                          },
+                          "& .Mui-selected": {
+                            backgroundColor: `${colors.brand.primary} !important`,
+                            color: `${colors.text.inverted} !important`,
+                            "&:hover": {
+                              backgroundColor: `${colors.brand.secondary} !important`,
+                            },
+                          },
+                        }}
                       />
                     </Box>
                   )}
                 </>
               ) : (
-                <Typography>No reviews yet.</Typography>
+                <Typography sx={{ color: colors.text.secondary }}>
+                  No reviews yet.
+                </Typography>
               )}
             </Box>
           </Box>

@@ -1,47 +1,81 @@
-import React from 'react';
-import { Box, Typography, Tooltip, CircularProgress } from '@mui/material';
-import { Icon } from '@mui/material';
-import { formatDate } from '../utils/dateUtils';
+import React from "react";
+import { Box, Typography, Tooltip, CircularProgress } from "@mui/material";
+import { Icon } from "@mui/material";
+import { formatDate } from "../utils/dateUtils";
+import { useTheme } from "../hooks/useTheme";
 
 const Badge = ({ badge }) => {
-  const { title, description, icon, image, color, earned, earnedDate, progress } = badge;
-  
+  const { colors } = useTheme();
+  const {
+    title,
+    description,
+    icon,
+    image,
+    color,
+    earned,
+    earnedDate,
+    progress,
+  } = badge;
+
   // Determine opacity based on earned status
   const opacity = earned ? 1 : 0.5;
-  
+
   return (
     <Tooltip
       title={
-        <Box>
-          <Typography variant="subtitle2">{title}</Typography>
-          <Typography variant="body2">{description}</Typography>
+        <Box
+          sx={{
+            backgroundColor: colors.background.elevated,
+            color: colors.text.primary,
+          }}
+        >
+          <Typography variant="subtitle2" sx={{ color: colors.text.primary }}>
+            {title}
+          </Typography>
+          <Typography variant="body2" sx={{ color: colors.text.secondary }}>
+            {description}
+          </Typography>
           {earned && earnedDate && (
-            <Typography variant="caption">
-              Earned on {formatDate(earnedDate, 'MMM d, yyyy')}
+            <Typography variant="caption" sx={{ color: colors.text.tertiary }}>
+              Earned on {formatDate(earnedDate, "MMM d, yyyy")}
             </Typography>
           )}
           {!earned && progress !== undefined && (
-            <Typography variant="caption">
+            <Typography variant="caption" sx={{ color: colors.text.tertiary }}>
               {progress}% complete
             </Typography>
           )}
         </Box>
       }
       arrow
+      componentsProps={{
+        tooltip: {
+          sx: {
+            backgroundColor: colors.background.elevated,
+            border: `1px solid ${colors.border.primary}`,
+            boxShadow: `0 4px 6px ${colors.shadow.md}`,
+          },
+        },
+        arrow: {
+          sx: {
+            color: colors.background.elevated,
+          },
+        },
+      }}
     >
       <Box
         sx={{
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
           width: 70,
           height: 90,
           opacity,
-          transition: 'transform 0.2s, opacity 0.2s',
-          '&:hover': {
-            transform: 'scale(1.05)',
+          transition: "transform 0.2s, opacity 0.2s",
+          "&:hover": {
+            transform: "scale(1.05)",
             opacity: 1,
           },
         }}
@@ -50,15 +84,15 @@ const Badge = ({ badge }) => {
           sx={{
             width: 56,
             height: 56,
-            borderRadius: '50%',
+            borderRadius: "50%",
             bgcolor: color,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: earned ? '0 3px 8px rgba(0,0,0,0.2)' : 'none',
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: earned ? "0 3px 8px rgba(0,0,0,0.2)" : "none",
             mb: 1,
-            position: 'relative',
-            overflow: 'hidden',
+            position: "relative",
+            overflow: "hidden",
           }}
         >
           {!earned && progress !== undefined && (
@@ -68,13 +102,13 @@ const Badge = ({ badge }) => {
               size={56}
               thickness={4}
               sx={{
-                position: 'absolute',
+                position: "absolute",
                 color: color,
                 opacity: 0.8,
               }}
             />
           )}
-          
+
           {/* Display either image or icon based on what's provided */}
           {image ? (
             <Box
@@ -84,12 +118,12 @@ const Badge = ({ badge }) => {
               sx={{
                 width: 36,
                 height: 36,
-                objectFit: 'cover',
-                borderRadius: '50%',
+                objectFit: "cover",
+                borderRadius: "50%",
               }}
             />
           ) : (
-            <Icon sx={{ color: 'white', fontSize: 30 }}>{icon}</Icon>
+            <Icon sx={{ color: "white", fontSize: 30 }}>{icon}</Icon>
           )}
         </Box>
         <Typography
@@ -97,8 +131,9 @@ const Badge = ({ badge }) => {
           align="center"
           noWrap
           sx={{
-            width: '100%',
-            fontWeight: earned ? 'bold' : 'normal',
+            width: "100%",
+            fontWeight: earned ? "bold" : "normal",
+            color: colors.text.primary,
           }}
         >
           {title}

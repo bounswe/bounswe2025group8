@@ -9,8 +9,9 @@ import {
   Typography,
 } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { useTheme } from "@mui/material/styles";
+import { useTheme as useMuiTheme } from "@mui/material/styles";
 import * as createRequestService from "../features/request/services/createRequestService";
+import { useTheme } from "../hooks/useTheme";
 
 // A lightweight address picker dialog for filtering requests by location.
 // Mimics the Country -> State -> City flow of SetupAddressStep.
@@ -42,8 +43,9 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
     [countries, countryCode]
   );
 
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"));
+  const muiTheme = useMuiTheme();
+  const fullScreen = useMediaQuery(muiTheme.breakpoints.down("sm"));
+  const { colors } = useTheme();
 
   useEffect(() => {
     if (!open) return;
@@ -168,28 +170,75 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
       fullWidth
       maxWidth="sm"
       fullScreen={fullScreen}
+      PaperProps={{
+        sx: {
+          backgroundColor: colors.background.elevated,
+          border: `1px solid ${colors.border.primary}`,
+        },
+      }}
     >
-      <DialogTitle>Filter by Address</DialogTitle>
+      <DialogTitle sx={{ color: colors.text.primary }}>
+        Filter by Address
+      </DialogTitle>
       <DialogContent>
         {error && (
-          <Typography color="error" variant="body2" sx={{ mb: 2 }}>
+          <Typography
+            variant="body2"
+            sx={{
+              mb: 2,
+              color: colors.semantic.error,
+              backgroundColor: `${colors.semantic.error}10`,
+              padding: "8px 12px",
+              borderRadius: "8px",
+            }}
+          >
             {error}
           </Typography>
         )}
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
           {/* Country */}
           <div>
-            <h3 className="text-sm font-bold mb-2">Country</h3>
-            <div className="relative">
+            <h3
+              style={{
+                fontSize: "0.875rem",
+                fontWeight: "bold",
+                marginBottom: "8px",
+                color: colors.text.primary,
+              }}
+            >
+              Country
+            </h3>
+            <div style={{ position: "relative" }}>
               {loading.countries && (
-                <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600" />
+                <div
+                  style={{
+                    position: "absolute",
+                    left: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                  }}
+                >
+                  <div
+                    style={{
+                      animation: "spin 1s linear infinite",
+                      borderRadius: "50%",
+                      height: "20px",
+                      width: "20px",
+                      borderBottom: `2px solid ${colors.brand.primary}`,
+                    }}
+                  />
                 </div>
               )}
               <select
-                className={`w-full px-3 py-3 border rounded-md bg-white ${
-                  loading.countries ? "pl-12" : ""
-                }`}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  paddingLeft: loading.countries ? "48px" : "12px",
+                  border: `1px solid ${colors.border.primary}`,
+                  borderRadius: "6px",
+                  backgroundColor: colors.background.secondary,
+                  color: colors.text.primary,
+                }}
                 value={countryCode}
                 disabled={loading.countries}
                 onChange={(e) => setCountryCode(e.target.value)}
@@ -206,17 +255,47 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
 
           {/* State */}
           <div>
-            <h3 className="text-sm font-bold mb-2">State/Province</h3>
-            <div className="relative">
+            <h3
+              style={{
+                fontSize: "0.875rem",
+                fontWeight: "bold",
+                marginBottom: "8px",
+                color: colors.text.primary,
+              }}
+            >
+              State/Province
+            </h3>
+            <div style={{ position: "relative" }}>
               {loading.states && (
-                <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600" />
+                <div
+                  style={{
+                    position: "absolute",
+                    left: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                  }}
+                >
+                  <div
+                    style={{
+                      animation: "spin 1s linear infinite",
+                      borderRadius: "50%",
+                      height: "20px",
+                      width: "20px",
+                      borderBottom: `2px solid ${colors.brand.primary}`,
+                    }}
+                  />
                 </div>
               )}
               <select
-                className={`w-full px-3 py-3 border rounded-md bg-white ${
-                  loading.states ? "pl-12" : ""
-                }`}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  paddingLeft: loading.states ? "48px" : "12px",
+                  border: `1px solid ${colors.border.primary}`,
+                  borderRadius: "6px",
+                  backgroundColor: colors.background.secondary,
+                  color: colors.text.primary,
+                }}
                 value={stateName}
                 onChange={(e) => setStateName(e.target.value)}
                 disabled={!countryCode || loading.states}
@@ -233,17 +312,47 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
 
           {/* District/City */}
           <div>
-            <h3 className="text-sm font-bold mb-2">District or City</h3>
-            <div className="relative">
+            <h3
+              style={{
+                fontSize: "0.875rem",
+                fontWeight: "bold",
+                marginBottom: "8px",
+                color: colors.text.primary,
+              }}
+            >
+              District or City
+            </h3>
+            <div style={{ position: "relative" }}>
               {loading.cities && (
-                <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600" />
+                <div
+                  style={{
+                    position: "absolute",
+                    left: "12px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                  }}
+                >
+                  <div
+                    style={{
+                      animation: "spin 1s linear infinite",
+                      borderRadius: "50%",
+                      height: "20px",
+                      width: "20px",
+                      borderBottom: `2px solid ${colors.brand.primary}`,
+                    }}
+                  />
                 </div>
               )}
               <select
-                className={`w-full px-3 py-3 border rounded-md bg-white ${
-                  loading.cities ? "pl-12" : ""
-                }`}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  paddingLeft: loading.cities ? "48px" : "12px",
+                  border: `1px solid ${colors.border.primary}`,
+                  borderRadius: "6px",
+                  backgroundColor: colors.background.secondary,
+                  color: colors.text.primary,
+                }}
                 value={cityName}
                 onChange={(e) => setCityName(e.target.value)}
                 disabled={!stateName || loading.cities}
@@ -260,50 +369,113 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
 
           {/* Advanced region details (optional) */}
           <div>
-            <h3 className="text-sm font-bold mb-2">Advanced (optional)</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <h3
+              style={{
+                fontSize: "0.875rem",
+                fontWeight: "bold",
+                marginBottom: "8px",
+                color: colors.text.primary,
+              }}
+            >
+              Advanced (optional)
+            </h3>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr",
+                gap: "8px",
+              }}
+            >
               <input
                 type="text"
-                className="w-full px-3 py-3 border rounded-md bg-white"
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  border: `1px solid ${colors.border.primary}`,
+                  borderRadius: "6px",
+                  backgroundColor: colors.background.secondary,
+                  color: colors.text.primary,
+                }}
                 placeholder="Neighborhood"
                 value={neighborhood}
                 onChange={(e) => setNeighborhood(e.target.value)}
               />
               <input
                 type="text"
-                className="w-full px-3 py-3 border rounded-md bg-white"
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  border: `1px solid ${colors.border.primary}`,
+                  borderRadius: "6px",
+                  backgroundColor: colors.background.secondary,
+                  color: colors.text.primary,
+                }}
                 placeholder="Street"
                 value={street}
                 onChange={(e) => setStreet(e.target.value)}
               />
               <input
                 type="text"
-                className="w-full px-3 py-3 border rounded-md bg-white"
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  border: `1px solid ${colors.border.primary}`,
+                  borderRadius: "6px",
+                  backgroundColor: colors.background.secondary,
+                  color: colors.text.primary,
+                }}
                 placeholder="Building No"
                 value={buildingNo}
                 onChange={(e) => setBuildingNo(e.target.value)}
               />
               <input
                 type="text"
-                className="w-full px-3 py-3 border rounded-md bg-white"
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  border: `1px solid ${colors.border.primary}`,
+                  borderRadius: "6px",
+                  backgroundColor: colors.background.secondary,
+                  color: colors.text.primary,
+                }}
                 placeholder="Door No"
                 value={doorNo}
                 onChange={(e) => setDoorNo(e.target.value)}
               />
             </div>
-            <div className="mt-2 flex items-center gap-2">
+            <div
+              style={{
+                marginTop: "8px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
               <input
                 id="useExactPhrase"
                 type="checkbox"
-                className="h-4 w-4"
+                style={{
+                  height: "16px",
+                  width: "16px",
+                  accentColor: colors.brand.primary,
+                }}
                 checked={useExactPhrase}
                 onChange={(e) => setUseExactPhrase(e.target.checked)}
               />
-              <label htmlFor="useExactPhrase" className="text-sm text-gray-700">
+              <label
+                htmlFor="useExactPhrase"
+                style={{ fontSize: "0.875rem", color: colors.text.primary }}
+              >
                 Use exact formatted phrase (stricter match)
               </label>
             </div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p
+              style={{
+                fontSize: "0.75rem",
+                color: colors.text.tertiary,
+                marginTop: "4px",
+              }}
+            >
               Broad match uses your most specific entry (e.g., Neighborhood or
               District). Exact phrase builds a combined string (e.g., "Country:
               …, State: …, City: …, Neighborhood: …, Street: …") which matches
@@ -313,13 +485,39 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClear} color="inherit">
+        <Button
+          onClick={handleClear}
+          sx={{
+            color: colors.text.secondary,
+            "&:hover": {
+              backgroundColor: colors.interactive.hover,
+            },
+          }}
+        >
           Clear
         </Button>
-        <Button onClick={onClose} color="inherit">
+        <Button
+          onClick={onClose}
+          sx={{
+            color: colors.text.secondary,
+            "&:hover": {
+              backgroundColor: colors.interactive.hover,
+            },
+          }}
+        >
           Cancel
         </Button>
-        <Button variant="contained" onClick={handleApply}>
+        <Button
+          variant="contained"
+          onClick={handleApply}
+          sx={{
+            backgroundColor: colors.brand.primary,
+            color: "#FFFFFF",
+            "&:hover": {
+              backgroundColor: colors.brand.primaryHover,
+            },
+          }}
+        >
           Apply
         </Button>
       </DialogActions>

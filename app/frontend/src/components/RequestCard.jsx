@@ -4,6 +4,7 @@ import { categoryMapping } from "../constants/categories";
 import { formatRelativeTime } from "../utils/dateUtils";
 import { urgencyLevels } from "../constants/urgency_level";
 import { extractRegionFromLocation } from "../utils/taskUtils";
+import { useTheme } from "../hooks/useTheme";
 
 // Custom icons to replace Material-UI icons
 const AccessTimeIcon = ({ className }) => (
@@ -42,6 +43,7 @@ const PriorityHighIcon = ({ className }) => (
  */
 const RequestCard = ({ request, onClick, className = "" }) => {
   const navigate = useNavigate();
+  const { colors } = useTheme();
 
   const handleCategoryClick = (category, event) => {
     // Prevent triggering the card's onClick
@@ -69,14 +71,38 @@ const RequestCard = ({ request, onClick, className = "" }) => {
       role="button"
       tabIndex={0}
       className={`flex flex-col rounded-lg cursor-pointer transition-all duration-200 overflow-hidden
-        w-full sm:w-96 mx-auto bg-white shadow-md
-        hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500
+        w-full sm:w-96 mx-auto hover:-translate-y-1
         ${className}`}
+      style={{
+        backgroundColor: colors.background.elevated,
+        boxShadow: `0 4px 6px -1px ${colors.shadow.md}`,
+        border: `1px solid ${colors.border.primary}`,
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = `0 10px 15px -3px ${colors.shadow.lg}`;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = `0 4px 6px -1px ${colors.shadow.md}`;
+      }}
+      onFocus={(e) => {
+        e.currentTarget.style.outline = `3px solid ${colors.border.focus}`;
+        e.currentTarget.style.outlineOffset = "2px";
+      }}
+      onBlur={(e) => {
+        e.currentTarget.style.outline = "none";
+      }}
+      aria-label={`View request: ${request.title}`}
     >
       {/* Top section with image on left, title and time on right */}
       <div className="flex p-2">
         {/* Request Image with padding and rounded corners - smaller dimensions */}
-        <div className="w-[90px] h-[90px] flex-shrink-0 bg-gray-100 rounded-[14px] overflow-hidden mr-2.5 border border-gray-200 p-0.5">
+        <div
+          className="w-[90px] h-[90px] flex-shrink-0 rounded-[14px] overflow-hidden mr-2.5 p-0.5"
+          style={{
+            backgroundColor: colors.background.secondary,
+            border: `1px solid ${colors.border.primary}`,
+          }}
+        >
           {request.imageUrl ? (
             <img
               src={request.imageUrl}
@@ -86,7 +112,9 @@ const RequestCard = ({ request, onClick, className = "" }) => {
           ) : (
             // Placeholder when no image
             <div className="w-full h-full flex items-center justify-center">
-              <p className="text-sm text-gray-500">No Image</p>
+              <p className="text-sm" style={{ color: colors.text.tertiary }}>
+                No Image
+              </p>
             </div>
           )}
         </div>
@@ -96,13 +124,17 @@ const RequestCard = ({ request, onClick, className = "" }) => {
           <div
             className="mt-0 mb-1 overflow-hidden text-ellipsis text-left font-bold leading-[1.3] 
                           [-webkit-line-clamp:2] [-webkit-box-orient:vertical] [display:-webkit-box]"
+            style={{ color: colors.text.primary }}
           >
             {request.title}
           </div>
           {/* Deadline */}
           <div className="flex items-center">
-            <PriorityHighIcon className="w-5 h-5 text-gray-600 mr-1" />
-            <p className="text-sm text-gray-600">
+            <PriorityHighIcon
+              className="w-5 h-5 mr-1"
+              style={{ color: colors.text.secondary }}
+            />
+            <p className="text-sm" style={{ color: colors.text.secondary }}>
               Deadline{" "}
               {request.deadline
                 ? formatRelativeTime(request.deadline)
@@ -112,8 +144,11 @@ const RequestCard = ({ request, onClick, className = "" }) => {
 
           {/* Time Posted */}
           <div className="flex items-center">
-            <AccessTimeIcon className="w-5 h-5 text-gray-600 mr-1" />
-            <p className="text-sm text-gray-600">
+            <AccessTimeIcon
+              className="w-5 h-5 mr-1"
+              style={{ color: colors.text.secondary }}
+            />
+            <p className="text-sm" style={{ color: colors.text.secondary }}>
               Posted{" "}
               {request.created_at
                 ? formatRelativeTime(request.created_at)
@@ -123,7 +158,10 @@ const RequestCard = ({ request, onClick, className = "" }) => {
         </div>
       </div>
       <div className="pt-0 px-2 pb-2 flex flex-col">
-        <div className="border-t border-gray-200 mt-1 mb-2" />
+        <div
+          className="mt-1 mb-2"
+          style={{ borderTop: `1px solid ${colors.border.primary}` }}
+        />
         {/* Category and Urgency */}
         <div className="flex justify-evenly items-center mb-1.5">
           {/* Single Category chip */}
@@ -142,7 +180,29 @@ const RequestCard = ({ request, onClick, className = "" }) => {
                 }
               }}
               tabIndex={0}
-              className="rounded-2xl bg-gray-100 hover:bg-gray-200 h-6 text-xs font-medium px-3 w-1/2 transition-colors"
+              className="rounded-2xl h-6 text-xs font-medium px-3 w-1/2 transition-colors"
+              style={{
+                backgroundColor: colors.background.secondary,
+                color: colors.text.primary,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor =
+                  colors.interactive.hover;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor =
+                  colors.background.secondary;
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.outline = `2px solid ${colors.border.focus}`;
+                e.currentTarget.style.outlineOffset = "2px";
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.outline = "none";
+              }}
+              aria-label={`Filter by ${
+                categoryMapping[request.category] || request.category
+              } category`}
             >
               {categoryMapping[request.category] || request.category}
             </button>
@@ -167,7 +227,7 @@ const RequestCard = ({ request, onClick, className = "" }) => {
               }
             }}
             tabIndex={0}
-            className={`rounded-2xl text-white h-6 text-xs font-medium px-3 w-1/2 hover:opacity-90 transition-opacity
+            className={`rounded-2xl text-white h-6 text-xs font-medium px-3 w-1/2 transition-opacity
               ${
                 urgencyLevels[
                   request?.task?.urgency_level || request?.urgency_level
@@ -187,6 +247,24 @@ const RequestCard = ({ request, onClick, className = "" }) => {
                   ].color
                 : "#9e9e9e",
             }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = "0.9";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = "1";
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.outline = `2px solid ${colors.border.focus}`;
+              e.currentTarget.style.outlineOffset = "2px";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.outline = "none";
+            }}
+            aria-label={`Filter by ${
+              urgencyLevels[
+                request?.task?.urgency_level || request?.urgency_level
+              ]?.name || "Unknown"
+            } urgency level`}
           >
             {"Urgency: " +
               (urgencyLevels[
@@ -201,8 +279,14 @@ const RequestCard = ({ request, onClick, className = "" }) => {
         {/* Location if available */}
         {request.location && (
           <div className="flex items-center mt-0.5">
-            <LocationOnIcon className="w-5 h-5 text-gray-600 mr-1" />
-            <p className="text-sm text-gray-600 overflow-hidden text-ellipsis whitespace-nowrap max-w-[85%]">
+            <LocationOnIcon
+              className="w-5 h-5 mr-1"
+              style={{ color: colors.text.secondary }}
+            />
+            <p
+              className="text-sm overflow-hidden text-ellipsis whitespace-nowrap max-w-[85%]"
+              style={{ color: colors.text.secondary }}
+            >
               {extractRegionFromLocation(request.location)}
             </p>
           </div>
