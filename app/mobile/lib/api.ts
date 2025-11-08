@@ -757,9 +757,17 @@ export const createTask = async (taskData: {
 }): Promise<Task> => {
   try {
     console.log('Creating task:', taskData);
-    const response = await api.post<Task>('/tasks/', taskData);
+    const response = await api.post('/tasks/', taskData);
     console.log('Create task response:', response.data);
-    return response.data;
+    
+    // Backend returns { status, message, data: Task }
+    // Extract the actual task from the nested structure
+    if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+      return (response.data as any).data as Task;
+    }
+    
+    // Fallback: if response is directly a Task
+    return response.data as Task;
   } catch (error) {
     if (error instanceof AxiosError) {
       console.error('Create task error details:', {
@@ -1160,6 +1168,128 @@ export const cancelTask = async (taskId: number): Promise<CancelTaskResponse> =>
       throw new Error(errMessage);
     }
     const errMessage = (error as Error).message || 'An unexpected error occurred while trying to cancel task.';
+    throw new Error(errMessage);
+  }
+};
+
+// Photo API interfaces
+export interface Photo {
+  id: number;
+  url: string;
+  photo_url: string;
+  image: string;
+  uploaded_at: string;
+  alt_text: string;
+  task?: Partial<Task>;
+}
+
+export interface TaskPhotosResponse {
+  status: string;
+  data: {
+    photos: Photo[];
+  };
+}
+
+export interface UploadPhotoResponse {
+  status: string;
+  message: string;
+  data: {
+    task_id: number;
+    photo_id: number;
+    photo_url: string;
+    uploaded_at: string;
+  };
+}
+
+// Photo API functions
+export const getTaskPhotos = async (taskId: number): Promise<TaskPhotosResponse> => {
+  try {
+    const response = await api.get<TaskPhotosResponse>(`/tasks/${taskId}/photo/`);
+    console.log(`Get task photos ${taskId} response:`, response.data);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error(`Get task photos ${taskId} error:`, {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers,
+      });
+      
+      // If 404, it likely means no photos exist for this task yet - return empty array
+      if (error.response?.status === 404) {
+        console.log(`No photos found for task ${taskId}, returning empty array`);
+        return {
+          status: 'success',
+          data: {
+            photos: []
+          }
+        };
+      }
+    }
+    throw error;
+  }
+};
+
+export const uploadTaskPhoto = async (
+  taskId: number,
+  photoUri: string,
+  fileName: string
+): Promise<UploadPhotoResponse> => {
+  try {
+    // Create FormData for multipart upload
+    const formData = new FormData();
+    
+    // Extract file extension from fileName or URI
+    const fileExtension = fileName.split('.').pop()?.toLowerCase() || 'jpg';
+    
+    // Determine MIME type based on file extension
+    let mimeType = 'image/jpeg';
+    if (fileExtension === 'png') {
+      mimeType = 'image/png';
+    } else if (fileExtension === 'gif') {
+      mimeType = 'image/gif';
+    } else if (fileExtension === 'webp') {
+      mimeType = 'image/webp';
+    }
+    
+    // Append the photo file to FormData
+    // On React Native, we need to use a specific format for file uploads
+    formData.append('photo', {
+      uri: photoUri,
+      type: mimeType,
+      name: fileName,
+    } as any);
+
+    console.log(`Uploading photo for task ${taskId}:`, { fileName, mimeType });
+
+    // Make the request with FormData - use singular 'photo' endpoint
+    const response = await api.post<UploadPhotoResponse>(
+      `/tasks/${taskId}/photo/`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+
+    console.log(`Upload photo response:`, response.data);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error(`Upload photo error:`, {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers,
+      });
+      const errMessage = error.response?.data?.message || 'Failed to upload photo.';
+      throw new Error(errMessage);
+    }
+    const errMessage = (error as Error).message || 'An unexpected error occurred while uploading photo.';
     throw new Error(errMessage);
   }
 };

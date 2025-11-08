@@ -11,13 +11,14 @@ import {
   ActivityIndicator,
   Alert,
   SafeAreaView,
+  Dimensions,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme, useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
 import { useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getTaskDetails, listVolunteers, type Task, type Volunteer, volunteerForTask, withdrawVolunteer, createReview, getTaskReviews, type Review, type UserProfile } from '../lib/api';
+import { getTaskDetails, listVolunteers, type Task, type Volunteer, volunteerForTask, withdrawVolunteer, createReview, getTaskReviews, type Review, type UserProfile, getTaskPhotos, BACKEND_BASE_URL, type Photo } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -44,6 +45,8 @@ export default function RequestDetailsVolunteer() {
   const [reviewableParticipants, setReviewableParticipants] = useState<UserProfile[]>([]);
   const [hasVolunteered, setHasVolunteered] = useState(false);
   const [volunteerRecord, setVolunteerRecord] = useState<{ id: number; status?: string } | null>(null);
+  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [photosLoading, setPhotosLoading] = useState(false);
   const storageKey = id && user?.id ? `volunteer-record-${id}-${user.id}` : null;
   const legacyStorageKey = id ? `volunteer-record-${id}` : null;
   const volunteerRecordRef = useRef<{ id: number; status?: string } | null>(null);
@@ -172,6 +175,20 @@ export default function RequestDetailsVolunteer() {
       } else {
         setExistingReviews([]);
         setReviewableParticipants([]);
+      }
+
+      // Fetch photos for the task
+      try {
+        setPhotosLoading(true);
+        const photosResponse = await getTaskPhotos(id);
+        if (photosResponse.status === 'success') {
+          setPhotos(photosResponse.data.photos || []);
+        }
+      } catch (photoError: any) {
+        console.warn('Error fetching photos:', photoError.message);
+        setPhotos([]);
+      } finally {
+        setPhotosLoading(false);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load request.';
@@ -558,6 +575,54 @@ useEffect(() => {
       </View>
 
       <ScrollView contentContainerStyle={[styles.container, { backgroundColor: themeColors.background }]}>
+        {/* Show first photo as hero image if available */}
+        {photos.length > 0 && !photosLoading && (
+          <>
+            {(() => {
+              const firstPhoto = photos[0];
+              const photoUrl = firstPhoto.photo_url || firstPhoto.url || firstPhoto.image || '';
+              const absoluteUrl = photoUrl.startsWith('http') 
+                ? photoUrl 
+                : `${BACKEND_BASE_URL}${photoUrl}`;
+              return (
+                <Image 
+                  source={{ uri: absoluteUrl }} 
+                  style={styles.heroImage}
+                  resizeMode="cover"
+                />
+              );
+            })()}
+            
+            {/* Show remaining photos as thumbnails if there are more */}
+            {photos.length > 1 && (
+              <View style={styles.thumbnailsContainer}>
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.thumbnailsScrollContent}
+                >
+                  {photos.slice(1).map((photo) => {
+                    const photoUrl = photo.photo_url || photo.url || photo.image || '';
+                    const absoluteUrl = photoUrl.startsWith('http') 
+                      ? photoUrl 
+                      : `${BACKEND_BASE_URL}${photoUrl}`;
+                    
+                    return (
+                      <TouchableOpacity key={photo.id} style={styles.smallThumbnail}>
+                        <Image 
+                          source={{ uri: absoluteUrl }} 
+                          style={styles.smallThumbnailImage}
+                          resizeMode="cover"
+                        />
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            )}
+          </>
+        )}
+        
         <View style={[styles.detailsContainer, { backgroundColor: themeColors.card }]}>
           <TouchableOpacity
             style={styles.avatarRow}
@@ -877,6 +942,51 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  photoGallery: {
+    marginTop: 8,
+  },
+  photoThumbnail: {
+    width: 120,
+    height: 120,
+    marginRight: 12,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  thumbnailImage: {
+    width: '100%',
+    height: '100%',
+  },
+  heroImage: {
+    width: '100%',
+    height: 250,
+    resizeMode: 'cover',
+  },
+  thumbnailsContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(0,0,0,0.03)',
+  },
+  thumbnailsScrollContent: {
+    paddingRight: 16,
+  },
+  smallThumbnail: {
+    width: 80,
+    height: 80,
+    marginRight: 8,
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  smallThumbnailImage: {
+    width: '100%',
+    height: '100%',
   },
   modalOverlay: {
     flex: 1,
