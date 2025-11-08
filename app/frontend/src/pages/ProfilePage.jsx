@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
   Container,
@@ -53,6 +53,7 @@ import { toAbsoluteUrl } from "../utils/url";
 const ProfilePage = () => {
   const { colors } = useTheme();
   const { userId } = useParams();
+  const navigate = useNavigate();
 
   // Get logged-in user data from localStorage and Redux store
   const loggedInUserId = localStorage.getItem("userId");
@@ -809,6 +810,7 @@ const ProfilePage = () => {
                         request={request}
                         userRole={roleTab === 0 ? "volunteer" : "requester"}
                         onUpdate={() => setRefreshData(true)}
+                        onClick={() => navigate(`/requests/${request.id}`)}
                       />
                     </Grid>
                   ))
