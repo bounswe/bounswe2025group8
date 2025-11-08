@@ -7,6 +7,7 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import { removePhoto, uploadPhotos as uploadPhotosThunk } from "../features/request/store/createRequestSlice";
 
 const MAX_PHOTOS = 4;
+const MAX_SIZE_MB = 10; // keep in sync with backend limit
 
 const UploadPhotosStep = () => {
   const dispatch = useDispatch();
@@ -50,25 +51,32 @@ const UploadPhotosStep = () => {
 
     const imageFiles = files.filter((file) => file.type.startsWith("image/"));
 
-    if (imageFiles.length !== files.length) {
-      setLocalError("Only image files are supported.");
+    const invalidTypeCount = files.length - imageFiles.length;
+    const sizeValidImages = imageFiles.filter((file) => file.size <= MAX_SIZE_MB * 1024 * 1024);
+    const oversizedCount = imageFiles.length - sizeValidImages.length;
+
+    const filesToUpload = sizeValidImages.slice(0, availableSlots);
+    const capacityTruncated = sizeValidImages.length > availableSlots;
+
+    // Decide on a single, accurate message (do not overwrite with a later generic one)
+    let message = "";
+    if (availableSlots === 0) {
+      message = `You can upload up to ${MAX_PHOTOS} photos.`;
+    } else if (invalidTypeCount > 0) {
+      message = "Only image files are supported.";
+    } else if (oversizedCount > 0) {
+      message = `Some files exceed ${MAX_SIZE_MB}MB and were skipped.`;
+    } else if (capacityTruncated) {
+      message = `Only the first ${availableSlots} image${availableSlots === 1 ? "" : "s"} were added.`;
     }
 
-    const filesToUpload = imageFiles.slice(0, availableSlots);
-
-    if (filesToUpload.length < imageFiles.length) {
-      setLocalError(`Only the first ${availableSlots} image${availableSlots === 1 ? "" : "s"} were added.`);
-    }
+    setLocalError(message);
 
     if (!filesToUpload.length) {
       return;
     }
 
     dispatch(uploadPhotosThunk(filesToUpload));
-
-    if (imageFiles.length === filesToUpload.length) {
-      setLocalError("");
-    }
   };
 
   const handleFileChange = (event) => {
@@ -121,6 +129,8 @@ const UploadPhotosStep = () => {
         className="relative flex flex-col items-center justify-center gap-4 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center transition hover:border-blue-400 hover:bg-blue-50"
         onDrop={handleDrop}
         onDragOver={handleDragOver}
+        role="button"
+        aria-label="Upload photos by dragging and dropping or selecting files"
       >
         <CloudUploadIcon sx={{ fontSize: 52, color: "#2563eb" }} />
         <div>
