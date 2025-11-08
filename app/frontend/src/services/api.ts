@@ -27,10 +27,16 @@ api.interceptors.response.use((response: AxiosResponse) => {
   return response;
 }, (error: AxiosError) => {
   // Handle global error cases
-  if (error.response && error.response.status === 401) {
-    // Clear auth data and redirect to login if unauthorized
-    authStorage.clearAuthData();
-    window.location.href = '/login';
+  if (error.response?.status === 401) {
+    const requestUrl = error.config?.url ?? "";
+    const skipRedirect = ["/login", "/photo"].some((segment) =>
+      requestUrl.includes(segment)
+    );
+
+    if (!skipRedirect) {
+      authStorage.clearAuthData();
+      window.location.href = "/login";
+    }
   }
   return Promise.reject(error);
 });

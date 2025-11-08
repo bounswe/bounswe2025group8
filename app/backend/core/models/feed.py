@@ -77,7 +77,7 @@ class Feed:
                 query = query.filter(tags__name=tag)
                 
         if 'urgency' in filter_criteria:
-            query = query.filter(urgency_level__gte=filter_criteria['urgency'])
+            query = query.filter(urgency_level=filter_criteria['urgency'])
             
         if 'deadline_before' in filter_criteria:
             query = query.filter(deadline__lte=filter_criteria['deadline_before'])

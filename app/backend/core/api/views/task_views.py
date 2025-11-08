@@ -59,7 +59,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         # Filter by urgency
         urgency_param = self.request.query_params.get('urgency')
         if urgency_param:
-            queryset = queryset.filter(urgency_level__gte=int(urgency_param))
+            queryset = queryset.filter(urgency_level=int(urgency_param))
         
         # Filter by tag
         tag_param = self.request.query_params.get('tag')
@@ -174,10 +174,12 @@ class TaskViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='categories')
     def categories(self, request):
         """
-        Return all task categories with their popularity metrics
+        Return all task categories with their popularity metrics (only active tasks)
         """
-        # Get counts of tasks for each category
-        category_counts = Task.objects.values('category').annotate(
+        # Get counts of active tasks for each category (exclude COMPLETED, CANCELLED, EXPIRED)
+        category_counts = Task.objects.exclude(
+            status__in=[TaskStatus.COMPLETED, TaskStatus.CANCELLED, TaskStatus.EXPIRED]
+        ).values('category').annotate(
             task_count=Count('category')
         ).order_by('-task_count')
         

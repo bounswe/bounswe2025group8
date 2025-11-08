@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
@@ -28,6 +28,10 @@ const CreateRequestPage = () => {
   const { currentStep, loading, success, error, formData } =
     useSelector((state) => state.createRequest);
   const { attachPhoto } = useAttachTaskPhoto();
+  const generalInfoRef = useRef();
+  const { currentStep, loading, success, error } = useSelector(
+    (state) => state.createRequest
+  );
 
   useEffect(() => {
     // Fetch categories when component mounts
@@ -57,7 +61,12 @@ const CreateRequestPage = () => {
   };
 
   // Handle step navigation
-  const handleNext = () => {
+  const handleNext = async () => {
+    if (currentStep === 0 && generalInfoRef.current) {
+      const valid = await generalInfoRef.current.validateForm();
+      if (!valid) return;
+    }
+
     if (currentStep === steps.length - 1) {
       handleSubmit();
     } else {
@@ -85,7 +94,7 @@ const CreateRequestPage = () => {
   const renderStep = () => {
     switch (currentStep) {
       case 0:
-        return <GeneralInformationStep />;
+        return <GeneralInformationStep ref={generalInfoRef} />;
       case 1:
         return <UploadPhotosStep />;
       case 2:
