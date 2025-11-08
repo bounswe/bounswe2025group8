@@ -59,6 +59,11 @@ const AllRequests = () => {
       filters.location = locationFilter;
     }
 
+    // Always exclude cancelled tasks from AllRequests page
+    // You can modify this if you want to show cancelled tasks in some scenarios
+    // Note: The backend expects multiple status values to be comma-separated
+    // For now, we'll handle this in the frontend by filtering the results
+
     console.log(
       "AllRequests useEffect: Fetching tasks for page:",
       currentPage,

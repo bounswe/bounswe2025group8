@@ -22,11 +22,12 @@ import {
   checkUserVolunteerStatus,
   withdrawFromTask,
 } from "../features/request/services/requestService";
-import { useAppSelector } from "../store/hooks";
+import { useAppSelector, useAppDispatch } from "../store/hooks";
 import {
   selectCurrentUser,
   selectIsAuthenticated,
 } from "../features/authentication/store/authSlice";
+import { removeTaskFromList } from "../features/request/store/allRequestsSlice";
 import Sidebar from "../components/Sidebar";
 import EditRequestModal from "../components/EditRequestModal";
 import { urgencyLevels } from "../constants/urgency_level";
@@ -39,6 +40,7 @@ const RequestDetail = () => {
   // Authentication state
   const currentUser = useAppSelector(selectCurrentUser);
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const dispatch = useAppDispatch();
 
   // State for request data, loading, and error
   const [request, setRequest] = useState(null);
@@ -82,7 +84,10 @@ const RequestDetail = () => {
           console.log("Received volunteers data:", volunteers);
           requestData.volunteers = volunteers;
         } catch (volunteersError) {
-          console.warn(`Could not fetch volunteers for task ${requestId}:`, volunteersError);
+          console.warn(
+            `Could not fetch volunteers for task ${requestId}:`,
+            volunteersError
+          );
           requestData.volunteers = [];
         }
 
@@ -318,6 +323,9 @@ const RequestDetail = () => {
           setDeleteError(null);
 
           await cancelTask(request.id);
+
+          // Remove the task from AllRequests list immediately
+          dispatch(removeTaskFromList(request.id));
 
           setDeleteSuccess(true);
           // Redirect after a short delay
@@ -648,7 +656,11 @@ const RequestDetail = () => {
                 {canEdit &&
                   (request.status === "POSTED" ||
                     request.status === "ASSIGNED") && (
-                    <div className={canMarkAsComplete ? "grid grid-cols-2 gap-3" : ""}>
+                    <div
+                      className={
+                        canMarkAsComplete ? "grid grid-cols-2 gap-3" : ""
+                      }
+                    >
                       {/* Select Volunteer Button */}
                       <button
                         onClick={handleSelectVolunteer}
