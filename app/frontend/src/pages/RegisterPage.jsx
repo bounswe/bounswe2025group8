@@ -24,8 +24,7 @@ const EyeOffIcon = () => (
   </svg>
 );
 import useAuth from "../features/authentication/hooks/useAuth";
-
-
+import { useTheme } from "../hooks/useTheme";
 
 import logoImage from "../assets/logo.png";
 import userIcon from "../assets/user.svg";
@@ -34,6 +33,7 @@ import phoneIcon from "../assets/phone.svg";
 import mailIcon from "../assets/mail.svg";
 
 const RegisterPage = () => {
+  const { colors, theme, setTheme } = useTheme();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
@@ -62,7 +62,8 @@ const RegisterPage = () => {
     }
 
     // Password strength validation (matching backend requirements)
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
     if (!passwordRegex.test(password)) {
       return setRegisterError(
         "Password must be at least 8 characters and include uppercase, lowercase, number, and special character."
@@ -77,12 +78,18 @@ const RegisterPage = () => {
 
     // Phone number validation (10-15 digits)
     const phoneRegex = /^\d{10,15}$/;
-    if (!phoneRegex.test(phone.replace(/\D/g, ''))) {
+    if (!phoneRegex.test(phone.replace(/\D/g, ""))) {
       return setRegisterError("Phone number must be 10-15 digits");
     }
 
     // Required fields validation
-    if (!firstName.trim() || !lastName.trim() || !username.trim() || !email.trim() || !phone.trim()) {
+    if (
+      !firstName.trim() ||
+      !lastName.trim() ||
+      !username.trim() ||
+      !email.trim() ||
+      !phone.trim()
+    ) {
       return setRegisterError("All fields are required");
     }
 
@@ -103,8 +110,7 @@ const RegisterPage = () => {
       if (result && result.registered) {
         // Show success message and navigate to login
         navigate("/login");
-      } 
-
+      }
     } catch (error) {
       // Handle backend validation errors
       if (error.data) {
@@ -133,47 +139,118 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-white items-center justify-center">
+    <div
+      className="flex min-h-screen items-center justify-center"
+      style={{ backgroundColor: colors.background.primary }}
+    >
+      {/* Theme Toggle Button */}
+      <div className="fixed top-4 right-4 z-50">
+        <select
+          value={theme}
+          onChange={(e) => setTheme(e.target.value)}
+          className="px-3 py-2 rounded-md border text-sm focus:outline-none"
+          style={{
+            backgroundColor: colors.background.secondary,
+            color: colors.text.primary,
+            borderColor: colors.border.primary,
+          }}
+          onFocus={(e) =>
+            (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+          }
+          onBlur={(e) => (e.target.style.boxShadow = "none")}
+        >
+          <option value="light">Light Mode</option>
+          <option value="dark">Dark Mode</option>
+          <option value="high-contrast">High Contrast</option>
+        </select>
+      </div>
+
       <div className="w-full max-w-md">
         {/* Logo and Title updated to be side by side */}
         <div className="flex flex-row items-center justify-center mb-1">
           <img src={logoImage} alt="Logo" width="160" height="160" />
-          <h1 className="text-4xl font-bold ml-2">
+          <h1
+            className="text-4xl font-bold ml-2"
+            style={{ color: colors.text.primary }}
+          >
             Neighborhood
             <br />
             Assistance Board
           </h1>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div
+          className="rounded-lg overflow-hidden"
+          style={{
+            backgroundColor: colors.background.secondary,
+            boxShadow: colors.shadow.medium,
+          }}
+        >
           <div className="flex flex-col items-center p-8">
+            {" "}
             {/* Tab buttons - Updated to match the second image design */}
             <div className="w-full mb-6 flex justify-center">
-              <div className="flex border border-indigo-500 rounded overflow-hidden w-fit">
+              <div
+                className="flex border rounded overflow-hidden w-fit"
+                style={{ borderColor: colors.brand.primary }}
+              >
                 <RouterLink
                   to="/login"
-                  className="text-indigo-500 bg-white px-8 py-2 no-underline hover:bg-gray-50 transition-colors"
+                  className="px-8 py-2 no-underline transition-colors"
+                  style={{
+                    color: colors.brand.primary,
+                    backgroundColor: colors.background.secondary,
+                  }}
+                  onMouseOver={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      colors.background.tertiary)
+                  }
+                  onMouseOut={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      colors.background.secondary)
+                  }
                 >
                   LOGIN
                 </RouterLink>
                 <RouterLink
                   to="/register"
-                  className="bg-indigo-500 text-white px-8 py-2 no-underline hover:bg-indigo-600 transition-colors"
+                  className="px-8 py-2 no-underline transition-colors"
+                  style={{
+                    backgroundColor: colors.brand.primary,
+                    color: colors.text.inverted,
+                  }}
+                  onMouseOver={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      colors.brand.secondary)
+                  }
+                  onMouseOut={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      colors.brand.primary)
+                  }
                 >
                   REGISTER
                 </RouterLink>
               </div>
             </div>
-
             <div className="w-full">
-              <h2 className="text-lg font-bold mb-1">Create an account</h2>
-              <p className="text-gray-500 text-sm mb-6">
+              <h2
+                className="text-lg font-bold mb-1"
+                style={{ color: colors.text.primary }}
+              >
+                Create an account
+              </h2>
+              <p
+                className="text-sm mb-6"
+                style={{ color: colors.text.secondary }}
+              >
                 Enter your details to register for the app
               </p>
 
               {/* Show either the register error or the Redux error */}
               {(registerError || error) && (
-                <p className="text-red-500 mb-4">{registerError || error}</p>
+                <p className="mb-4" style={{ color: colors.semantic.error }}>
+                  {registerError || error}
+                </p>
               )}
 
               <form onSubmit={handleSubmit} noValidate className="w-full">
@@ -182,7 +259,18 @@ const RegisterPage = () => {
                   <div className="flex-1 min-w-0">
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <img src={userIcon} alt="Name" width="16" height="16" />
+                        <img
+                          src={userIcon}
+                          alt="Name"
+                          width="16"
+                          height="16"
+                          style={{
+                            filter:
+                              theme === "light"
+                                ? "brightness(0) saturate(100%) invert(0.3) sepia(100%) hue-rotate(0deg)"
+                                : "brightness(0) invert(1)",
+                          }}
+                        />
                       </div>
                       <input
                         type="text"
@@ -194,14 +282,34 @@ const RegisterPage = () => {
                         required
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
-                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                        className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none text-sm"
+                        style={{
+                          backgroundColor: colors.background.secondary,
+                          color: colors.text.primary,
+                          borderColor: colors.border.primary,
+                        }}
+                        onFocus={(e) =>
+                          (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                        }
+                        onBlur={(e) => (e.target.style.boxShadow = "none")}
                       />
                     </div>
                   </div>
                   <div className="w-32">
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <img src={userIcon} alt="Name" width="16" height="16" />
+                        <img
+                          src={userIcon}
+                          alt="Name"
+                          width="16"
+                          height="16"
+                          style={{
+                            filter:
+                              theme === "light"
+                                ? "brightness(0) saturate(100%) invert(0.3) sepia(100%) hue-rotate(0deg)"
+                                : "brightness(0) invert(1)",
+                          }}
+                        />
                       </div>
                       <input
                         type="text"
@@ -212,7 +320,16 @@ const RegisterPage = () => {
                         required
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
-                        className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                        className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none text-sm"
+                        style={{
+                          backgroundColor: colors.background.secondary,
+                          color: colors.text.primary,
+                          borderColor: colors.border.primary,
+                        }}
+                        onFocus={(e) =>
+                          (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                        }
+                        onBlur={(e) => (e.target.style.boxShadow = "none")}
                       />
                     </div>
                   </div>
@@ -227,6 +344,12 @@ const RegisterPage = () => {
                         alt="Username"
                         width="16"
                         height="16"
+                        style={{
+                          filter:
+                            theme === "light"
+                              ? "brightness(0) saturate(100%) invert(0.3) sepia(100%) hue-rotate(0deg)"
+                              : "brightness(0) invert(1)",
+                        }}
                       />
                     </div>
                     <input
@@ -237,7 +360,16 @@ const RegisterPage = () => {
                       required
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                      className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none text-sm"
+                      style={{
+                        backgroundColor: colors.background.secondary,
+                        color: colors.text.primary,
+                        borderColor: colors.border.primary,
+                      }}
+                      onFocus={(e) =>
+                        (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                      }
+                      onBlur={(e) => (e.target.style.boxShadow = "none")}
                     />
                   </div>
                 </div>
@@ -246,7 +378,18 @@ const RegisterPage = () => {
                 <div className="mb-4">
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <img src={phoneIcon} alt="Phone" width="16" height="16" />
+                      <img
+                        src={phoneIcon}
+                        alt="Phone"
+                        width="16"
+                        height="16"
+                        style={{
+                          filter:
+                            theme === "light"
+                              ? "brightness(0) saturate(100%) invert(0.3) sepia(100%) hue-rotate(0deg)"
+                              : "brightness(0) invert(1)",
+                        }}
+                      />
                     </div>
                     <input
                       type="tel"
@@ -256,7 +399,16 @@ const RegisterPage = () => {
                       required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                      className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none text-sm"
+                      style={{
+                        backgroundColor: colors.background.secondary,
+                        color: colors.text.primary,
+                        borderColor: colors.border.primary,
+                      }}
+                      onFocus={(e) =>
+                        (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                      }
+                      onBlur={(e) => (e.target.style.boxShadow = "none")}
                     />
                   </div>
                 </div>
@@ -265,7 +417,18 @@ const RegisterPage = () => {
                 <div className="mb-4">
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <img src={mailIcon} alt="Email" width="16" height="16" />
+                      <img
+                        src={mailIcon}
+                        alt="Email"
+                        width="16"
+                        height="16"
+                        style={{
+                          filter:
+                            theme === "light"
+                              ? "brightness(0) saturate(100%) invert(0.3) sepia(100%) hue-rotate(0deg)"
+                              : "brightness(0) invert(1)",
+                        }}
+                      />
                     </div>
                     <input
                       type="email"
@@ -276,7 +439,16 @@ const RegisterPage = () => {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                      className="w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none text-sm"
+                      style={{
+                        backgroundColor: colors.background.secondary,
+                        color: colors.text.primary,
+                        borderColor: colors.border.primary,
+                      }}
+                      onFocus={(e) =>
+                        (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                      }
+                      onBlur={(e) => (e.target.style.boxShadow = "none")}
                     />
                   </div>
                 </div>
@@ -290,6 +462,12 @@ const RegisterPage = () => {
                         alt="Password"
                         width="16"
                         height="16"
+                        style={{
+                          filter:
+                            theme === "light"
+                              ? "brightness(0) saturate(100%) invert(0.3) sepia(100%) hue-rotate(0deg)"
+                              : "brightness(0) invert(1)",
+                        }}
                       />
                     </div>
                     <input
@@ -301,13 +479,29 @@ const RegisterPage = () => {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                      className="w-full pl-10 pr-10 py-2 border rounded-md focus:outline-none text-sm"
+                      style={{
+                        backgroundColor: colors.background.secondary,
+                        color: colors.text.primary,
+                        borderColor: colors.border.primary,
+                      }}
+                      onFocus={(e) =>
+                        (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                      }
+                      onBlur={(e) => (e.target.style.boxShadow = "none")}
                     />
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                        className="focus:outline-none"
+                        style={{ color: colors.text.tertiary }}
+                        onMouseOver={(e) =>
+                          (e.currentTarget.style.color = colors.text.secondary)
+                        }
+                        onMouseOut={(e) =>
+                          (e.currentTarget.style.color = colors.text.tertiary)
+                        }
                       >
                         {showPassword ? <EyeOffIcon /> : <EyeIcon />}
                       </button>
@@ -324,6 +518,12 @@ const RegisterPage = () => {
                         alt="Confirm Password"
                         width="16"
                         height="16"
+                        style={{
+                          filter:
+                            theme === "light"
+                              ? "brightness(0) saturate(100%) invert(0.3) sepia(100%) hue-rotate(0deg)"
+                              : "brightness(0) invert(1)",
+                        }}
                       />
                     </div>
                     <input
@@ -335,7 +535,16 @@ const RegisterPage = () => {
                       required
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                      className="w-full pl-10 pr-10 py-2 border rounded-md focus:outline-none text-sm"
+                      style={{
+                        backgroundColor: colors.background.secondary,
+                        color: colors.text.primary,
+                        borderColor: colors.border.primary,
+                      }}
+                      onFocus={(e) =>
+                        (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                      }
+                      onBlur={(e) => (e.target.style.boxShadow = "none")}
                     />
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                       <button
@@ -343,7 +552,14 @@ const RegisterPage = () => {
                         onClick={() =>
                           setShowConfirmPassword(!showConfirmPassword)
                         }
-                        className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                        className="focus:outline-none"
+                        style={{ color: colors.text.tertiary }}
+                        onMouseOver={(e) =>
+                          (e.currentTarget.style.color = colors.text.secondary)
+                        }
+                        onMouseOut={(e) =>
+                          (e.currentTarget.style.color = colors.text.tertiary)
+                        }
                       >
                         {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
                       </button>
@@ -359,13 +575,27 @@ const RegisterPage = () => {
                       name="agreeTerms"
                       checked={agreeTerms}
                       onChange={(e) => setAgreeTerms(e.target.checked)}
-                      className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 mt-0.5 mr-2 flex-shrink-0"
+                      className="w-4 h-4 rounded mt-0.5 mr-2 flex-shrink-0"
+                      style={{
+                        accentColor: colors.brand.primary,
+                        borderColor: colors.border.primary,
+                      }}
                     />
-                    <span className="text-sm text-gray-700">
+                    <span
+                      className="text-sm"
+                      style={{ color: colors.text.primary }}
+                    >
                       I agree with{" "}
                       <button
                         type="button"
-                        className="text-indigo-500 hover:text-indigo-600 underline"
+                        className="underline"
+                        style={{ color: colors.brand.primary }}
+                        onMouseOver={(e) =>
+                          (e.currentTarget.style.color = colors.brand.secondary)
+                        }
+                        onMouseOut={(e) =>
+                          (e.currentTarget.style.color = colors.brand.primary)
+                        }
                       >
                         Terms & Conditions
                       </button>
@@ -377,7 +607,27 @@ const RegisterPage = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full mt-2 mb-4 py-3 px-4 bg-indigo-500 text-white rounded-full hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="w-full mt-2 mb-4 py-3 px-4 rounded-full focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  style={{
+                    backgroundColor: loading
+                      ? colors.interactive.disabled
+                      : colors.brand.primary,
+                    color: colors.text.inverted,
+                  }}
+                  onMouseOver={(e) =>
+                    !loading &&
+                    (e.currentTarget.style.backgroundColor =
+                      colors.brand.secondary)
+                  }
+                  onMouseOut={(e) =>
+                    !loading &&
+                    (e.currentTarget.style.backgroundColor =
+                      colors.brand.primary)
+                  }
+                  onFocus={(e) =>
+                    (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                  }
+                  onBlur={(e) => (e.target.style.boxShadow = "none")}
                 >
                   Sign Up
                 </button>
@@ -387,13 +637,22 @@ const RegisterPage = () => {
         </div>
 
         <div className="text-center my-4">
-          <p className="text-sm text-gray-500">OR</p>
+          <p className="text-sm" style={{ color: colors.text.secondary }}>
+            OR
+          </p>
         </div>
 
         <div className="text-center mb-8">
           <RouterLink
             to="/"
-            className="text-sm text-indigo-500 no-underline hover:text-indigo-600"
+            className="text-sm no-underline"
+            style={{ color: colors.brand.primary }}
+            onMouseOver={(e) =>
+              (e.currentTarget.style.color = colors.brand.secondary)
+            }
+            onMouseOut={(e) =>
+              (e.currentTarget.style.color = colors.brand.primary)
+            }
           >
             Continue as a guest
           </RouterLink>

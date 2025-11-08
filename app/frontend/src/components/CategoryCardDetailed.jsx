@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "../hooks/useTheme";
 
 /**
  * CategoryCardDetailed component displays a category with an image and request count
@@ -21,6 +22,9 @@ const CategoryCardDetailed = ({
   className = "",
 }) => {
   const navigate = useNavigate();
+  const { colors } = useTheme();
+  const [isHovered, setIsHovered] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   const handleClick = () => {
     if (onClick) {
@@ -41,37 +45,104 @@ const CategoryCardDetailed = ({
           handleClick();
         }
       }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
       role="button" // Add button role for accessibility
       tabIndex={0} // Make it focusable
       aria-label={`${title} category with ${requestCount} ${
         requestCount === 1 ? "request" : "requests"
       }`}
-      className={`flex items-center rounded-2xl cursor-pointer transition-all duration-200 overflow-hidden bg-white p-3 sm:p-4 md:p-5 w-full max-w-sm sm:max-w-md md:max-w-lg h-20 sm:h-24 md:h-28 lg:h-32 shadow-sm hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 ${className}`}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        borderRadius: "16px",
+        cursor: "pointer",
+        transition: "all 0.2s ease",
+        overflow: "hidden",
+        backgroundColor: colors.background.elevated,
+        padding: "12px",
+        width: "100%",
+        maxWidth: "24rem",
+        height: "5rem",
+        boxShadow: isHovered ? colors.shadow.lg : colors.shadow.sm,
+        transform: isHovered ? "translateY(-2px)" : "translateY(0)",
+        outline: isFocused ? `3px solid ${colors.border.focus}` : "none",
+        outlineOffset: "2px",
+      }}
+      className={className}
     >
       {/* Image Container - Left Side */}
-      <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-xl overflow-hidden border border-gray-200 flex-shrink-0 mr-3 sm:mr-4 md:mr-5 bg-gray-100">
+      <div
+        style={{
+          width: "3rem",
+          height: "3rem",
+          borderRadius: "12px",
+          overflow: "hidden",
+          border: `1px solid ${colors.border.primary}`,
+          flexShrink: 0,
+          marginRight: "12px",
+          backgroundColor: colors.background.secondary,
+        }}
+      >
         {imageUrl ? (
           <img
             src={imageUrl}
             alt={title}
-            className="w-full h-full object-cover"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-200">
-            <span className="text-sm text-gray-500">No Image</span>
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: colors.background.tertiary,
+            }}
+          >
+            <span style={{ fontSize: "0.875rem", color: colors.text.tertiary }}>
+              No Image
+            </span>
           </div>
         )}
       </div>
 
       {/* Content Container - Right Side */}
-      <div className="flex flex-col justify-center">
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+        }}
+      >
         {/* Title */}
-        <h3 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 mb-1 sm:mb-2">
+        <h3
+          style={{
+            fontSize: "0.875rem",
+            fontWeight: "bold",
+            color: colors.text.primary,
+            marginBottom: "4px",
+          }}
+        >
           {title}
         </h3>
 
         {/* Request Count */}
-        <p className="text-xs sm:text-sm md:text-base text-gray-600 flex items-center">
+        <p
+          style={{
+            fontSize: "0.75rem",
+            color: colors.text.secondary,
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
           {requestCount} {requestCount === 1 ? "request" : "requests"}
         </p>
       </div>

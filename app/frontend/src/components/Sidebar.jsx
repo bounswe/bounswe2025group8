@@ -13,6 +13,7 @@ import DataObjectIcon from "@mui/icons-material/DataObject";
 // import UserAvatar from "./UserAvatar.jsx";
 import logo from "../assets/logo.png";
 import useAuth from "../features/authentication/hooks/useAuth";
+import { useTheme } from "../hooks/useTheme";
 // import { logout } from "../store/slices/authSlice";
 // import { logout as logoutService } from "../services/authService";
 
@@ -20,6 +21,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, currentUser, userRole, logout } = useAuth();
+  const { colors, theme } = useTheme();
 
   const handleLogout = async () => {
     try {
@@ -44,13 +46,32 @@ const Sidebar = () => {
   }
 
   return (
-    <div className="w-64 h-screen flex flex-col border-r border-gray-200 bg-white fixed left-0 top-0 z-50 overflow-y-auto">
+    <div
+      className="w-64 h-screen flex flex-col fixed left-0 top-0 z-50 overflow-y-auto"
+      style={{
+        borderRight: `1px solid ${colors.border.primary}`,
+        backgroundColor: colors.background.elevated,
+      }}
+    >
       {/* Logo */}
       <div
         className="p-4 flex justify-center items-center h-20 cursor-pointer hover:opacity-90 transition-opacity"
         onClick={() => navigate("/")}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            navigate("/");
+          }
+        }}
+        aria-label="Go to home page"
       >
-        <img src={logo} alt="Logo" className="max-h-24 max-w-full" />
+        <img
+          src={logo}
+          alt="Neighborhood Assistance Board Logo"
+          className="max-h-24 max-w-full"
+        />
       </div>
 
       {/* Navigation Menu */}
@@ -62,23 +83,44 @@ const Sidebar = () => {
             <div key={item.text} className="mb-2">
               <button
                 onClick={() => navigate(item.path)}
-                className={`w-full flex items-center px-3 py-2 rounded-lg transition-colors ${
-                  isActive
-                    ? "bg-blue-600 text-white"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
+                className="w-full flex items-center px-3 py-2 rounded-lg transition-colors"
+                style={{
+                  backgroundColor: isActive
+                    ? (theme === "high-contrast" ? "#1E40AF" : colors.brand.primary)
+                    : "transparent",
+                  color: isActive ? "#FFFFFF" : colors.text.primary,
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }
+                }}
+                onFocus={(e) => {
+                  if (theme === "high-contrast") {
+                    e.currentTarget.style.outline = `3px solid ${colors.border.focus}`;
+                    e.currentTarget.style.outlineOffset = "2px";
+                  }
+                }}
+                onBlur={(e) => {
+                  if (theme === "high-contrast") {
+                    e.currentTarget.style.outline = "none";
+                  }
+                }}
+                aria-current={isActive ? "page" : undefined}
               >
                 <div
-                  className={`mr-3 min-w-[24px] ${
-                    isActive ? "text-white" : "text-gray-600"
-                  }`}
+                  className="mr-3 min-w-[24px]"
+                  style={{
+                    color: isActive ? "#FFFFFF" : colors.text.secondary,
+                  }}
                 >
                   {item.icon}
                 </div>
                 <span
-                  className={`${
-                    isActive ? "font-medium text-white" : "font-normal"
-                  }`}
+                  style={{
+                    fontWeight: isActive ? "500" : "400",
+                    color: isActive ? "#FFFFFF" : colors.text.primary,
+                  }}
                 >
                   {item.text}
                 </span>
@@ -99,7 +141,29 @@ const Sidebar = () => {
               navigate("/create-request");
             }
           }}
-          className="w-full flex items-center justify-center px-4 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-md"
+          className="w-full flex items-center justify-center px-4 py-3 rounded-full transition-colors shadow-md"
+          style={{
+            backgroundColor: theme === "high-contrast" ? "#1E40AF" : colors.brand.primary,
+            color: "#FFFFFF",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = theme === "high-contrast" ? "#1E40AF" : colors.brand.primaryHover;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = theme === "high-contrast" ? "#1E40AF" : colors.brand.primary;
+          }}
+          onFocus={(e) => {
+            if (theme === "high-contrast") {
+              e.currentTarget.style.outline = `3px solid ${colors.border.focus}`;
+              e.currentTarget.style.outlineOffset = "2px";
+            }
+          }}
+          onBlur={(e) => {
+            if (theme === "high-contrast") {
+              e.currentTarget.style.outline = "none";
+            }
+          }}
+          aria-label="Create new request"
         >
           <AddCircleOutlineIcon className="mr-2" />
           Create Request
@@ -111,17 +175,65 @@ const Sidebar = () => {
 
       {/* Authentication Buttons for non-authenticated users */}
       {!isAuthenticated && (
-        <div className="p-4 flex flex-col gap-2 border-t border-gray-200">
+        <div
+          className="p-4 flex flex-col gap-2"
+          style={{ borderTop: `1px solid ${colors.border.primary}` }}
+        >
           <button
             onClick={() => navigate("/login")}
-            className="w-full flex items-center justify-center px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+            className="w-full flex items-center justify-center px-4 py-2 rounded-lg transition-colors"
+            style={{
+              border: `1px solid ${colors.brand.primary}`,
+              color: colors.brand.primary,
+              backgroundColor: "transparent",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = colors.interactive.hover;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
+            onFocus={(e) => {
+              if (theme === "high-contrast") {
+                e.currentTarget.style.outline = `3px solid ${colors.border.focus}`;
+                e.currentTarget.style.outlineOffset = "2px";
+              }
+            }}
+            onBlur={(e) => {
+              if (theme === "high-contrast") {
+                e.currentTarget.style.outline = "none";
+              }
+            }}
+            aria-label="Login to your account"
           >
             <LoginIcon className="mr-2" />
             Login
           </button>
           <button
             onClick={() => navigate("/register")}
-            className="w-full flex items-center justify-center px-4 py-2 text-blue-600 hover:bg-blue-50 transition-colors"
+            className="w-full flex items-center justify-center px-4 py-2 transition-colors"
+            style={{
+              color: colors.brand.primary,
+              backgroundColor: "transparent",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = colors.interactive.hover;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
+            onFocus={(e) => {
+              if (theme === "high-contrast") {
+                e.currentTarget.style.outline = `3px solid ${colors.border.focus}`;
+                e.currentTarget.style.outlineOffset = "2px";
+              }
+            }}
+            onBlur={(e) => {
+              if (theme === "high-contrast") {
+                e.currentTarget.style.outline = "none";
+              }
+            }}
+            aria-label="Sign up for a new account"
           >
             <PersonAddIcon className="mr-2" />
             Sign Up
@@ -131,11 +243,35 @@ const Sidebar = () => {
 
       {/* User Profile section */}
       {isAuthenticated && (
-        <div className="p-4 border-t border-gray-200 flex">
+        <div
+          className="p-4 flex"
+          style={{ borderTop: `1px solid ${colors.border.primary}` }}
+        >
           {/* Avatar on the left */}
           <div
             className="cursor-pointer hover:opacity-80 transition-opacity"
             onClick={() => navigate(`/profile/${currentUser?.id}`)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                navigate(`/profile/${currentUser?.id}`);
+              }
+            }}
+            onFocus={(e) => {
+              if (theme === "high-contrast") {
+                e.currentTarget.style.outline = `3px solid ${colors.border.focus}`;
+                e.currentTarget.style.outlineOffset = "2px";
+                e.currentTarget.style.borderRadius = "9999px";
+              }
+            }}
+            onBlur={(e) => {
+              if (theme === "high-contrast") {
+                e.currentTarget.style.outline = "none";
+              }
+            }}
+            aria-label="View your profile"
           >
             <img
               src={
@@ -143,7 +279,7 @@ const Sidebar = () => {
                 currentUser?.profilePicture ||
                 "https://randomuser.me/api/portraits/men/32.jpg"
               }
-              alt="User"
+              alt={`${currentUser?.name || "User"}'s avatar`}
               className="w-10 h-10 rounded-full object-cover"
             />
           </div>
@@ -154,6 +290,26 @@ const Sidebar = () => {
             <h3
               className="font-medium text-sm cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => navigate(`/profile/${currentUser?.id}`)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  navigate(`/profile/${currentUser?.id}`);
+                }
+              }}
+              onFocus={(e) => {
+                if (theme === "high-contrast") {
+                  e.currentTarget.style.outline = `3px solid ${colors.border.focus}`;
+                  e.currentTarget.style.outlineOffset = "2px";
+                }
+              }}
+              onBlur={(e) => {
+                if (theme === "high-contrast") {
+                  e.currentTarget.style.outline = "none";
+                }
+              }}
+              style={{ color: colors.text.primary }}
             >
               {currentUser?.name && currentUser?.surname
                 ? `${currentUser.name} ${currentUser.surname}`
@@ -164,22 +320,82 @@ const Sidebar = () => {
             <div className="flex items-center">
               <button
                 title="Notifications"
-                className="p-1 mr-2 hover:bg-gray-100 rounded transition-colors"
+                className="p-1 mr-2 rounded transition-colors"
                 onClick={() => navigate("/notifications")}
+                style={{ color: colors.text.secondary }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor =
+                    colors.interactive.hover;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }}
+                onFocus={(e) => {
+                  if (theme === "high-contrast") {
+                    e.currentTarget.style.outline = `3px solid ${colors.border.focus}`;
+                    e.currentTarget.style.outlineOffset = "2px";
+                  }
+                }}
+                onBlur={(e) => {
+                  if (theme === "high-contrast") {
+                    e.currentTarget.style.outline = "none";
+                  }
+                }}
+                aria-label="View notifications"
               >
                 <NotificationsIcon fontSize="small" />
               </button>
               <button
                 title="Settings"
-                className="p-1 mr-2 hover:bg-gray-100 rounded transition-colors"
+                className="p-1 mr-2 rounded transition-colors"
                 onClick={() => navigate("/settings")}
+                style={{ color: colors.text.secondary }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor =
+                    colors.interactive.hover;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }}
+                onFocus={(e) => {
+                  if (theme === "high-contrast") {
+                    e.currentTarget.style.outline = `3px solid ${colors.border.focus}`;
+                    e.currentTarget.style.outlineOffset = "2px";
+                  }
+                }}
+                onBlur={(e) => {
+                  if (theme === "high-contrast") {
+                    e.currentTarget.style.outline = "none";
+                  }
+                }}
+                aria-label="Go to settings"
               >
                 <SettingsIcon fontSize="small" />
               </button>
               <button
                 title="Logout"
-                className="p-1 text-red-600 hover:bg-red-50 rounded transition-colors"
+                className="p-1 rounded transition-colors"
                 onClick={handleLogout}
+                style={{ color: colors.semantic.error }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor =
+                    colors.semantic.errorBg;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }}
+                onFocus={(e) => {
+                  if (theme === "high-contrast") {
+                    e.currentTarget.style.outline = `3px solid ${colors.border.focus}`;
+                    e.currentTarget.style.outlineOffset = "2px";
+                  }
+                }}
+                onBlur={(e) => {
+                  if (theme === "high-contrast") {
+                    e.currentTarget.style.outline = "none";
+                  }
+                }}
+                aria-label="Logout from your account"
               >
                 <LogoutIcon fontSize="small" />
               </button>
