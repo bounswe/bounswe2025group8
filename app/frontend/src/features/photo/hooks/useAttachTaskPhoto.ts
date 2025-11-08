@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { attachPhotoToTask } from '../services/photoService';
 import type { AttachPhotoResult } from '../types';
 
@@ -7,6 +7,8 @@ type UseAttachTaskPhotoReturn = {
   result: AttachPhotoResult | null;
   loading: boolean;
   error: unknown;
+  progress: number;
+  cancel: () => void;
   reset: () => void;
 };
 
@@ -16,6 +18,8 @@ export const useAttachTaskPhoto = (
   const [result, setResult] = useState<AttachPhotoResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<unknown>(null);
+  const [progress, setProgress] = useState<number>(0);
+  const abortRef = useRef<AbortController | null>(null);
 
   const attachPhoto = useCallback(
     async (photo: File, overrideTaskId?: number | string) => {
@@ -30,7 +34,13 @@ export const useAttachTaskPhoto = (
       try {
         setLoading(true);
         setError(null);
-        const response = await attachPhotoToTask(effectiveTaskId, photo);
+        setProgress(0);
+        abortRef.current?.abort();
+        abortRef.current = new AbortController();
+        const response = await attachPhotoToTask(effectiveTaskId, photo, {
+          onProgress: (p) => setProgress(p),
+          signal: abortRef.current.signal,
+        });
         setResult(response);
         return response;
       } catch (err) {
@@ -38,6 +48,7 @@ export const useAttachTaskPhoto = (
         throw err;
       } finally {
         setLoading(false);
+        abortRef.current = null;
       }
     },
     [taskId]
@@ -46,6 +57,17 @@ export const useAttachTaskPhoto = (
   const reset = useCallback(() => {
     setResult(null);
     setError(null);
+    setProgress(0);
+    abortRef.current?.abort();
+    abortRef.current = null;
+  }, []);
+
+  const cancel = useCallback(() => {
+    if (abortRef.current) {
+      abortRef.current.abort();
+      setError(new Error('Upload canceled'));
+      setLoading(false);
+    }
   }, []);
 
   return {
@@ -53,6 +75,8 @@ export const useAttachTaskPhoto = (
     result,
     loading,
     error,
+    progress,
+    cancel,
     reset,
   };
 };
