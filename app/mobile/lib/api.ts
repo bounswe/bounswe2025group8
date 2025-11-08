@@ -29,6 +29,7 @@ const port = Constants.expoConfig?.extra?.apiPort ?? '8000';
 // LOCAL DEVELOPMENT: Use your computer's LAN IP for iOS simulator and physical devices
 // Replace '172.20.10.3' with your actual LAN IP if different
 // Find your LAN IP with: ifconfig | grep "inet " | grep -v 127.0.0.1
+// use the first one returned by the command
 const LOCAL_LAN_IP = '172.20.10.3'; // Change this to your LAN IP if needed
 
 const API_HOST = Platform.select({
