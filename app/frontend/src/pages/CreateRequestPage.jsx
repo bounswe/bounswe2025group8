@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
@@ -25,6 +25,8 @@ const CreateRequestPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const generalInfoRef = useRef();
+  const setupAddressRef = useRef();
+  const [validationError, setValidationError] = useState(null);
   const { currentStep, loading, success, error } = useSelector(
     (state) => state.createRequest
   );
@@ -54,6 +56,17 @@ const CreateRequestPage = () => {
     }
 
     if (currentStep === steps.length - 1) {
+      // Validate address step before final submission
+      if (setupAddressRef.current) {
+        const isAddressValid = await setupAddressRef.current.validateForm();
+        if (!isAddressValid) {
+          setValidationError(
+            "Please select your location (country, city, and district) before creating the request."
+          );
+          return;
+        }
+      }
+      setValidationError(null);
       handleSubmit();
     } else {
       dispatch(nextStep());
@@ -87,7 +100,7 @@ const CreateRequestPage = () => {
       case 2:
         return <DetermineDeadlineStep />;
       case 3:
-        return <SetupAddressStep />;
+        return <SetupAddressStep ref={setupAddressRef} />;
       default:
         return <p>Unknown step</p>;
     }
@@ -161,6 +174,15 @@ const CreateRequestPage = () => {
               <h3 className="text-lg font-medium text-red-600">
                 Error: {error}
               </h3>
+            </div>
+          ) : null}
+
+          {/* Validation error for address/location */}
+          {validationError ? (
+            <div className="p-4 text-center mb-6 bg-red-50 rounded-lg shadow-sm border border-red-200">
+              <p className="text-sm font-medium text-red-600">
+                {validationError}
+              </p>
             </div>
           ) : null}
 
