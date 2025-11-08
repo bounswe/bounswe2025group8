@@ -42,10 +42,10 @@ const API_HOST = Platform.select({
 
 // For local development, use dynamic host detection
 // For production, comment out the line below and uncomment the hardcoded Production URL
-export const BACKEND_BASE_URL = `http://${API_HOST}:${port}`;
-export const API_BASE_URL = `${BACKEND_BASE_URL}/api`;
-//export const API_BASE_URL = `http://35.222.191.20:8000/api`; // Production URL
 //export const BACKEND_BASE_URL = `http://35.222.191.20:${port}`; // Production URL
+export const BACKEND_BASE_URL = `http://${API_HOST}:${port}`;
+
+export const API_BASE_URL = `${BACKEND_BASE_URL}/api`;
 
 
 interface LoginResponse {
