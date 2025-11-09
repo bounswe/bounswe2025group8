@@ -3,6 +3,11 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, FlatList, 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
+<<<<<<< HEAD
+=======
+import { Colors } from '../constants/Colors';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+>>>>>>> 7bdd68a (Add dark mode and high-contrast feature)
 import { getTaskApplicants, Volunteer, batchAssignVolunteers } from '../lib/api';
 import type { ThemeTokens } from '../constants/Colors';
 

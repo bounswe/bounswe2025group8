@@ -1,6 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
+<<<<<<< HEAD
+=======
+import { useColorScheme } from '@/hooks/use-color-scheme';
+>>>>>>> 7bdd68a (Add dark mode and high-contrast feature)
 import { useTheme } from '@react-navigation/native';
 import RatingPill from './RatingPill';
 import { UserProfile } from '../../lib/api';

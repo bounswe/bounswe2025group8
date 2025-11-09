@@ -1,7 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image } from 'react-native';
+<<<<<<< HEAD
 import { useTheme } from '@react-navigation/native';
 import type { ThemeTokens } from '../../constants/Colors';
+=======
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors } from '../../constants/Colors';
+>>>>>>> 7bdd68a (Add dark mode and high-contrast feature)
 
 export interface ReviewCardProps {
   reviewerName: string;

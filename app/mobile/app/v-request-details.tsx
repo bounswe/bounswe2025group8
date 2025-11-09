@@ -15,6 +15,11 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme, useFocusEffect } from '@react-navigation/native';
+<<<<<<< HEAD
+=======
+import { Colors } from '../constants/Colors';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+>>>>>>> 7bdd68a (Add dark mode and high-contrast feature)
 import { Ionicons } from '@expo/vector-icons';
 import { getTaskDetails, listVolunteers, type Task, type Volunteer, volunteerForTask, withdrawVolunteer, createReview, getTaskReviews, type Review, type UserProfile, getTaskPhotos, BACKEND_BASE_URL, type Photo } from '../lib/api';
 import { useAuth } from '../lib/auth';

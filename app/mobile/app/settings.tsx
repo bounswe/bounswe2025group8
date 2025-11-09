@@ -1,18 +1,33 @@
 import React from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Alert, Platform, Button } from 'react-native';
+<<<<<<< HEAD
+=======
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTheme } from '@react-navigation/native';
+>>>>>>> 7bdd68a (Add dark mode and high-contrast feature)
 import { useRouter, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { logout as apiLogout } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { CommonActions } from '@react-navigation/native';
+<<<<<<< HEAD
 import { useAppTheme, type ThemePreference } from '@/theme/ThemeProvider';
+=======
+import { useAppTheme, type ThemePreference } from '../lib/theme';
+>>>>>>> 7bdd68a (Add dark mode and high-contrast feature)
 
 export default function Settings() {
   const router = useRouter();
   const navigation = useNavigation();
   const { user, logout: contextLogout } = useAuth();
+<<<<<<< HEAD
   const { tokens: themeColors, preference, setPreference } = useAppTheme();
+=======
+  const colorScheme = useColorScheme();
+  const themeColors = Colors[colorScheme || 'light'];
+  const { preference, setPreference } = useAppTheme();
+>>>>>>> 7bdd68a (Add dark mode and high-contrast feature)
 
   if (!user) {
     return (
@@ -85,6 +100,7 @@ export default function Settings() {
       </View>
 
       <View style={styles.contentContainer}>
+<<<<<<< HEAD
         <View style={styles.section}>
           <Text style={[styles.sectionLabel, { color: themeColors.text }]}>Appearance</Text>
           <Text style={[styles.sectionDescription, { color: themeColors.textMuted }]}>
@@ -125,6 +141,41 @@ export default function Settings() {
               );
             })}
           </View>
+=======
+        <View style={[styles.section, { borderColor: themeColors.border, backgroundColor: themeColors.card }]}>
+          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Appearance</Text>
+          <Text style={[styles.sectionSubtitle, { color: themeColors.textMuted }]}>
+            Pick how the app looks. Match system follows your device automatically.
+          </Text>
+          {themePreferenceOptions.map((option) => {
+            const isActive = preference === option.value;
+            return (
+              <TouchableOpacity
+                key={option.value}
+                style={[
+                  styles.optionRow,
+                  {
+                    borderColor: isActive ? themeColors.primary : themeColors.border,
+                    backgroundColor: themeColors.background,
+                  },
+                ]}
+                onPress={() => setPreference(option.value)}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.optionLabel, { color: themeColors.text }]}>{option.label}</Text>
+                  <Text style={[styles.optionDescription, { color: themeColors.textMuted }]}>
+                    {option.description}
+                  </Text>
+                </View>
+                {isActive ? (
+                  <Ionicons name="checkmark-circle" size={22} color={themeColors.primary} />
+                ) : (
+                  <View style={[styles.optionIndicator, { borderColor: themeColors.border }]} />
+                )}
+              </TouchableOpacity>
+            );
+          })}
+>>>>>>> 7bdd68a (Add dark mode and high-contrast feature)
         </View>
 
         <TouchableOpacity
@@ -164,7 +215,46 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
     paddingTop: 24,
+    alignItems: 'stretch',
+    gap: 24,
+  },
+  section: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    marginBottom: 16,
+  },
+  optionRow: {
+    flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 12,
+  },
+  optionLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  optionDescription: {
+    fontSize: 13,
+    marginTop: 2,
+  },
+  optionIndicator: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginLeft: 12,
   },
   section: {
     alignSelf: 'stretch',
@@ -216,3 +306,26 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
 });
+
+const themePreferenceOptions: Array<{ label: string; description: string; value: ThemePreference }> = [
+  {
+    label: 'Match System',
+    description: 'Syncs with your device appearance setting.',
+    value: 'system',
+  },
+  {
+    label: 'Light',
+    description: 'Bright background with high legibility.',
+    value: 'light',
+  },
+  {
+    label: 'Dark',
+    description: 'Dimmed UI for comfortable low-light use.',
+    value: 'dark',
+  },
+  {
+    label: 'High Contrast',
+    description: 'Maximum contrast for readability and accessibility.',
+    value: 'highContrast',
+  },
+];

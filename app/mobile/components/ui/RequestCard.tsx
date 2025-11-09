@@ -1,5 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+<<<<<<< HEAD
+=======
+import { useColorScheme } from '@/hooks/use-color-scheme';
+>>>>>>> 7bdd68a (Add dark mode and high-contrast feature)
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import type { ThemeTokens } from '../../constants/Colors';

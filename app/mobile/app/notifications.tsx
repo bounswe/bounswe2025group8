@@ -14,7 +14,12 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
+<<<<<<< HEAD
 import type { ThemeTokens } from '../constants/Colors';
+=======
+import { Colors } from '../constants/Colors';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+>>>>>>> 7bdd68a (Add dark mode and high-contrast feature)
 import {
   getNotifications,
   markNotificationAsRead,
