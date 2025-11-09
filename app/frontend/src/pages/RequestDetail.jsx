@@ -301,11 +301,15 @@ const RequestDetail = () => {
     !isTaskCreator &&
     (request?.status === "POSTED" || request?.status === "ASSIGNED") &&
     acceptedVolunteersCount < request.volunteer_number &&
-    !volunteerRecord;
+    (!volunteerRecord ||
+      volunteerRecord.status === "REJECTED" ||
+      volunteerRecord.status === "WITHDRAWN");
   const canWithdraw =
     isAuthenticated &&
     !isTaskCreator &&
     volunteerRecord &&
+    volunteerRecord.status !== "WITHDRAWN" &&
+    volunteerRecord.status !== "REJECTED" &&
     request?.status !== "COMPLETED";
   const canMarkAsComplete =
     isAuthenticated &&
@@ -334,7 +338,9 @@ const RequestDetail = () => {
     requestCreator: request?.creator?.id,
     isTaskCreator,
     requestStatus: request?.status,
-    volunteerRecord: volunteerRecord?.id,
+    volunteerRecord: volunteerRecord,
+    volunteerRecordId: volunteerRecord?.id,
+    volunteerRecordStatus: volunteerRecord?.status,
     canVolunteer,
     canWithdraw,
     canMarkAsComplete,
@@ -345,10 +351,11 @@ const RequestDetail = () => {
     // Additional debugging for volunteer
     taskVolunteers: request?.volunteers,
     taskAssignees: request?.assignees,
-    volunteerRecordStatus: volunteerRecord?.status,
     isVolunteerForTask: isVolunteerForTask,
     reviewableUsersCheck: getReviewableUsers(request, currentUser).length > 0,
     volunteerFallback: isVolunteerForTask && !isTaskCreator,
+    acceptedVolunteersCount: acceptedVolunteersCount,
+    volunteerNumber: request.volunteer_number,
   });
 
   // Button handlers
@@ -412,25 +419,48 @@ const RequestDetail = () => {
       const result = await volunteerForTask(request.id);
       console.log("Volunteer result:", result);
 
-      // Update volunteer status
+      // Update volunteer status - extract the actual volunteer record
       const volunteerRecord = result.data || result;
+      console.log("Setting volunteer record:", volunteerRecord);
       setVolunteerRecord(volunteerRecord);
-      setIsVolunteering(false);
 
       alert("Successfully volunteered for this task!");
 
-      // Refresh the request data to get updated status
-      const updatedRequest = await getRequestById(requestId);
-      setRequest(updatedRequest);
+      // Refresh the request data to get updated volunteer list
+      try {
+        const updatedRequest = await getRequestById(requestId);
+        setRequest(updatedRequest);
+        console.log("Updated request after volunteering:", updatedRequest);
+      } catch (refreshError) {
+        console.warn(
+          "Could not refresh request data after volunteering:",
+          refreshError
+        );
+      }
+
+      // Also refresh volunteer status to ensure consistency
+      try {
+        const refreshedVolunteerRecord = await checkUserVolunteerStatus(
+          requestId
+        );
+        console.log("Refreshed volunteer record:", refreshedVolunteerRecord);
+        setVolunteerRecord(refreshedVolunteerRecord);
+      } catch (volunteerRefreshError) {
+        console.warn(
+          "Could not refresh volunteer status:",
+          volunteerRefreshError
+        );
+      }
     } catch (error) {
       console.error("Error volunteering for task:", error);
-      setIsVolunteering(false);
 
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
         "Failed to volunteer for task";
       alert(`Error: ${errorMessage}`);
+    } finally {
+      setIsVolunteering(false);
     }
   };
 
@@ -438,30 +468,60 @@ const RequestDetail = () => {
     if (!volunteerRecord) return;
 
     try {
-      console.log("Withdrawing from task:", request.id);
+      console.log(
+        "Withdrawing from task:",
+        request.id,
+        "volunteer record:",
+        volunteerRecord.id
+      );
       setIsVolunteering(true);
 
       await withdrawFromTask(volunteerRecord.id);
-      console.log("Withdrawn from task");
+      console.log("Withdrawn from task successfully");
 
-      // Update volunteer status
+      // Clear volunteer status
       setVolunteerRecord(null);
-      setIsVolunteering(false);
 
       alert("Successfully withdrew from this task");
 
-      // Refresh the request data
-      const updatedRequest = await getRequestById(requestId);
-      setRequest(updatedRequest);
+      // Refresh the request data to get updated volunteer list
+      try {
+        const updatedRequest = await getRequestById(requestId);
+        setRequest(updatedRequest);
+        console.log("Updated request after withdrawing:", updatedRequest);
+      } catch (refreshError) {
+        console.warn(
+          "Could not refresh request data after withdrawing:",
+          refreshError
+        );
+      }
+
+      // Also refresh volunteer status to ensure consistency
+      try {
+        const refreshedVolunteerRecord = await checkUserVolunteerStatus(
+          requestId
+        );
+        console.log(
+          "Refreshed volunteer record after withdrawal:",
+          refreshedVolunteerRecord
+        );
+        setVolunteerRecord(refreshedVolunteerRecord);
+      } catch (volunteerRefreshError) {
+        console.warn(
+          "Could not refresh volunteer status:",
+          volunteerRefreshError
+        );
+      }
     } catch (error) {
       console.error("Error withdrawing from task:", error);
-      setIsVolunteering(false);
 
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
         "Failed to withdraw from task";
       alert(`Error: ${errorMessage}`);
+    } finally {
+      setIsVolunteering(false);
     }
   };
 
