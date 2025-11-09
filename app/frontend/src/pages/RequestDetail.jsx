@@ -30,9 +30,11 @@ import {
 import { removeTaskFromList } from "../features/request/store/allRequestsSlice";
 import Sidebar from "../components/Sidebar";
 import EditRequestModal from "../components/EditRequestModal";
+import RatingReviewModal from "../components/RatingReviewModal";
 import { urgencyLevels } from "../constants/urgency_level";
 import { getCategoryImage } from "../constants/categories";
 import { toAbsoluteUrl } from "../utils/url";
+import { getReviewableUsers } from "../services/reviewService";
 
 const RequestDetail = () => {
   const { requestId } = useParams();
@@ -50,6 +52,9 @@ const RequestDetail = () => {
 
   // Edit dialog state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+
+  // Rating/Review dialog state
+  const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
 
   // Add these new state variables
   const [isDeleting, setIsDeleting] = useState(false);
@@ -278,8 +283,7 @@ const RequestDetail = () => {
   const photos = Array.isArray(request?.photos)
     ? request.photos
         .map((p) => ({
-          src:
-            toAbsoluteUrl(p?.url || p?.image || p?.photo_url) || undefined,
+          src: toAbsoluteUrl(p?.url || p?.image || p?.photo_url) || undefined,
           alt: p?.alt_text || request.title,
         }))
         .filter((p) => !!p.src)
@@ -298,13 +302,30 @@ const RequestDetail = () => {
     (request?.status === "POSTED" || request?.status === "ASSIGNED") &&
     acceptedVolunteersCount < request.volunteer_number &&
     !volunteerRecord;
-  const canWithdraw = isAuthenticated && !isTaskCreator && volunteerRecord;
+  const canWithdraw =
+    isAuthenticated &&
+    !isTaskCreator &&
+    volunteerRecord &&
+    request?.status !== "COMPLETED";
   const canMarkAsComplete =
     isAuthenticated &&
     isTaskCreator &&
     (request?.status === "ASSIGNED" || request?.status === "IN_PROGRESS") &&
     acceptedVolunteersCount > 0 &&
     request?.status !== "COMPLETED";
+
+  // Check if current user is a volunteer who participated in the task
+  const isVolunteerForTask =
+    volunteerRecord &&
+    (volunteerRecord.status === "ACCEPTED" || request?.status === "COMPLETED");
+
+  // Check if user can rate and review
+  const canRateAndReview =
+    isAuthenticated &&
+    currentUser &&
+    request?.status === "COMPLETED" &&
+    (getReviewableUsers(request, currentUser).length > 0 ||
+      (isVolunteerForTask && !isTaskCreator)); // Fallback for volunteers
 
   // Debug logging
   console.log("Permission debug:", {
@@ -317,8 +338,17 @@ const RequestDetail = () => {
     canVolunteer,
     canWithdraw,
     canMarkAsComplete,
+    canRateAndReview,
+    reviewableUsers: getReviewableUsers(request, currentUser),
     isDeadlinePassed: isDeadlinePassed(request.deadline),
     deadline: request?.deadline,
+    // Additional debugging for volunteer
+    taskVolunteers: request?.volunteers,
+    taskAssignees: request?.assignees,
+    volunteerRecordStatus: volunteerRecord?.status,
+    isVolunteerForTask: isVolunteerForTask,
+    reviewableUsersCheck: getReviewableUsers(request, currentUser).length > 0,
+    volunteerFallback: isVolunteerForTask && !isTaskCreator,
   });
 
   // Button handlers
@@ -492,6 +522,22 @@ const RequestDetail = () => {
     }
   };
 
+  const handleRateAndReview = () => {
+    if (canRateAndReview) {
+      setRatingDialogOpen(true);
+    }
+  };
+
+  const handleReviewSubmitSuccess = (reviewedUser, rating, comment) => {
+    console.log("Review submitted successfully:", {
+      reviewedUser,
+      rating,
+      comment,
+    });
+    // Optionally refresh the request data or update UI state
+    alert(`Review submitted for ${reviewedUser.name} ${reviewedUser.surname}!`);
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
@@ -563,8 +609,12 @@ const RequestDetail = () => {
               {photos.length > 0 ? (
                 <>
                   <img
-                    src={photos[Math.min(activePhotoIdx, photos.length - 1)]?.src}
-                    alt={photos[Math.min(activePhotoIdx, photos.length - 1)]?.alt}
+                    src={
+                      photos[Math.min(activePhotoIdx, photos.length - 1)]?.src
+                    }
+                    alt={
+                      photos[Math.min(activePhotoIdx, photos.length - 1)]?.alt
+                    }
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
@@ -579,7 +629,9 @@ const RequestDetail = () => {
                           setActivePhotoIdx(idx);
                         }}
                         className={`h-12 w-12 rounded overflow-hidden border ${
-                          idx === activePhotoIdx ? 'border-white' : 'border-transparent'
+                          idx === activePhotoIdx
+                            ? "border-white"
+                            : "border-transparent"
                         }`}
                         aria-label={`Show photo ${idx + 1}`}
                       >
@@ -700,6 +752,16 @@ const RequestDetail = () => {
 
               {/* Action Buttons */}
               <div className="space-y-3">
+                {/* Rate & Review Button for Requesters (Task Creators) */}
+                {canRateAndReview && isTaskCreator && (
+                  <button
+                    onClick={handleRateAndReview}
+                    className="w-full py-3 px-6 bg-pink-500 text-white text-base font-medium rounded-lg hover:bg-pink-600 transition-colors flex items-center justify-center"
+                  >
+                    ⭐ Rate & Review Volunteers
+                  </button>
+                )}
+
                 {/* Primary Action Buttons for Task Creator - Mark as Complete and Select Volunteer */}
                 {canEdit &&
                   (request.status === "POSTED" ||
@@ -786,6 +848,16 @@ const RequestDetail = () => {
                   </button>
                 )}
 
+                {/* Rate & Review Button for Volunteers (replaces Withdraw button after completion) */}
+                {canRateAndReview && !isTaskCreator && (
+                  <button
+                    onClick={handleRateAndReview}
+                    className="w-full py-3 px-6 bg-pink-500 text-white text-base font-medium rounded-lg hover:bg-pink-600 transition-colors flex items-center justify-center"
+                  >
+                    ⭐ Rate & Review Requester
+                  </button>
+                )}
+
                 {!isAuthenticated && (
                   <button
                     onClick={() => navigate("/login")}
@@ -830,6 +902,14 @@ const RequestDetail = () => {
         onClose={() => setEditDialogOpen(false)}
         request={request}
         onSubmit={handleEditSubmit}
+      />
+
+      <RatingReviewModal
+        open={ratingDialogOpen}
+        onClose={() => setRatingDialogOpen(false)}
+        task={request}
+        currentUser={currentUser}
+        onSubmitSuccess={handleReviewSubmitSuccess}
       />
     </div>
   );
