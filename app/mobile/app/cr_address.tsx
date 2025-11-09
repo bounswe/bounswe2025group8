@@ -22,8 +22,7 @@ export default function CRAddress() {
   const params = useLocalSearchParams();
   const [address, setAddress] = useState<AddressFieldsValue>(emptyAddress);
   const [description, setDescription] = useState('');
-
-    const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [modal, setModal] = useState<{
     visible: boolean;
     options: string[];
