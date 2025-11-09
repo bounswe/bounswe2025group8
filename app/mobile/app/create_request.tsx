@@ -4,16 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
 import { useAuth } from '../lib/auth';
-import { getCategories } from '../lib/api';
+import { CategoryPicker } from '../components/forms/CategoryPicker';
 
-const fallbackCategories = [
-  { value: 'GROCERY_SHOPPING', label: 'Grocery Shopping' },
-  { value: 'TUTORING', label: 'Tutoring' },
-  { value: 'HOME_REPAIR', label: 'Home Repair' },
-  { value: 'MOVING_HELP', label: 'Moving Help' },
-  { value: 'HOUSE_CLEANING', label: 'House Cleaning' },
-  { value: 'OTHER', label: 'Other' },
-];
 const urgencies = ['Low', 'Medium', 'High'];
 
 export default function CreateRequest() {
@@ -24,34 +16,10 @@ export default function CreateRequest() {
   const [description, setDescription] = useState('');
   const [urgency, setUrgency] = useState(urgencies[0]);
   const [people, setPeople] = useState(1);
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showUrgencyModal, setShowUrgencyModal] = useState(false);
-  const [categories, setCategories] = useState(fallbackCategories);
-  const [category, setCategory] = useState(categories[0].value);
+  const [category, setCategory] = useState('GROCERY_SHOPPING');
 
   
-useEffect(() => {
-  let cancelled = false;
-  getCategories()
-    .then(({ results }) => {
-      if (!cancelled && results?.length) {
-        console.log("Fetched categories:", results);
-        const mapped = results.map(c => ({ value: c.id, label: c.name }));
-        setCategories(mapped);
-        setCategory(prev => {
-        const stillThere = mapped.find(c => c.value === prev);
-        return stillThere ? prev : mapped[0].value;
-        })
-      }
-})
-    .catch(() => {
-      console.log("Error fetching categories, using fallback.");
-    });
-  return () => {
-    cancelled = true;
-  };
-}, []);
-
   useEffect(() => {
     if (!user) {
       Alert.alert('Authentication Required', 'You need to be logged in to create a request.', [
@@ -181,14 +149,7 @@ useEffect(() => {
           multiline
         />
 
-        <Text style={[styles.label, { color: colors.text }]}>Category</Text>
-        <Pressable
-          style={[styles.selectorBtn, { backgroundColor: colors.card }]}
-          onPress={() => setShowCategoryModal(true)}
-        >
-          <Text style={[styles.selectorText, { color: colors.text }]}>{categories.find((c) => c.value === category)?.label}</Text>
-          <Ionicons name="chevron-down" size={20} color={colors.border} />
-        </Pressable>
+        <CategoryPicker value={category} onChange={setCategory} />
 
         <Text style={[styles.label, { color: colors.text }]}>Urgency</Text>
         <Pressable
@@ -242,7 +203,6 @@ useEffect(() => {
           <Text style={styles.nextBtnText}>Next</Text>
         </TouchableOpacity>
 
-        {renderPickerModal(showCategoryModal, setShowCategoryModal, categories, category, setCategory)}
         {renderPickerModal(showUrgencyModal, setShowUrgencyModal, urgencies, urgency, setUrgency)}
       </ScrollView>
     </SafeAreaView>
