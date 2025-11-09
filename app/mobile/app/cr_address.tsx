@@ -166,9 +166,9 @@ export default function CRAddress() {
         </View>
         <Text style={[styles.pageSubtitle, { color: `${colors.text}99` }]}>Setup Address</Text>
         <View style={styles.tabBar}>
-          <View style={styles.inactiveTab} />
-          <View style={styles.inactiveTab} />
-          <View style={styles.inactiveTab} />
+          <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
+          <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
+          <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
           <View style={[styles.activeTab, { backgroundColor: colors.primary }]} />
         </View>
 
@@ -257,14 +257,14 @@ export default function CRAddress() {
           disabled={uploading}
         >
           {uploading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={colors.onPrimary} />
           ) : (
-            <Text style={styles.nextBtnText}>Create Request</Text>
+            <Text style={[styles.nextBtnText, { color: colors.onPrimary }]}>Create Request</Text>
           )}
         </TouchableOpacity>
 
         <Modal animationType="slide" transparent visible={modal.visible} onRequestClose={closeModal}>
-          <View style={styles.modalOverlay}>
+          <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
             <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
               <View style={styles.modalHeader}>
                 <Text style={[styles.modalTitle, { color: colors.text }]}>Select</Text>
@@ -314,12 +314,10 @@ export default function CRAddress() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   container: {
     padding: 20,
     paddingBottom: 40,
-    backgroundColor: '#fff',
     flexGrow: 1,
   },
   header: {
@@ -332,7 +330,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F3F0FF',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -352,10 +349,8 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#222',
   },
   pageSubtitle: {
-    color: '#B0B0B0',
     fontWeight: 'bold',
     marginBottom: 8,
     marginTop: 2,
@@ -368,14 +363,12 @@ const styles = StyleSheet.create({
   activeTab: {
     flex: 1,
     height: 3,
-    backgroundColor: '#7C6AED',
     borderRadius: 2,
     marginRight: 2,
   },
   inactiveTab: {
     flex: 1,
     height: 3,
-    backgroundColor: '#E5E5E5',
     borderRadius: 2,
     marginRight: 2,
   },
@@ -383,13 +376,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 12,
     marginBottom: 4,
-    color: '#444',
   },
   pickerButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#F6F6F6',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 12,
@@ -397,40 +388,32 @@ const styles = StyleSheet.create({
   },
   pickerButtonText: {
     fontSize: 16,
-    color: '#333',
   },
   input: {
-    backgroundColor: '#F6F6F6',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 12,
     marginBottom: 8,
     fontSize: 16,
-    color: '#222',
   },
   textArea: {
-    backgroundColor: '#F6F6F6',
     borderRadius: 8,
     minHeight: 60,
     padding: 10,
     fontSize: 16,
-    color: '#222',
   },
   nextBtn: {
     marginTop: 24,
-    backgroundColor: '#7C6AED',
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
   },
   nextBtnText: {
-    color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
   },

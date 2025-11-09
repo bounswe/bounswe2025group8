@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, useColorScheme, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '@react-navigation/native';
-import { Colors } from '../../constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
+import type { ThemeTokens } from '../../constants/Colors';
 
 export interface RequestCardProps {
   title?: string;
@@ -16,8 +16,7 @@ export interface RequestCardProps {
 
 const RequestCard: React.FC<RequestCardProps> = (props) => {
   const { colors } = useTheme();
-  const colorScheme = useColorScheme();
-  const themeColors = Colors[colorScheme || 'light'];
+  const themeColors = colors as ThemeTokens;
 
   const displayTitle =
     typeof props.title === 'string' && props.title.trim() !== '' ? props.title.trim() : 'Untitled Request';

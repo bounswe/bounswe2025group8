@@ -4,9 +4,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useAppTheme } from '@/theme/ThemeProvider';
 
 export default function CRDeadline() {
   const { colors } = useTheme();
+  const { resolvedTheme } = useAppTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
   const [date, setDate] = useState(new Date());
@@ -30,6 +32,8 @@ export default function CRDeadline() {
 
   const formattedDate = date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
   const formattedTime = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: true });
+
+  const pickerThemeVariant = resolvedTheme === 'light' ? 'light' : 'dark';
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
@@ -55,10 +59,10 @@ export default function CRDeadline() {
         </View>
         <Text style={[styles.pageSubtitle, { color: `${colors.text}99` }]}>Determine Deadline</Text>
         <View style={styles.tabBar}>
-          <View style={styles.inactiveTab} />
-          <View style={styles.inactiveTab} />
+          <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
+          <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
           <View style={[styles.activeTab, { backgroundColor: colors.primary }]} />
-          <View style={styles.inactiveTab} />
+          <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
         </View>
 
         <Text style={[styles.label, { color: colors.text }]}>Select date</Text>
@@ -67,16 +71,34 @@ export default function CRDeadline() {
           <Ionicons name="calendar-outline" size={20} color={colors.primary} />
         </TouchableOpacity>
         {showDatePicker && (
-          <DateTimePicker value={date} mode="date" display={Platform.OS === 'ios' ? 'inline' : 'default'} onChange={onChangeDate} minimumDate={new Date()} />
+          <DateTimePicker
+            value={date}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'inline' : 'default'}
+            onChange={onChangeDate}
+            minimumDate={new Date()}
+            themeVariant={pickerThemeVariant}
+            {...(Platform.OS === 'ios' ? { textColor: colors.text } : {})}
+          />
         )}
 
         <Text style={[styles.label, { color: colors.text }]}>Select time</Text>
-        <TouchableOpacity style={[styles.timeBox, { borderColor: colors.primary }]} onPress={() => setShowTimePicker(true)}>
+        <TouchableOpacity
+          style={[styles.timeBox, { borderColor: colors.primary, backgroundColor: colors.card }]}
+          onPress={() => setShowTimePicker(true)}
+        >
           <Text style={[styles.timeText, { color: colors.text }]}>{formattedTime}</Text>
           <Ionicons name="time-outline" size={20} color={colors.primary} />
         </TouchableOpacity>
         {showTimePicker && (
-          <DateTimePicker value={date} mode="time" display={Platform.OS === 'ios' ? 'spinner' : 'default'} onChange={onChangeTime} />
+          <DateTimePicker
+            value={date}
+            mode="time"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={onChangeTime}
+            themeVariant={pickerThemeVariant}
+            {...(Platform.OS === 'ios' ? { textColor: colors.text } : {})}
+          />
         )}
 
         <TouchableOpacity
@@ -88,7 +110,7 @@ export default function CRDeadline() {
             })
           }
         >
-          <Text style={styles.nextBtnText}>Next</Text>
+          <Text style={[styles.nextBtnText, { color: colors.onPrimary }]}>Next</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -153,7 +175,6 @@ const styles = StyleSheet.create({
   inactiveTab: {
     flex: 1,
     height: 3,
-    backgroundColor: '#E5E5E5',
     borderRadius: 2,
     marginRight: 2,
   },
@@ -192,13 +213,11 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   nextBtn: {
-    backgroundColor: '#7C6AED',
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
   },
   nextBtnText: {
-    color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },

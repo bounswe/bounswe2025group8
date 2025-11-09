@@ -65,10 +65,10 @@ export default function CRUploadPhoto() {
         <Text style={[styles.pageSubtitle, { color: `${colors.text}99` }]}>Upload Photos</Text>
 
         <View style={styles.tabBar}>
-          <View style={styles.inactiveTab} />
+          <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
           <View style={[styles.activeTab, { backgroundColor: colors.primary }]} />
-          <View style={styles.inactiveTab} />
-          <View style={styles.inactiveTab} />
+          <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
+          <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
         </View>
 
         <TouchableOpacity
@@ -110,7 +110,7 @@ export default function CRUploadPhoto() {
             });
           }}
         >
-          <Text style={styles.nextBtnText}>Next</Text>
+          <Text style={[styles.nextBtnText, { color: colors.onPrimary }]}>Next</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -120,12 +120,10 @@ export default function CRUploadPhoto() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   container: {
     padding: 20,
     paddingBottom: 40,
-    backgroundColor: '#fff',
     flexGrow: 1,
   },
   header: {
@@ -138,7 +136,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F3F0FF',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -158,10 +155,8 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#222',
   },
   pageSubtitle: {
-    color: '#B0B0B0',
     fontWeight: 'bold',
     marginBottom: 8,
     marginTop: 2,
@@ -174,26 +169,22 @@ const styles = StyleSheet.create({
   activeTab: {
     flex: 1,
     height: 3,
-    backgroundColor: '#7C6AED',
     borderRadius: 2,
     marginRight: 2,
   },
   inactiveTab: {
     flex: 1,
     height: 3,
-    backgroundColor: '#E5E5E5',
     borderRadius: 2,
     marginRight: 2,
   },
   browseBtn: {
-    backgroundColor: '#F6F3FF',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
     marginBottom: 16,
   },
   browseBtnText: {
-    color: '#7C6AED',
     fontWeight: 'bold',
     fontSize: 16,
   },
@@ -225,13 +216,11 @@ const styles = StyleSheet.create({
   },
   nextBtn: {
     marginTop: 12,
-    backgroundColor: '#7C6AED',
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
   },
   nextBtnText: {
-    color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },

@@ -142,7 +142,7 @@ export default function SignIn() {
             onPress={handleLogin}
             disabled={isLoading}
           >
-            <Text style={styles.buttonText}>
+            <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
               {isLoading ? 'Signing in...' : 'Sign In'}
             </Text>
           </TouchableOpacity>
@@ -192,7 +192,6 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: '#666',
     lineHeight: 20,
     marginTop: 8,
     marginBottom: 32,
@@ -201,7 +200,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderColor: '#DDD',
     marginBottom: 16,
     paddingBottom: 4,
   },
@@ -209,16 +207,14 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 8,
     height: 40,
-    color: '#333',
   },
     rememberWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 24,
   },
-    rememberText: {
+  rememberText: {
     marginLeft: 8,
-    color: '#666',
     fontSize: 14,
   },
   button: {
@@ -227,7 +223,8 @@ const styles = StyleSheet.create({
     marginBottom: 24
   },
   buttonText: {
-    color: '#fff', fontWeight: 'bold', fontSize: 16
+    fontWeight: 'bold',
+    fontSize: 16,
   },
     forgotText: {
     textAlign: 'center',

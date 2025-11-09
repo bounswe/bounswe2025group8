@@ -15,18 +15,16 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme, useFocusEffect } from '@react-navigation/native';
-import { Colors } from '../constants/Colors';
-import { useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getTaskDetails, listVolunteers, type Task, type Volunteer, volunteerForTask, withdrawVolunteer, createReview, getTaskReviews, type Review, type UserProfile, getTaskPhotos, BACKEND_BASE_URL, type Photo } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { ThemeTokens } from '../constants/Colors';
 
 export default function RequestDetailsVolunteer() {
   const params = useLocalSearchParams();
   const { colors } = useTheme();
-  const colorScheme = useColorScheme();
-  const themeColors = Colors[colorScheme || 'light'];
+  const themeColors = colors as ThemeTokens;
   const router = useRouter();
   const { user } = useAuth();
 
@@ -595,9 +593,9 @@ useEffect(() => {
             
             {/* Show remaining photos as thumbnails if there are more */}
             {photos.length > 1 && (
-              <View style={styles.thumbnailsContainer}>
-                <ScrollView 
-                  horizontal 
+              <View style={[styles.thumbnailsContainer, { backgroundColor: themeColors.lightGray }]}>
+                <ScrollView
+                  horizontal
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.thumbnailsScrollContent}
                 >
@@ -608,7 +606,7 @@ useEffect(() => {
                       : `${BACKEND_BASE_URL}${photoUrl}`;
                     
                     return (
-                      <TouchableOpacity key={photo.id} style={styles.smallThumbnail}>
+                      <TouchableOpacity key={photo.id} style={[styles.smallThumbnail, { borderColor: themeColors.card }]}>
                         <Image 
                           source={{ uri: absoluteUrl }} 
                           style={styles.smallThumbnailImage}
@@ -747,7 +745,7 @@ useEffect(() => {
       </ScrollView>
 
       <Modal visible={modalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
+        <View style={[styles.modalOverlay, { backgroundColor: themeColors.overlay }]}>
           <View style={[styles.modalContent, { backgroundColor: themeColors.card }]}>
             <Text style={[styles.modalTitle, { color: themeColors.text }]}>
               {reviewableParticipants.length > 0 
@@ -767,10 +765,10 @@ useEffect(() => {
               </Text>
             )}
             <TextInput
-              style={[
-                styles.modalInput,
-                { borderColor: themeColors.border, color: themeColors.text, backgroundColor: colors.background },
-              ]}
+                style={[
+                  styles.modalInput,
+                  { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background },
+                ]}
               placeholder="Leave your review..."
               placeholderTextColor={themeColors.textMuted}
               multiline
@@ -829,7 +827,7 @@ function DetailRow({
 }: {
   icon: React.ComponentProps<typeof Ionicons>['name'];
   value: string;
-  themeColors: typeof Colors.light;
+  themeColors: ThemeTokens;
 }) {
   return (
     <View style={styles.infoRow}>
@@ -893,7 +891,6 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 30,
     marginRight: 12,
-    backgroundColor: '#ccc',
   },
   name: {
     fontSize: 16,
@@ -970,7 +967,6 @@ const styles = StyleSheet.create({
   thumbnailsContainer: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: 'rgba(0,0,0,0.03)',
   },
   thumbnailsScrollContent: {
     paddingRight: 16,
@@ -982,7 +978,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: 'hidden',
     borderWidth: 2,
-    borderColor: '#fff',
   },
   smallThumbnailImage: {
     width: '100%',
@@ -992,7 +987,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
     paddingHorizontal: 16,
   },
   modalContent: {
