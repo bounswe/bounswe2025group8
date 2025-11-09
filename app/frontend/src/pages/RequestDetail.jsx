@@ -329,7 +329,9 @@ const RequestDetail = () => {
     currentUser &&
     request?.status === "COMPLETED" &&
     (getReviewableUsers(request, currentUser).length > 0 ||
-      (isVolunteerForTask && !isTaskCreator)); // Fallback for volunteers
+      (isVolunteerForTask && !isTaskCreator) ||
+      (isTaskCreator &&
+        request?.volunteers?.some((v) => v.status === "ACCEPTED"))); // Ensure task creators can always rate volunteers
 
   // Debug logging
   console.log("Permission debug:", {
@@ -561,6 +563,19 @@ const RequestDetail = () => {
       const refreshedTask = await getRequestById(request.id);
       console.log("Refreshed task data:", refreshedTask);
 
+      // Also fetch volunteers for the refreshed task
+      try {
+        const volunteers = await getTaskVolunteers(request.id);
+        console.log("Received volunteers data after completion:", volunteers);
+        refreshedTask.volunteers = volunteers;
+      } catch (volunteersError) {
+        console.warn(
+          `Could not fetch volunteers for completed task ${request.id}:`,
+          volunteersError
+        );
+        refreshedTask.volunteers = request.volunteers || [];
+      }
+
       // Update the request state with the refreshed data
       setRequest(refreshedTask);
 
@@ -568,6 +583,11 @@ const RequestDetail = () => {
       dispatch(removeTaskFromList(request.id));
 
       alert("Task marked as completed successfully!");
+
+      // Force a page refresh after a short delay to ensure UI updates correctly
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
       console.error("Error marking task as completed:", error);
       console.error("Error details:", error.response?.data);
@@ -785,42 +805,65 @@ const RequestDetail = () => {
                 request.status === "IN_PROGRESS" ||
                 request.status === "COMPLETED") && (
                 <div className="mb-6">
-                  <p className="text-sm text-gray-500">
-                    {request.status === "POSTED"
-                      ? "Waiting for Volunteers"
-                      : request.status === "ASSIGNED"
-                      ? isTaskCreator
-                        ? acceptedVolunteersCount > 0
+                  {request.status === "COMPLETED" ? (
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-sm">✓</span>
+                          </div>
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-green-800 font-medium">
+                            Task Completed Successfully!
+                          </p>
+                          {isTaskCreator && (
+                            <p className="text-green-600 text-sm mt-1">
+                              Don't forget to rate and review your volunteers to
+                              help the community.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      {request.status === "POSTED"
+                        ? "Waiting for Volunteers"
+                        : request.status === "ASSIGNED"
+                        ? isTaskCreator
+                          ? acceptedVolunteersCount > 0
+                            ? "Ready to mark as complete"
+                            : null
+                          : volunteerRecord &&
+                            volunteerRecord.status === "ACCEPTED"
+                          ? "Task Assigned to You"
+                          : acceptedVolunteersCount < request.volunteer_number
+                          ? "Waiting for More Volunteers"
+                          : "Task Assigned"
+                        : request.status === "IN_PROGRESS"
+                        ? isTaskCreator && acceptedVolunteersCount > 0
                           ? "Ready to mark as complete"
-                          : null
-                        : volunteerRecord &&
-                          volunteerRecord.status === "ACCEPTED"
-                        ? "Task Assigned to You"
-                        : acceptedVolunteersCount < request.volunteer_number
-                        ? "Waiting for More Volunteers"
-                        : "Task Assigned"
-                      : request.status === "IN_PROGRESS"
-                      ? isTaskCreator && acceptedVolunteersCount > 0
-                        ? "Ready to mark as complete"
-                        : "In Progress"
-                      : request.status === "COMPLETED"
-                      ? "Task Completed"
-                      : "Unknown Status"}
-                  </p>
+                          : "In Progress"
+                        : "Unknown Status"}
+                    </p>
+                  )}
                 </div>
               )}
 
               {/* Action Buttons */}
               <div className="space-y-3">
-                {/* Rate & Review Button for Requesters (Task Creators) */}
-                {canRateAndReview && isTaskCreator && (
-                  <button
-                    onClick={handleRateAndReview}
-                    className="w-full py-3 px-6 bg-pink-500 text-white text-base font-medium rounded-lg hover:bg-pink-600 transition-colors flex items-center justify-center"
-                  >
-                    ⭐ Rate & Review Volunteers
-                  </button>
-                )}
+                {/* Rate & Review Button for Requesters (Task Creators) - Show prominently when task is completed */}
+                {canRateAndReview &&
+                  isTaskCreator &&
+                  request?.status === "COMPLETED" && (
+                    <button
+                      onClick={handleRateAndReview}
+                      className="w-full py-3 px-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-base font-medium rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 flex items-center justify-center shadow-lg"
+                    >
+                      ⭐ Rate & Review Volunteers
+                    </button>
+                  )}
 
                 {/* Primary Action Buttons for Task Creator - Mark as Complete and Select Volunteer */}
                 {canEdit &&
