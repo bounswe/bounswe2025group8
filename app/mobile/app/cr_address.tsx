@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Image, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Modal, Image, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
-import { createTask } from '../lib/api';
+import { createTask, uploadTaskPhoto} from '../lib/api';
 import { AddressFields } from '../components/forms/AddressFields';
 import { AddressFieldsValue, emptyAddress, formatAddress } from '../utils/address';
 
@@ -22,6 +22,20 @@ export default function CRAddress() {
   const params = useLocalSearchParams();
   const [address, setAddress] = useState<AddressFieldsValue>(emptyAddress);
   const [description, setDescription] = useState('');
+
+    const [uploading, setUploading] = useState(false);
+  const [modal, setModal] = useState<{
+    visible: boolean;
+    options: string[];
+    selected: string;
+    onSelect: (v: string) => void;
+  }>({ visible: false, options: [], selected: '', onSelect: () => {} });
+
+  const openModal = (options: string[], selected: string, onSelect: (v: string) => void) => {
+    setModal({ visible: true, options, selected, onSelect });
+  };
+
+  const closeModal = () => setModal((prev) => ({ ...prev, visible: false }));
 
   const handleCreateRequest = async () => {
     try {
