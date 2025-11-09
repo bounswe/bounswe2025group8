@@ -4,12 +4,37 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
 import { DeadlinePicker } from '../components/forms/DeadlinePicker';
+import { useAppTheme } from '@/theme/ThemeProvider';
 
 export default function CRDeadline() {
   const { colors } = useTheme();
+  const { resolvedTheme } = useAppTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
   const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+
+  const onChangeDate = (_event: any, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === 'ios');
+    if (selectedDate) setDate(selectedDate);
+  };
+
+  const onChangeTime = (_event: any, selectedTime?: Date) => {
+    setShowTimePicker(Platform.OS === 'ios');
+    if (selectedTime) {
+      const newDate = new Date(date);
+      newDate.setHours(selectedTime.getHours());
+      newDate.setMinutes(selectedTime.getMinutes());
+      setDate(newDate);
+    }
+  };
+
+  const formattedDate = date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+  const formattedTime = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: true });
+
+  const pickerThemeVariant = resolvedTheme === 'light' ? 'light' : 'dark';
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
@@ -34,13 +59,47 @@ export default function CRDeadline() {
         </View>
         <Text style={[styles.pageSubtitle, { color: `${colors.text}99` }]}>Determine Deadline</Text>
         <View style={styles.tabBar}>
-          <View style={styles.inactiveTab} />
-          <View style={styles.inactiveTab} />
+          <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
+          <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
           <View style={[styles.activeTab, { backgroundColor: colors.primary }]} />
-          <View style={styles.inactiveTab} />
+          <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
         </View>
 
-        <DeadlinePicker value={date} onChange={setDate} />
+        <Text style={[styles.label, { color: colors.text }]}>Select date</Text>
+        <TouchableOpacity style={[styles.dateBox, { backgroundColor: colors.card }]} onPress={() => setShowDatePicker(true)}>
+          <Text style={[styles.dateText, { color: colors.text }]}>{formattedDate}</Text>
+          <Ionicons name="calendar-outline" size={20} color={colors.primary} />
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            value={date}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'inline' : 'default'}
+            onChange={onChangeDate}
+            minimumDate={new Date()}
+            themeVariant={pickerThemeVariant}
+            {...(Platform.OS === 'ios' ? { textColor: colors.text } : {})}
+          />
+        )}
+
+        <Text style={[styles.label, { color: colors.text }]}>Select time</Text>
+        <TouchableOpacity
+          style={[styles.timeBox, { borderColor: colors.primary, backgroundColor: colors.card }]}
+          onPress={() => setShowTimePicker(true)}
+        >
+          <Text style={[styles.timeText, { color: colors.text }]}>{formattedTime}</Text>
+          <Ionicons name="time-outline" size={20} color={colors.primary} />
+        </TouchableOpacity>
+        {showTimePicker && (
+          <DateTimePicker
+            value={date}
+            mode="time"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={onChangeTime}
+            themeVariant={pickerThemeVariant}
+            {...(Platform.OS === 'ios' ? { textColor: colors.text } : {})}
+          />
+        )}
 
         <TouchableOpacity
           style={[styles.nextBtn, { backgroundColor: colors.primary }]}
@@ -51,7 +110,7 @@ export default function CRDeadline() {
             })
           }
         >
-          <Text style={styles.nextBtnText}>Next</Text>
+          <Text style={[styles.nextBtnText, { color: colors.onPrimary }]}>Next</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -116,18 +175,15 @@ const styles = StyleSheet.create({
   inactiveTab: {
     flex: 1,
     height: 3,
-    backgroundColor: '#E5E5E5',
     borderRadius: 2,
     marginRight: 2,
   },
   nextBtn: {
-    backgroundColor: '#7C6AED',
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
   },
   nextBtnText: {
-    color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },

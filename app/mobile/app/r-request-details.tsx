@@ -16,11 +16,10 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme, useFocusEffect } from '@react-navigation/native';
-import { Colors } from '../constants/Colors';
-import { useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { getTaskDetails, getTaskApplicants, completeTask, cancelTask, createReview, getTaskReviews, getTaskPhotos, BACKEND_BASE_URL, updateTask, type Task, type Volunteer, type Review, type Photo, type UpdateTaskPayload } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import type { ThemeTokens } from '../constants/Colors';
 import { CategoryPicker } from '../components/forms/CategoryPicker';
 import { DeadlinePicker } from '../components/forms/DeadlinePicker';
 import { AddressFields } from '../components/forms/AddressFields';
@@ -29,8 +28,7 @@ import { AddressFieldsValue, emptyAddress, parseAddressString, formatAddress } f
 export default function RequestDetails() {
   const params = useLocalSearchParams();
   const { colors } = useTheme();
-  const colorScheme = useColorScheme();
-  const themeColors = Colors[colorScheme || 'light'];
+  const themeColors = colors as ThemeTokens;
   const router = useRouter();
   const { user } = useAuth();
 
@@ -598,7 +596,7 @@ export default function RequestDetails() {
             
             {/* Show remaining photos as thumbnails if there are more */}
             {photos.length > 1 && (
-              <View style={styles.thumbnailsContainer}>
+              <View style={[styles.thumbnailsContainer, { backgroundColor: themeColors.lightGray }]}>
                 <ScrollView 
                   horizontal 
                   showsHorizontalScrollIndicator={false}
@@ -611,7 +609,7 @@ export default function RequestDetails() {
                       : `${BACKEND_BASE_URL}${photoUrl}`;
                     
                     return (
-                      <TouchableOpacity key={photo.id} style={styles.smallThumbnail}>
+                      <TouchableOpacity key={photo.id} style={[styles.smallThumbnail, { borderColor: themeColors.card }]}>
                         <Image 
                           source={{ uri: absoluteUrl }} 
                           style={styles.smallThumbnailImage}
@@ -631,7 +629,7 @@ export default function RequestDetails() {
         <View style={[styles.section, { backgroundColor: themeColors.card }]}>
           <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Requester</Text>
           <View style={styles.requesterRow}>
-            <Image source={{ uri: requesterAvatar }} style={styles.requesterAvatar} />
+            <Image source={{ uri: requesterAvatar }} style={[styles.requesterAvatar, { backgroundColor: themeColors.border }]} />
             <View style={{ flex: 1 }}>
               <Text style={[styles.requesterName, { color: themeColors.text }]}>{requesterName}</Text>
               <Text style={{ color: themeColors.textMuted }}>{phoneNumber}</Text>
@@ -661,7 +659,7 @@ export default function RequestDetails() {
                   source={
                     volunteer.user.photo ? { uri: volunteer.user.photo } : require('../assets/images/empty_profile_photo.png')
                   }
-                  style={styles.volunteerAvatar}
+                  style={[styles.volunteerAvatar, { backgroundColor: themeColors.border }]}
                 />
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: themeColors.text, fontWeight: '600' }}>
@@ -702,12 +700,12 @@ export default function RequestDetails() {
         {isCreator && !isCompleted && (
           <View style={styles.buttonRow}>
             <TouchableOpacity
-              style={[styles.halfButton, { borderColor: '#FF9800' }]}
+              style={[styles.halfButton, { borderColor: themeColors.secondary }]}
               onPress={openEditModal}
             >
               <View style={styles.buttonContent}>
-                <Ionicons name="pencil" size={18} color="#FF9800" style={{ marginRight: 6 }} />
-                <Text style={[styles.buttonText, { color: '#FF9800' }]}>Edit Request</Text>
+                <Ionicons name="pencil" size={18} color={themeColors.secondary} style={{ marginRight: 6 }} />
+                <Text style={[styles.buttonText, { color: themeColors.secondary }]}>Edit Request</Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity
@@ -769,7 +767,7 @@ export default function RequestDetails() {
       </ScrollView>
 
       <Modal visible={modalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
+        <View style={[styles.modalOverlay, { backgroundColor: themeColors.overlay }]}>
           <View style={[styles.modalContent, { backgroundColor: themeColors.card }]}>
             <Text style={[styles.modalTitle, { color: themeColors.text }]}>
               {isEdit 
@@ -951,7 +949,7 @@ export default function RequestDetails() {
   );
 }
 
-function DetailRow({ label, value, themeColors }: { label: string; value: string; themeColors: typeof Colors.light }) {
+function DetailRow({ label, value, themeColors }: { label: string; value: string; themeColors: ThemeTokens }) {
   return (
     <View style={styles.detailRow}>
       <Text style={[styles.detailLabel, { color: themeColors.textMuted }]}>{label}</Text>
@@ -1026,7 +1024,6 @@ const styles = StyleSheet.create({
     height: 60,
     borderRadius: 30,
     marginRight: 12,
-    backgroundColor: '#ccc',
   },
   requesterName: {
     fontSize: 16,
@@ -1054,7 +1051,6 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 24,
     marginRight: 12,
-    backgroundColor: '#ccc',
   },
   primaryButton: {
     marginHorizontal: 16,
@@ -1108,7 +1104,6 @@ const styles = StyleSheet.create({
   thumbnailsContainer: {
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: 'rgba(0,0,0,0.03)',
   },
   thumbnailsScrollContent: {
     paddingRight: 16,
@@ -1120,7 +1115,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     overflow: 'hidden',
     borderWidth: 2,
-    borderColor: '#fff',
   },
   smallThumbnailImage: {
     width: '100%',
@@ -1130,7 +1124,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
     paddingHorizontal: 16,
   },
   modalContent: {

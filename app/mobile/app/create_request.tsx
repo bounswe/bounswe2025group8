@@ -50,7 +50,7 @@ export default function CreateRequest() {
   ) => {
     return (
       <Modal animationType="slide" transparent visible={visible} onRequestClose={() => setVisible(false)}>
-        <View style={styles.modalOverlay}>
+        <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.text }]}>Select an option</Text>
@@ -200,7 +200,7 @@ export default function CreateRequest() {
             });
           }}
         >
-          <Text style={styles.nextBtnText}>Next</Text>
+          <Text style={[styles.nextBtnText, { color: colors.onPrimary }]}>Next</Text>
         </TouchableOpacity>
 
         {renderPickerModal(showUrgencyModal, setShowUrgencyModal, urgencies, urgency, setUrgency)}
@@ -212,12 +212,10 @@ export default function CreateRequest() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   container: {
     padding: 20,
     paddingBottom: 40,
-    backgroundColor: '#fff',
     flexGrow: 1,
   },
   header: {
@@ -230,7 +228,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F3F0FF',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -250,10 +247,8 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#222',
   },
   pageSubtitle: {
-    color: '#B0B0B0',
     fontWeight: 'bold',
     marginBottom: 8,
     marginTop: 2,
@@ -266,14 +261,12 @@ const styles = StyleSheet.create({
   activeTab: {
     flex: 1,
     height: 3,
-    backgroundColor: '#7C6AED',
     borderRadius: 2,
     marginRight: 2,
   },
   inactiveTab: {
     flex: 1,
     height: 3,
-    backgroundColor: '#E5E5E5',
     borderRadius: 2,
     marginRight: 2,
   },
@@ -281,12 +274,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 12,
     marginBottom: 4,
-    color: '#444',
   },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F6F6F6',
     borderRadius: 8,
     marginBottom: 8,
     height: 44,
@@ -295,22 +286,18 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 10,
     fontSize: 16,
-    color: '#222',
     backgroundColor: 'transparent',
   },
   textArea: {
-    backgroundColor: '#F6F6F6',
     borderRadius: 8,
     minHeight: 60,
     padding: 10,
     fontSize: 16,
-    color: '#222',
   },
   selectorBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#F6F6F6',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 12,
@@ -318,7 +305,6 @@ const styles = StyleSheet.create({
   },
   selectorText: {
     fontSize: 16,
-    color: '#333',
   },
   peopleRow: {
     flexDirection: 'row',
@@ -332,7 +318,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F0F0F0',
   },
   peopleCount: {
     marginHorizontal: 18,
@@ -341,19 +326,16 @@ const styles = StyleSheet.create({
   },
   nextBtn: {
     marginTop: 12,
-    backgroundColor: '#7C6AED',
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
   },
   nextBtnText: {
-    color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
   },

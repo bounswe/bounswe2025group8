@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, useColorScheme, View, Text, TouchableOpacity, ActivityIndicator, Image, Alert, SafeAreaView } from 'react-native';
+import { ScrollView, StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Image, Alert, SafeAreaView } from 'react-native';
 import { useTheme } from '@react-navigation/native';
-import { Colors } from '../constants/Colors';
 import RatingPill from '../components/ui/RatingPill';
 import ReviewCard from '../components/ui/ReviewCard';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -10,11 +9,11 @@ import { getUserProfile, type UserProfile, getTasks, type Task, getUserReviews, 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RequestCard from '../components/ui/RequestCard';
 import { Ionicons } from '@expo/vector-icons';
+import type { ThemeTokens } from '../constants/Colors';
 
 export default function ProfileScreen() {
   const { colors } = useTheme();
-  const colorScheme = useColorScheme();
-  const themeColors = Colors[colorScheme || 'light'];
+  const themeColors = colors as ThemeTokens;
   const params = useLocalSearchParams();
   const router = useRouter();
   const { user } = useAuth();
@@ -348,7 +347,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
           <Image
             source={ profile.photo ? {uri: profile.photo } : require('../assets/images/empty_profile_photo.png')}
-            style={styles.profileAvatar}
+            style={[styles.profileAvatar, { backgroundColor: themeColors.card }]}
           />
           <View style={{ flex: 1, marginLeft: 16, justifyContent: 'center' }}>
             <Text
@@ -366,8 +365,8 @@ export default function ProfileScreen() {
                 rating={profile.rating}
                 reviewCount={reviews.length}
                 backgroundColor={themeColors.pink}
-                textColor="#fff"
-                iconColor="#fff"
+                textColor={themeColors.onAccent}
+                iconColor={themeColors.onAccent}
               />
             </View>
           </View>
@@ -482,7 +481,6 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: '#eee',
   },
   profileName: {
     fontSize: 20,

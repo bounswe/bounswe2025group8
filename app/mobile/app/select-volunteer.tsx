@@ -3,16 +3,14 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, FlatList, 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
-import { Colors } from '../constants/Colors';
-import { useColorScheme } from 'react-native';
 import { getTaskApplicants, Volunteer, batchAssignVolunteers } from '../lib/api';
+import type { ThemeTokens } from '../constants/Colors';
 
 export default function SelectVolunteer() {
     const params = useLocalSearchParams();
     const router = useRouter();
     const { colors } = useTheme();
-    const colorScheme = useColorScheme();
-    const themeColors = Colors[colorScheme || 'light'];
+    const themeColors = colors as ThemeTokens;
 
     const taskIdParam = (params.taskId as string | undefined) ?? (params.id as string | undefined);
     const taskId = taskIdParam ? parseInt(taskIdParam, 10) : null;
@@ -138,7 +136,7 @@ export default function SelectVolunteer() {
         const canSelectMore = selectedApplicants.length < requiredVolunteers;
 
         return (
-            <View style={styles.volunteerRow}>
+            <View style={[styles.volunteerRow, { borderBottomColor: themeColors.border }]}>
                 <TouchableOpacity
                     style={[styles.volunteerInfo, { backgroundColor: themeColors.card }]}
                     activeOpacity={0.8}
@@ -148,13 +146,21 @@ export default function SelectVolunteer() {
                 >
                     <Image
                         source={item.user.photo ? { uri: item.user.photo } : require('../assets/images/avatar.png')}
-                        style={styles.avatar}
+                        style={[styles.avatar, { backgroundColor: themeColors.border }]}
                     />
                     <View style={styles.volunteerTextContainer}>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <Text style={[styles.volunteerName, { color: themeColors.text }]}>{item.user.name} {item.user.surname}</Text>
                             {isAssigned && (
-                                <Text style={[styles.assignedBadge, { backgroundColor: themeColors.primary, color: themeColors.card }]}> Assigned</Text>
+                                <Text
+                                    style={[
+                                        styles.assignedBadge,
+                                        { backgroundColor: themeColors.primary, color: themeColors.onPrimary },
+                                    ]}
+                                >
+                                    {' '}
+                                    Assigned
+                                </Text>
                             )}
                         </View>
                         <Text style={[styles.volunteerUsername, { color: themeColors.textMuted }]}>@{item.user.username}</Text>
@@ -164,10 +170,10 @@ export default function SelectVolunteer() {
                 <TouchableOpacity
                     style={[
                         styles.checkButton,
-                        { 
-                            backgroundColor: isSelected ? themeColors.primary : themeColors.background,
-                            borderColor: themeColors.primary 
-                        }
+                        {
+                            backgroundColor: isSelected ? themeColors.primary : themeColors.card,
+                            borderColor: themeColors.primary,
+                        },
                     ]}
                     onPress={() => toggleSelectApplicant(item)}
                     disabled={!isSelected && !canSelectMore}
@@ -175,7 +181,7 @@ export default function SelectVolunteer() {
                     <Ionicons 
                         name={isSelected ? "checkmark-circle" : "ellipse-outline"} 
                         size={28} 
-                        color={isSelected ? themeColors.background : themeColors.primary} 
+                        color={isSelected ? themeColors.onPrimary : themeColors.primary} 
                     />
                 </TouchableOpacity>
             </View>
@@ -195,8 +201,11 @@ export default function SelectVolunteer() {
         return (
             <View style={[styles.centered, { backgroundColor: themeColors.background }]}>
                 <Text style={{ color: themeColors.error, marginBottom: 10 }}>Error: {error}</Text>
-                <TouchableOpacity onPress={() => router.back()} style={[styles.actionButton, { backgroundColor: themeColors.primary }]}>
-                    <Text style={styles.buttonText}>Go Back</Text>
+                <TouchableOpacity
+                    onPress={() => router.back()}
+                    style={[styles.actionButton, { backgroundColor: themeColors.primary }]}
+                >
+                    <Text style={[styles.buttonText, { color: themeColors.onPrimary }]}>Go Back</Text>
                 </TouchableOpacity>
             </View>
         );
@@ -247,9 +256,17 @@ export default function SelectVolunteer() {
                     disabled={selectedApplicants.length === 0 || isAssigning}
                 >
                     {isAssigning ? (
-                        <ActivityIndicator color={themeColors.card} />
+                        <ActivityIndicator color={themeColors.onPrimary} />
                     ) : (
-                        <Text style={[styles.buttonText, {color: selectedApplicants.length > 0 ? themeColors.card : themeColors.textMuted}]}>
+                        <Text
+                            style={[
+                                styles.buttonText,
+                                {
+                                    color:
+                                        selectedApplicants.length > 0 ? themeColors.onPrimary : themeColors.textMuted,
+                                },
+                            ]}
+                        >
                             Confirm {selectedApplicants.length > 0 ? `${selectedApplicants.length} Assignment(s)` : 'Assignments'}
                         </Text>
                     )}
@@ -317,7 +334,6 @@ const styles = StyleSheet.create({
         height: 50,
         borderRadius: 25,
         marginRight: 12,
-        backgroundColor: '#e0e0e0', // Placeholder color
     },
     volunteerTextContainer: {
         flex: 1, // Allow text to wrap
@@ -349,7 +365,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     buttonText: {
-        color: '#fff',
         fontSize: 17,
         fontWeight: '600',
     },

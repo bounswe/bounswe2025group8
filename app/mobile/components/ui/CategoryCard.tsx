@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet, useColorScheme, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '@react-navigation/native';
-import { Colors } from '../../constants/Colors';
+import type { ThemeTokens } from '../../constants/Colors';
 
 interface CategoryCardProps {
   title: string;
@@ -12,16 +12,19 @@ interface CategoryCardProps {
 
 const CategoryCard: React.FC<CategoryCardProps> = ({ title, imageSource, badgeNumber, onPress }) => {
   const { colors } = useTheme();
-  const colorScheme = useColorScheme();
-  const themeColors = Colors[colorScheme || 'light'];
+  const themeColors = colors as ThemeTokens;
 
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={[styles.cardContainer, { backgroundColor: themeColors.background }]}>
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.8}
+      style={[styles.cardContainer, { backgroundColor: themeColors.card, shadowColor: themeColors.overlay }]}
+    >
       <View style={styles.contentWrapper}>
         <Text style={[styles.cardTitle, { color: colors.text }]}>{title}</Text>
         <Image source={imageSource} style={styles.cardImage} />
-        <View style={[styles.badgeContainer, { backgroundColor: colors.primary }]}>
-          <Text style={styles.badgeText}>{badgeNumber}</Text>
+        <View style={[styles.badgeContainer, { backgroundColor: themeColors.primary }]}>
+          <Text style={[styles.badgeText, { color: themeColors.onPrimary }]}>{badgeNumber}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -66,7 +69,6 @@ const styles = StyleSheet.create({
     minHeight: 28,
   },
   badgeText: {
-    color: '#fff',
     fontWeight: '400',
     fontSize: 14,
     textAlign: 'center',
