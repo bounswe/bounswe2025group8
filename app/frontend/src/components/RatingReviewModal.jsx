@@ -19,7 +19,11 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import StarIcon from "@mui/icons-material/Star";
-import { submitReview, getReviewableUsers } from "../services/reviewService";
+import {
+  submitReview,
+  getReviewableUsersAsync,
+  getAllRevieweesWithStatus,
+} from "../services/reviewService";
 
 /**
  * RatingReviewModal Component
@@ -42,6 +46,7 @@ const RatingReviewModal = ({
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [reviewableUsers, setReviewableUsers] = useState([]);
+  const [allUsersWithStatus, setAllUsersWithStatus] = useState([]);
 
   // Get reviewable users when modal opens
   useEffect(() => {
@@ -54,45 +59,74 @@ const RatingReviewModal = ({
         taskCreator: task.creator,
       });
 
-      const users = getReviewableUsers(task, currentUser);
-      console.log("Reviewable users found:", users);
+      // Fetch all users with their review status
+      const fetchUsersWithStatus = async () => {
+        try {
+          const allUsersWithStatus = await getAllRevieweesWithStatus(
+            task,
+            currentUser
+          );
+          console.log("All users with status:", allUsersWithStatus);
+          setAllUsersWithStatus(allUsersWithStatus);
 
-      // TEMPORARY FIX: If no users found but current user is not task creator and task is completed,
-      // assume they can review the requester
-      if (
-        users.length === 0 &&
-        task.creator &&
-        currentUser.id !== task.creator.id &&
-        task.status === "COMPLETED"
-      ) {
-        console.log(
-          "No reviewable users found via getReviewableUsers, but creating fallback for requester"
-        );
-        const fallbackUsers = [
-          {
-            id: task.creator.id,
-            name: task.creator.name,
-            surname: task.creator.surname,
-            role: "requester",
-          },
-        ];
-        setReviewableUsers(fallbackUsers);
-        setSelectedUser(fallbackUsers[0]);
-        console.log("Using fallback reviewable user:", fallbackUsers[0]);
-      } else {
-        setReviewableUsers(users);
+          // Filter to get only unreviewed users
+          const unreviewedUsers = allUsersWithStatus.filter(
+            (user) => !user.reviewed
+          );
+          console.log("Unreviewed users:", unreviewedUsers);
+          setReviewableUsers(unreviewedUsers);
 
-        // Auto-select if only one user can be reviewed
-        if (users.length === 1) {
-          console.log("Auto-selecting single user:", users[0]);
-          setSelectedUser(users[0]);
-        } else if (users.length === 0) {
-          console.error("No reviewable users found!");
-          setError("No users available to review for this task.");
+          // Auto-select if only one user can be reviewed
+          if (unreviewedUsers.length === 1) {
+            console.log(
+              "Auto-selecting single unreviewed user:",
+              unreviewedUsers[0]
+            );
+            setSelectedUser(unreviewedUsers[0]);
+          } else if (
+            unreviewedUsers.length === 0 &&
+            allUsersWithStatus.length > 0
+          ) {
+            console.log("All users have been reviewed");
+            setError("All users for this task have already been reviewed.");
+          } else if (allUsersWithStatus.length === 0) {
+            console.log("No users available to review");
+            setError("No users available to review for this task.");
+          }
+        } catch (err) {
+          console.error("Error fetching users with status:", err);
+
+          // Fallback to old method
+          console.log("Falling back to old getReviewableUsersAsync method");
+          try {
+            const users = await getReviewableUsersAsync(task, currentUser);
+            console.log("Fallback reviewable users found:", users);
+
+            setReviewableUsers(users);
+            setAllUsersWithStatus(
+              users.map((user) => ({ ...user, reviewed: false }))
+            );
+
+            // Auto-select if only one user can be reviewed
+            if (users.length === 1) {
+              console.log("Auto-selecting single fallback user:", users[0]);
+              setSelectedUser(users[0]);
+            } else if (users.length === 0) {
+              console.error("No reviewable users found!");
+              setError("No users available to review for this task.");
+            }
+          } catch (fallbackErr) {
+            console.error("Fallback method also failed:", fallbackErr);
+            setError("Could not load reviewable users. Please try again.");
+          }
         }
-      }
+      };
+
+      fetchUsersWithStatus();
     }
-  }, [open, task, currentUser]); // Reset form when modal closes
+  }, [open, task, currentUser]);
+
+  // Reset form when modal closes
   useEffect(() => {
     if (!open) {
       setSelectedUser(null);
@@ -101,6 +135,8 @@ const RatingReviewModal = ({
       setError(null);
       setSuccess(false);
       setLoading(false);
+      setReviewableUsers([]);
+      setAllUsersWithStatus([]);
     }
   }, [open]);
 
@@ -139,15 +175,41 @@ const RatingReviewModal = ({
 
       setSuccess(true);
 
+      // Mark the user as reviewed in our local state
+      setAllUsersWithStatus((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === selectedUser.id ? { ...user, reviewed: true } : user
+        )
+      );
+
+      // Update reviewable users to exclude the newly reviewed user
+      setReviewableUsers((prevUsers) =>
+        prevUsers.filter((user) => user.id !== selectedUser.id)
+      );
+
+      // Clear selected user
+      setSelectedUser(null);
+
       // Call success callback if provided
       if (onSubmitSuccess) {
         onSubmitSuccess(selectedUser, rating, comment);
       }
 
-      // Auto-close modal after success
+      // Don't auto-close modal so user can review more people if available
+      // Just show success message and reset form for next review
       setTimeout(() => {
-        onClose();
-      }, 1500);
+        setSuccess(false);
+        setRating(4.5);
+        setComment("");
+
+        // If no more users to review, close modal
+        const remainingUsers = allUsersWithStatus.filter(
+          (user) => user.id !== selectedUser.id && !user.reviewed
+        );
+        if (remainingUsers.length === 0) {
+          setTimeout(() => onClose(), 500);
+        }
+      }, 2000);
     } catch (err) {
       console.error("Error submitting review:", err);
       console.error("Review submission details:", {
@@ -240,7 +302,7 @@ const RatingReviewModal = ({
         )}
 
         {/* User Selection */}
-        {reviewableUsers.length > 1 && (
+        {allUsersWithStatus.length > 1 && (
           <Box sx={{ mb: 3 }}>
             <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 500 }}>
               Select User to Review
@@ -249,8 +311,8 @@ const RatingReviewModal = ({
               <Select
                 value={selectedUser?.id || ""}
                 onChange={(e) => {
-                  const user = reviewableUsers.find(
-                    (u) => u.id === e.target.value
+                  const user = allUsersWithStatus.find(
+                    (u) => u.id === e.target.value && !u.reviewed
                   );
                   setSelectedUser(user);
                 }}
@@ -266,38 +328,80 @@ const RatingReviewModal = ({
                     Choose a user to review
                   </Typography>
                 </MenuItem>
-                {reviewableUsers.map((user) => (
-                  <MenuItem key={user.id} value={user.id}>
+                {allUsersWithStatus.map((user) => (
+                  <MenuItem
+                    key={user.id}
+                    value={user.reviewed ? "" : user.id}
+                    disabled={user.reviewed}
+                    sx={{
+                      opacity: user.reviewed ? 0.6 : 1,
+                    }}
+                  >
                     <Box
-                      sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1.5,
+                        width: "100%",
+                        justifyContent: "space-between",
+                      }}
                     >
-                      <Avatar
-                        sx={{
-                          width: 32,
-                          height: 32,
-                          bgcolor: "primary.main",
-                          fontSize: "0.8rem",
-                        }}
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
                       >
-                        {getUserInitials(user)}
-                      </Avatar>
-                      <Box>
-                        <Typography variant="body2">
-                          {getUserFullName(user)}
-                        </Typography>
-                        <Chip
-                          label={
-                            user.role === "volunteer"
-                              ? "Volunteer"
-                              : "Requester"
-                          }
-                          size="small"
-                          color={
-                            user.role === "volunteer" ? "success" : "primary"
-                          }
-                          sx={{ height: 20, fontSize: "0.7rem" }}
-                        />
+                        <Avatar
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            bgcolor: user.reviewed
+                              ? "grey.400"
+                              : "primary.main",
+                            fontSize: "0.8rem",
+                          }}
+                        >
+                          {getUserInitials(user)}
+                        </Avatar>
+                        <Box>
+                          <Typography variant="body2">
+                            {getUserFullName(user)}
+                          </Typography>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                            }}
+                          >
+                            <Chip
+                              label={
+                                user.role === "volunteer"
+                                  ? "Volunteer"
+                                  : "Requester"
+                              }
+                              size="small"
+                              color={
+                                user.role === "volunteer"
+                                  ? "success"
+                                  : "primary"
+                              }
+                              sx={{ height: 20, fontSize: "0.7rem" }}
+                            />
+                          </Box>
+                        </Box>
                       </Box>
+                      {user.reviewed && (
+                        <Chip
+                          label="Reviewed"
+                          size="small"
+                          color="default"
+                          variant="outlined"
+                          sx={{
+                            height: 20,
+                            fontSize: "0.7rem",
+                            color: "text.secondary",
+                          }}
+                        />
+                      )}
                     </Box>
                   </MenuItem>
                 ))}

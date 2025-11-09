@@ -95,12 +95,12 @@ export const deleteReview = async (reviewId) => {
 };
 
 /**
- * Check if current user can review participants of a task
+ * Get all potential users that could be reviewed for a task (without filtering by existing reviews)
  * @param {Object} task - Task object
  * @param {Object} currentUser - Current user object
- * @returns {Array} Array of users that can be reviewed
+ * @returns {Array} Array of users that could potentially be reviewed
  */
-export const getReviewableUsers = (task, currentUser) => {
+export const getAllPotentialReviewees = (task, currentUser) => {
   if (!task || !currentUser || task.status !== 'COMPLETED') {
     return [];
   }
@@ -154,16 +154,6 @@ export const getReviewableUsers = (task, currentUser) => {
     isVolunteer = true;
   }
   
-  console.log('getReviewableUsers debug:', {
-    currentUserId: currentUser.id,
-    taskStatus: task.status,
-    isVolunteer,
-    volunteers: task.volunteers,
-    assignees: task.assignees,
-    assignee: task.assignee,
-    creator: task.creator
-  });
-  
   if (isVolunteer && task.creator) {
     reviewableUsers.push({
       id: task.creator.id,
@@ -181,6 +171,116 @@ export const getReviewableUsers = (task, currentUser) => {
   return uniqueUsers;
 };
 
+/**
+ * Check if current user can review participants of a task (synchronous version for quick checks)
+ * @param {Object} task - Task object
+ * @param {Object} currentUser - Current user object
+ * @returns {Array} Array of users that could potentially be reviewed (without filtering by existing reviews)
+ */
+export const getReviewableUsers = (task, currentUser) => {
+  // Return all potential reviewees without checking existing reviews
+  // This is used for quick permission checks in UI
+  return getAllPotentialReviewees(task, currentUser);
+};
+
+/**
+ * Check if current user can review participants of a task (async version with review filtering)
+ * @param {Object} task - Task object
+ * @param {Object} currentUser - Current user object
+ * @param {Array} existingReviews - Optional array of existing reviews to filter out already reviewed users
+ * @returns {Promise<Array>} Array of users that can be reviewed (excludes already reviewed users)
+ */
+export const getReviewableUsersAsync = async (task, currentUser, existingReviews = null) => {
+  // Get all potential reviewees first
+  const allPotentialReviewees = getAllPotentialReviewees(task, currentUser);
+  
+  if (allPotentialReviewees.length === 0) {
+    return [];
+  }
+
+  // If no existing reviews provided, fetch them
+  if (existingReviews === null) {
+    try {
+      const reviewsResponse = await getTaskReviews(task.id);
+      existingReviews = reviewsResponse.data?.reviews || reviewsResponse.reviews || [];
+    } catch (error) {
+      console.warn('Could not fetch existing reviews, proceeding with all potential reviewees:', error);
+      return allPotentialReviewees;
+    }
+  }
+
+  // Filter out users who have already been reviewed by the current user
+  const reviewableUsers = allPotentialReviewees.filter(user => {
+    const hasExistingReview = existingReviews.some(review => {
+      const reviewerId = review.reviewer?.id || review.reviewer_id;
+      const revieweeId = review.reviewee?.id || review.reviewee_id;
+      return reviewerId === currentUser.id && revieweeId === user.id;
+    });
+    
+    console.log(`User ${user.name} ${user.surname} (ID: ${user.id}) - Already reviewed: ${hasExistingReview}`);
+    return !hasExistingReview;
+  });
+
+  console.log('getReviewableUsersAsync debug:', {
+    currentUserId: currentUser.id,
+    taskStatus: task.status,
+    allPotentialReviewees: allPotentialReviewees.length,
+    existingReviews: existingReviews.length,
+    reviewableUsers: reviewableUsers.length,
+    reviewableUsersList: reviewableUsers
+  });
+
+  return reviewableUsers;
+};
+
+/**
+ * Get all reviewees for a task with their review status
+ * @param {Object} task - Task object
+ * @param {Object} currentUser - Current user object
+ * @returns {Promise<Array>} Array of users with their review status (reviewed: true/false)
+ */
+export const getAllRevieweesWithStatus = async (task, currentUser) => {
+  // Get all potential reviewees
+  const allPotentialReviewees = getAllPotentialReviewees(task, currentUser);
+  
+  if (allPotentialReviewees.length === 0) {
+    return [];
+  }
+
+  // Fetch existing reviews to check status
+  let existingReviews = [];
+  try {
+    const reviewsResponse = await getTaskReviews(task.id);
+    existingReviews = reviewsResponse.data?.reviews || reviewsResponse.reviews || [];
+  } catch (error) {
+    console.warn('Could not fetch existing reviews:', error);
+  }
+
+  // Add review status to each user
+  const usersWithStatus = allPotentialReviewees.map(user => {
+    const hasExistingReview = existingReviews.some(review => {
+      const reviewerId = review.reviewer?.id || review.reviewer_id;
+      const revieweeId = review.reviewee?.id || review.reviewee_id;
+      return reviewerId === currentUser.id && revieweeId === user.id;
+    });
+    
+    return {
+      ...user,
+      reviewed: hasExistingReview
+    };
+  });
+
+  console.log('getAllRevieweesWithStatus debug:', {
+    currentUserId: currentUser.id,
+    totalUsers: usersWithStatus.length,
+    reviewedCount: usersWithStatus.filter(u => u.reviewed).length,
+    unreviewed: usersWithStatus.filter(u => !u.reviewed).length,
+    usersWithStatus
+  });
+
+  return usersWithStatus;
+};
+
 export default {
   submitReview,
   getTaskReviews,
@@ -188,4 +288,7 @@ export default {
   updateReview,
   deleteReview,
   getReviewableUsers,
+  getReviewableUsersAsync,
+  getAllPotentialReviewees,
+  getAllRevieweesWithStatus,
 };
