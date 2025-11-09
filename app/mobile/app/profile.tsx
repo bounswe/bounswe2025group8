@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Image, Alert, SafeAreaView } from 'react-native';
-<<<<<<< HEAD
-=======
-import { useColorScheme } from '@/hooks/use-color-scheme';
->>>>>>> 7bdd68a (Add dark mode and high-contrast feature)
 import { useTheme } from '@react-navigation/native';
 import RatingPill from '../components/ui/RatingPill';
 import ReviewCard from '../components/ui/ReviewCard';

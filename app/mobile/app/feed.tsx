@@ -31,6 +31,24 @@ export default function Feed() {
   const [refreshing, setRefreshing] = useState(false);
   const [taskDerivedCategories, setTaskDerivedCategories] = useState<ApiCategory[]>([]);
   const scrollRef = useRef<ScrollView>(null);
+  const themeColors = colors as ThemeTokens;
+
+  const formatUrgency = (level?: number) => {
+    if (level === 3) return 'High';
+    if (level === 2) return 'Medium';
+    if (level === 1) return 'Low';
+    return 'Medium';
+  };
+
+  const getUrgencyColors = (level?: number) => {
+    if (level === 3) {
+      return { background: themeColors.urgencyHighBackground, text: themeColors.urgencyHighText };
+    }
+    if (level === 1) {
+      return { background: themeColors.urgencyLowBackground, text: themeColors.urgencyLowText };
+    }
+    return { background: themeColors.urgencyMediumBackground, text: themeColors.urgencyMediumText };
+  };
 
   // Filter out completed and cancelled tasks
   const filterActiveTasks = (tasksList: Task[]): Task[] => {
@@ -341,21 +359,3 @@ const styles = StyleSheet.create({
   urgencyText: { fontSize: 12, fontWeight: 'bold' },
   requestCategoryRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
 });
-  const themeColors = colors as ThemeTokens;
-
-  const formatUrgency = (level?: number) => {
-    if (level === 3) return 'High';
-    if (level === 2) return 'Medium';
-    if (level === 1) return 'Low';
-    return 'Medium';
-  };
-
-  const getUrgencyColors = (level?: number) => {
-    if (level === 3) {
-      return { background: themeColors.urgencyHighBackground, text: themeColors.urgencyHighText };
-    }
-    if (level === 1) {
-      return { background: themeColors.urgencyLowBackground, text: themeColors.urgencyLowText };
-    }
-    return { background: themeColors.urgencyMediumBackground, text: themeColors.urgencyMediumText };
-  };

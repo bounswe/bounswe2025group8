@@ -12,26 +12,16 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { getTasks, type Task } from '../lib/api';
 import { useAuth } from '../lib/auth';
-<<<<<<< HEAD
 import type { ThemeTokens } from '../constants/Colors';
 
 export default function Requests() {
   const { colors } = useTheme();
   const themeColors = colors as ThemeTokens;
-=======
-import { Colors } from '../constants/Colors';
-
-export default function Requests() {
-  const { colors } = useTheme();
-  const colorScheme = useColorScheme();
-  const themeColors = Colors[colorScheme || 'light'];
->>>>>>> 7bdd68a (Add dark mode and high-contrast feature)
   const router = useRouter();
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -148,19 +138,8 @@ export default function Requests() {
       </View>
 
       {/* Search bar */}
-<<<<<<< HEAD
       <TouchableOpacity style={[styles.searchWrapper, { borderColor: colors.border }]} onPress={() => router.push('/search')}>
         <Ionicons name="search-outline" size={20} color={colors.icon} />
-=======
-      <TouchableOpacity
-        style={[
-          styles.searchWrapper,
-          { borderColor: themeColors.border, backgroundColor: themeColors.card },
-        ]}
-        onPress={() => router.push('/search')}
-      >
-        <Ionicons name="search-outline" size={20} color={themeColors.textMuted} />
->>>>>>> 7bdd68a (Add dark mode and high-contrast feature)
         <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>What do you need help with</Text>
       </TouchableOpacity>
 
