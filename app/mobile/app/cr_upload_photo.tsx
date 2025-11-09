@@ -99,9 +99,14 @@ export default function CRUploadPhoto() {
         <TouchableOpacity
           style={[styles.nextBtn, { backgroundColor: colors.primary }]}
           onPress={() => {
+            // Serialize photos as JSON string to pass through route params
+            const photosData = JSON.stringify(photos);
             router.push({
               pathname: '/cr_deadline',
-              params,
+              params: {
+                ...params,
+                photos: photosData,
+              },
             });
           }}
         >

@@ -131,6 +131,20 @@ export default function RequestDetails() {
       } else {
         setExistingReviews([]);
       }
+
+      // Fetch photos for the task
+      try {
+        setPhotosLoading(true);
+        const photosResponse = await getTaskPhotos(id);
+        if (photosResponse.status === 'success') {
+          setPhotos(photosResponse.data.photos || []);
+        }
+      } catch (photoError: any) {
+        console.warn('Error fetching photos:', photoError.message);
+        setPhotos([]);
+      } finally {
+        setPhotosLoading(false);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to load request details.');
       setRequest(null);
@@ -563,7 +577,57 @@ export default function RequestDetails() {
         </View>
       </View>
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
-        <Image source={{ uri: imageUrl }} style={styles.heroImage} />
+        {/* Show first photo as hero image if available, otherwise show default */}
+        {photos.length > 0 && !photosLoading ? (
+          <>
+            {(() => {
+              const firstPhoto = photos[0];
+              const photoUrl = firstPhoto.photo_url || firstPhoto.url || firstPhoto.image || '';
+              console.log(photoUrl);
+              const absoluteUrl = photoUrl.startsWith('http') 
+                ? photoUrl 
+                : `${BACKEND_BASE_URL}${photoUrl}`;
+              return (
+                <Image 
+                  source={{ uri: absoluteUrl }} 
+                  style={styles.heroImage}
+                  resizeMode="cover"
+                />
+              );
+            })()}
+            
+            {/* Show remaining photos as thumbnails if there are more */}
+            {photos.length > 1 && (
+              <View style={styles.thumbnailsContainer}>
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.thumbnailsScrollContent}
+                >
+                  {photos.slice(1).map((photo) => {
+                    const photoUrl = photo.photo_url || photo.url || photo.image || '';
+                    const absoluteUrl = photoUrl.startsWith('http') 
+                      ? photoUrl 
+                      : `${BACKEND_BASE_URL}${photoUrl}`;
+                    
+                    return (
+                      <TouchableOpacity key={photo.id} style={styles.smallThumbnail}>
+                        <Image 
+                          source={{ uri: absoluteUrl }} 
+                          style={styles.smallThumbnailImage}
+                          resizeMode="cover"
+                        />
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            )}
+          </>
+        ) : (
+          <Image source={{ uri: imageUrl }} style={styles.heroImage} />
+        )}
+        
         <View style={[styles.section, { backgroundColor: themeColors.card }]}>
           <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Requester</Text>
           <View style={styles.requesterRow}>
@@ -1026,6 +1090,41 @@ const styles = StyleSheet.create({
   buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  photoGallery: {
+    marginTop: 8,
+  },
+  photoThumbnail: {
+    width: 120,
+    height: 120,
+    marginRight: 12,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  thumbnailImage: {
+    width: '100%',
+    height: '100%',
+  },
+  thumbnailsContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(0,0,0,0.03)',
+  },
+  thumbnailsScrollContent: {
+    paddingRight: 16,
+  },
+  smallThumbnail: {
+    width: 80,
+    height: 80,
+    marginRight: 8,
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  smallThumbnailImage: {
+    width: '100%',
+    height: '100%',
   },
   modalOverlay: {
     flex: 1,

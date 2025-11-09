@@ -38,6 +38,8 @@ export default function CRAddress() {
 
   const handleCreateRequest = async () => {
     try {
+      setUploading(true);
+      
       const title = params.title as string;
       const taskDescription = params.description as string;
       const category = params.category as string;
@@ -48,6 +50,7 @@ export default function CRAddress() {
 
       if (!title || !taskDescription || !category) {
         Alert.alert('Error', 'Missing task data. Please go back and try again.');
+        setUploading(false);
         return;
       }
 
@@ -58,7 +61,8 @@ export default function CRAddress() {
 
       const location = formatAddress(address);
 
-      await createTask({
+      // Create the task first
+      const createdTask = await createTask({
         title,
         description: taskDescription,
         category,
@@ -70,12 +74,51 @@ export default function CRAddress() {
         is_recurring: false,
       });
 
+      // If photos were selected, upload them
+      const photosParam = params.photos as string;
+      console.log('Photos param received:', photosParam);
+      
+      if (photosParam && createdTask.id) {
+        try {
+          const photosData = JSON.parse(photosParam);
+          console.log('Parsed photos data:', photosData);
+          
+          if (Array.isArray(photosData) && photosData.length > 0) {
+            console.log(`Uploading ${photosData.length} photos for task ${createdTask.id}`);
+            
+            // Upload each photo
+            const uploadPromises = photosData.map((photo: { uri: string; name: string }) => {
+              console.log(`Preparing to upload photo: ${photo.name} from ${photo.uri}`);
+              return uploadTaskPhoto(createdTask.id, photo.uri, photo.name);
+            });
+            
+            const results = await Promise.all(uploadPromises);
+            console.log('All photos uploaded successfully:', results);
+          } else {
+            console.log('Photos data is not an array or is empty:', photosData);
+          }
+        } catch (photoError) {
+          console.error('Error uploading photos:', photoError);
+          // Don't fail the entire task creation if photos fail
+          Alert.alert(
+            'Warning', 
+            'Task created but some photos could not be uploaded.',
+            [{ text: 'OK', onPress: () => router.replace('/requests') }]
+          );
+          return;
+        }
+      } else {
+        console.log('No photos to upload. photosParam:', photosParam, 'createdTask.id:', createdTask.id);
+      }
+
       Alert.alert('Success', 'Task created successfully!', [
         { text: 'OK', onPress: () => router.replace('/requests') },
       ]);
     } catch (error) {
       console.error('Error creating task:', error);
       Alert.alert('Error', 'Failed to create task. Please try again.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -121,8 +164,16 @@ export default function CRAddress() {
           multiline
         />
 
-        <TouchableOpacity style={[styles.nextBtn, { backgroundColor: colors.primary }]} onPress={handleCreateRequest}>
-          <Text style={styles.nextBtnText}>Create Request</Text>
+        <TouchableOpacity 
+          style={[styles.nextBtn, { backgroundColor: colors.primary, opacity: uploading ? 0.6 : 1 }]} 
+          onPress={handleCreateRequest}
+          disabled={uploading}
+        >
+          {uploading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.nextBtnText}>Create Request</Text>
+          )}
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
