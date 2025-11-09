@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 interface DeadlinePickerProps {
   value: Date | null;
@@ -13,8 +14,14 @@ interface DeadlinePickerProps {
 
 export function DeadlinePicker({ value, onChange, minimumDate = new Date(), label = 'Deadline' }: DeadlinePickerProps) {
   const { colors } = useTheme();
+  const theme = useColorScheme();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+
+  const isDarkLike = theme === 'dark' || theme === 'highContrast';
+  const pickerTextColor = isDarkLike ? '#FFFFFF' : '#000000';
+  const pickerThemeVariant = isDarkLike ? 'dark' : 'light';
+  const pickerTextColorProps = Platform.OS === 'ios' ? { textColor: pickerTextColor } : {};
 
   const formattedDate = value
     ? value.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
@@ -73,6 +80,9 @@ export function DeadlinePicker({ value, onChange, minimumDate = new Date(), labe
           display={Platform.OS === 'ios' ? 'inline' : 'default'}
           onChange={handleDateChange}
           minimumDate={minimumDate}
+          themeVariant={pickerThemeVariant}
+          accentColor={colors.primary}
+          {...pickerTextColorProps}
         />
       )}
       {showTimePicker && (
@@ -81,6 +91,9 @@ export function DeadlinePicker({ value, onChange, minimumDate = new Date(), labe
           mode="time"
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           onChange={handleTimeChange}
+          themeVariant={pickerThemeVariant}
+          accentColor={colors.primary}
+          {...pickerTextColorProps}
         />
       )}
     </View>

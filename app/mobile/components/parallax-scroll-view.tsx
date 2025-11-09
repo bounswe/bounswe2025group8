@@ -10,12 +10,18 @@ import Animated, {
 import { ThemedView } from '@/components/themed-view';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import type { ThemeName } from '@/constants/Colors';
 
 const HEADER_HEIGHT = 250;
 
+type HeaderBackgroundColor = Partial<Record<ThemeName, string>> & {
+  light: string;
+  dark: string;
+};
+
 type Props = PropsWithChildren<{
   headerImage: ReactElement;
-  headerBackgroundColor: { dark: string; light: string };
+  headerBackgroundColor: HeaderBackgroundColor;
 }>;
 
 export default function ParallaxScrollView({
@@ -52,7 +58,7 @@ export default function ParallaxScrollView({
       <Animated.View
         style={[
           styles.header,
-          { backgroundColor: headerBackgroundColor[colorScheme] },
+          { backgroundColor: headerBackgroundColor[colorScheme] ?? headerBackgroundColor.light },
           headerAnimatedStyle,
         ]}>
         {headerImage}

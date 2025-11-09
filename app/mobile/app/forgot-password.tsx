@@ -89,7 +89,7 @@ export default function ForgotPassword() {
             onPress={handleForgotPassword}
             disabled={isLoading}
           >
-            <Text style={styles.buttonText}>
+            <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
               {isLoading ? 'Sending...' : 'Send Reset Link'}
             </Text>
           </TouchableOpacity>
@@ -155,8 +155,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
-}); 
+});

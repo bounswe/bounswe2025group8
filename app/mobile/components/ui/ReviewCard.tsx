@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, useColorScheme } from 'react-native';
-import { Colors } from '../../constants/Colors';
+import { View, Text, StyleSheet, Image } from 'react-native';
+import { useTheme } from '@react-navigation/native';
+import type { ThemeTokens } from '../../constants/Colors';
 
 export interface ReviewCardProps {
   reviewerName: string;
@@ -11,8 +12,8 @@ export interface ReviewCardProps {
 }
 
 const ReviewCard: React.FC<ReviewCardProps> = ({ reviewerName, comment, rating, timestamp, avatarUrl }) => {
-  const colorScheme = useColorScheme();
-  const themeColors = Colors[colorScheme || 'light'];
+  const { colors } = useTheme();
+  const themeColors = colors as ThemeTokens;
 
   return (
     <View style={[styles.card, { backgroundColor: themeColors.card }]}>

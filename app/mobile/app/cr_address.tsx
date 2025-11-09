@@ -146,9 +146,9 @@ export default function CRAddress() {
         </View>
         <Text style={[styles.pageSubtitle, { color: `${colors.text}99` }]}>Setup Address</Text>
         <View style={styles.tabBar}>
-          <View style={styles.inactiveTab} />
-          <View style={styles.inactiveTab} />
-          <View style={styles.inactiveTab} />
+          <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
+          <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
+          <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
           <View style={[styles.activeTab, { backgroundColor: colors.primary }]} />
         </View>
 
@@ -170,11 +170,55 @@ export default function CRAddress() {
           disabled={uploading}
         >
           {uploading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={colors.onPrimary} />
           ) : (
-            <Text style={styles.nextBtnText}>Create Request</Text>
+            <Text style={[styles.nextBtnText, { color: colors.onPrimary }]}>Create Request</Text>
           )}
         </TouchableOpacity>
+
+        <Modal animationType="slide" transparent visible={modal.visible} onRequestClose={closeModal}>
+          <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
+            <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+              <View style={styles.modalHeader}>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>Select</Text>
+                <TouchableOpacity onPress={closeModal}>
+                  <Ionicons name="close" size={24} color={colors.primary} />
+                </TouchableOpacity>
+              </View>
+              {modal.options.map((option) => {
+                const isSelected = modal.selected === option;
+                return (
+                  <TouchableOpacity
+                    key={option}
+                    style={[
+                      styles.modalOption,
+                      { borderBottomColor: colors.border },
+                      isSelected && {
+                        backgroundColor: colors.card,
+                        borderWidth: StyleSheet.hairlineWidth,
+                        borderColor: colors.primary,
+                      },
+                    ]}
+                    onPress={() => {
+                      modal.onSelect(option);
+                      closeModal();
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.modalOptionText,
+                        { color: colors.text },
+                        isSelected && { color: colors.primary, fontWeight: 'bold' },
+                      ]}
+                    >
+                      {option}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
     </SafeAreaView>
   );
@@ -238,33 +282,77 @@ const styles = StyleSheet.create({
   inactiveTab: {
     flex: 1,
     height: 3,
-    backgroundColor: '#E5E5E5',
     borderRadius: 2,
     marginRight: 2,
   },
   label: {
     fontWeight: 'bold',
-    marginTop: 18,
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  pickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginBottom: 8,
+  },
+  pickerButtonText: {
+    fontSize: 16,
+  },
+  input: {
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
     marginBottom: 8,
     fontSize: 16,
   },
   textArea: {
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    minHeight: 100,
-    textAlignVertical: 'top',
+    borderRadius: 8,
+    minHeight: 60,
+    padding: 10,
+    fontSize: 16,
   },
   nextBtn: {
-    backgroundColor: '#7C6AED',
+    marginTop: 24,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
     marginTop: 8,
   },
   nextBtnText: {
-    color: '#fff',
     fontWeight: 'bold',
+    fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '80%',
+    borderRadius: 12,
+    paddingVertical: 16,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  modalOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  modalOptionText: {
     fontSize: 16,
   },
 });
