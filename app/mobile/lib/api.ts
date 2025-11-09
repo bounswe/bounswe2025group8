@@ -233,6 +233,25 @@ export interface UpdateVolunteerStatusResponse {
   data: Volunteer; 
 }
 
+export interface UpdateTaskPayload {
+  title?: string;
+  description?: string;
+  category?: string;
+  location?: string;
+  deadline?: string;            // ISO string
+  requirements?: string;
+  urgency_level?: number;
+  volunteer_number?: number;
+  is_recurring?: boolean;
+}
+
+export interface UpdateTaskResponse {
+  status: 'success' | 'error';
+  message: string;
+  data: Task;
+}
+
+
 // Log the API configuration on module load
 console.log('=== API Configuration ===');
 console.log('Platform:', Platform.OS);
@@ -525,6 +544,23 @@ export const forgotPassword = async (email: string): Promise<ForgotPasswordRespo
         status: error.response?.status,
         headers: error.response?.headers
       });
+    }
+    throw error;
+  }
+};
+
+
+export const updateTask = async (taskId: number, payload: UpdateTaskPayload): Promise<Task> => {
+  try {
+    const response = await api.patch<UpdateTaskResponse>(`/tasks/${taskId}/`, payload);
+    if (response.data.status !== 'success') {
+      throw new Error(response.data.message || 'Failed to update task.');
+    }
+    return response.data.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const serverMsg = error.response?.data?.message ?? error.response?.data?.detail;
+      throw new Error(serverMsg || 'Failed to update task.');
     }
     throw error;
   }

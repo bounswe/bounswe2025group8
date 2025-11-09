@@ -1,36 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Platform, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { DeadlinePicker } from '../components/forms/DeadlinePicker';
 
 export default function CRDeadline() {
   const { colors } = useTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
   const [date, setDate] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showTimePicker, setShowTimePicker] = useState(false);
-
-  const onChangeDate = (_event: any, selectedDate?: Date) => {
-    setShowDatePicker(Platform.OS === 'ios');
-    if (selectedDate) setDate(selectedDate);
-  };
-
-  const onChangeTime = (_event: any, selectedTime?: Date) => {
-    setShowTimePicker(Platform.OS === 'ios');
-    if (selectedTime) {
-      const newDate = new Date(date);
-      newDate.setHours(selectedTime.getHours());
-      newDate.setMinutes(selectedTime.getMinutes());
-      setDate(newDate);
-    }
-  };
-
-  const formattedDate = date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-  const formattedTime = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: true });
-
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
@@ -61,23 +40,7 @@ export default function CRDeadline() {
           <View style={styles.inactiveTab} />
         </View>
 
-        <Text style={[styles.label, { color: colors.text }]}>Select date</Text>
-        <TouchableOpacity style={[styles.dateBox, { backgroundColor: colors.card }]} onPress={() => setShowDatePicker(true)}>
-          <Text style={[styles.dateText, { color: colors.text }]}>{formattedDate}</Text>
-          <Ionicons name="calendar-outline" size={20} color={colors.primary} />
-        </TouchableOpacity>
-        {showDatePicker && (
-          <DateTimePicker value={date} mode="date" display={Platform.OS === 'ios' ? 'inline' : 'default'} onChange={onChangeDate} minimumDate={new Date()} />
-        )}
-
-        <Text style={[styles.label, { color: colors.text }]}>Select time</Text>
-        <TouchableOpacity style={[styles.timeBox, { borderColor: colors.primary }]} onPress={() => setShowTimePicker(true)}>
-          <Text style={[styles.timeText, { color: colors.text }]}>{formattedTime}</Text>
-          <Ionicons name="time-outline" size={20} color={colors.primary} />
-        </TouchableOpacity>
-        {showTimePicker && (
-          <DateTimePicker value={date} mode="time" display={Platform.OS === 'ios' ? 'spinner' : 'default'} onChange={onChangeTime} />
-        )}
+        <DeadlinePicker value={date} onChange={setDate} />
 
         <TouchableOpacity
           style={[styles.nextBtn, { backgroundColor: colors.primary }]}
@@ -156,40 +119,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#E5E5E5',
     borderRadius: 2,
     marginRight: 2,
-  },
-  label: {
-    fontWeight: 'bold',
-    marginTop: 18,
-    marginBottom: 8,
-    fontSize: 16,
-  },
-  dateBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 8,
-    marginTop: 2,
-  },
-  dateText: {
-    fontSize: 18,
-    fontWeight: '500',
-  },
-  timeBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderRadius: 24,
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    marginTop: 8,
-    marginBottom: 24,
-    width: 180,
-  },
-  timeText: {
-    fontSize: 16,
-    marginRight: 8,
   },
   nextBtn: {
     backgroundColor: '#7C6AED',

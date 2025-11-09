@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Alert,
   SafeAreaView,
+  Switch,
   Dimensions,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -18,8 +19,12 @@ import { useTheme, useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../constants/Colors';
 import { useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { getTaskDetails, getTaskApplicants, completeTask, cancelTask, createReview, getTaskReviews, getTaskPhotos, BACKEND_BASE_URL, type Task, type Volunteer, type Review, type Photo } from '../lib/api';
+import { getTaskDetails, getTaskApplicants, completeTask, cancelTask, createReview, getTaskReviews, getTaskPhotos, BACKEND_BASE_URL, updateTask, type Task, type Volunteer, type Review, type Photo, type UpdateTaskPayload } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import { CategoryPicker } from '../components/forms/CategoryPicker';
+import { DeadlinePicker } from '../components/forms/DeadlinePicker';
+import { AddressFields } from '../components/forms/AddressFields';
+import { AddressFieldsValue, emptyAddress, parseAddressString, formatAddress } from '../utils/address';
 
 export default function RequestDetails() {
   const params = useLocalSearchParams();
@@ -47,6 +52,10 @@ export default function RequestDetails() {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [existingReviews, setExistingReviews] = useState<Review[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [editForm, setEditForm] = useState<UpdateTaskPayload>({});
+  const [updatingRequest, setUpdatingRequest] = useState(false);
+  const [deadlineDate, setDeadlineDate] = useState<Date | null>(null);
+  const [addressFields, setAddressFields] = useState<AddressFieldsValue>(emptyAddress);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [photosLoading, setPhotosLoading] = useState(false);
 
@@ -201,6 +210,42 @@ export default function RequestDetails() {
     );
   };
 
+  const openEditModal = () => {
+    if (!request) {
+      return;
+    }
+    const initialDeadline = request.deadline ? new Date(request.deadline) : null;
+    setEditForm({
+      title: request.title,
+      description: request.description,
+      category: request.category,
+      location: request.location,
+      deadline: request.deadline,
+      requirements: request.requirements,
+      urgency_level: request.urgency_level,
+      volunteer_number: request.volunteer_number,
+      is_recurring: request.is_recurring,
+    });
+    setDeadlineDate(initialDeadline);
+    setIsEdit(true);
+    setModalVisible(true);
+    setRating(0);
+    setReviewText('');
+    setAddressFields(parseAddressString(request.location));
+  };
+
+  const handleEditInputChange = <K extends keyof UpdateTaskPayload>(field: K, value: UpdateTaskPayload[K]) => {
+    setEditForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleDeadlineChange = (date: Date) => {
+    setDeadlineDate(date);
+    handleEditInputChange('deadline', date.toISOString());
+  };
+
   const handleSubmitReview = async () => {
     if (!rating || rating < 1 || rating > 5) {
       Alert.alert('Rating Required', 'Please select a rating from 1 to 5 stars.');
@@ -277,11 +322,75 @@ export default function RequestDetails() {
     }
   };
 
+  const handleUpdateRequest = async () => {
+    if (!id || !request) {
+      return;
+    }
+
+    if (!editForm.title?.trim()) {
+      Alert.alert('Validation Error', 'Title is required.');
+      return;
+    }
+
+    if (editForm.volunteer_number !== undefined && editForm.volunteer_number <= 0) {
+      Alert.alert('Validation Error', 'Volunteer number must be greater than zero.');
+      return;
+    }
+
+    if (!editForm.category) {
+      Alert.alert('Validation Error', 'Please select a category.');
+      return;
+    }
+
+    if (!addressFields.city.trim() || !addressFields.district.trim()) {
+      Alert.alert('Validation Error', 'Please select a city and district for the address.');
+      return;
+    }
+
+    setUpdatingRequest(true);
+    try {
+      const composedLocation = formatAddress(addressFields);
+      const payload: UpdateTaskPayload = {
+        ...editForm,
+        title: editForm.title?.trim(),
+        description: editForm.description?.trim(),
+        location: composedLocation || editForm.location?.trim(),
+        requirements: editForm.requirements?.trim(),
+        deadline: deadlineDate ? deadlineDate.toISOString() : editForm.deadline,
+      };
+
+      const updatedTask = await updateTask(id, payload);
+      setRequest(updatedTask);
+      Alert.alert('Success', 'Request updated successfully.');
+      setModalVisible(false);
+      setIsEdit(false);
+      setEditForm({});
+      await fetchTaskData();
+    } catch (err: any) {
+      const errorMessage = err?.message || 'Failed to update request. Please try again.';
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setUpdatingRequest(false);
+    }
+  };
+
   const handleCloseReviewModal = () => {
     setModalVisible(false);
     setRating(0);
     setReviewText('');
     setCurrentVolunteerIndex(0);
+  };
+
+  const handleCloseModal = () => {
+    if (isEdit) {
+      setModalVisible(false);
+      setIsEdit(false);
+      setEditForm({});
+      setDeadlineDate(null);
+      setAddressFields(emptyAddress);
+      return;
+    }
+    handleCloseReviewModal();
   };
 
   const handleMarkAsComplete = () => {
@@ -594,10 +703,7 @@ export default function RequestDetails() {
           <View style={styles.buttonRow}>
             <TouchableOpacity
               style={[styles.halfButton, { borderColor: '#FF9800' }]}
-              onPress={() => {
-                setIsEdit(true);
-                setModalVisible(true);
-              }}
+              onPress={openEditModal}
             >
               <View style={styles.buttonContent}>
                 <Ionicons name="pencil" size={18} color="#FF9800" style={{ marginRight: 6 }} />
@@ -679,73 +785,161 @@ export default function RequestDetails() {
                   : 'Rate Request'
               }
             </Text>
-            {!isEdit && assignedVolunteers.length > 1 && (
-              <Text style={[styles.modalSubtitle, { color: themeColors.textMuted }]}>
-                {currentVolunteerIndex + 1} of {assignedVolunteers.length}
-              </Text>
-            )}
-            {!isEdit && (
-              <TextInput
-                style={[
-                  styles.modalInput,
-                  { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background },
-                ]}
-                placeholder="Leave your review..."
-                placeholderTextColor={themeColors.textMuted}
-                multiline
-                value={reviewText}
-                onChangeText={setReviewText}
-              />
-            )}
-            {isEdit && (
-              <TextInput
-                style={[
-                  styles.modalInput,
-                  { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background },
-                ]}
-                placeholder="Update request details..."
-                placeholderTextColor={themeColors.textMuted}
-                multiline
-                value={reviewText}
-                onChangeText={setReviewText}
-              />
-            )}
-            {!isEdit && (
-              <View style={styles.starRow}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <TouchableOpacity key={star} onPress={() => handleStarPress(star)}>
-                    <Ionicons
-                      name={star <= rating ? 'star' : 'star-outline'}
-                      size={28}
-                      color={star <= rating ? themeColors.pink : themeColors.border}
-                    />
-                  </TouchableOpacity>
-                ))}
-              </View>
+            {isEdit ? (
+              <ScrollView style={styles.editFormContainer} showsVerticalScrollIndicator={false}>
+                <View style={styles.editField}>
+                  <Text style={[styles.editLabel, { color: themeColors.textMuted }]}>Title</Text>
+                  <TextInput
+                    style={[
+                      styles.editInput,
+                      { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background },
+                    ]}
+                    placeholder="Update title"
+                    placeholderTextColor={themeColors.textMuted}
+                    value={editForm.title ?? ''}
+                    onChangeText={(text) => handleEditInputChange('title', text)}
+                  />
+                </View>
+                <View style={styles.editField}>
+                  <Text style={[styles.editLabel, { color: themeColors.textMuted }]}>Description</Text>
+                  <TextInput
+                    style={[
+                      styles.editInput,
+                      { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background, minHeight: 80, textAlignVertical: 'top' },
+                    ]}
+                    placeholder="Update description"
+                    placeholderTextColor={themeColors.textMuted}
+                    multiline
+                    value={editForm.description ?? ''}
+                    onChangeText={(text) => handleEditInputChange('description', text)}
+                  />
+                </View>
+                <CategoryPicker value={editForm.category} onChange={(val) => handleEditInputChange('category', val)} />
+                <DeadlinePicker value={deadlineDate} onChange={handleDeadlineChange} />
+                <AddressFields value={addressFields} onChange={setAddressFields} />
+                <View style={styles.editField}>
+                  <Text style={[styles.editLabel, { color: themeColors.textMuted }]}>Address Description</Text>
+                  <TextInput
+                    style={[
+                      styles.editInput,
+                      { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background, minHeight: 80, textAlignVertical: 'top' },
+                    ]}
+                    placeholder="Additional address details"
+                    placeholderTextColor={themeColors.textMuted}
+                    multiline
+                    value={editForm.requirements ?? ''}
+                    onChangeText={(text) => handleEditInputChange('requirements', text)}
+                  />
+                </View>
+                <View style={styles.editField}>
+                  <Text style={[styles.editLabel, { color: themeColors.textMuted }]}>Urgency Level</Text>
+                  <TextInput
+                    style={[
+                      styles.editInput,
+                      { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background },
+                    ]}
+                    keyboardType="numeric"
+                    placeholder="Enter urgency (1-3)"
+                    placeholderTextColor={themeColors.textMuted}
+                    value={editForm.urgency_level !== undefined ? String(editForm.urgency_level) : ''}
+                    onChangeText={(text) => {
+                      const cleaned = text.trim();
+                      if (!cleaned) {
+                        handleEditInputChange('urgency_level', undefined);
+                        return;
+                      }
+                      const parsed = Number(cleaned);
+                      handleEditInputChange('urgency_level', Number.isNaN(parsed) ? undefined : parsed);
+                    }}
+                  />
+                </View>
+                <View style={styles.editField}>
+                  <Text style={[styles.editLabel, { color: themeColors.textMuted }]}>Volunteer Number</Text>
+                  <TextInput
+                    style={[
+                      styles.editInput,
+                      { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background },
+                    ]}
+                    keyboardType="numeric"
+                    placeholder="Required volunteers"
+                    placeholderTextColor={themeColors.textMuted}
+                    value={editForm.volunteer_number !== undefined ? String(editForm.volunteer_number) : ''}
+                    onChangeText={(text) => {
+                      const cleaned = text.trim();
+                      if (!cleaned) {
+                        handleEditInputChange('volunteer_number', undefined);
+                        return;
+                      }
+                      const parsed = Number(cleaned);
+                      handleEditInputChange('volunteer_number', Number.isNaN(parsed) ? undefined : parsed);
+                    }}
+                  />
+                </View>
+                <View style={[styles.editField, styles.editSwitchRow]}>
+                  <Text style={[styles.editLabel, { color: themeColors.text }]}>Recurring Task</Text>
+                  <Switch
+                    value={Boolean(editForm.is_recurring)}
+                    onValueChange={(value) => handleEditInputChange('is_recurring', value)}
+                    trackColor={{ false: themeColors.border, true: themeColors.primary }}
+                    thumbColor={themeColors.card}
+                  />
+                </View>
+              </ScrollView>
+            ) : (
+              <>
+                {assignedVolunteers.length > 1 && (
+                  <Text style={[styles.modalSubtitle, { color: themeColors.textMuted }]}>
+                    {currentVolunteerIndex + 1} of {assignedVolunteers.length}
+                  </Text>
+                )}
+                <TextInput
+                  style={[
+                    styles.modalInput,
+                    { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background },
+                  ]}
+                  placeholder="Leave your review..."
+                  placeholderTextColor={themeColors.textMuted}
+                  multiline
+                  value={reviewText}
+                  onChangeText={setReviewText}
+                />
+                <View style={styles.starRow}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <TouchableOpacity key={star} onPress={() => handleStarPress(star)}>
+                      <Ionicons
+                        name={star <= rating ? 'star' : 'star-outline'}
+                        size={28}
+                        color={star <= rating ? themeColors.pink : themeColors.border}
+                      />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </>
             )}
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}
-                onPress={isEdit ? () => setModalVisible(false) : handleCloseReviewModal}
-                disabled={submittingReview}
+                onPress={handleCloseModal}
+                disabled={isEdit ? updatingRequest : submittingReview}
               >
                 <Text style={{ color: themeColors.text }}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: isEdit ? themeColors.primary : themeColors.pink }]}
-                onPress={isEdit ? () => {
-                  // Handle edit request - placeholder for now
-                  Alert.alert('Success', 'Request updated!');
-                  setModalVisible(false);
-                  setReviewText('');
-                } : handleSubmitReview}
-                disabled={submittingReview}
+                onPress={isEdit ? handleUpdateRequest : handleSubmitReview}
+                disabled={isEdit ? updatingRequest : submittingReview}
               >
-                {submittingReview ? (
+                {isEdit ? (
+                  updatingRequest ? (
+                    <ActivityIndicator size="small" color={themeColors.card} />
+                  ) : (
+                    <Text style={{ color: themeColors.card }}>Save</Text>
+                  )
+                ) : submittingReview ? (
                   <ActivityIndicator size="small" color={themeColors.card} />
                 ) : (
                   <Text style={{ color: themeColors.card }}>
-                    {isEdit ? 'Save' : currentVolunteerIndex < assignedVolunteers.length - 1 ? 'Next' : 'Submit'}
+                    {currentVolunteerIndex < assignedVolunteers.length - 1 ? 'Next' : 'Submit'}
                   </Text>
                 )}
               </TouchableOpacity>
@@ -962,6 +1156,29 @@ const styles = StyleSheet.create({
     minHeight: 100,
     textAlignVertical: 'top',
     marginBottom: 16,
+  },
+  editFormContainer: {
+    maxHeight: 420,
+  },
+  editField: {
+    marginBottom: 12,
+  },
+  editLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+    marginBottom: 6,
+  },
+  editInput: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  editSwitchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
   },
   starRow: {
     flexDirection: 'row',
