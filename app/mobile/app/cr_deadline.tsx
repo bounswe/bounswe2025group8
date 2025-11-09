@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView, Image, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
-import { DeadlinePicker } from '../components/forms/DeadlinePicker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAppTheme } from '@/theme/ThemeProvider';
 
 export default function CRDeadline() {
@@ -66,7 +66,10 @@ export default function CRDeadline() {
         </View>
 
         <Text style={[styles.label, { color: colors.text }]}>Select date</Text>
-        <TouchableOpacity style={[styles.dateBox, { backgroundColor: colors.card }]} onPress={() => setShowDatePicker(true)}>
+        <TouchableOpacity
+          style={[styles.dateBox, { backgroundColor: colors.card, borderColor: colors.border }]}
+          onPress={() => setShowDatePicker(true)}
+        >
           <Text style={[styles.dateText, { color: colors.text }]}>{formattedDate}</Text>
           <Ionicons name="calendar-outline" size={20} color={colors.primary} />
         </TouchableOpacity>
@@ -83,10 +86,7 @@ export default function CRDeadline() {
         )}
 
         <Text style={[styles.label, { color: colors.text }]}>Select time</Text>
-        <TouchableOpacity
-          style={[styles.timeBox, { borderColor: colors.primary, backgroundColor: colors.card }]}
-          onPress={() => setShowTimePicker(true)}
-        >
+        <TouchableOpacity style={[styles.timeBox, { backgroundColor: colors.card, borderColor: colors.primary }]} onPress={() => setShowTimePicker(true)}>
           <Text style={[styles.timeText, { color: colors.text }]}>{formattedTime}</Text>
           <Ionicons name="time-outline" size={20} color={colors.primary} />
         </TouchableOpacity>
@@ -160,6 +160,39 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 8,
     marginTop: 2,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 8,
+    marginTop: 16,
+  },
+  dateBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderRadius: 12,
+  },
+  dateText: {
+    fontSize: 16,
+    flexShrink: 1,
+  },
+  timeBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderRadius: 12,
+    marginBottom: 24,
+  },
+  timeText: {
+    fontSize: 16,
+    flexShrink: 1,
   },
   tabBar: {
     flexDirection: 'row',
