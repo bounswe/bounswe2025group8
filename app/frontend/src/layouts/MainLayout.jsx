@@ -19,9 +19,10 @@ const MainLayout = () => {
   }, [dispatch]);
 
   const handleSearch = (query) => {
-    console.log("Search query:", query);
-    if (query.trim()) {
-      navigate(`/search?q=${encodeURIComponent(query)}`);
+    const trimmedQuery = query.trim();
+    console.log("Search query:", trimmedQuery);
+    if (trimmedQuery) {
+      navigate(`/search?q=${encodeURIComponent(trimmedQuery)}`);
     }
   };
 
