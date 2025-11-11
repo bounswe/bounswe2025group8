@@ -14,19 +14,22 @@ import {
 } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { getTasks, type Task } from '../lib/api';
 import { useAuth } from '../lib/auth';
-import type { ThemeTokens } from '../constants/Colors';
+import { useAppTheme } from '../theme/ThemeProvider';
 
 export default function Requests() {
   const { colors } = useTheme();
-  const themeColors = colors as ThemeTokens;
+  const { tokens: themeColors } = useAppTheme();
   const router = useRouter();
+  const params = useLocalSearchParams();
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  
+  const locationFilter = params.location as string | undefined;
 
   // Filter out completed and cancelled tasks
   const filterActiveTasks = (tasksList: Task[]): Task[] => {
@@ -41,7 +44,14 @@ export default function Requests() {
       const response = await getTasks();
       const fetchedTasks = response.results || [];
       const activeTasks = filterActiveTasks(fetchedTasks);
-      setTasks(activeTasks);
+      
+      // Filter by location if location parameter is provided
+      let filteredTasks = activeTasks;
+      if (locationFilter) {
+        filteredTasks = activeTasks.filter(task => task.location === locationFilter);
+      }
+      
+      setTasks(filteredTasks);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       Alert.alert('Error', 'Failed to load tasks. Please try again.');
@@ -53,7 +63,7 @@ export default function Requests() {
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [locationFilter]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -139,13 +149,25 @@ export default function Requests() {
 
       {/* Search bar */}
       <TouchableOpacity style={[styles.searchWrapper, { borderColor: colors.border }]} onPress={() => router.push('/search')}>
-        <Ionicons name="search-outline" size={20} color={colors.icon} />
+        <Ionicons name="search-outline" size={20} color={themeColors.icon} />
         <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>What do you need help with</Text>
       </TouchableOpacity>
 
       {/* Title + Sort/Filter */}
       <View style={styles.titleRow}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>All Requests</Text>
+        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            {locationFilter ? `Requests in ${locationFilter}` : 'All Requests'}
+          </Text>
+          {locationFilter && (
+            <TouchableOpacity
+              onPress={() => router.replace('/requests')}
+              style={{ marginLeft: 8, padding: 4 }}
+            >
+              <Ionicons name="close-circle" size={20} color={colors.text} />
+            </TouchableOpacity>
+          )}
+        </View>
         <View style={styles.controlIcons}>
           <TouchableOpacity style={styles.controlButton}>
             <Ionicons name="swap-vertical-outline" size={20} color={colors.text} />
