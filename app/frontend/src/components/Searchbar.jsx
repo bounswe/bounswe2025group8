@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
+import { useTheme } from "../hooks/useTheme";
 
 /**
  * Searchbar component that matches the provided design
@@ -20,6 +21,7 @@ const Searchbar = ({
 }) => {
   const [query, setQuery] = useState(defaultValue);
   const [focused, setFocused] = useState(false);
+  const { colors } = useTheme();
 
   const handleSubmit = (e) => {
     if (e) e.preventDefault();
@@ -39,19 +41,19 @@ const Searchbar = ({
     <form
       onSubmit={handleSubmit}
       className={`flex items-center w-full max-w-md min-w-72 rounded-full overflow-hidden 
-        bg-blue-50 border border-blue-200 transition-all duration-200 ease-in-out
-        hover:bg-blue-100 hover:border-blue-300 ${
-          focused
-            ? "border-blue-500 shadow-[0_0_0_2px_rgba(59,130,246,0.2)] bg-blue-100"
-            : ""
-        }
-        ${className}`}
+        transition-all duration-200 ease-in-out ${className}`}
+      style={{
+        backgroundColor: colors.background.secondary,
+        border: `1px solid ${
+          focused ? colors.border.focus : colors.border.primary
+        }`,
+        boxShadow: focused ? `0 0 0 2px ${colors.border.focus}40` : "none",
+      }}
     >
       <button
-        className="p-3 text-blue-500 bg-blue-500/20 border-0 ml-0 rounded-l-full 
-          hover:bg-blue-500/30 transition-colors duration-200 focus:outline-none 
-          focus:ring-2 focus:ring-blue-500/50 flex items-center justify-center"
-        aria-label="search"
+        className="p-3 border-0 ml-0 rounded-l-full 
+          transition-colors duration-200 flex items-center justify-center"
+        aria-label="Search"
         onClick={handleSubmit}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
@@ -60,27 +62,40 @@ const Searchbar = ({
           }
         }}
         type="button"
+        style={{
+          color: colors.brand.secondary,
+          backgroundColor: `${colors.brand.secondary}33`,
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.outline = `3px solid ${colors.border.focus}`;
+          e.currentTarget.style.outlineOffset = "2px";
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.outline = "none";
+        }}
       >
         <SearchIcon />
       </button>
 
       <input
-        className="ml-2 flex-1 bg-transparent py-3 px-4 w-full outline-none 
-          text-gray-900 placeholder-gray-500 text-sm"
+        className="ml-2 flex-1 bg-transparent py-3 px-4 w-full outline-none text-sm"
         placeholder={placeholder}
-        aria-label="search"
+        aria-label="Search input"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         autoFocus={autoFocus}
+        style={{
+          color: colors.text.primary,
+        }}
       />
 
       {query && (
         <button
-          className="p-2.5 mr-4 text-gray-600 hover:text-gray-800 transition-colors 
-            duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500/50 rounded-full"
-          aria-label="clear"
+          className="p-2.5 mr-4 transition-colors 
+            duration-200 rounded-full"
+          aria-label="Clear search"
           onClick={handleClear}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
@@ -89,6 +104,16 @@ const Searchbar = ({
             }
           }}
           type="button"
+          style={{
+            color: colors.text.secondary,
+          }}
+          onFocus={(e) => {
+            e.currentTarget.style.outline = `3px solid ${colors.border.focus}`;
+            e.currentTarget.style.outlineOffset = "2px";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.outline = "none";
+          }}
         >
           <ClearIcon fontSize="small" />
         </button>

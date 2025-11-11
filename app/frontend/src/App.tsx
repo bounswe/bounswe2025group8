@@ -5,6 +5,7 @@ import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import Home from "./pages/Home.jsx";
 import Test from "./pages/Test.tsx";
+import Settings from "./pages/Settings";
 import MainLayout from "./layouts/MainLayout.jsx";
 import CreateRequestPage from "./pages/CreateRequestPage.jsx";
 import AllRequests from "./pages/AllRequests.jsx";
@@ -13,32 +14,36 @@ import RequestDetail from "./pages/RequestDetail.jsx";
 import SelectVolunteer from "./pages/SelectVolunteer.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { ThemeProvider } from './contexts/ThemeContext'
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public/auth routes (outside main layout) */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
+    <ThemeProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Public/auth routes (outside main layout) */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-        {/* All other routes use MainLayout which renders an <Outlet /> */}
-        <Route path="/" element={<MainLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/test" element={<Test />} />
-          <Route path="/create-request" element={<CreateRequestPage />} />
-          <Route path="/categories" element={<Categories />} />
-          <Route path="/requests" element={<AllRequests />} />
-          <Route path="/requests/:requestId" element={<RequestDetail />} />
-          <Route path="/requests/:requestId/select-volunteer" element={<SelectVolunteer />} />
+          {/* All other routes use MainLayout which renders an <Outlet /> */}
+          <Route path="/" element={<MainLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/test" element={<Test />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/create-request" element={<CreateRequestPage />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/requests" element={<AllRequests />} />
+            <Route path="/requests/:requestId" element={<RequestDetail />} />
+            <Route path="/requests/:requestId/select-volunteer" element={<SelectVolunteer />} />
 
-          <Route path="/profile/:userId" element={<ProfilePage />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+            <Route path="/profile/:userId" element={<ProfilePage />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
 

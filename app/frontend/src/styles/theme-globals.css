@@ -1,0 +1,131 @@
+/**
+ * Global Theme Styles
+ * 
+ * This file contains global CSS that responds to the data-theme attribute
+ * set by the ThemeProvider. It handles element styling that can't easily
+ * be done with inline styles.
+ */
+
+/* Placeholder text styling */
+[data-theme='light'] input::placeholder,
+[data-theme='light'] textarea::placeholder {
+  color: #6B7280; /* gray-500 */
+  opacity: 1;
+}
+
+[data-theme='dark'] input::placeholder,
+[data-theme='dark'] textarea::placeholder {
+  color: #9CA3AF; /* gray-400 */
+  opacity: 1;
+}
+
+[data-theme='high-contrast'] input::placeholder,
+[data-theme='high-contrast'] textarea::placeholder {
+  color: #CCCCCC;
+  opacity: 1;
+}
+
+/* Selection styling */
+[data-theme='light'] ::selection {
+  background-color: #DBEAFE; /* blue-100 */
+  color: #1E40AF; /* blue-800 */
+}
+
+[data-theme='dark'] ::selection {
+  background-color: #1E3A8A; /* blue-900 */
+  color: #DBEAFE; /* blue-100 */
+}
+
+[data-theme='high-contrast'] ::selection {
+  background-color: #FFFF00; /* yellow */
+  color: #000000;
+}
+
+/* Scrollbar styling */
+[data-theme='light'] ::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+[data-theme='light'] ::-webkit-scrollbar-track {
+  background: #F3F4F6;
+}
+
+[data-theme='light'] ::-webkit-scrollbar-thumb {
+  background: #D1D5DB;
+  border-radius: 6px;
+}
+
+[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
+
+[data-theme='dark'] ::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-track {
+  background: #1F2937;
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-thumb {
+  background: #4B5563;
+  border-radius: 6px;
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+  background: #6B7280;
+}
+
+[data-theme='high-contrast'] ::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+[data-theme='high-contrast'] ::-webkit-scrollbar-track {
+  background: #1A1A1A;
+}
+
+[data-theme='high-contrast'] ::-webkit-scrollbar-thumb {
+  background: #666666;
+  border-radius: 6px;
+}
+
+[data-theme='high-contrast'] ::-webkit-scrollbar-thumb:hover {
+  background: #999999;
+}
+
+/* Focus visible for keyboard navigation */
+*:focus-visible {
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode detection for Windows */
+@media (prefers-contrast: high) {
+  [data-theme='light'],
+  [data-theme='dark'] {
+    /* Automatically apply high contrast styles if user has system-level preference */
+    filter: contrast(1.2);
+  }
+}
+
+/* Print styles */
+@media print {
+  [data-theme] {
+    /* Force light theme for printing */
+    background: white !important;
+    color: black !important;
+  }
+}

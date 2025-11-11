@@ -1,10 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, {
+  useState,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
 import { updateFormData } from "../features/request/store/createRequestSlice";
 import * as createRequestService from "../features/request/services/createRequestService";
+import { useTheme } from "../hooks/useTheme";
 
-const SetupAddressStep = () => {
+const SetupAddressStep = (props, ref) => {
+  const { colors } = useTheme();
   const dispatch = useDispatch();
   const { formData } = useSelector((state) => state.createRequest);
 
@@ -24,6 +31,7 @@ const SetupAddressStep = () => {
     watch,
     formState: { errors },
     setValue,
+    trigger,
   } = useForm({
     defaultValues: {
       country: formData.country || "",
@@ -129,10 +137,26 @@ const SetupAddressStep = () => {
     dispatch(updateFormData({ [field]: value }));
   };
 
+  // Expose a validate method to parent using ref (to block submission when invalid)
+  useImperativeHandle(ref, () => ({
+    async validateForm() {
+      // Validate the required address fields
+      const isValid = await trigger(["country", "state", "city"]);
+      return isValid;
+    },
+  }));
+
   return (
     <div className="w-full">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+        <div
+          className="border px-4 py-3 rounded mb-4"
+          style={{
+            backgroundColor: colors.semantic.errorBackground,
+            borderColor: colors.semantic.error,
+            color: colors.semantic.error,
+          }}
+        >
           {error}
         </div>
       )}
@@ -142,7 +166,12 @@ const SetupAddressStep = () => {
         <div className="flex flex-col md:flex-row gap-6 mb-6">
           {/* Country */}
           <div className="flex-1">
-            <h3 className="text-sm font-bold mb-2">Country</h3>
+            <h3
+              className="text-sm font-bold mb-2"
+              style={{ color: colors.text.primary }}
+            >
+              Country
+            </h3>
             <Controller
               name="country"
               control={control}
@@ -152,16 +181,31 @@ const SetupAddressStep = () => {
                   <div className="relative">
                     {loading.countries && (
                       <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                        <div
+                          className="animate-spin rounded-full h-5 w-5 border-b-2"
+                          style={{ borderColor: colors.brand.primary }}
+                        ></div>
                       </div>
                     )}
                     <select
                       {...field}
-                      className={`w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white ${
+                      className={`w-full px-3 py-3 border rounded-md focus:outline-none ${
                         loading.countries ? "pl-12" : ""
-                      } ${
-                        errors.country ? "border-red-500" : "border-gray-300"
                       }`}
+                      style={{
+                        backgroundColor: colors.background.secondary,
+                        color: colors.text.primary,
+                        borderColor: errors.country
+                          ? colors.semantic.error
+                          : colors.border.primary,
+                      }}
+                      onFocus={(e) =>
+                        (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                      }
+                      onBlur={(e) => {
+                        field.onBlur();
+                        e.target.style.boxShadow = "none";
+                      }}
                       disabled={loading.countries}
                       onChange={(e) => {
                         field.onChange(e);
@@ -182,7 +226,10 @@ const SetupAddressStep = () => {
                     </select>
                   </div>
                   {errors.country && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p
+                      className="mt-1 text-sm"
+                      style={{ color: colors.semantic.error }}
+                    >
                       {errors.country.message}
                     </p>
                   )}
@@ -193,7 +240,12 @@ const SetupAddressStep = () => {
 
           {/* State/Province */}
           <div className="flex-1">
-            <h3 className="text-sm font-bold mb-2">State/Province</h3>
+            <h3
+              className="text-sm font-bold mb-2"
+              style={{ color: colors.text.primary }}
+            >
+              State/Province
+            </h3>
             <Controller
               name="state"
               control={control}
@@ -203,14 +255,31 @@ const SetupAddressStep = () => {
                   <div className="relative">
                     {loading.states && (
                       <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                        <div
+                          className="animate-spin rounded-full h-5 w-5 border-b-2"
+                          style={{ borderColor: colors.brand.primary }}
+                        ></div>
                       </div>
                     )}
                     <select
                       {...field}
-                      className={`w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white ${
+                      className={`w-full px-3 py-3 border rounded-md focus:outline-none ${
                         loading.states ? "pl-12" : ""
-                      } ${errors.state ? "border-red-500" : "border-gray-300"}`}
+                      }`}
+                      style={{
+                        backgroundColor: colors.background.secondary,
+                        color: colors.text.primary,
+                        borderColor: errors.state
+                          ? colors.semantic.error
+                          : colors.border.primary,
+                      }}
+                      onFocus={(e) =>
+                        (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                      }
+                      onBlur={(e) => {
+                        field.onBlur();
+                        e.target.style.boxShadow = "none";
+                      }}
                       disabled={!watchCountry || loading.states}
                       onChange={(e) => {
                         field.onChange(e);
@@ -232,7 +301,10 @@ const SetupAddressStep = () => {
                     </select>
                   </div>
                   {errors.state && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p
+                      className="mt-1 text-sm"
+                      style={{ color: colors.semantic.error }}
+                    >
                       {errors.state.message}
                     </p>
                   )}
@@ -244,24 +316,46 @@ const SetupAddressStep = () => {
         {/* City */}
         <div className="flex flex-col md:flex-row gap-6 mb-6">
           <div className="flex-1">
-            <h3 className="text-sm font-bold mb-2">City/District</h3>
+            <h3
+              className="text-sm font-bold mb-2"
+              style={{ color: colors.text.primary }}
+            >
+              City/District
+            </h3>
             <Controller
               name="city"
               control={control}
-              rules={{ required: "City is required" }}
+              rules={{ required: "City/District is required" }}
               render={({ field }) => (
                 <div>
                   <div className="relative">
                     {loading.cities && (
                       <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                        <div
+                          className="animate-spin rounded-full h-5 w-5 border-b-2"
+                          style={{ borderColor: colors.brand.primary }}
+                        ></div>
                       </div>
                     )}
                     <select
                       {...field}
-                      className={`w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white ${
+                      className={`w-full px-3 py-3 border rounded-md focus:outline-none ${
                         loading.cities ? "pl-12" : ""
-                      } ${errors.city ? "border-red-500" : "border-gray-300"}`}
+                      }`}
+                      style={{
+                        backgroundColor: colors.background.secondary,
+                        color: colors.text.primary,
+                        borderColor: errors.city
+                          ? colors.semantic.error
+                          : colors.border.primary,
+                      }}
+                      onFocus={(e) =>
+                        (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                      }
+                      onBlur={(e) => {
+                        field.onBlur();
+                        e.target.style.boxShadow = "none";
+                      }}
                       disabled={!watchState || loading.cities}
                       onChange={(e) => {
                         field.onChange(e);
@@ -277,7 +371,10 @@ const SetupAddressStep = () => {
                     </select>
                   </div>
                   {errors.city && (
-                    <p className="mt-1 text-sm text-red-600">
+                    <p
+                      className="mt-1 text-sm"
+                      style={{ color: colors.semantic.error }}
+                    >
                       {errors.city.message}
                     </p>
                   )}
@@ -290,7 +387,12 @@ const SetupAddressStep = () => {
         <div className="flex flex-col md:flex-row gap-6 mb-6">
           {/* Neighborhood */}
           <div className="flex-1">
-            <h3 className="text-sm font-bold mb-2">Neighborhood</h3>
+            <h3
+              className="text-sm font-bold mb-2"
+              style={{ color: colors.text.primary }}
+            >
+              Neighborhood
+            </h3>
             <Controller
               name="neighborhood"
               control={control}
@@ -298,7 +400,18 @@ const SetupAddressStep = () => {
                 <input
                   {...field}
                   type="text"
-                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-3 border rounded-md focus:outline-none disabled:cursor-not-allowed"
+                  style={{
+                    backgroundColor: !watchCity
+                      ? colors.interactive.disabled
+                      : colors.background.secondary,
+                    color: colors.text.primary,
+                    borderColor: colors.border.primary,
+                  }}
+                  onFocus={(e) =>
+                    (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                  }
+                  onBlur={(e) => (e.target.style.boxShadow = "none")}
                   placeholder="Enter neighborhood"
                   disabled={!watchCity}
                   onChange={(e) => {
@@ -312,7 +425,12 @@ const SetupAddressStep = () => {
 
           {/* Street */}
           <div className="flex-1">
-            <h3 className="text-sm font-bold mb-2">Street</h3>
+            <h3
+              className="text-sm font-bold mb-2"
+              style={{ color: colors.text.primary }}
+            >
+              Street
+            </h3>
             <Controller
               name="street"
               control={control}
@@ -320,7 +438,18 @@ const SetupAddressStep = () => {
                 <input
                   {...field}
                   type="text"
-                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-3 border rounded-md focus:outline-none disabled:cursor-not-allowed"
+                  style={{
+                    backgroundColor: !watchCity
+                      ? colors.interactive.disabled
+                      : colors.background.secondary,
+                    color: colors.text.primary,
+                    borderColor: colors.border.primary,
+                  }}
+                  onFocus={(e) =>
+                    (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                  }
+                  onBlur={(e) => (e.target.style.boxShadow = "none")}
                   placeholder="Enter street"
                   disabled={!watchCity}
                   onChange={(e) => {
@@ -336,7 +465,12 @@ const SetupAddressStep = () => {
         <div className="flex flex-col md:flex-row gap-6 mb-6">
           {/* Building No */}
           <div className="flex-1">
-            <h3 className="text-sm font-bold mb-2">Building Number</h3>
+            <h3
+              className="text-sm font-bold mb-2"
+              style={{ color: colors.text.primary }}
+            >
+              Building Number
+            </h3>
             <Controller
               name="buildingNo"
               control={control}
@@ -344,7 +478,16 @@ const SetupAddressStep = () => {
                 <input
                   {...field}
                   type="text"
-                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-3 border rounded-md focus:outline-none"
+                  style={{
+                    backgroundColor: colors.background.secondary,
+                    color: colors.text.primary,
+                    borderColor: colors.border.primary,
+                  }}
+                  onFocus={(e) =>
+                    (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                  }
+                  onBlur={(e) => (e.target.style.boxShadow = "none")}
                   placeholder="e.g. 14"
                   onChange={(e) => {
                     field.onChange(e);
@@ -357,7 +500,12 @@ const SetupAddressStep = () => {
 
           {/* Door No */}
           <div className="flex-1">
-            <h3 className="text-sm font-bold mb-2">Door / Apartment Number</h3>
+            <h3
+              className="text-sm font-bold mb-2"
+              style={{ color: colors.text.primary }}
+            >
+              Door / Apartment Number
+            </h3>
             <Controller
               name="doorNo"
               control={control}
@@ -365,7 +513,16 @@ const SetupAddressStep = () => {
                 <input
                   {...field}
                   type="text"
-                  className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-3 border rounded-md focus:outline-none"
+                  style={{
+                    backgroundColor: colors.background.secondary,
+                    color: colors.text.primary,
+                    borderColor: colors.border.primary,
+                  }}
+                  onFocus={(e) =>
+                    (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                  }
+                  onBlur={(e) => (e.target.style.boxShadow = "none")}
                   placeholder="e.g. 5"
                   onChange={(e) => {
                     field.onChange(e);
@@ -378,7 +535,12 @@ const SetupAddressStep = () => {
         </div>
         {/* Additional Address Details */}
         <div className="mb-6">
-          <h3 className="text-sm font-bold mb-2">Additional Address Details</h3>
+          <h3
+            className="text-sm font-bold mb-2"
+            style={{ color: colors.text.primary }}
+          >
+            Additional Address Details
+          </h3>
           <Controller
             name="addressDescription"
             control={control}
@@ -386,7 +548,16 @@ const SetupAddressStep = () => {
               <textarea
                 {...field}
                 rows={4}
-                className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
+                className="w-full px-3 py-3 border rounded-md focus:outline-none resize-vertical"
+                style={{
+                  backgroundColor: colors.background.secondary,
+                  color: colors.text.primary,
+                  borderColor: colors.border.primary,
+                }}
+                onFocus={(e) =>
+                  (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                }
+                onBlur={(e) => (e.target.style.boxShadow = "none")}
                 placeholder="Add any additional details for finding the address..."
                 onChange={(e) => {
                   field.onChange(e);
@@ -401,4 +572,4 @@ const SetupAddressStep = () => {
   );
 };
 
-export default SetupAddressStep;
+export default forwardRef(SetupAddressStep);
