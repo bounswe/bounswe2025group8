@@ -32,9 +32,6 @@ const CreateRequestPage = () => {
   const generalInfoRef = useRef();
   const setupAddressRef = useRef();
   const [validationError, setValidationError] = useState(null);
-  const { currentStep, loading, success, error } = useSelector(
-    (state) => state.createRequest
-  );
   const { colors } = useTheme();
 
   useEffect(() => {
