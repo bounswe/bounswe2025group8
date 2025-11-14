@@ -66,7 +66,25 @@ services:
     depends_on:
       - backend
     environment:
-      VITE_API_URL: http://localhost:8000/api
+      VITE_API_URL: https://neighborhelp.webhop.me/api
+    networks:
+      - app-network
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: neighborhood_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+      - frontend
     networks:
       - app-network
 
@@ -77,3 +95,5 @@ networks:
 volumes:
   postgres_data:
   node_modules:
+  caddy_data:
+  caddy_config:

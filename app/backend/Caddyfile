@@ -1,0 +1,9 @@
+neighborhelp.webhop.me {
+    reverse_proxy frontend:5173 {
+        header_up Host neighborhelp.webhop.me
+    }
+    
+    handle /api/* {
+        reverse_proxy backend:8000
+    }
+}
