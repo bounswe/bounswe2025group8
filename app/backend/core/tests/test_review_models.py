@@ -41,6 +41,9 @@ class ReviewModelTests(TestCase):
             status='COMPLETED'
         )
         
+        # Add assignee to many-to-many field as well
+        self.task.assignees.add(self.assignee)
+        
         # Create a review
         self.review = Review.objects.create(
             score=4.5,
@@ -147,6 +150,44 @@ class ReviewModelTests(TestCase):
         ).count()
         self.assertEqual(count, 1)
 
+    def test_multiple_assignees_can_review(self):
+        """Ensure all assigned volunteers can participate in reviews"""
+        second_assignee = RegisteredUser.objects.create_user(
+            email='second_assignee@example.com',
+            name='Second',
+            surname='Volunteer',
+            username='secondvolunteer',
+            phone_number='2222222222',
+            password='password789'
+        )
+        
+        task_with_multiple_assignees = Task.objects.create(
+            title='Group Task',
+            description='Task with multiple volunteers',
+            category='OTHER',
+            location='Test Location',
+            deadline=timezone.now() + datetime.timedelta(days=2),
+            creator=self.creator,
+            assignee=self.assignee,
+            status='COMPLETED',
+            volunteer_number=2
+        )
+        
+        task_with_multiple_assignees.assignees.add(self.assignee, second_assignee)
+        task_with_multiple_assignees.save()
+        
+        second_volunteer_review = Review.submit_review(
+            reviewer=second_assignee,
+            reviewee=self.creator,
+            task=task_with_multiple_assignees,
+            score=5.0,
+            comment='Great to collaborate!'
+        )
+        
+        self.assertEqual(second_volunteer_review.reviewer, second_assignee)
+        self.assertEqual(second_volunteer_review.reviewee, self.creator)
+        self.assertEqual(second_volunteer_review.task, task_with_multiple_assignees)
+
     def test_update_user_rating(self):
         """Test updating user rating based on reviews"""
         # Initially rating should be 0
@@ -241,3 +282,91 @@ class ReviewModelTests(TestCase):
                 score=5.0,
                 comment='I am awesome'
             )
+
+    def test_review_with_multiple_assignees(self):
+        """Test review functionality with multiple assignees"""
+        # Create additional assignees
+        assignee2 = RegisteredUser.objects.create_user(
+            email='assignee2@example.com',
+            name='Assignee2',
+            surname='User',
+            username='assignee2user',
+            phone_number='1111111111',
+            password='password789'
+        )
+        
+        assignee3 = RegisteredUser.objects.create_user(
+            email='assignee3@example.com',
+            name='Assignee3',
+            surname='User',
+            username='assignee3user',
+            phone_number='2222222222',
+            password='password101112'
+        )
+        
+        # Create a task with multiple assignees
+        multi_task = Task.objects.create(
+            title='Multi-assignee Task',
+            description='Task with multiple volunteers',
+            category='HOUSE_CLEANING',
+            location='Test Location',
+            deadline=timezone.now() + datetime.timedelta(days=5),
+            creator=self.creator,
+            assignee=self.assignee,  # Primary assignee
+            status='COMPLETED',
+            volunteer_number=3
+        )
+        
+        # Add multiple assignees
+        multi_task.assignees.add(self.assignee, assignee2, assignee3)
+        
+        # Creator can review all assignees
+        review1 = Review.submit_review(
+            reviewer=self.creator,
+            reviewee=self.assignee,
+            task=multi_task,
+            score=4.0,
+            comment='Good work from assignee 1'
+        )
+        self.assertIsInstance(review1, Review)
+        self.assertEqual(review1.reviewer, self.creator)
+        self.assertEqual(review1.reviewee, self.assignee)
+        
+        review2 = Review.submit_review(
+            reviewer=self.creator,
+            reviewee=assignee2,
+            task=multi_task,
+            score=5.0,
+            comment='Excellent work from assignee 2'
+        )
+        self.assertIsInstance(review2, Review)
+        self.assertEqual(review2.reviewer, self.creator)
+        self.assertEqual(review2.reviewee, assignee2)
+        
+        # Assignees can review the creator
+        review3 = Review.submit_review(
+            reviewer=assignee3,
+            reviewee=self.creator,
+            task=multi_task,
+            score=3.5,
+            comment='Clear instructions from creator'
+        )
+        self.assertIsInstance(review3, Review)
+        self.assertEqual(review3.reviewer, assignee3)
+        self.assertEqual(review3.reviewee, self.creator)
+        
+        # Assignees can review each other
+        review4 = Review.submit_review(
+            reviewer=self.assignee,
+            reviewee=assignee2,
+            task=multi_task,
+            score=4.5,
+            comment='Great teamwork'
+        )
+        self.assertIsInstance(review4, Review)
+        self.assertEqual(review4.reviewer, self.assignee)
+        self.assertEqual(review4.reviewee, assignee2)
+        
+        # Verify all reviews exist for the task
+        task_reviews = Review.objects.filter(task=multi_task)
+        self.assertEqual(task_reviews.count(), 4)

@@ -449,12 +449,77 @@ export const getUserProfile = async (userId: number): Promise<UserProfile> => {
   }
 };
 
+const normalizeTasksResponse = (payload: unknown): TasksResponse => {
+  const empty: TasksResponse = {
+    count: 0,
+    next: null,
+    previous: null,
+    results: [],
+  };
+
+  if (Array.isArray(payload)) {
+    const tasks = payload as Task[];
+    return {
+      count: tasks.length,
+      next: null,
+      previous: null,
+      results: tasks,
+    };
+  }
+
+  if (payload && typeof payload === 'object') {
+    const dataObj = payload as Record<string, unknown>;
+
+    const resultsCandidate = dataObj['results'];
+    if (Array.isArray(resultsCandidate)) {
+      const results = resultsCandidate as Task[];
+      const count = typeof dataObj['count'] === 'number' ? dataObj['count'] as number : results.length;
+      const next = typeof dataObj['next'] === 'string' || dataObj['next'] === null ? dataObj['next'] as string | null : null;
+      const previous = typeof dataObj['previous'] === 'string' || dataObj['previous'] === null ? dataObj['previous'] as string | null : null;
+      return {
+        count,
+        next,
+        previous,
+        results,
+      };
+    }
+
+    const tasksCandidate = dataObj['tasks'];
+    if (Array.isArray(tasksCandidate)) {
+      const tasks = tasksCandidate as Task[];
+      const pagination = dataObj['pagination'];
+      let count = tasks.length;
+      if (pagination && typeof pagination === 'object' && pagination !== null) {
+        const paginationRecord = pagination as Record<string, unknown>;
+        if (typeof paginationRecord['count'] === 'number') {
+          count = paginationRecord['count'] as number;
+        } else if (typeof paginationRecord['total_records'] === 'number') {
+          count = paginationRecord['total_records'] as number;
+        }
+      }
+      return {
+        count,
+        next: null,
+        previous: null,
+        results: tasks,
+      };
+    }
+
+    if ('data' in dataObj) {
+      return normalizeTasksResponse(dataObj['data']);
+    }
+  }
+
+  return empty;
+};
+
 export const getTasks = async (): Promise<TasksResponse> => {
   try {
     console.log('Fetching tasks');
-    const response = await api.get<TasksResponse>('/tasks/');
-    console.log('Tasks response:', response.data);
-    return response.data;
+    const response = await api.get('/tasks/');
+    const normalized = normalizeTasksResponse(response.data);
+    console.log('Tasks response (normalized):', normalized);
+    return normalized;
   } catch (error) {
     if (error instanceof AxiosError) {
       console.error('Get tasks error details:', {

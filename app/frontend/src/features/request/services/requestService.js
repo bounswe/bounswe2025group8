@@ -88,6 +88,8 @@ export const getTaskById = async (taskId) => {
       taskData = response.data;
     }
     
+    console.log('Task data status from API:', taskData?.status);
+    
     // Fetch photos for the task
     try {
       console.log(`Fetching photos for task ${taskId}`);
@@ -230,8 +232,9 @@ export const checkUserVolunteerStatus = async (taskId) => {
   try {
     console.log(`Checking volunteer status for task ${taskId}`);
     
-    // Get all volunteers for the current user
-    const response = await api.get(`/volunteers/`);
+    // Get all volunteers for the current user (including all statuses)
+    // Add volunteer_status=all to get all volunteer records, not just ACCEPTED ones
+    const response = await api.get(`/volunteers/?volunteer_status=all`);
     console.log('All volunteers API response:', response.data);
     
     // Handle different response formats
@@ -251,11 +254,15 @@ export const checkUserVolunteerStatus = async (taskId) => {
     console.log('All volunteers:', volunteers);
 
     // Filter by task ID to find if user has volunteered for this specific task
+    // Exclude WITHDRAWN status as those should not count as current volunteering
     const volunteerRecord = volunteers.find(volunteer => {
       // Check both possible field names for task ID
       const volunteerTaskId = volunteer.task?.id || volunteer.task_id || volunteer.task;
-      console.log('Comparing task IDs:', volunteerTaskId, 'with', taskId);
-      return volunteerTaskId === parseInt(taskId);
+      const isMatchingTask = volunteerTaskId === parseInt(taskId);
+      const isActiveVolunteer = volunteer.status !== 'WITHDRAWN';
+      
+      console.log('Comparing task IDs:', volunteerTaskId, 'with', taskId, 'Status:', volunteer.status, 'Match:', isMatchingTask, 'Active:', isActiveVolunteer);
+      return isMatchingTask && isActiveVolunteer;
     });
 
     console.log('Found volunteer record for task:', volunteerRecord);
@@ -306,6 +313,46 @@ export const assignVolunteers = async (taskId, volunteerIds) => {
   } catch (error) {
     console.error(`Error assigning volunteers to task ${taskId}:`, error);
     console.error('Error response:', error.response?.data);
+    throw error;
+  }
+};
+
+/**
+ * Mark a task as completed
+ *
+ * @param {string|number} taskId - ID of the task to mark as completed
+ * @returns {Promise} Promise that resolves to the updated task
+ */
+export const markTaskAsCompleted = async (taskId) => {
+  try {
+    console.log(`Marking task ${taskId} as completed`);
+    
+    // Use the dedicated status update endpoint
+    const response = await api.post(`/tasks/${taskId}/update-status/`, {
+      status: 'COMPLETED'
+    });
+    console.log('Mark as completed API response:', response.data);
+    console.log('Response status:', response.status);
+    
+    // Handle different response formats
+    let taskData;
+    if (response.data.data) {
+      taskData = response.data.data;
+    } else {
+      taskData = response.data;
+    }
+    
+    // Ensure the status is explicitly set to COMPLETED in the returned data
+    if (taskData) {
+      taskData.status = 'COMPLETED';
+      console.log('Final task data after marking complete:', taskData);
+    }
+    
+    return taskData;
+  } catch (error) {
+    console.error(`Error marking task ${taskId} as completed:`, error);
+    console.error('Error response:', error.response?.data);
+    console.error('Error status:', error.response?.status);
     throw error;
   }
 };
@@ -386,5 +433,6 @@ export default {
   checkUserVolunteerStatus,
   withdrawFromTask,
   assignVolunteers,
+  markTaskAsCompleted,
   getMockTaskVolunteers,
 };

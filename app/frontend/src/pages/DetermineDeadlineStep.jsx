@@ -24,8 +24,10 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { updateFormData } from "../features/request/store/createRequestSlice";
 import { deserializeDate } from "../utils/dateUtils";
+import { useTheme } from "../hooks/useTheme";
 
 const DetermineDeadlineStep = () => {
+  const { colors } = useTheme();
   const dispatch = useDispatch();
   const { formData } = useSelector((state) => state.createRequest);
 
@@ -98,7 +100,13 @@ const DetermineDeadlineStep = () => {
         dispatch(updateFormData({ deadlineTime: adjustedTime }));
       }
     }
-  }, [buildDeadlineDateTime, dispatch, minDeadline, selectedDate, selectedTime]);
+  }, [
+    buildDeadlineDateTime,
+    dispatch,
+    minDeadline,
+    selectedDate,
+    selectedTime,
+  ]);
 
   // Handle date selection
   const handleDateChange = (date) => {
@@ -189,14 +197,21 @@ const DetermineDeadlineStep = () => {
     }
 
     return (
-      <div className="bg-white rounded-lg border border-gray-200 mb-6">
+      <div
+        className="rounded-lg border mb-6"
+        style={{
+          backgroundColor: colors.background.secondary,
+          borderColor: colors.border.primary,
+        }}
+      >
         <table className="w-full">
           <thead>
             <tr>
               {dayOfWeek.map((day) => (
                 <th
                   key={day}
-                  className="py-2 text-center text-sm font-medium text-gray-700"
+                  className="py-2 text-center text-sm font-medium"
+                  style={{ color: colors.text.primary }}
                 >
                   {day}
                 </th>
@@ -220,37 +235,66 @@ const DetermineDeadlineStep = () => {
                     const cellClasses = [
                       "py-2 text-center align-middle",
                       isClickable ? "cursor-pointer" : "cursor-not-allowed",
-                      isOutsideMonth ? "text-gray-300" : "",
-                      !isClickable && !isOutsideMonth && !isSelected
-                        ? "text-gray-300"
-                        : "",
-                      isTodayCell ? "font-bold text-blue-600" : "",
                     ]
                       .filter(Boolean)
                       .join(" ");
 
                     const innerClasses = [
                       "w-9 h-9 flex items-center justify-center rounded-full mx-auto",
-                      isSelected ? "bg-blue-600 text-white font-bold" : "",
-                      !isSelected && isTodayCell && !isOutsideMonth
-                        ? "font-bold text-blue-600"
-                        : "",
-                      !isSelected && isClickable ? "hover:bg-gray-100" : "",
                     ]
                       .filter(Boolean)
                       .join(" ");
+
+                    const getCellStyle = () => {
+                      if (isOutsideMonth)
+                        return { color: colors.text.tertiary };
+                      if (!isClickable && !isSelected)
+                        return { color: colors.text.tertiary };
+                      if (isTodayCell)
+                        return {
+                          color: colors.brand.primary,
+                          fontWeight: "bold",
+                        };
+                      return { color: colors.text.primary };
+                    };
+
+                    const getInnerStyle = () => {
+                      if (isSelected)
+                        return {
+                          backgroundColor: colors.brand.primary,
+                          color: colors.text.inverted,
+                          fontWeight: "bold",
+                        };
+                      return {};
+                    };
 
                     return (
                       <td
                         key={`cell-${cellIndex}`}
                         className={cellClasses}
+                        style={getCellStyle()}
                         onClick={() => {
                           if (isClickable) {
                             handleDateChange(date);
                           }
                         }}
+                        onMouseOver={(e) => {
+                          if (isClickable && !isSelected) {
+                            e.currentTarget.querySelector(
+                              "div"
+                            ).style.backgroundColor =
+                              colors.background.tertiary;
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (isClickable && !isSelected) {
+                            e.currentTarget.querySelector(
+                              "div"
+                            ).style.backgroundColor = "";
+                          }
+                        }}
                       >
-                        <div className={innerClasses}>
+                        <div className={innerClasses} style={getInnerStyle()}>
                           {format(date, "d")}
                         </div>
                       </td>
@@ -280,11 +324,19 @@ const DetermineDeadlineStep = () => {
       <div className="grid grid-cols-1 gap-6">
         {/* Date selection */}
         <div>
-          <h3 className="text-sm font-bold mb-2">Select Date</h3>
+          <h3
+            className="text-sm font-bold mb-2"
+            style={{ color: colors.text.primary }}
+          >
+            Select Date
+          </h3>
 
           <div className="mb-4">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-medium">
+              <h2
+                className="text-lg font-medium"
+                style={{ color: colors.text.primary }}
+              >
                 {format(currentMonth, "MMMM yyyy")}
               </h2>
 
@@ -292,14 +344,38 @@ const DetermineDeadlineStep = () => {
                 <button
                   type="button"
                   onClick={prevMonth}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  className="p-2 rounded-full transition-colors"
+                  style={{
+                    backgroundColor: colors.background.secondary,
+                    color: colors.text.primary,
+                  }}
+                  onMouseOver={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      colors.background.tertiary)
+                  }
+                  onMouseOut={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      colors.background.secondary)
+                  }
                 >
                   <ArrowBackIosIcon fontSize="small" />
                 </button>
                 <button
                   type="button"
                   onClick={nextMonth}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  className="p-2 rounded-full transition-colors"
+                  style={{
+                    backgroundColor: colors.background.secondary,
+                    color: colors.text.primary,
+                  }}
+                  onMouseOver={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      colors.background.tertiary)
+                  }
+                  onMouseOut={(e) =>
+                    (e.currentTarget.style.backgroundColor =
+                      colors.background.secondary)
+                  }
                 >
                   <ArrowForwardIosIcon fontSize="small" />
                 </button>
@@ -312,7 +388,12 @@ const DetermineDeadlineStep = () => {
 
         {/* Time selection */}
         <div>
-          <h3 className="text-sm font-bold mb-2">Select Time</h3>
+          <h3
+            className="text-sm font-bold mb-2"
+            style={{ color: colors.text.primary }}
+          >
+            Select Time
+          </h3>
 
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <TimePicker
@@ -326,6 +407,27 @@ const DetermineDeadlineStep = () => {
                   fullWidth: true,
                   size: "medium",
                   className: "w-full",
+                  sx: {
+                    "& .MuiOutlinedInput-root": {
+                      backgroundColor: colors.background.secondary,
+                      color: colors.text.primary,
+                      "& fieldset": {
+                        borderColor: colors.border.primary,
+                      },
+                      "&:hover fieldset": {
+                        borderColor: colors.brand.primary,
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: colors.brand.primary,
+                      },
+                    },
+                    "& .MuiInputBase-input": {
+                      color: colors.text.primary,
+                    },
+                    "& .MuiIconButton-root": {
+                      color: colors.brand.primary,
+                    },
+                  },
                 },
               }}
             />

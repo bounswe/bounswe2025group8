@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import {
@@ -13,6 +13,8 @@ import GeneralInformationStep from "./GeneralInformationStep";
 import UploadPhotosStep from "./UploadPhotosStep";
 import DetermineDeadlineStep from "./DetermineDeadlineStep";
 import SetupAddressStep from "./SetupAddressStep";
+import { useAttachTaskPhoto } from "../features/photo";
+import { useTheme } from "../hooks/useTheme";
 
 const steps = [
   "General Information",
@@ -24,26 +26,40 @@ const steps = [
 const CreateRequestPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const generalInfoRef = useRef();
-  const { currentStep, loading, success, error } = useSelector(
+  const { currentStep, loading, success, error, formData } = useSelector(
     (state) => state.createRequest
   );
+  const { attachPhoto } = useAttachTaskPhoto();
+  const generalInfoRef = useRef();
+  const setupAddressRef = useRef();
+  const [validationError, setValidationError] = useState(null);
+  const { colors } = useTheme();
 
   useEffect(() => {
     // Fetch categories when component mounts
     dispatch(fetchCategories());
   }, [dispatch]);
   // Get form data from redux store
-  const { formData } = useSelector((state) => state.createRequest); // Handle form submission
-  const handleSubmit = () => {
-    // Prepare data for submission
-    // Note: Photo upload functionality is temporarily disabled
-    const requestData = {
-      ...formData,
-      photos: [], // Photo upload is disabled, so we pass an empty array
-    };
+  // Handle form submission
+  const handleSubmit = async () => {
+    try {
+      const result = await dispatch(submitRequest(formData)).unwrap();
+      const createdTaskId = result?.task?.id ?? result?.requestId;
 
-    dispatch(submitRequest(requestData));
+      if (createdTaskId && Array.isArray(formData.photos)) {
+        for (const photo of formData.photos) {
+          if (photo instanceof File) {
+            try {
+              await attachPhoto(photo, createdTaskId);
+            } catch (attachmentError) {
+              console.error("Failed to attach photo:", attachmentError);
+            }
+          }
+        }
+      }
+    } catch (submissionError) {
+      console.error("Request submission failed:", submissionError);
+    }
   };
 
   // Handle step navigation
@@ -54,6 +70,17 @@ const CreateRequestPage = () => {
     }
 
     if (currentStep === steps.length - 1) {
+      // Validate address step before final submission
+      if (setupAddressRef.current) {
+        const isAddressValid = await setupAddressRef.current.validateForm();
+        if (!isAddressValid) {
+          setValidationError(
+            "Please select your location (country, city, and district) before creating the request."
+          );
+          return;
+        }
+      }
+      setValidationError(null);
       handleSubmit();
     } else {
       dispatch(nextStep());
@@ -67,13 +94,12 @@ const CreateRequestPage = () => {
   // Navigate to home page if submission was successful
   useEffect(() => {
     if (success) {
-      // Reset the form data immediately when the submission is successful
-      dispatch(resetForm());
-
-      // Navigate to home page after a short delay to show success message
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
+        dispatch(resetForm());
         navigate("/");
       }, 1000);
+
+      return () => clearTimeout(timeoutId);
     }
   }, [success, navigate, dispatch]);
 
@@ -87,55 +113,116 @@ const CreateRequestPage = () => {
       case 2:
         return <DetermineDeadlineStep />;
       case 3:
-        return <SetupAddressStep />;
+        return <SetupAddressStep ref={setupAddressRef} />;
       default:
         return <p>Unknown step</p>;
     }
   };
 
   return (
-    <div className="flex h-screen">
+    <div style={{ display: "flex", height: "100vh" }}>
       {/* Main content */}
-      <main className="flex-grow p-6 overflow-auto">
-        <div className="max-w-4xl mx-auto">
+      <main style={{ flexGrow: 1, padding: "24px", overflow: "auto" }}>
+        <div style={{ maxWidth: "56rem", margin: "0 auto" }}>
           {/* Form header */}
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-2xl font-medium">
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "24px",
+            }}
+          >
+            <h1
+              style={{
+                fontSize: "1.5rem",
+                fontWeight: 500,
+                color: colors.text.primary,
+              }}
+            >
               Create Request &gt; {steps[currentStep]}
             </h1>
           </div>
 
           {/* Stepper */}
-          <div className="flex justify-center mb-8">
-            <div className="flex items-center space-x-4">
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              marginBottom: "32px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
               {steps.map((label, index) => (
-                <div key={label} className="flex items-center">
+                <div
+                  key={label}
+                  style={{ display: "flex", alignItems: "center" }}
+                >
                   <div
-                    className={`flex items-center cursor-pointer ${
-                      index <= currentStep ? "text-blue-600" : "text-gray-400"
-                    }`}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      color:
+                        index <= currentStep
+                          ? colors.brand.primary
+                          : colors.text.tertiary,
+                    }}
                     onClick={() => dispatch(setStep(index))}
                   >
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium border-2 ${
-                        index === currentStep
-                          ? "bg-blue-600 text-white border-blue-600"
-                          : index < currentStep
-                          ? "bg-blue-600 text-white border-blue-600"
-                          : "bg-white text-gray-400 border-gray-300"
-                      }`}
+                      style={{
+                        width: "32px",
+                        height: "32px",
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "0.875rem",
+                        fontWeight: 500,
+                        border: `2px solid ${
+                          index === currentStep
+                            ? colors.brand.primary
+                            : index < currentStep
+                            ? colors.brand.primary
+                            : colors.border.secondary
+                        }`,
+                        backgroundColor:
+                          index === currentStep
+                            ? colors.brand.primary
+                            : index < currentStep
+                            ? colors.brand.primary
+                            : colors.background.elevated,
+                        color:
+                          index <= currentStep
+                            ? colors.text.inverse
+                            : colors.text.tertiary,
+                      }}
                     >
                       {index + 1}
                     </div>
-                    <span className="ml-2 text-sm font-medium hidden sm:block">
+                    <span
+                      style={{
+                        marginLeft: "8px",
+                        fontSize: "0.875rem",
+                        fontWeight: 500,
+                        display: window.innerWidth >= 640 ? "block" : "none",
+                      }}
+                    >
                       {label}
                     </span>
                   </div>
                   {index < steps.length - 1 && (
                     <div
-                      className={`w-12 h-0.5 mx-4 ${
-                        index < currentStep ? "bg-blue-600" : "bg-gray-300"
-                      }`}
+                      style={{
+                        width: "48px",
+                        height: "2px",
+                        margin: "0 16px",
+                        backgroundColor:
+                          index < currentStep
+                            ? colors.brand.primary
+                            : colors.border.secondary,
+                      }}
                     />
                   )}
                 </div>
@@ -145,11 +232,28 @@ const CreateRequestPage = () => {
 
           {/* Success message */}
           {success ? (
-            <div className="p-6 text-center mb-6 bg-white rounded-lg shadow-sm border border-gray-200">
-              <h3 className="text-lg font-medium text-green-600 mb-2">
+            <div
+              style={{
+                padding: "24px",
+                textAlign: "center",
+                marginBottom: "24px",
+                backgroundColor: `${colors.semantic.success}10`,
+                borderRadius: "8px",
+                boxShadow: colors.shadow.sm,
+                border: `1px solid ${colors.semantic.success}`,
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: "1.125rem",
+                  fontWeight: 500,
+                  color: colors.semantic.success,
+                  marginBottom: "8px",
+                }}
+              >
                 Your request has been submitted successfully!
               </h3>
-              <p className="text-base text-gray-700">
+              <p style={{ fontSize: "1rem", color: colors.text.primary }}>
                 You will be redirected to the home page shortly.
               </p>
             </div>
@@ -157,26 +261,97 @@ const CreateRequestPage = () => {
 
           {/* Error message */}
           {error ? (
-            <div className="p-6 text-center mb-6 bg-red-50 rounded-lg shadow-sm border border-red-200">
-              <h3 className="text-lg font-medium text-red-600">
+            <div
+              style={{
+                padding: "24px",
+                textAlign: "center",
+                marginBottom: "24px",
+                backgroundColor: `${colors.semantic.error}10`,
+                borderRadius: "8px",
+                boxShadow: colors.shadow.sm,
+                border: `1px solid ${colors.semantic.error}`,
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: "1.125rem",
+                  fontWeight: 500,
+                  color: colors.semantic.error,
+                }}
+              >
                 Error: {error}
               </h3>
             </div>
           ) : null}
 
+          {/* Validation error for address/location */}
+          {validationError ? (
+            <div
+              style={{
+                padding: "16px",
+                textAlign: "center",
+                marginBottom: "24px",
+                backgroundColor: `${colors.semantic.error}10`,
+                borderRadius: "8px",
+                boxShadow: colors.shadow.sm,
+                border: `1px solid ${colors.semantic.error}`,
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "0.875rem",
+                  fontWeight: 500,
+                  color: colors.semantic.error,
+                }}
+              >
+                {validationError}
+              </p>
+            </div>
+          ) : null}
+
           {/* Step content */}
-          <div className="p-6 mb-8 rounded-lg border border-gray-200 bg-white">
+          <div
+            style={{
+              padding: "24px",
+              marginBottom: "32px",
+              borderRadius: "8px",
+              border: `1px solid ${colors.border.primary}`,
+              backgroundColor: colors.background.elevated,
+            }}
+          >
             {renderStep()}
           </div>
 
           {/* Navigation buttons */}
-          <div className="flex justify-between mb-8">
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: "32px",
+            }}
+          >
             <div>
               {currentStep > 0 && (
                 <button
-                  className="text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    color: colors.text.secondary,
+                    background: "none",
+                    border: "none",
+                    cursor: loading ? "not-allowed" : "pointer",
+                    opacity: loading ? 0.5 : 1,
+                    fontSize: "1rem",
+                    padding: "8px 16px",
+                    transition: "color 0.2s",
+                  }}
                   onClick={handleBack}
                   disabled={loading}
+                  onMouseOver={(e) =>
+                    !loading &&
+                    (e.currentTarget.style.color = colors.text.primary)
+                  }
+                  onMouseOut={(e) =>
+                    (e.currentTarget.style.color = colors.text.secondary)
+                  }
                 >
                   Back
                 </button>
@@ -184,9 +359,31 @@ const CreateRequestPage = () => {
             </div>
             <div>
               <button
-                className="bg-blue-600 text-white px-8 py-2 rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                style={{
+                  backgroundColor: loading
+                    ? colors.interactive.disabled
+                    : colors.brand.primary,
+                  color: colors.text.inverse,
+                  padding: "8px 32px",
+                  borderRadius: "9999px",
+                  border: "none",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  opacity: loading ? 0.5 : 1,
+                  transition: "background-color 0.2s",
+                  fontSize: "1rem",
+                  fontWeight: 500,
+                }}
                 onClick={handleNext}
                 disabled={loading}
+                onMouseOver={(e) =>
+                  !loading &&
+                  (e.currentTarget.style.backgroundColor =
+                    colors.brand.primaryHover)
+                }
+                onMouseOut={(e) =>
+                  !loading &&
+                  (e.currentTarget.style.backgroundColor = colors.brand.primary)
+                }
               >
                 {currentStep === steps.length - 1 ? "Create Request" : "Next"}
               </button>
