@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
   Container,
@@ -47,11 +47,13 @@ import ReviewCard from "../components/ReviewCard";
 import Badge from "../components/Badge";
 import EditProfileDialog from "../components/EditProfileDialog";
 import { useTheme } from "../hooks/useTheme";
+import { toAbsoluteUrl } from "../utils/url";
 // No need for CSS module import as we're using Material UI's sx prop
 
 const ProfilePage = () => {
   const { colors } = useTheme();
   const { userId } = useParams();
+  const navigate = useNavigate();
 
   // Get logged-in user data from localStorage and Redux store
   const loggedInUserId = localStorage.getItem("userId");
@@ -183,15 +185,15 @@ const ProfilePage = () => {
       // For volunteer tab (roleTab = 0), fetch volunteered tasks
       // For volunteer tab, we also need to handle active vs completed tasks
       if (roleTab === 0) {
-        // If the API supports status parameter for volunteered tasks
-        const status = requestsTab === 0 ? "active" : "COMPLETED";
+        // Determine task status filter based on active/past tab
+        const taskStatus = requestsTab === 0 ? "active" : "COMPLETED";
 
         await dispatch(
           fetchUserVolunteeredRequests({
             userId: currentId,
             page: 1,
             limit: 10,
-            status: status, // Pass the status parameter for volunteered tasks too
+            taskStatus: taskStatus, // Pass the taskStatus parameter for volunteered tasks
           })
         ).unwrap();
       }
@@ -298,23 +300,45 @@ const ProfilePage = () => {
       dataArray = requests.data;
     }
 
-    // Normalize volunteer tasks (they wrap the actual task)
+    // For volunteer tab, we need to extract tasks from volunteer objects
     if (roleTab === 0) {
-      return dataArray.map((item) =>
-        item.task
-          ? { ...item.task, volunteerStatus: item.status, volunteerId: item.id }
-          : item
-      );
+      return dataArray
+        .filter((item) => item.task) // Only include items that have a task
+        .map((item) => {
+          const task = item.task;
+          // Process image URL similar to Home page
+          const photoFromList =
+            task.photos?.[0]?.url ||
+            task.photos?.[0]?.image ||
+            task.photos?.[0]?.photo_url;
+          const preferred = task.primary_photo_url || photoFromList || null;
+          return {
+            ...task,
+            imageUrl: toAbsoluteUrl(preferred),
+            volunteerStatus: item.status,
+            volunteerId: item.id,
+            // Ensure we only show tasks where this user is actually a volunteer
+            isVolunteer: true,
+          };
+        });
     }
 
-    return dataArray;
+    // For requester tab, process images for created requests
+    return dataArray.map((task) => {
+      const photoFromList =
+        task.photos?.[0]?.url ||
+        task.photos?.[0]?.image ||
+        task.photos?.[0]?.photo_url;
+      const preferred = task.primary_photo_url || photoFromList || null;
+      return {
+        ...task,
+        imageUrl: toAbsoluteUrl(preferred),
+      };
+    });
   };
-  // Get active and past requests for the current role tab
-  // We're now fetching requests directly from the API with appropriate status
-  const activeRequests = getCurrentRequests();
-
-  // Past requests are now also fetched from the API with status=COMPLETED
-  const pastRequests = requestsTab === 1 ? getCurrentRequests() : [];
+  // Get current requests based on the selected tab
+  // The API call already filters by active/completed status based on requestsTab
+  const currentRequests = getCurrentRequests();
 
   // No need for client-side pagination since we're using server pagination now
 
@@ -713,7 +737,7 @@ const ProfilePage = () => {
             </Box>
             {/* Requester-specific instructions when no requests */}
             {roleTab === 1 &&
-              activeRequests.length === 0 &&
+              currentRequests.length === 0 &&
               requestsTab === 0 && (
                 <Box sx={{ textAlign: "center", py: 4, mb: 2 }}>
                   <Typography
@@ -744,7 +768,7 @@ const ProfilePage = () => {
               )}
             {/* Volunteer-specific instructions when no volunteering */}
             {roleTab === 0 &&
-              activeRequests.length === 0 &&
+              currentRequests.length === 0 &&
               requestsTab === 0 && (
                 <Box sx={{ textAlign: "center", py: 4, mb: 2 }}>
                   <Typography
@@ -773,56 +797,36 @@ const ProfilePage = () => {
                   </Button>
                 </Box>
               )}
-            {/* Active/Past Requests Grid Layout */}
+            {/* Current Requests Grid Layout */}
             <Box sx={{ mb: 4 }}>
-              {requestsTab === 0 ? (
-                <Grid container spacing={2} sx={{ justifyContent: "center" }}>
-                  {activeRequests.length > 0 ? (
-                    activeRequests.map((request) => (
-                      <Grid
-                        sx={{ gridColumn: { xs: "span 12", sm: "span 6" } }}
-                        key={request.id}
-                      >
-                        <RequestCard
-                          request={request}
-                          userRole={roleTab === 0 ? "volunteer" : "requester"}
-                          onUpdate={() => setRefreshData(true)}
-                        />
-                      </Grid>
-                    ))
-                  ) : (
-                    <Grid item xs={12}>
-                      {/* Empty state content is above */}
+              <Grid container spacing={2} sx={{ justifyContent: "center" }}>
+                {currentRequests.length > 0 ? (
+                  currentRequests.map((request) => (
+                    <Grid
+                      sx={{ gridColumn: { xs: "span 12", sm: "span 6" } }}
+                      key={request.id}
+                    >
+                      <RequestCard
+                        request={request}
+                        userRole={roleTab === 0 ? "volunteer" : "requester"}
+                        onUpdate={() => setRefreshData(true)}
+                        onClick={() => navigate(`/requests/${request.id}`)}
+                      />
                     </Grid>
-                  )}
-                </Grid>
-              ) : (
-                <Grid container spacing={2}>
-                  {pastRequests.length > 0 ? (
-                    pastRequests.map((request) => (
-                      <Grid
-                        sx={{ gridColumn: { xs: "span 12", sm: "span 6" } }}
-                        key={request.id}
-                      >
-                        <RequestCard
-                          request={request}
-                          userRole={roleTab === 0 ? "volunteer" : "requester"}
-                          onUpdate={() => setRefreshData(true)}
-                        />
-                      </Grid>
-                    ))
-                  ) : (
-                    <Grid item xs={12}>
+                  ))
+                ) : (
+                  <Grid item xs={12}>
+                    {requestsTab === 1 && (
                       <Typography
                         align="center"
                         sx={{ mb: 4, mt: 2, color: colors.text.secondary }}
                       >
                         No past {roleTab === 0 ? "volunteering" : "requests"}.
                       </Typography>
-                    </Grid>
-                  )}
-                </Grid>
-              )}
+                    )}
+                  </Grid>
+                )}
+              </Grid>
             </Box>
           </Box>{" "}
           {/* Reviews section */}
