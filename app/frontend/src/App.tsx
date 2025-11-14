@@ -9,6 +9,7 @@ import Settings from "./pages/Settings";
 import MainLayout from "./layouts/MainLayout.jsx";
 import CreateRequestPage from "./pages/CreateRequestPage.jsx";
 import AllRequests from "./pages/AllRequests.jsx";
+import SearchResults from "./pages/SearchResults.jsx";
 import Categories from "./pages/Categories.jsx";
 import RequestDetail from "./pages/RequestDetail.jsx";
 import SelectVolunteer from "./pages/SelectVolunteer.jsx";
@@ -35,6 +36,7 @@ function App() {
             <Route path="/settings" element={<Settings />} />
             <Route path="/create-request" element={<CreateRequestPage />} />
             <Route path="/categories" element={<Categories />} />
+            <Route path="/search" element={<SearchResults />} />
             <Route path="/requests" element={<AllRequests />} />
             <Route path="/requests/:requestId" element={<RequestDetail />} />
             <Route path="/requests/:requestId/select-volunteer" element={<SelectVolunteer />} />
