@@ -94,8 +94,8 @@ export default function Categories() {
       </View>
 
       {/* Search bar */}
-      <TouchableOpacity style={[styles.searchWrapper, { borderColor: '#CCC' }]} onPress={() => router.push('/search')}>
-        <Ionicons name="search-outline" size={20} color="#888" />
+      <TouchableOpacity style={[styles.searchWrapper, { borderColor: colors.border }]} onPress={() => router.push('/search')}>
+        <Ionicons name="search-outline" size={20} color={colors.icon} />
         <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>Search a Category</Text>
       </TouchableOpacity>
 
@@ -113,7 +113,7 @@ export default function Categories() {
         {derivedCategories.map((cat) => (
           <TouchableOpacity
             key={cat.id}
-            style={[styles.catRow, { backgroundColor: colors.card }]}
+            style={[styles.catRow, { backgroundColor: colors.card, shadowColor: colors.overlay }]}
             onPress={() => router.push(('/category/' + cat.id) as any)}
           >
             <Image source={require('../assets/images/help.png')} style={styles.catImage} />
@@ -125,7 +125,7 @@ export default function Categories() {
       </ScrollView>
 
       {/* Bottom navigation bar */}
-      <View style={[styles.bottomBar, { backgroundColor: colors.card, borderTopColor: '#ddd' }]}>
+      <View style={[styles.bottomBar, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
         <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/feed')}>
           <Ionicons name="home" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Home</Text>
@@ -189,7 +189,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
-    shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 4,
     elevation: 1,

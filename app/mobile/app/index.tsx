@@ -31,7 +31,7 @@ export default function Index() {
           ]}
           onPress={() => router.push('/signin')}
         >
-          <Text style={styles.primaryText}>Login</Text>
+          <Text style={[styles.primaryText, { color: colors.onPrimary }]}>Login</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -106,7 +106,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   primaryText: {
-    color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },
