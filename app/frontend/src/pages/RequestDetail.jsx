@@ -30,9 +30,11 @@ import {
 import { removeTaskFromList } from "../features/request/store/allRequestsSlice";
 import Sidebar from "../components/Sidebar";
 import EditRequestModal from "../components/EditRequestModal";
+import RatingReviewModal from "../components/RatingReviewModal";
 import { urgencyLevels } from "../constants/urgency_level";
 import { getCategoryImage } from "../constants/categories";
 import { toAbsoluteUrl } from "../utils/url";
+import { getReviewableUsers } from "../services/reviewService";
 
 const RequestDetail = () => {
   const { requestId } = useParams();
@@ -50,6 +52,9 @@ const RequestDetail = () => {
 
   // Edit dialog state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+
+  // Rating/Review dialog state
+  const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
 
   // Add these new state variables
   const [isDeleting, setIsDeleting] = useState(false);
@@ -278,8 +283,7 @@ const RequestDetail = () => {
   const photos = Array.isArray(request?.photos)
     ? request.photos
         .map((p) => ({
-          src:
-            toAbsoluteUrl(p?.url || p?.image || p?.photo_url) || undefined,
+          src: toAbsoluteUrl(p?.url || p?.image || p?.photo_url) || undefined,
           alt: p?.alt_text || request.title,
         }))
         .filter((p) => !!p.src)
@@ -297,14 +301,37 @@ const RequestDetail = () => {
     !isTaskCreator &&
     (request?.status === "POSTED" || request?.status === "ASSIGNED") &&
     acceptedVolunteersCount < request.volunteer_number &&
-    !volunteerRecord;
-  const canWithdraw = isAuthenticated && !isTaskCreator && volunteerRecord;
+    (!volunteerRecord ||
+      volunteerRecord.status === "REJECTED" ||
+      volunteerRecord.status === "WITHDRAWN");
+  const canWithdraw =
+    isAuthenticated &&
+    !isTaskCreator &&
+    volunteerRecord &&
+    volunteerRecord.status !== "WITHDRAWN" &&
+    volunteerRecord.status !== "REJECTED" &&
+    request?.status !== "COMPLETED";
   const canMarkAsComplete =
     isAuthenticated &&
     isTaskCreator &&
     (request?.status === "ASSIGNED" || request?.status === "IN_PROGRESS") &&
     acceptedVolunteersCount > 0 &&
     request?.status !== "COMPLETED";
+
+  // Check if current user is a volunteer who participated in the task
+  const isVolunteerForTask =
+    volunteerRecord &&
+    (volunteerRecord.status === "ACCEPTED" || request?.status === "COMPLETED");
+
+  // Check if user can rate and review
+  const canRateAndReview =
+    isAuthenticated &&
+    currentUser &&
+    request?.status === "COMPLETED" &&
+    (getReviewableUsers(request, currentUser).length > 0 ||
+      (isVolunteerForTask && !isTaskCreator) ||
+      (isTaskCreator &&
+        request?.volunteers?.some((v) => v.status === "ACCEPTED"))); // Ensure task creators can always rate volunteers
 
   // Debug logging
   console.log("Permission debug:", {
@@ -313,12 +340,24 @@ const RequestDetail = () => {
     requestCreator: request?.creator?.id,
     isTaskCreator,
     requestStatus: request?.status,
-    volunteerRecord: volunteerRecord?.id,
+    volunteerRecord: volunteerRecord,
+    volunteerRecordId: volunteerRecord?.id,
+    volunteerRecordStatus: volunteerRecord?.status,
     canVolunteer,
     canWithdraw,
     canMarkAsComplete,
+    canRateAndReview,
+    reviewableUsers: getReviewableUsers(request, currentUser),
     isDeadlinePassed: isDeadlinePassed(request.deadline),
     deadline: request?.deadline,
+    // Additional debugging for volunteer
+    taskVolunteers: request?.volunteers,
+    taskAssignees: request?.assignees,
+    isVolunteerForTask: isVolunteerForTask,
+    reviewableUsersCheck: getReviewableUsers(request, currentUser).length > 0,
+    volunteerFallback: isVolunteerForTask && !isTaskCreator,
+    acceptedVolunteersCount: acceptedVolunteersCount,
+    volunteerNumber: request.volunteer_number,
   });
 
   // Button handlers
@@ -382,25 +421,48 @@ const RequestDetail = () => {
       const result = await volunteerForTask(request.id);
       console.log("Volunteer result:", result);
 
-      // Update volunteer status
+      // Update volunteer status - extract the actual volunteer record
       const volunteerRecord = result.data || result;
+      console.log("Setting volunteer record:", volunteerRecord);
       setVolunteerRecord(volunteerRecord);
-      setIsVolunteering(false);
 
       alert("Successfully volunteered for this task!");
 
-      // Refresh the request data to get updated status
-      const updatedRequest = await getRequestById(requestId);
-      setRequest(updatedRequest);
+      // Refresh the request data to get updated volunteer list
+      try {
+        const updatedRequest = await getRequestById(requestId);
+        setRequest(updatedRequest);
+        console.log("Updated request after volunteering:", updatedRequest);
+      } catch (refreshError) {
+        console.warn(
+          "Could not refresh request data after volunteering:",
+          refreshError
+        );
+      }
+
+      // Also refresh volunteer status to ensure consistency
+      try {
+        const refreshedVolunteerRecord = await checkUserVolunteerStatus(
+          requestId
+        );
+        console.log("Refreshed volunteer record:", refreshedVolunteerRecord);
+        setVolunteerRecord(refreshedVolunteerRecord);
+      } catch (volunteerRefreshError) {
+        console.warn(
+          "Could not refresh volunteer status:",
+          volunteerRefreshError
+        );
+      }
     } catch (error) {
       console.error("Error volunteering for task:", error);
-      setIsVolunteering(false);
 
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
         "Failed to volunteer for task";
       alert(`Error: ${errorMessage}`);
+    } finally {
+      setIsVolunteering(false);
     }
   };
 
@@ -408,30 +470,60 @@ const RequestDetail = () => {
     if (!volunteerRecord) return;
 
     try {
-      console.log("Withdrawing from task:", request.id);
+      console.log(
+        "Withdrawing from task:",
+        request.id,
+        "volunteer record:",
+        volunteerRecord.id
+      );
       setIsVolunteering(true);
 
       await withdrawFromTask(volunteerRecord.id);
-      console.log("Withdrawn from task");
+      console.log("Withdrawn from task successfully");
 
-      // Update volunteer status
+      // Clear volunteer status
       setVolunteerRecord(null);
-      setIsVolunteering(false);
 
       alert("Successfully withdrew from this task");
 
-      // Refresh the request data
-      const updatedRequest = await getRequestById(requestId);
-      setRequest(updatedRequest);
+      // Refresh the request data to get updated volunteer list
+      try {
+        const updatedRequest = await getRequestById(requestId);
+        setRequest(updatedRequest);
+        console.log("Updated request after withdrawing:", updatedRequest);
+      } catch (refreshError) {
+        console.warn(
+          "Could not refresh request data after withdrawing:",
+          refreshError
+        );
+      }
+
+      // Also refresh volunteer status to ensure consistency
+      try {
+        const refreshedVolunteerRecord = await checkUserVolunteerStatus(
+          requestId
+        );
+        console.log(
+          "Refreshed volunteer record after withdrawal:",
+          refreshedVolunteerRecord
+        );
+        setVolunteerRecord(refreshedVolunteerRecord);
+      } catch (volunteerRefreshError) {
+        console.warn(
+          "Could not refresh volunteer status:",
+          volunteerRefreshError
+        );
+      }
     } catch (error) {
       console.error("Error withdrawing from task:", error);
-      setIsVolunteering(false);
 
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
         "Failed to withdraw from task";
       alert(`Error: ${errorMessage}`);
+    } finally {
+      setIsVolunteering(false);
     }
   };
 
@@ -471,6 +563,19 @@ const RequestDetail = () => {
       const refreshedTask = await getRequestById(request.id);
       console.log("Refreshed task data:", refreshedTask);
 
+      // Also fetch volunteers for the refreshed task
+      try {
+        const volunteers = await getTaskVolunteers(request.id);
+        console.log("Received volunteers data after completion:", volunteers);
+        refreshedTask.volunteers = volunteers;
+      } catch (volunteersError) {
+        console.warn(
+          `Could not fetch volunteers for completed task ${request.id}:`,
+          volunteersError
+        );
+        refreshedTask.volunteers = request.volunteers || [];
+      }
+
       // Update the request state with the refreshed data
       setRequest(refreshedTask);
 
@@ -478,6 +583,11 @@ const RequestDetail = () => {
       dispatch(removeTaskFromList(request.id));
 
       alert("Task marked as completed successfully!");
+
+      // Force a page refresh after a short delay to ensure UI updates correctly
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
       console.error("Error marking task as completed:", error);
       console.error("Error details:", error.response?.data);
@@ -490,6 +600,22 @@ const RequestDetail = () => {
     } finally {
       setIsMarkingComplete(false);
     }
+  };
+
+  const handleRateAndReview = () => {
+    if (canRateAndReview) {
+      setRatingDialogOpen(true);
+    }
+  };
+
+  const handleReviewSubmitSuccess = (reviewedUser, rating, comment) => {
+    console.log("Review submitted successfully:", {
+      reviewedUser,
+      rating,
+      comment,
+    });
+    // Optionally refresh the request data or update UI state
+    alert(`Review submitted for ${reviewedUser.name} ${reviewedUser.surname}!`);
   };
 
   return (
@@ -563,8 +689,12 @@ const RequestDetail = () => {
               {photos.length > 0 ? (
                 <>
                   <img
-                    src={photos[Math.min(activePhotoIdx, photos.length - 1)]?.src}
-                    alt={photos[Math.min(activePhotoIdx, photos.length - 1)]?.alt}
+                    src={
+                      photos[Math.min(activePhotoIdx, photos.length - 1)]?.src
+                    }
+                    alt={
+                      photos[Math.min(activePhotoIdx, photos.length - 1)]?.alt
+                    }
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
@@ -579,7 +709,9 @@ const RequestDetail = () => {
                           setActivePhotoIdx(idx);
                         }}
                         className={`h-12 w-12 rounded overflow-hidden border ${
-                          idx === activePhotoIdx ? 'border-white' : 'border-transparent'
+                          idx === activePhotoIdx
+                            ? "border-white"
+                            : "border-transparent"
                         }`}
                         aria-label={`Show photo ${idx + 1}`}
                       >
@@ -673,33 +805,66 @@ const RequestDetail = () => {
                 request.status === "IN_PROGRESS" ||
                 request.status === "COMPLETED") && (
                 <div className="mb-6">
-                  <p className="text-sm text-gray-500">
-                    {request.status === "POSTED"
-                      ? "Waiting for Volunteers"
-                      : request.status === "ASSIGNED"
-                      ? isTaskCreator
-                        ? acceptedVolunteersCount > 0
+                  {request.status === "COMPLETED" ? (
+                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                            <span className="text-white text-sm">✓</span>
+                          </div>
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-green-800 font-medium">
+                            Task Completed Successfully!
+                          </p>
+                          {isTaskCreator && (
+                            <p className="text-green-600 text-sm mt-1">
+                              Don't forget to rate and review your volunteers to
+                              help the community.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      {request.status === "POSTED"
+                        ? "Waiting for Volunteers"
+                        : request.status === "ASSIGNED"
+                        ? isTaskCreator
+                          ? acceptedVolunteersCount > 0
+                            ? "Ready to mark as complete"
+                            : null
+                          : volunteerRecord &&
+                            volunteerRecord.status === "ACCEPTED"
+                          ? "Task Assigned to You"
+                          : acceptedVolunteersCount < request.volunteer_number
+                          ? "Waiting for More Volunteers"
+                          : "Task Assigned"
+                        : request.status === "IN_PROGRESS"
+                        ? isTaskCreator && acceptedVolunteersCount > 0
                           ? "Ready to mark as complete"
-                          : null
-                        : volunteerRecord &&
-                          volunteerRecord.status === "ACCEPTED"
-                        ? "Task Assigned to You"
-                        : acceptedVolunteersCount < request.volunteer_number
-                        ? "Waiting for More Volunteers"
-                        : "Task Assigned"
-                      : request.status === "IN_PROGRESS"
-                      ? isTaskCreator && acceptedVolunteersCount > 0
-                        ? "Ready to mark as complete"
-                        : "In Progress"
-                      : request.status === "COMPLETED"
-                      ? "Task Completed"
-                      : "Unknown Status"}
-                  </p>
+                          : "In Progress"
+                        : "Unknown Status"}
+                    </p>
+                  )}
                 </div>
               )}
 
               {/* Action Buttons */}
               <div className="space-y-3">
+                {/* Rate & Review Button for Requesters (Task Creators) - Show prominently when task is completed */}
+                {canRateAndReview &&
+                  isTaskCreator &&
+                  request?.status === "COMPLETED" && (
+                    <button
+                      onClick={handleRateAndReview}
+                      className="w-full py-3 px-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-base font-medium rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 flex items-center justify-center shadow-lg"
+                    >
+                      ⭐ Rate & Review Volunteers
+                    </button>
+                  )}
+
                 {/* Primary Action Buttons for Task Creator - Mark as Complete and Select Volunteer */}
                 {canEdit &&
                   (request.status === "POSTED" ||
@@ -786,6 +951,16 @@ const RequestDetail = () => {
                   </button>
                 )}
 
+                {/* Rate & Review Button for Volunteers (replaces Withdraw button after completion) */}
+                {canRateAndReview && !isTaskCreator && (
+                  <button
+                    onClick={handleRateAndReview}
+                    className="w-full py-3 px-6 bg-pink-500 text-white text-base font-medium rounded-lg hover:bg-pink-600 transition-colors flex items-center justify-center"
+                  >
+                    ⭐ Rate & Review Requester
+                  </button>
+                )}
+
                 {!isAuthenticated && (
                   <button
                     onClick={() => navigate("/login")}
@@ -830,6 +1005,14 @@ const RequestDetail = () => {
         onClose={() => setEditDialogOpen(false)}
         request={request}
         onSubmit={handleEditSubmit}
+      />
+
+      <RatingReviewModal
+        open={ratingDialogOpen}
+        onClose={() => setRatingDialogOpen(false)}
+        task={request}
+        currentUser={currentUser}
+        onSubmitSuccess={handleReviewSubmitSuccess}
       />
     </div>
   );

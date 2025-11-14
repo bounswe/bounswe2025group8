@@ -85,11 +85,23 @@ class Review(models.Model):
         if task.status != 'COMPLETED':
             raise ValueError("Cannot review a task that is not completed")
         
-        # Determine task participants (creator + all assignees)
-        participant_ids = set(task.get_assignees().values_list('id', flat=True))
+        # Get all task participants (creator + all assignees + volunteers)
+        participant_ids = set()
+        
+        # Add task creator
+        participant_ids.add(task.creator_id)
+        
+        # Add all assignees from many-to-many field
+        participant_ids.update(task.get_assignees().values_list('id', flat=True))
+        
+        # Add main assignee if set (for backward compatibility)
         if task.assignee_id:
             participant_ids.add(task.assignee_id)
-        participant_ids.add(task.creator_id)
+        
+        # Add accepted volunteers
+        accepted_volunteers = task.get_assigned_volunteers()
+        for volunteer in accepted_volunteers:
+            participant_ids.add(volunteer.user.id)
         
         # Check if reviewer is one of the task participants
         if reviewer.id not in participant_ids:
