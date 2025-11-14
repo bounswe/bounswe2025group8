@@ -147,6 +147,44 @@ class ReviewModelTests(TestCase):
         ).count()
         self.assertEqual(count, 1)
 
+    def test_multiple_assignees_can_review(self):
+        """Ensure all assigned volunteers can participate in reviews"""
+        second_assignee = RegisteredUser.objects.create_user(
+            email='second_assignee@example.com',
+            name='Second',
+            surname='Volunteer',
+            username='secondvolunteer',
+            phone_number='2222222222',
+            password='password789'
+        )
+        
+        task_with_multiple_assignees = Task.objects.create(
+            title='Group Task',
+            description='Task with multiple volunteers',
+            category='OTHER',
+            location='Test Location',
+            deadline=timezone.now() + datetime.timedelta(days=2),
+            creator=self.creator,
+            assignee=self.assignee,
+            status='COMPLETED',
+            volunteer_number=2
+        )
+        
+        task_with_multiple_assignees.assignees.add(self.assignee, second_assignee)
+        task_with_multiple_assignees.save()
+        
+        second_volunteer_review = Review.submit_review(
+            reviewer=second_assignee,
+            reviewee=self.creator,
+            task=task_with_multiple_assignees,
+            score=5.0,
+            comment='Great to collaborate!'
+        )
+        
+        self.assertEqual(second_volunteer_review.reviewer, second_assignee)
+        self.assertEqual(second_volunteer_review.reviewee, self.creator)
+        self.assertEqual(second_volunteer_review.task, task_with_multiple_assignees)
+
     def test_update_user_rating(self):
         """Test updating user rating based on reviews"""
         # Initially rating should be 0

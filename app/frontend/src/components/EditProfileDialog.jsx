@@ -29,9 +29,11 @@ import {
   selectUser,
 } from "../features/profile/store/editProfileSlice";
 import { updateUserProfile as updateAuthUser } from "../features/authentication/store/authSlice";
+import { useTheme } from "../hooks/useTheme";
 
 const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
   const dispatch = useDispatch();
+  const { colors } = useTheme();
 
   // Use the new editProfile selectors
   const updating = useSelector(selectIsUpdating);
@@ -167,15 +169,31 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
       fullWidth
       maxWidth="sm"
       PaperProps={{
-        sx: { borderRadius: 2 },
+        sx: {
+          borderRadius: 2,
+          backgroundColor: colors.background.elevated,
+          border: `1px solid ${colors.border.primary}`,
+        },
       }}
     >
       <DialogTitle sx={{ pb: 0 }}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6" fontWeight="bold">
+          <Typography
+            variant="h6"
+            fontWeight="bold"
+            sx={{ color: colors.text.primary }}
+          >
             Edit Profile
           </Typography>
-          <IconButton onClick={onClose}>
+          <IconButton
+            onClick={onClose}
+            sx={{
+              color: colors.text.secondary,
+              "&:hover": {
+                backgroundColor: colors.interactive.hover,
+              },
+            }}
+          >
             <Close />
           </IconButton>
         </Box>
@@ -189,7 +207,12 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
               <Avatar
                 src={user?.profilePicture}
                 alt={user?.name}
-                sx={{ width: 100, height: 100, mb: 1 }}
+                sx={{
+                  width: 100,
+                  height: 100,
+                  mb: 1,
+                  border: `3px solid ${colors.border.primary}`,
+                }}
               />
               <IconButton
                 component="label"
@@ -197,9 +220,13 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
                   position: "absolute",
                   bottom: 0,
                   right: 0,
-                  backgroundColor: "white",
-                  boxShadow: 1,
-                  "&:hover": { backgroundColor: "#f5f5f5" },
+                  backgroundColor: colors.background.elevated,
+                  border: `2px solid ${colors.border.primary}`,
+                  boxShadow: colors.shadow.md,
+                  "&:hover": {
+                    backgroundColor: colors.interactive.hover,
+                  },
+                  color: colors.brand.primary,
                 }}
               >
                 <input
@@ -211,14 +238,24 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
                 <PhotoCamera />
               </IconButton>
             </Box>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" sx={{ color: colors.text.secondary }}>
               Click the camera icon to change your profile picture
             </Typography>
           </Box>
 
           {/* Error message */}
           {error && (
-            <Typography color="error" variant="body2" sx={{ mb: 2 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                mb: 2,
+                color: colors.semantic.error,
+                backgroundColor: `${colors.semantic.error}10`,
+                padding: "8px 12px",
+                borderRadius: "8px",
+                border: `1px solid ${colors.semantic.error}`,
+              }}
+            >
               {typeof error === "string"
                 ? error
                 : "An error occurred while updating your profile"}
@@ -231,9 +268,14 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
               {Object.entries(validationErrors).map(([field, message]) => (
                 <Typography
                   key={field}
-                  color="error"
                   variant="body2"
-                  sx={{ mb: 1 }}
+                  sx={{
+                    mb: 1,
+                    color: colors.semantic.error,
+                    backgroundColor: `${colors.semantic.error}10`,
+                    padding: "6px 10px",
+                    borderRadius: "6px",
+                  }}
                 >
                   {message}
                 </Typography>
@@ -253,6 +295,26 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
                 variant="outlined"
                 error={validationErrors?.name}
                 helperText={validationErrors?.name}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: colors.background.secondary,
+                    "& fieldset": {
+                      borderColor: colors.border.primary,
+                    },
+                    "&:hover fieldset": {
+                      borderColor: colors.border.secondary,
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: colors.brand.primary,
+                    },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: colors.text.secondary,
+                  },
+                  "& .MuiInputBase-input": {
+                    color: colors.text.primary,
+                  },
+                }}
               />
             </Grid>
 
@@ -266,6 +328,26 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
                 variant="outlined"
                 error={validationErrors?.surname}
                 helperText={validationErrors?.surname}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: colors.background.secondary,
+                    "& fieldset": {
+                      borderColor: colors.border.primary,
+                    },
+                    "&:hover fieldset": {
+                      borderColor: colors.border.secondary,
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: colors.brand.primary,
+                    },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: colors.text.secondary,
+                  },
+                  "& .MuiInputBase-input": {
+                    color: colors.text.primary,
+                  },
+                }}
               />
             </Grid>
 
@@ -279,6 +361,26 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
                 variant="outlined"
                 error={validationErrors?.username}
                 helperText={validationErrors?.username}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    backgroundColor: colors.background.secondary,
+                    "& fieldset": {
+                      borderColor: colors.border.primary,
+                    },
+                    "&:hover fieldset": {
+                      borderColor: colors.border.secondary,
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: colors.brand.primary,
+                    },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: colors.text.secondary,
+                  },
+                  "& .MuiInputBase-input": {
+                    color: colors.text.primary,
+                  },
+                }}
               />
             </Grid>
 
@@ -295,13 +397,19 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
                 }}
                 sx={{
                   "& .MuiInputBase-input": {
-                    backgroundColor: "#f5f5f5",
-                    color: "#666",
+                    backgroundColor: colors.background.tertiary,
+                    color: colors.text.tertiary,
                   },
                   "& .MuiOutlinedInput-root": {
                     "& fieldset": {
-                      borderColor: "#e0e0e0",
+                      borderColor: colors.border.secondary,
                     },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: colors.text.secondary,
+                  },
+                  "& .MuiFormHelperText-root": {
+                    color: colors.text.tertiary,
                   },
                 }}
                 helperText="Email cannot be changed"
@@ -320,13 +428,19 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
                 }}
                 sx={{
                   "& .MuiInputBase-input": {
-                    backgroundColor: "#f5f5f5",
-                    color: "#666",
+                    backgroundColor: colors.background.tertiary,
+                    color: colors.text.tertiary,
                   },
                   "& .MuiOutlinedInput-root": {
                     "& fieldset": {
-                      borderColor: "#e0e0e0",
+                      borderColor: colors.border.secondary,
                     },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: colors.text.secondary,
+                  },
+                  "& .MuiFormHelperText-root": {
+                    color: colors.text.tertiary,
                   },
                 }}
                 helperText="Phone number cannot be changed"
@@ -338,20 +452,37 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
         <DialogActions sx={{ px: 3, pb: 3 }}>
           <Button
             onClick={onClose}
-            color="inherit"
-            sx={{ borderRadius: "20px", px: 3 }}
+            sx={{
+              borderRadius: "20px",
+              px: 3,
+              color: colors.text.secondary,
+              "&:hover": {
+                backgroundColor: colors.interactive.hover,
+              },
+            }}
           >
             Cancel
           </Button>
           <Button
             type="submit"
             variant="contained"
-            color="primary"
             disabled={loading}
-            sx={{ borderRadius: "20px", px: 3 }}
+            sx={{
+              borderRadius: "20px",
+              px: 3,
+              backgroundColor: colors.brand.primary,
+              color: "#FFFFFF",
+              "&:hover": {
+                backgroundColor: colors.brand.primaryHover,
+              },
+              "&:disabled": {
+                backgroundColor: colors.interactive.disabled,
+                color: colors.text.tertiary,
+              },
+            }}
           >
             {loading ? (
-              <CircularProgress size={24} color="inherit" />
+              <CircularProgress size={24} sx={{ color: colors.text.inverse }} />
             ) : (
               "Save Changes"
             )}

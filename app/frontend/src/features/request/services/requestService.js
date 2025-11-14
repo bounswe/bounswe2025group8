@@ -88,6 +88,8 @@ export const getTaskById = async (taskId) => {
       taskData = response.data;
     }
     
+    console.log('Task data status from API:', taskData?.status);
+    
     // Fetch photos for the task
     try {
       console.log(`Fetching photos for task ${taskId}`);
@@ -311,6 +313,46 @@ export const assignVolunteers = async (taskId, volunteerIds) => {
 };
 
 /**
+ * Mark a task as completed
+ *
+ * @param {string|number} taskId - ID of the task to mark as completed
+ * @returns {Promise} Promise that resolves to the updated task
+ */
+export const markTaskAsCompleted = async (taskId) => {
+  try {
+    console.log(`Marking task ${taskId} as completed`);
+    
+    // Use the dedicated status update endpoint
+    const response = await api.post(`/tasks/${taskId}/update-status/`, {
+      status: 'COMPLETED'
+    });
+    console.log('Mark as completed API response:', response.data);
+    console.log('Response status:', response.status);
+    
+    // Handle different response formats
+    let taskData;
+    if (response.data.data) {
+      taskData = response.data.data;
+    } else {
+      taskData = response.data;
+    }
+    
+    // Ensure the status is explicitly set to COMPLETED in the returned data
+    if (taskData) {
+      taskData.status = 'COMPLETED';
+      console.log('Final task data after marking complete:', taskData);
+    }
+    
+    return taskData;
+  } catch (error) {
+    console.error(`Error marking task ${taskId} as completed:`, error);
+    console.error('Error response:', error.response?.data);
+    console.error('Error status:', error.response?.status);
+    throw error;
+  }
+};
+
+/**
  * Mock volunteers data for development
  */
 export const getMockTaskVolunteers = (taskId) => {
@@ -386,5 +428,6 @@ export default {
   checkUserVolunteerStatus,
   withdrawFromTask,
   assignVolunteers,
+  markTaskAsCompleted,
   getMockTaskVolunteers,
 };
