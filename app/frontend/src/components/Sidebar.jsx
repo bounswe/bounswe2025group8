@@ -75,7 +75,11 @@ const Sidebar = () => {
       </div>
 
       {/* Navigation Menu */}
-      <nav className="px-4 py-2">
+      <nav
+        className="px-4 py-2"
+        role="navigation"
+        aria-label="Primary navigation"
+      >
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
 
@@ -86,7 +90,9 @@ const Sidebar = () => {
                 className="w-full flex items-center px-3 py-2 rounded-lg transition-colors"
                 style={{
                   backgroundColor: isActive
-                    ? (theme === "high-contrast" ? "#1E40AF" : colors.brand.primary)
+                    ? theme === "high-contrast"
+                      ? "#1E40AF"
+                      : colors.brand.primary
                     : "transparent",
                   color: isActive ? "#FFFFFF" : colors.text.primary,
                 }}
@@ -143,14 +149,17 @@ const Sidebar = () => {
           }}
           className="w-full flex items-center justify-center px-4 py-3 rounded-full transition-colors shadow-md"
           style={{
-            backgroundColor: theme === "high-contrast" ? "#1E40AF" : colors.brand.primary,
+            backgroundColor:
+              theme === "high-contrast" ? "#1E40AF" : colors.brand.primary,
             color: "#FFFFFF",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = theme === "high-contrast" ? "#1E40AF" : colors.brand.primaryHover;
+            e.currentTarget.style.backgroundColor =
+              theme === "high-contrast" ? "#1E40AF" : colors.brand.primaryHover;
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = theme === "high-contrast" ? "#1E40AF" : colors.brand.primary;
+            e.currentTarget.style.backgroundColor =
+              theme === "high-contrast" ? "#1E40AF" : colors.brand.primary;
           }}
           onFocus={(e) => {
             if (theme === "high-contrast") {

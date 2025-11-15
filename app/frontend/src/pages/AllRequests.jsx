@@ -175,7 +175,7 @@ const AllRequests = () => {
           height: "24rem",
         }}
       >
-        <div style={{ textAlign: "center" }}>
+        <div style={{ textAlign: "center" }} role="alert" aria-live="assertive">
           <h3
             style={{
               fontSize: "1.125rem",
@@ -207,6 +207,7 @@ const AllRequests = () => {
             onMouseOut={(e) =>
               (e.currentTarget.style.backgroundColor = colors.brand.primary)
             }
+            aria-label="Retry loading requests"
           >
             Try Again
           </button>
@@ -216,7 +217,11 @@ const AllRequests = () => {
   }
 
   return (
-    <>
+    <main
+      role="main"
+      aria-busy={loading ? "true" : "false"}
+      aria-labelledby="all-requests-title"
+    >
       {/* Header Section */}
       <div
         style={{
@@ -235,6 +240,7 @@ const AllRequests = () => {
               color: colors.text.primary,
               fontFamily: "Inter, sans-serif",
             }}
+            id="all-requests-title"
           >
             {categoryFilter
               ? `${categoryMapping[categoryFilter] || categoryFilter} Requests`
@@ -318,6 +324,7 @@ const AllRequests = () => {
               onKeyDown={(e) => {
                 if (e.key === "Enter") applyLocationFilter();
               }}
+              aria-label="Filter by location (district or city)"
             />
             <button
               onClick={applyLocationFilter}
@@ -337,6 +344,7 @@ const AllRequests = () => {
               onMouseOut={(e) =>
                 (e.currentTarget.style.backgroundColor = colors.brand.primary)
               }
+              aria-label="Apply location filter"
             >
               Apply
             </button>
@@ -363,7 +371,8 @@ const AllRequests = () => {
           >
             <img
               src={sortIcon}
-              alt="Sort"
+              alt=""
+              aria-hidden="true"
               style={{
                 width: "100%",
                 height: "100%",
@@ -396,7 +405,8 @@ const AllRequests = () => {
           >
             <img
               src={filterIcon}
-              alt="Filter"
+              alt=""
+              aria-hidden="true"
               style={{
                 width: "100%",
                 height: "100%",
@@ -658,6 +668,8 @@ const AllRequests = () => {
                           colors.background.secondary;
                       }
                     }}
+                    aria-label={`Go to page ${pageNumber}`}
+                    aria-current={isActive ? "page" : undefined}
                   >
                     {pageNumber}
                   </button>
@@ -737,7 +749,7 @@ const AllRequests = () => {
           setSearchParams(newSearchParams);
         }}
       />
-    </>
+    </main>
   );
 };
 

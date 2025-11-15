@@ -221,8 +221,15 @@ const RequestDetail = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[50vh] flex-col gap-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div
+        className="flex justify-center items-center min-h-[50vh] flex-col gap-4"
+        role="status"
+        aria-busy="true"
+      >
+        <div
+          className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"
+          aria-hidden="true"
+        ></div>
         <p className="text-gray-600">Loading request details...</p>
       </div>
     );
@@ -234,7 +241,11 @@ const RequestDetail = () => {
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
         <div className="flex-grow p-6 flex items-center justify-center">
-          <div className="text-center max-w-md">
+          <div
+            className="text-center max-w-md"
+            role="alert"
+            aria-live="assertive"
+          >
             <h2 className="text-2xl font-semibold text-red-600 mb-4">
               Error loading request
             </h2>
@@ -242,6 +253,7 @@ const RequestDetail = () => {
             <button
               onClick={() => navigate("/requests")}
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              aria-label="Back to Requests"
             >
               <ArrowBackIcon className="mr-2 w-4 h-4" />
               Back to Requests
@@ -258,7 +270,11 @@ const RequestDetail = () => {
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar />
         <div className="flex-grow p-6 flex items-center justify-center">
-          <div className="text-center max-w-md">
+          <div
+            className="text-center max-w-md"
+            role="alert"
+            aria-live="assertive"
+          >
             <h2 className="text-2xl font-semibold text-gray-900 mb-4">
               Request not found
             </h2>
@@ -268,6 +284,7 @@ const RequestDetail = () => {
             <button
               onClick={() => navigate("/requests")}
               className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              aria-label="Back to Requests"
             >
               <ArrowBackIcon className="mr-2 w-4 h-4" />
               Back to Requests
@@ -626,7 +643,11 @@ const RequestDetail = () => {
       {/* Success/Error Messages */}
       {deleteSuccess && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg flex items-center">
+          <div
+            className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg flex items-center"
+            role="alert"
+            aria-live="polite"
+          >
             <span>Request deleted successfully! Redirecting...</span>
             <button
               onClick={() => setDeleteSuccess(false)}
@@ -640,7 +661,11 @@ const RequestDetail = () => {
 
       {deleteError && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg flex items-center">
+          <div
+            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg flex items-center"
+            role="alert"
+            aria-live="assertive"
+          >
             <span>{deleteError}</span>
             <button
               onClick={() => setDeleteError(null)}
@@ -653,16 +678,24 @@ const RequestDetail = () => {
       )}
 
       {/* Main Content */}
-      <div className="flex-grow p-6">
+      <div
+        className="flex-grow p-6"
+        role="main"
+        aria-labelledby="request-title"
+      >
         {/* Back Button and Title */}
         <div className="flex items-center mb-6">
           <button
             onClick={() => navigate("/requests")}
             className="mr-4 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
+            aria-label="Back to Requests"
           >
-            <ArrowBackIcon className="w-6 h-6" />
+            <ArrowBackIcon className="w-6 h-6" aria-hidden="true" />
           </button>
-          <h1 className="flex-grow text-3xl font-bold text-gray-900">
+          <h1
+            className="flex-grow text-3xl font-bold text-gray-900"
+            id="request-title"
+          >
             {request.title}
           </h1>
           <div className="flex gap-2 items-center">
@@ -675,8 +708,11 @@ const RequestDetail = () => {
             >
               {urgency.name} Urgency
             </span>
-            <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors">
-              <MoreVertIcon className="w-6 h-6" />
+            <button
+              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="More options"
+            >
+              <MoreVertIcon className="w-6 h-6" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -747,6 +783,15 @@ const RequestDetail = () => {
               <div
                 className="flex items-center mb-6 p-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
                 onClick={() => navigate(`/profile/${request.creator.id}`)}
+                role="link"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    navigate(`/profile/${request.creator.id}`);
+                  }
+                }}
+                aria-label={`View profile of ${request.creator.name} ${request.creator.surname}`}
               >
                 <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg mr-4">
                   {request.creator.name.charAt(0)}
@@ -771,7 +816,10 @@ const RequestDetail = () => {
               {/* Details Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <div className="flex items-center text-gray-600">
-                  <AccessTimeIcon className="w-5 h-5 mr-3 text-gray-400" />
+                  <AccessTimeIcon
+                    className="w-5 h-5 mr-3 text-gray-400"
+                    aria-hidden="true"
+                  />
                   <span className="text-sm">
                     {formatDate(request.deadline)} -{" "}
                     {formatTime(request.deadline)}
@@ -779,12 +827,18 @@ const RequestDetail = () => {
                 </div>
 
                 <div className="flex items-center text-gray-600">
-                  <LocationOnIcon className="w-5 h-5 mr-3 text-gray-400" />
+                  <LocationOnIcon
+                    className="w-5 h-5 mr-3 text-gray-400"
+                    aria-hidden="true"
+                  />
                   <span className="text-sm">{request.location}</span>
                 </div>
 
                 <div className="flex items-center text-gray-600">
-                  <PersonIcon className="w-5 h-5 mr-3 text-gray-400" />
+                  <PersonIcon
+                    className="w-5 h-5 mr-3 text-gray-400"
+                    aria-hidden="true"
+                  />
                   <span className="text-sm">
                     {request.volunteer_number} person
                     {request.volunteer_number > 1 ? "s" : ""} required
@@ -792,7 +846,10 @@ const RequestDetail = () => {
                 </div>
 
                 <div className="flex items-center text-gray-600">
-                  <PhoneIcon className="w-5 h-5 mr-3 text-gray-400" />
+                  <PhoneIcon
+                    className="w-5 h-5 mr-3 text-gray-400"
+                    aria-hidden="true"
+                  />
                   <span className="text-sm">
                     {request.creator.phone_number}
                   </span>

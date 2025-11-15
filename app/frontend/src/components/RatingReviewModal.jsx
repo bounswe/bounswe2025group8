@@ -255,6 +255,7 @@ const RatingReviewModal = ({
     <Dialog
       open={open}
       onClose={onClose}
+      aria-labelledby="rating-review-title"
       PaperProps={{
         sx: {
           borderRadius: "16px",
@@ -265,7 +266,7 @@ const RatingReviewModal = ({
       }}
     >
       {/* Header */}
-      <DialogTitle sx={{ pb: 1, pr: 6 }}>
+      <DialogTitle id="rating-review-title" sx={{ pb: 1, pr: 6 }}>
         <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
           Rate & Review
         </Typography>
@@ -277,6 +278,7 @@ const RatingReviewModal = ({
             top: 8,
             color: "text.secondary",
           }}
+          aria-label="Close"
         >
           <CloseIcon />
         </IconButton>
@@ -317,6 +319,7 @@ const RatingReviewModal = ({
                   setSelectedUser(user);
                 }}
                 displayEmpty
+                aria-label="Select user to review"
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "8px",

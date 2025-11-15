@@ -204,6 +204,9 @@ const SelectVolunteer = () => {
           flexDirection: "column",
           gap: 2,
         }}
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
       >
         <CircularProgress />
         <Typography variant="body1" color="text.secondary">
@@ -226,6 +229,8 @@ const SelectVolunteer = () => {
             alignItems: "center",
             justifyContent: "center",
           }}
+          role="alert"
+          aria-live="assertive"
         >
           <Box sx={{ textAlign: "center", maxWidth: 400 }}>
             <Typography variant="h5" color="error" gutterBottom>
@@ -238,6 +243,7 @@ const SelectVolunteer = () => {
               startIcon={<ArrowBackIcon />}
               onClick={() => navigate(`/requests/${requestId}`)}
               sx={{ mt: 2 }}
+              aria-label="Back to request"
             >
               Back to Request
             </Button>
@@ -287,19 +293,29 @@ const SelectVolunteer = () => {
       <Sidebar />
 
       {/* Main Content */}
-      <Box sx={{ flexGrow: 1, p: 3 }}>
+      <Box
+        sx={{ flexGrow: 1, p: 3 }}
+        component="main"
+        role="main"
+        aria-labelledby="select-volunteer-title"
+      >
         {/* Header */}
         <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
           <IconButton
             onClick={() => navigate(`/requests/${requestId}`)}
             sx={{ mr: 2, color: "text.secondary" }}
+            aria-label="Back to request"
           >
             <ArrowBackIcon />
           </IconButton>
-          <Typography variant="h4" sx={{ flexGrow: 1, fontWeight: "bold" }}>
+          <Typography
+            id="select-volunteer-title"
+            variant="h4"
+            sx={{ flexGrow: 1, fontWeight: "bold" }}
+          >
             Select Volunteer
           </Typography>
-          <IconButton>
+          <IconButton aria-label="More options">
             <MoreVertIcon />
           </IconButton>
         </Box>
@@ -341,6 +357,8 @@ const SelectVolunteer = () => {
               boxShadow: 1,
               mb: 3,
             }}
+            role="status"
+            aria-live="polite"
           >
             <Typography variant="h6" color="text.secondary" gutterBottom>
               No volunteers yet
@@ -382,6 +400,16 @@ const SelectVolunteer = () => {
                     onClick={() =>
                       canSelect && handleVolunteerSelect(volunteer.id)
                     }
+                    role="checkbox"
+                    aria-checked={isSelected}
+                    tabIndex={0}
+                    aria-label={`${volunteer.name} ${volunteer.surname}, rating ${volunteer.rating}, ${volunteer.completedTasks} tasks completed`}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        if (canSelect) handleVolunteerSelect(volunteer.id);
+                      }
+                    }}
                   >
                     {/* Status Badges */}
                     {isCurrentlyAccepted && (
@@ -512,7 +540,10 @@ const SelectVolunteer = () => {
 
                       {/* View Details Arrow */}
                       <Box sx={{ display: "flex", justifyContent: "center" }}>
-                        <ChevronRightIcon sx={{ color: "text.secondary" }} />
+                        <ChevronRightIcon
+                          sx={{ color: "text.secondary" }}
+                          aria-hidden="true"
+                        />
                       </Box>
                     </CardContent>
                   </Card>
@@ -544,6 +575,12 @@ const SelectVolunteer = () => {
                 color: "#666",
               },
             }}
+            aria-disabled={selectedVolunteers.length === 0}
+            aria-label={
+              task?.status === "ASSIGNED"
+                ? `Update selection, ${selectedVolunteers.length} selected`
+                : `Assign volunteers, ${selectedVolunteers.length} selected`
+            }
           >
             {task?.status === "ASSIGNED"
               ? "Update Selection"

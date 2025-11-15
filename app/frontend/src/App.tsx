@@ -16,11 +16,13 @@ import SelectVolunteer from "./pages/SelectVolunteer.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './contexts/ThemeContext'
+import RouteFocusHandler from './components/RouteFocusHandler'
 
 function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
+        <RouteFocusHandler />
         <Routes>
           {/* Public/auth routes (outside main layout) */}
           <Route path="/login" element={<LoginPage />} />

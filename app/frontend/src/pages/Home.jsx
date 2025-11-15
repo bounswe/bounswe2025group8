@@ -57,7 +57,10 @@ const Home = () => {
       try {
         const popularTasks = await requestService.getPopularTasks(6);
         const withImages = popularTasks.map((t) => {
-          const photoFromList = t.photos?.[0]?.url || t.photos?.[0]?.image || t.photos?.[0]?.photo_url;
+          const photoFromList =
+            t.photos?.[0]?.url ||
+            t.photos?.[0]?.image ||
+            t.photos?.[0]?.photo_url;
           const preferred = t.primary_photo_url || photoFromList || null;
           return { ...t, imageUrl: toAbsoluteUrl(preferred) };
         });
@@ -80,16 +83,23 @@ const Home = () => {
   // Using the centralized getCategoryImage function from constants/categories.js
 
   return (
-    <div
+    <main
+      role="main"
+      aria-labelledby="home-page-title"
       style={{ backgroundColor: colors.background.primary, minHeight: "100vh" }}
     >
       {" "}
       {/* Popular Categories Section */}
-      <div className="mb-12">
+      <div
+        className="mb-12"
+        role="region"
+        aria-labelledby="popular-categories-title"
+      >
         <div className="flex justify-between items-center mb-4">
           <h2
             className="text-2xl font-medium"
             style={{ color: colors.text.primary }}
+            id="popular-categories-title"
           >
             Popular Categories
           </h2>
@@ -121,15 +131,26 @@ const Home = () => {
         </div>
 
         {loading.categories ? (
-          <div className="flex justify-center py-12">
+          <div
+            className="flex justify-center py-12"
+            role="status"
+            aria-live="polite"
+            aria-label="Loading popular categories"
+            aria-busy="true"
+          >
             <div
               className="animate-spin rounded-full h-8 w-8 border-b-2"
               style={{ borderColor: colors.brand.primary }}
+              aria-hidden="true"
             ></div>
           </div>
         ) : error.categories ? (
-          <div className="text-center py-8">
-            <p className="mb-4" style={{ color: colors.semantic.error }}>
+          <div className="text-center py-8" role="alert" aria-live="assertive">
+            <p
+              className="mb-4"
+              style={{ color: colors.semantic.error }}
+              id="categories-error"
+            >
               {error.categories}
             </p>
             <button
@@ -138,6 +159,7 @@ const Home = () => {
                 backgroundColor: colors.brand.primary,
                 color: "#FFFFFF",
               }}
+              aria-describedby="categories-error"
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor =
                   colors.brand.primaryHover;
@@ -177,6 +199,7 @@ const Home = () => {
                     setLoading((prev) => ({ ...prev, categories: false }));
                   });
               }}
+              aria-label="Retry loading categories"
             >
               Try Again
             </button>
@@ -205,11 +228,16 @@ const Home = () => {
         )}
       </div>{" "}
       {/* Popular Requests Section */}
-      <div className="mb-12">
+      <div
+        className="mb-12"
+        role="region"
+        aria-labelledby="popular-requests-title"
+      >
         <div className="flex justify-between items-center mb-4">
           <h2
             className="text-2xl font-medium"
             style={{ color: colors.text.primary }}
+            id="popular-requests-title"
           >
             Popular Requests
           </h2>
@@ -241,15 +269,26 @@ const Home = () => {
         </div>
 
         {loading.requests ? (
-          <div className="flex justify-center py-12">
+          <div
+            className="flex justify-center py-12"
+            role="status"
+            aria-live="polite"
+            aria-label="Loading popular requests"
+            aria-busy="true"
+          >
             <div
               className="animate-spin rounded-full h-8 w-8 border-b-2"
               style={{ borderColor: colors.brand.primary }}
+              aria-hidden="true"
             ></div>
           </div>
         ) : error.requests ? (
-          <div className="text-center py-8">
-            <p className="mb-4" style={{ color: colors.semantic.error }}>
+          <div className="text-center py-8" role="alert" aria-live="assertive">
+            <p
+              className="mb-4"
+              style={{ color: colors.semantic.error }}
+              id="requests-error"
+            >
               {error.requests}
             </p>
             <button
@@ -258,6 +297,7 @@ const Home = () => {
                 backgroundColor: colors.brand.primary,
                 color: "#FFFFFF",
               }}
+              aria-describedby="requests-error"
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor =
                   colors.brand.primaryHover;
@@ -292,6 +332,7 @@ const Home = () => {
                     setLoading((prev) => ({ ...prev, requests: false }));
                   });
               }}
+              aria-label="Retry loading requests"
             >
               Try Again
             </button>
@@ -317,7 +358,11 @@ const Home = () => {
           </div>
         )}
       </div>
-    </div>
+      {/* Page Title for landmark association */}
+      <h1 id="home-page-title" className="sr-only">
+        Home
+      </h1>
+    </main>
   );
 };
 

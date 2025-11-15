@@ -28,9 +28,13 @@ const HomeDashboard = () => {
   ];
 
   return (
-    <div className="container mx-auto px-4">
+    <main
+      role="main"
+      aria-labelledby="home-dashboard-title"
+      className="container mx-auto px-4"
+    >
       <div className="mb-8 text-left">
-        <h1 className="text-4xl mb-4">
+        <h1 className="text-4xl mb-4" id="home-dashboard-title">
           {currentUser
             ? `Welcome back, ${currentUser.name || "User"}!`
             : "Welcome to Neighborhood Assistance Board!"}
@@ -41,7 +45,11 @@ const HomeDashboard = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div
+        className="grid grid-cols-1 md:grid-cols-3 gap-8"
+        role="region"
+        aria-label="Quick links"
+      >
         {quickLinks.map((link) => (
           <div key={link.title} className="col-span-1">
             <div
@@ -57,6 +65,7 @@ const HomeDashboard = () => {
                   className="text-sm hover:underline transition-colors"
                   onClick={() => navigate(link.path)}
                   style={{ color: link.color }}
+                  aria-label={`Explore ${link.title}`}
                 >
                   Explore
                 </button>
@@ -66,8 +75,14 @@ const HomeDashboard = () => {
         ))}
       </div>
 
-      <div className="mt-12 mb-8 text-center">
-        <h2 className="text-2xl mb-4">How It Works</h2>
+      <div
+        className="mt-12 mb-8 text-center"
+        role="region"
+        aria-labelledby="how-it-works-title"
+      >
+        <h2 className="text-2xl mb-4" id="how-it-works-title">
+          How It Works
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
           <div className="col-span-1">
             <div className="p-6">
@@ -96,7 +111,7 @@ const HomeDashboard = () => {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 
