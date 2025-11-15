@@ -98,6 +98,12 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Photo upload constraints (in megabytes)
+MAX_PHOTO_UPLOAD_MB = int(os.environ.get('MAX_PHOTO_UPLOAD_MB', '10'))
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'core.RegisteredUser'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -117,6 +123,7 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
+CORS_ALLOW_CREDENTIALS = True  # Allow cookies in cross-origin requests
 
 # CSRF ayarları - Token auth kullandığımız için esnek
 CSRF_TRUSTED_ORIGINS = ['http://*', 'https://*']
