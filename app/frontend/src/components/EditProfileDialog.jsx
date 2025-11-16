@@ -30,6 +30,7 @@ import {
 } from "../features/profile/store/editProfileSlice";
 import { updateUserProfile as updateAuthUser } from "../features/authentication/store/authSlice";
 import { useTheme } from "../hooks/useTheme";
+import { toAbsoluteUrl } from "../utils/url";
 
 const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
   const dispatch = useDispatch();
@@ -205,7 +206,11 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
           <Box display="flex" flexDirection="column" alignItems="center" mb={3}>
             <Box position="relative">
               <Avatar
-                src={user?.profilePicture}
+                src={toAbsoluteUrl(
+                  user?.profile_photo ||
+                    user?.profilePhoto ||
+                    user?.profilePicture
+                )}
                 alt={user?.name}
                 sx={{
                   width: 100,
