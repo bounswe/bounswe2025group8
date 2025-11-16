@@ -14,6 +14,7 @@ import DataObjectIcon from "@mui/icons-material/DataObject";
 import logo from "../assets/logo.png";
 import useAuth from "../features/authentication/hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
+import { toAbsoluteUrl } from "../utils/url";
 // import { logout } from "../store/slices/authSlice";
 // import { logout as logoutService } from "../services/authService";
 
@@ -22,6 +23,13 @@ const Sidebar = () => {
   const location = useLocation();
   const { isAuthenticated, currentUser, userRole, logout } = useAuth();
   const { colors, theme } = useTheme();
+  const resolvedAvatar =
+    toAbsoluteUrl(
+      currentUser?.profile_photo ||
+        currentUser?.profilePhoto ||
+        currentUser?.profilePicture ||
+        currentUser?.avatar
+    ) || "https://randomuser.me/api/portraits/men/32.jpg";
 
   const handleLogout = async () => {
     try {
@@ -274,11 +282,7 @@ const Sidebar = () => {
             aria-label="View your profile"
           >
             <img
-              src={
-                currentUser?.avatar ||
-                currentUser?.profilePicture ||
-                "https://randomuser.me/api/portraits/men/32.jpg"
-              }
+              src={resolvedAvatar}
               alt={`${currentUser?.name || "User"}'s avatar`}
               className="w-10 h-10 rounded-full object-cover"
             />
