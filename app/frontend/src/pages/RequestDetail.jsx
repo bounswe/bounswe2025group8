@@ -198,6 +198,14 @@ const RequestDetail = () => {
     });
   };
 
+  const requesterPhoto = toAbsoluteUrl(
+    request?.creator?.profile_photo ||
+      request?.creator?.profilePhoto ||
+      request?.creator?.profilePicture ||
+      request?.creator?.photo ||
+      request?.creator?.avatar
+  );
+
   // Get time ago
   const getTimeAgo = (dateString) => {
     const now = new Date();
@@ -613,15 +621,25 @@ const RequestDetail = () => {
             <div className="p-6 flex flex-col justify-between">
               {/* Requester Info */}
               <div
-                className="flex items-center mb-6 p-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
-                onClick={() => navigate(`/profile/${request.creator.id}`)}
-              >
-                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg mr-4">
-                  {request.creator.name.charAt(0)}
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {request.creator.name} {request.creator.surname}
+              className="flex items-center mb-6 p-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+              onClick={() => navigate(`/profile/${request.creator.id}`)}
+            >
+              <div className="w-12 h-12 mr-4">
+                {requesterPhoto ? (
+                  <img
+                    src={requesterPhoto}
+                    alt={`${request.creator.name} ${request.creator.surname}`}
+                    className="w-full h-full rounded-full object-cover border border-gray-200"
+                  />
+                ) : (
+                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                    {request.creator.name.charAt(0)}
+                  </div>
+                )}
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {request.creator.name} {request.creator.surname}
                   </h3>
                   <p className="text-sm text-gray-500">
                     {getTimeAgo(request.created_at)}
