@@ -51,13 +51,13 @@ export const fetchUserCreatedRequests = createAsyncThunk(
 
 export const fetchUserVolunteeredRequests = createAsyncThunk(
   'profile/fetchUserVolunteeredRequests',
-  async ({ userId, page = 1, limit = 10 }, { rejectWithValue }) => {
+  async ({ userId, page = 1, limit = 10, taskStatus = null }, { rejectWithValue }) => {
     try {
       // For 'current' user, replace with the actual ID from local storage
       const currentUserId = localStorage.getItem('userId');
       const actualUserId = userId === 'current' && currentUserId ? currentUserId : userId;
       
-      const response = await profileService.getUserVolunteeredRequests(actualUserId, page, limit);
+      const response = await profileService.getUserVolunteeredRequests(actualUserId, page, limit, taskStatus);
       return response;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.response?.data || 'Error fetching volunteered requests');

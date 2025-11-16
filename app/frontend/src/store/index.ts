@@ -4,6 +4,7 @@ import createRequestReducer from '../features/request/store/createRequestSlice'
 import allRequestsReducer from '../features/request/store/allRequestsSlice'
 import profileReducer from '../features/profile/store/profileSlice'
 import editProfileReducer from '../features/profile/store/editProfileSlice'
+import notificationReducer from '../features/notification/store/notificationSlice'
 
 const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ const store = configureStore({
     allRequests: allRequestsReducer,
     profile: profileReducer,
     editProfile: editProfileReducer,
+    notification: notificationReducer,
   },
 })
 

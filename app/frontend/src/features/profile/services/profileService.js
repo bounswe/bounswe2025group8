@@ -74,12 +74,22 @@ export const getUserCreatedRequests = async (userId, page = 1, limit = 10, statu
 /**
  * Fetch tasks a user has volunteered for
  */
-export const getUserVolunteeredRequests = async (userId, page = 1, limit = 10) => {
+export const getUserVolunteeredRequests = async (userId, page = 1, limit = 10, taskStatus = null) => {
   try {
     if (!userId) throw new Error('User ID is required');
-    const res = await api.get(`/volunteers/`, {
-      params: { volunteer_id: userId, page, limit },
-    });
+    const params = { 
+      volunteer_id: userId, 
+      page, 
+      limit,
+      volunteer_status: 'ACCEPTED' // Only show accepted volunteer assignments
+    };
+    
+    // Add task status filter if provided
+    if (taskStatus) {
+      params.task_status = taskStatus;
+    }
+    
+    const res = await api.get(`/volunteers/`, { params });
     return (res.data && res.data.data) ? res.data.data : res.data;
   } catch (error) {
     console.error('Error fetching volunteered tasks:', error);
