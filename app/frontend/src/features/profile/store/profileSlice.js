@@ -240,7 +240,18 @@ const profileSlice = createSlice({
       })
       .addCase(uploadProfilePicture.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = {...state.user, profilePicture: action.payload.profilePicture};
+        const newPhoto =
+          action.payload?.profile_photo ||
+          action.payload?.profilePhoto ||
+          action.payload?.profilePicture ||
+          action.payload?.photo ||
+          null;
+        state.user = {
+          ...state.user,
+          profile_photo: newPhoto,
+          profilePhoto: newPhoto,
+          profilePicture: newPhoto,
+        };
         state.error = null;
         state.uploadSuccess = true;
       })
