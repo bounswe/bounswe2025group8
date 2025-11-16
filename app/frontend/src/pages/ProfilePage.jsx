@@ -47,6 +47,7 @@ import ReviewCard from "../components/ReviewCard";
 import Badge from "../components/Badge";
 import EditProfileDialog from "../components/EditProfileDialog";
 import { useTheme } from "../hooks/useTheme";
+import { toAbsoluteUrl } from "../utils/url";
 // No need for CSS module import as we're using Material UI's sx prop
 
 const ProfilePage = () => {
@@ -408,7 +409,11 @@ const ProfilePage = () => {
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <Box sx={{ position: "relative" }}>
                 <Avatar
-                  src={user.profilePicture}
+                  src={toAbsoluteUrl(
+                    user.profile_photo ||
+                      user.profilePhoto ||
+                      user.profilePicture
+                  )}
                   alt={user.name}
                   sx={{ width: 80, height: 80 }}
                 />
