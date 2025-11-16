@@ -6,12 +6,23 @@ from core.utils import password_meets_requirements, validate_phone_number
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for the RegisteredUser model"""
+    profile_photo = serializers.SerializerMethodField()
+    
     class Meta:
         model = RegisteredUser
         fields = ['id', 'name', 'surname', 'username', 'email', 
                  'phone_number', 'location', 'rating', 
-                 'completed_task_count', 'is_active']
-        read_only_fields = ['id', 'rating', 'completed_task_count', 'is_active']
+                 'completed_task_count', 'is_active', 'profile_photo']
+        read_only_fields = ['id', 'rating', 'completed_task_count', 'is_active', 'profile_photo']
+    
+    def get_profile_photo(self, obj):
+        """Get the absolute URL for the profile photo"""
+        if obj.profile_photo:
+            request = self.context.get('request')
+            if request is not None:
+                return request.build_absolute_uri(obj.profile_photo.url)
+            return obj.profile_photo.url
+        return None
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
