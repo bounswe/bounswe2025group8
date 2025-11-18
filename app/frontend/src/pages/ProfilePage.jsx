@@ -35,13 +35,16 @@ import {
   fetchUserBadges,
   uploadProfilePicture,
   clearUpdateSuccess,
+  clearUploadSuccess,
 } from "../features/profile/store/profileSlice";
 import {
   selectUpdateSuccess,
   clearSuccess as clearEditProfileSuccess,
   fetchCurrentUserProfile,
   updateUserLocally,
+  selectUploadSuccess as selectEditUploadSuccess,
 } from "../features/profile/store/editProfileSlice";
+import { updateUserProfile as updateAuthUser } from "../features/authentication/store/authSlice";
 import RequestCard from "../components/RequestCard";
 import ReviewCard from "../components/ReviewCard";
 import Badge from "../components/Badge";
@@ -224,6 +227,10 @@ const ProfilePage = () => {
   // Close edit profile dialog and refresh data when update is successful
   const { updateSuccess } = useSelector((state) => state.profile);
   const editProfileUpdateSuccess = useSelector(selectUpdateSuccess);
+  const editProfileUploadSuccess = useSelector(selectEditUploadSuccess);
+  const profileUploadSuccess = useSelector(
+    (state) => state.profile?.uploadSuccess
+  );
 
   useEffect(() => {
     if (updateSuccess) {
@@ -242,6 +249,32 @@ const ProfilePage = () => {
     }
   }, [editProfileUpdateSuccess, dispatch]);
 
+  // Refresh profile when profile photo upload succeeds (either from profile or edit dialog)
+  useEffect(() => {
+    if (editProfileUploadSuccess || profileUploadSuccess) {
+      const refreshId =
+        effectiveProfileId ||
+        effectiveLoggedInId ||
+        localStorage.getItem("userId");
+      if (refreshId) {
+        dispatch(fetchUserProfile(refreshId));
+        dispatch(fetchCurrentUserProfile());
+      }
+      if (profileUploadSuccess) {
+        dispatch(clearUploadSuccess());
+      }
+      if (editProfileUploadSuccess) {
+        dispatch(clearEditProfileSuccess());
+      }
+    }
+  }, [
+    editProfileUploadSuccess,
+    profileUploadSuccess,
+    dispatch,
+    effectiveProfileId,
+    effectiveLoggedInId,
+  ]);
+
   // Update review page when user changes
   useEffect(() => {
     if (userId) {
@@ -255,6 +288,34 @@ const ProfilePage = () => {
       dispatch(updateUserLocally(user));
     }
   }, [user, canEdit, dispatch]);
+
+  // Sync new profile photo into auth slice so sidebar/footer avatar updates without refresh
+  useEffect(() => {
+    if (!canEdit) return;
+    const newPhoto =
+      user?.profile_photo || user?.profilePhoto || user?.profilePicture;
+    if (!newPhoto) return;
+    const authPhoto =
+      auth?.user?.profile_photo ||
+      auth?.user?.profilePhoto ||
+      auth?.user?.profilePicture;
+    if (newPhoto !== authPhoto) {
+      dispatch(
+        updateAuthUser({
+          profile_photo: newPhoto,
+          profilePhoto: newPhoto,
+          profilePicture: newPhoto,
+        })
+      );
+    }
+  }, [
+    canEdit,
+    user?.profile_photo,
+    user?.profilePhoto,
+    user?.profilePicture,
+    auth?.user,
+    dispatch,
+  ]);
   const handleRoleChange = (event, newValue) => {
     setRoleTab(newValue);
     setRequestsTab(0); // Reset to active requests whenever role changes
@@ -432,11 +493,17 @@ const ProfilePage = () => {
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <Box sx={{ position: "relative" }}>
                 <Avatar
-                  src={toAbsoluteUrl(
-                    user.profile_photo ||
-                      user.profilePhoto ||
-                      user.profilePicture
-                  )}
+                  src={
+                    toAbsoluteUrl(
+                      user.profile_photo ||
+                        user.profilePhoto ||
+                        user.profilePicture
+                    ) ||
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                      `${user.name || ""} ${user.surname || ""}`.trim() ||
+                        "User"
+                    )}&background=random`
+                  }
                   alt={user.name}
                   sx={{ width: 80, height: 80 }}
                 />
