@@ -1,18 +1,21 @@
-FROM node:24-alpine
-
-WORKDIR /app
-
-# Copy package.json and package-lock.json
-COPY package*.json ./
-
-# Install dependencies
-RUN npm install
-
-# Copy the rest of the application
-COPY . .
-
-# Expose port
-EXPOSE 5173
-
-# Development command
-CMD ["npm", "run", "dev"]
+# ---- Build Stage ----
+    FROM node:18-alpine AS build
+    WORKDIR /app
+    
+    COPY package*.json ./
+    RUN npm install
+    
+    COPY . .
+    RUN npm run build
+    
+    # ---- Production Stage ----
+    FROM caddy:2-alpine
+    WORKDIR /usr/share/caddy
+    
+    COPY Caddyfile /etc/caddy/Caddyfile
+    COPY --from=build /app/dist . 
+    
+    EXPOSE 80
+    EXPOSE 443
+    
+    CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile"]

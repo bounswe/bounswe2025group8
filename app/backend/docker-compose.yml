@@ -53,22 +53,6 @@ services:
     networks:
       - app-network
 
-  frontend:
-    build: 
-      context: ../frontend
-      dockerfile: Dockerfile
-    container_name: neighborhood_frontend
-    ports:
-      - "5173:5173"
-    volumes:
-      - ../frontend:/app
-      - node_modules:/app/node_modules
-    depends_on:
-      - backend
-    environment:
-      VITE_API_URL: https://neighborhelp.webhop.me/api
-    networks:
-      - app-network
 
   caddy:
     image: caddy:2-alpine
