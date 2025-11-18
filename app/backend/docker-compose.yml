@@ -68,7 +68,6 @@ services:
       - caddy_config:/config
     depends_on:
       - backend
-      - frontend
     networks:
       - app-network
 
