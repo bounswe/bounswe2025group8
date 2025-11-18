@@ -54,22 +54,23 @@ services:
       - app-network
 
 
-  caddy:
-    image: caddy:2-alpine
-    container_name: neighborhood_caddy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - backend
-    networks:
-      - app-network
+caddy:
+  build:
+    context: ../frontend
+    dockerfile: Dockerfile
+  container_name: neighborhood_caddy
+  restart: unless-stopped
+  ports:
+    - "80:80"
+    - "443:443"
+    - "443:443/udp"
+  volumes:
+    - caddy_data:/data
+    - caddy_config:/config
+  depends_on:
+    - backend
+  networks:
+    - app-network
 
 networks:
   app-network:
