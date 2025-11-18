@@ -24,13 +24,21 @@ const Sidebar = () => {
   const location = useLocation();
   const { isAuthenticated, currentUser, userRole, logout } = useAuth();
   const { colors, theme } = useTheme();
+  const fallbackName =
+    `${currentUser?.name || ""} ${currentUser?.surname || ""}`.trim() ||
+    currentUser?.username ||
+    currentUser?.email ||
+    "User";
   const resolvedAvatar =
     toAbsoluteUrl(
       currentUser?.profile_photo ||
         currentUser?.profilePhoto ||
         currentUser?.profilePicture ||
         currentUser?.avatar
-    ) || "https://randomuser.me/api/portraits/men/32.jpg";
+    ) ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      fallbackName
+    )}&background=random`;
   const { unreadCount } = useUnreadCount({
     autoFetch: isAuthenticated,
     pollInterval: isAuthenticated ? 60000 : 0, // Poll every minute if authenticated
