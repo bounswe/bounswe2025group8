@@ -13,18 +13,41 @@ import type {
   VerifyTokenReturn, 
   ResetPasswordReturn, 
 } from '../types';
+import { toAbsoluteUrl } from '../../../utils/url';
 
 
+
+const resolveProfilePhoto = (userData: Partial<AuthUser> & Record<string, unknown> | null | undefined) => {
+  return toAbsoluteUrl(
+    userData?.profile_photo ||
+      userData?.profilePhoto ||
+      userData?.profilePicture ||
+      (userData as Record<string, unknown> | undefined)?.photo ||
+      (userData as Record<string, unknown> | undefined)?.avatar ||
+      null
+  );
+};
 
 // Load user from localStorage using centralized utility
 const getUserFromStorage = (): Omit<AuthState, 'loading' | 'error'> => {
   const user = authStorage.getUser();
+  const normalizedUser = user
+    ? (() => {
+        const photo = resolveProfilePhoto(user);
+        return {
+          ...user,
+          profilePicture: photo ?? user.profilePicture ?? null,
+          profilePhoto: photo ?? (user as Record<string, unknown>)?.profilePhoto ?? null,
+          profile_photo: photo ?? (user as Record<string, unknown>)?.profile_photo ?? null,
+        };
+      })()
+    : null;
   const token = authStorage.getToken();
   const role = authStorage.getRole();
   
-  return user && token ? {
+  return normalizedUser && token ? {
     isAuthenticated: true,
-    user,
+    user: normalizedUser,
     role,
     token
   } : {
@@ -57,6 +80,7 @@ export const fetchUserProfileAsync = createAsyncThunk<
       const response = await api.get(`/users/${userId}/`);
       
       const userData = response.data?.data || response.data;
+      const profilePhoto = resolveProfilePhoto(userData);
       
       const profileUser: AuthUser = {
         id: userData.id,
@@ -65,7 +89,9 @@ export const fetchUserProfileAsync = createAsyncThunk<
         surname: userData.surname || userData.last_name || '',
         username: userData.username || '',
         phone: userData.phone || userData.phone_number || '',
-        profilePicture: userData.profilePicture || userData.photo || null,
+        profilePicture: profilePhoto,
+        profilePhoto,
+        profile_photo: profilePhoto,
         rating: userData.rating || 0,
       };
       

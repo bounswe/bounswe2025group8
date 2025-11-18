@@ -1,5 +1,17 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+import os
+import uuid
+
+
+def user_profile_photo_path(instance, filename):
+    """Generate unique file path for user profile photos"""
+    # Get the file extension
+    ext = filename.split('.')[-1]
+    # Generate a unique filename
+    filename = f"{uuid.uuid4()}.{ext}"
+    # Return the upload path
+    return os.path.join('profile_photos', str(instance.id), filename)
 
 
 class UserManager(BaseUserManager):
@@ -58,6 +70,7 @@ class RegisteredUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     reset_token = models.CharField(max_length=100, null=True, blank=True)
     reset_token_expiry = models.DateTimeField(null=True, blank=True)
+    profile_photo = models.ImageField(upload_to=user_profile_photo_path, null=True, blank=True)
     
     objects = UserManager()
     

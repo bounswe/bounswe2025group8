@@ -27,9 +27,11 @@ import {
   selectValidationErrors,
   selectUpdateSuccess,
   selectUser,
+  selectUploadSuccess,
 } from "../features/profile/store/editProfileSlice";
 import { updateUserProfile as updateAuthUser } from "../features/authentication/store/authSlice";
 import { useTheme } from "../hooks/useTheme";
+import { toAbsoluteUrl } from "../utils/url";
 
 const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
   const dispatch = useDispatch();
@@ -42,8 +44,10 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
   const validationErrors = useSelector(selectValidationErrors);
   const updateSuccess = useSelector(selectUpdateSuccess);
   const editProfileUser = useSelector(selectUser);
+  const uploadSuccess = useSelector(selectUploadSuccess);
 
   const loading = updating || uploading;
+  const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
   // Form state
   const [formData, setFormData] = useState({
@@ -53,6 +57,9 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
     email: "",
     phone: "",
   });
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [selectedPhotoFile, setSelectedPhotoFile] = useState(null);
+  const [photoError, setPhotoError] = useState(null);
 
   // Fetch current user profile when dialog opens
   useEffect(() => {
@@ -89,6 +96,36 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
     }
   }, [user, editProfileUser, open]);
 
+  // Clear local photo preview when the source photo changes or dialog closes
+  useEffect(() => {
+    if (!open) {
+      if (photoPreview) {
+        URL.revokeObjectURL(photoPreview);
+      }
+      setPhotoPreview(null);
+      setSelectedPhotoFile(null);
+      setPhotoError(null);
+      return;
+    }
+
+    const latestPhoto =
+      editProfileUser?.profile_photo ||
+      editProfileUser?.profilePhoto ||
+      editProfileUser?.profilePicture;
+    if (latestPhoto && photoPreview) {
+      URL.revokeObjectURL(photoPreview);
+      setPhotoPreview(null);
+      setSelectedPhotoFile(null);
+      setPhotoError(null);
+    }
+  }, [
+    open,
+    photoPreview,
+    editProfileUser?.profile_photo,
+    editProfileUser?.profilePhoto,
+    editProfileUser?.profilePicture,
+  ]);
+
   // Close dialog when update is successful
   useEffect(() => {
     if (updateSuccess) {
@@ -112,15 +149,35 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
       console.log(
         "EditProfileDialog - Auth user updated, sidebar should refresh automatically"
       );
-
-      // Clear success state and close dialog
-      dispatch(clearSuccess());
-      if (onSuccess) {
-        onSuccess();
-      }
-      onClose();
     }
   }, [updateSuccess, onClose, onSuccess, dispatch, formData]);
+
+  // Propagate uploaded profile picture to auth slice and parent
+  useEffect(() => {
+    if (!uploadSuccess) return;
+
+    const latestPhoto =
+      editProfileUser?.profile_photo ||
+      editProfileUser?.profilePhoto ||
+      editProfileUser?.profilePicture;
+
+    if (latestPhoto) {
+      dispatch(
+        updateAuthUser({
+          profile_photo: latestPhoto,
+          profilePhoto: latestPhoto,
+          profilePicture: latestPhoto,
+        })
+      );
+    }
+  }, [
+    uploadSuccess,
+    editProfileUser?.profile_photo,
+    editProfileUser?.profilePhoto,
+    editProfileUser?.profilePicture,
+    dispatch,
+    onSuccess,
+  ]);
 
   // Clear errors when dialog closes
   useEffect(() => {
@@ -137,7 +194,7 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Only send editable fields to the backend
@@ -152,15 +209,52 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
       "EditProfileDialog - Submitting editable data only:",
       editableData
     );
-    dispatch(updateUserProfile(editableData));
+    const tasks = [];
+    tasks.push(dispatch(updateUserProfile(editableData)).unwrap());
+    if (selectedPhotoFile) {
+      tasks.push(dispatch(uploadProfilePicture(selectedPhotoFile)).unwrap());
+    }
+
+    try {
+      await Promise.all(tasks);
+      dispatch(clearSuccess());
+      setSelectedPhotoFile(null);
+      setPhotoPreview(null);
+      if (onSuccess) {
+        onSuccess();
+      }
+      onClose();
+    } catch (err) {
+      console.error("EditProfileDialog - submit failed:", err);
+    }
   };
 
   const handleProfilePictureUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      dispatch(uploadProfilePicture(file));
+      if (file.size > MAX_PHOTO_SIZE_BYTES) {
+        setPhotoError("Profile picture must be 5MB or smaller.");
+        return;
+      }
+      setPhotoError(null);
+      if (photoPreview) {
+        URL.revokeObjectURL(photoPreview);
+      }
+      setSelectedPhotoFile(file);
+      setPhotoPreview(URL.createObjectURL(file));
     }
   };
+
+  const resolvedUser =
+    editProfileUser && Object.keys(editProfileUser).length > 0
+      ? editProfileUser
+      : user;
+  const resolvedPhoto = toAbsoluteUrl(
+    photoPreview ||
+      resolvedUser?.profile_photo ||
+      resolvedUser?.profilePhoto ||
+      resolvedUser?.profilePicture
+  );
 
   return (
     <Dialog
@@ -205,8 +299,12 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
           <Box display="flex" flexDirection="column" alignItems="center" mb={3}>
             <Box position="relative">
               <Avatar
-                src={user?.profilePicture}
-                alt={user?.name}
+                src={resolvedPhoto}
+                alt={
+                  resolvedUser?.name ||
+                  `${resolvedUser?.name || ""} ${resolvedUser?.surname || ""}` ||
+                  "User"
+                }
                 sx={{
                   width: 100,
                   height: 100,
@@ -214,6 +312,17 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
                   border: `3px solid ${colors.border.primary}`,
                 }}
               />
+              {uploading && (
+                <CircularProgress
+                  size={88}
+                  sx={{
+                    color: colors.brand.primary,
+                    position: "absolute",
+                    top: 6,
+                    left: 6,
+                  }}
+                />
+              )}
               <IconButton
                 component="label"
                 sx={{
@@ -241,6 +350,17 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
             <Typography variant="caption" sx={{ color: colors.text.secondary }}>
               Click the camera icon to change your profile picture
             </Typography>
+            {photoError && (
+              <Typography
+                variant="caption"
+                sx={{
+                  mt: 1,
+                  color: colors.semantic.error,
+                }}
+              >
+                {photoError}
+              </Typography>
+            )}
           </Box>
 
           {/* Error message */}
