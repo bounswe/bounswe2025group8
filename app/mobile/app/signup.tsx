@@ -124,8 +124,15 @@ export default function SignUp() {
         style={styles.keyboardAvoidingView}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={colors.primary} />
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <Ionicons name="arrow-back" size={24} color={colors.primary}  accessible={false} importantForAccessibility="no"/>
             <Text style={[styles.backText, { color: colors.primary }]}>Back</Text>
           </TouchableOpacity>
 
@@ -147,6 +154,7 @@ export default function SignUp() {
               onChangeText={setFullName}
               editable={!isLoading}
               returnKeyType="next"
+              accessibilityLabel="Full name"
             />
           </View>
 
@@ -162,6 +170,7 @@ export default function SignUp() {
               autoCapitalize="none"
               editable={!isLoading}
               returnKeyType="next"
+              accessibilityLabel="Username"
             />
           </View>
 
@@ -177,6 +186,7 @@ export default function SignUp() {
               keyboardType="phone-pad"
               editable={!isLoading}
               returnKeyType="next"
+              accessibilityLabel="Phone number"
             />
           </View>
 
@@ -193,6 +203,7 @@ export default function SignUp() {
               autoCapitalize="none"
               editable={!isLoading}
               returnKeyType="next"
+              accessibilityLabel="Email address"
             />
           </View>
 
@@ -209,8 +220,15 @@ export default function SignUp() {
               editable={!isLoading}
               returnKeyType="done"
               onSubmitEditing={Keyboard.dismiss}
+              accessibilityLabel="Password"
             />
-            <Pressable onPress={() => setShowPwd(v => !v)}>
+            <Pressable
+              onPress={() => setShowPwd(v => !v)}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel={showPwd ? 'Hide password' : 'Show password'}
+            >
               <Ionicons
                 name={showPwd ? 'eye' : 'eye-off'}
                 size={20}
@@ -224,6 +242,8 @@ export default function SignUp() {
               onPress={() => setAgree(a => !a)} 
               hitSlop={8}
               disabled={isLoading}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: agree, disabled: isLoading }}
             >
               <Ionicons
                 name={agree ? 'checkbox' : 'square-outline'}
@@ -240,6 +260,10 @@ export default function SignUp() {
               onPress={() => router.push({ pathname: '/terms' })}
               hitSlop={8}
               disabled={isLoading}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="View terms and conditions"
             >
               <Text style={[styles.rememberText, styles.linkText, { color: colors.primary }]}>
                 Terms &amp; Conditions
@@ -256,6 +280,11 @@ export default function SignUp() {
             ]}
             disabled={!agree || isLoading}
             onPress={handleSignUp}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Sign up"
+            accessibilityState={{ disabled: !agree || isLoading }}
           >
             <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
               {isLoading ? 'Signing up...' : 'Sign Up'}
@@ -267,7 +296,13 @@ export default function SignUp() {
             <Text style={[styles.promptText, { color: colors.text }]}>
               Have an account?
             </Text>
-            <TouchableOpacity onPress={() => router.replace('/signin')}>
+            <TouchableOpacity
+              onPress={() => router.replace('/signin')}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Go to login"
+            >
               <Text style={[styles.promptLink, { color: colors.primary }]}>
                 {' '}Login
               </Text>

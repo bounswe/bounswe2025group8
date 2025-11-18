@@ -84,17 +84,36 @@ export default function Categories() {
         <Image source={require('../assets/images/logo.png')} style={styles.logo} />
         {/* Always show notifications and settings buttons */}
         <View style={styles.icons}>
-          <TouchableOpacity onPress={() => router.push('/notifications')}>
-            <Ionicons name="notifications-outline" size={24} color={colors.text} />
+          <TouchableOpacity
+            onPress={() => router.push('/notifications')}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Open notifications"
+          >
+            <Ionicons name="notifications-outline" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/settings')}>
-            <Ionicons name="settings-outline" size={24} color={colors.text} />
+          <TouchableOpacity
+            onPress={() => router.push('/settings')}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Open settings"
+          >
+            <Ionicons name="settings-outline" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Search bar */}
-      <TouchableOpacity style={[styles.searchWrapper, { borderColor: colors.border }]} onPress={() => router.push('/search')}>
+      <TouchableOpacity
+        style={[styles.searchWrapper, { borderColor: colors.border }]}
+        onPress={() => router.push('/search')}
+        accessible
+
+        accessibilityRole="button"
+        accessibilityLabel="Search categories"
+      >
         <Ionicons name="search-outline" size={20} color={colors.icon} />
         <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>Search a Category</Text>
       </TouchableOpacity>
@@ -115,6 +134,10 @@ export default function Categories() {
             key={cat.id}
             style={[styles.catRow, { backgroundColor: colors.card, shadowColor: colors.overlay }]}
             onPress={() => router.push(('/category/' + cat.id) as any)}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel={`Open category ${cat.name}`}
           >
             <Image source={require('../assets/images/help.png')} style={styles.catImage} />
             <View>
@@ -126,30 +149,73 @@ export default function Categories() {
 
       {/* Bottom navigation bar */}
       <View style={[styles.bottomBar, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
-        <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/feed')}>
+        <TouchableOpacity
+          style={styles.tabItem}
+          onPress={() => router.push('/feed')}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Go to home feed"
+        >
           <Ionicons name="home" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Home</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem}>
+        <TouchableOpacity
+          style={styles.tabItem}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Current tab categories"
+          accessibilityState={{ selected: true }}
+        >
           <Ionicons name="pricetag-outline" size={24} color={colors.primary} />
           <Text style={[styles.tabLabel, { color: colors.primary }]}>Categories</Text>
         </TouchableOpacity>
         {user ? (
-          <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/create_request')}>
+          <TouchableOpacity
+            style={styles.tabItem}
+            onPress={() => router.push('/create_request')}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Create a new request"
+          >
             <Ionicons name="add-circle-outline" size={24} color={colors.text} />
             <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
           </TouchableOpacity>
         ) : (
-          <View style={[styles.tabItem, { opacity: 0.5 }]}>
+          <TouchableOpacity
+            style={[styles.tabItem, { opacity: 0.5 }]}
+            disabled
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Create a new request (disabled when signed out)"
+            accessibilityState={{ disabled: true }}
+          >
             <Ionicons name="add-circle-outline" size={24} color={colors.text} />
             <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
-          </View>
+          </TouchableOpacity>
         )}
-        <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/requests')}>
+        <TouchableOpacity
+          style={styles.tabItem}
+          onPress={() => router.push('/requests')}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="View all requests"
+        >
           <Ionicons name="list-outline" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Requests</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/profile')}>
+        <TouchableOpacity
+          style={styles.tabItem}
+          onPress={() => router.push('/profile')}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Go to profile"
+        >
           <Ionicons name="person-outline" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Profile</Text>
         </TouchableOpacity>

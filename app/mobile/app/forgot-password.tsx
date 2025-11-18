@@ -58,8 +58,15 @@ export default function ForgotPassword() {
         style={styles.keyboardAvoidingView}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={colors.primary} />
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <Ionicons name="arrow-back" size={24} color={colors.primary}  accessible={false} importantForAccessibility="no"/>
             <Text style={[styles.backText, { color: colors.primary }]}>Back</Text>
           </TouchableOpacity>
 
@@ -80,6 +87,7 @@ export default function ForgotPassword() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 editable={!isLoading}
+                accessibilityLabel="Email address"
               />
             </View>
           </View>
@@ -88,6 +96,11 @@ export default function ForgotPassword() {
             style={[styles.button, { backgroundColor: colors.primary }]}
             onPress={handleForgotPassword}
             disabled={isLoading}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Send reset link"
+            accessibilityState={{ disabled: isLoading }}
           >
             <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
               {isLoading ? 'Sending...' : 'Send Reset Link'}

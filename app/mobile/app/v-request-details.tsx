@@ -480,6 +480,7 @@ useEffect(() => {
   const statusDisplay = request.status_display || request.status || '';
   const statusDisplayLower = statusDisplay.toLowerCase();
   const requesterName = request.creator?.name || 'Unknown';
+  const requestTitleForA11y = request.title || 'this request';
   const requesterAvatar = request.creator?.photo || 'https://placehold.co/70x70';
   const datetime = request.deadline ? new Date(request.deadline).toLocaleString() : '';
   const locationDisplay = request.location || 'N/A';
@@ -549,8 +550,18 @@ useEffect(() => {
               }
             }}
             style={styles.backButton}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
           >
-            <Ionicons name="arrow-back" size={24} color={themeColors.text} />
+            <Ionicons
+              name="arrow-back"
+              size={24}
+              color={themeColors.text}
+              accessible={false}
+              importantForAccessibility="no"
+            />
           </TouchableOpacity>
           <Text style={[styles.title, { color: themeColors.text }]}>{request.title}</Text>
         </View>
@@ -583,10 +594,12 @@ useEffect(() => {
                 ? photoUrl 
                 : `${BACKEND_BASE_URL}${photoUrl}`;
               return (
-                <Image 
-                  source={{ uri: absoluteUrl }} 
+                <Image
+                  source={{ uri: absoluteUrl }}
                   style={styles.heroImage}
                   resizeMode="cover"
+                  accessibilityRole="image"
+                  accessibilityLabel={`Primary photo for ${requestTitleForA11y}`}
                 />
               );
             })()}
@@ -599,20 +612,27 @@ useEffect(() => {
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.thumbnailsScrollContent}
                 >
-                  {photos.slice(1).map((photo) => {
+                  {photos.slice(1).map((photo, index) => {
                     const photoUrl = photo.photo_url || photo.url || photo.image || '';
                     const absoluteUrl = photoUrl.startsWith('http') 
                       ? photoUrl 
                       : `${BACKEND_BASE_URL}${photoUrl}`;
                     
                     return (
-                      <TouchableOpacity key={photo.id} style={[styles.smallThumbnail, { borderColor: themeColors.card }]}>
-                        <Image 
-                          source={{ uri: absoluteUrl }} 
+                      <View
+                        key={photo.id}
+                        style={[styles.smallThumbnail, { borderColor: themeColors.card }]}
+                        accessible={false}
+                        importantForAccessibility="no"
+                      >
+                        <Image
+                          source={{ uri: absoluteUrl }}
                           style={styles.smallThumbnailImage}
                           resizeMode="cover"
+                          accessibilityRole="image"
+                          accessibilityLabel={`Additional photo ${index + 2} for ${requestTitleForA11y}`}
                         />
-                      </TouchableOpacity>
+                      </View>
                     );
                   })}
                 </ScrollView>
@@ -631,10 +651,17 @@ useEffect(() => {
             }}
             disabled={!request.creator?.id}
             activeOpacity={request.creator?.id ? 0.8 : 1}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel={`View ${requesterName}'s profile`}
+            accessibilityState={{ disabled: !request.creator?.id }}
           >
             <Image
               source={{ uri: requesterAvatar }}
               style={[styles.avatar, { backgroundColor: themeColors.gray }]}
+              accessibilityRole="image"
+              accessibilityLabel={`Profile photo of ${requesterName}`}
             />
             <Text style={[styles.name, { color: themeColors.text }]}>{requesterName}</Text>
           </TouchableOpacity>
@@ -705,6 +732,10 @@ useEffect(() => {
                 }
                 handleOpenReviewModal();
               }}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Rate and review participants"
             >
               <Text style={[styles.buttonText, { color: themeColors.card }]}>
                 {hasReviewedAllParticipants() 
@@ -718,6 +749,11 @@ useEffect(() => {
               style={[styles.actionButton, { backgroundColor: themeColors.primary }]}
               onPress={handleBeVolunteer}
               disabled={actionLoading}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Volunteer for this request"
+              accessibilityState={{ disabled: actionLoading }}
             >
               <Text style={[styles.buttonText, { color: themeColors.card }]}>Be a Volunteer</Text>
             </TouchableOpacity>
@@ -729,6 +765,11 @@ useEffect(() => {
             style={[styles.secondaryButton, { borderColor: themeColors.error }]}
             onPress={handleWithdraw}
             disabled={actionLoading}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Withdraw volunteer request"
+            accessibilityState={{ disabled: actionLoading }}
           >
             <Text style={[styles.buttonText, { color: themeColors.error }]}>Withdraw Volunteer Request</Text>
           </TouchableOpacity>
@@ -738,6 +779,10 @@ useEffect(() => {
           <TouchableOpacity
             style={[styles.secondaryButton, { borderColor: themeColors.primary }]}
             onPress={() => router.push({ pathname: '/profile', params: { userId: String(request.creator?.id) } })}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="View requester profile"
           >
             <Text style={[styles.buttonText, { color: themeColors.primary }]}>View Requester Profile</Text>
           </TouchableOpacity>
@@ -745,8 +790,12 @@ useEffect(() => {
       </ScrollView>
 
       <Modal visible={modalVisible} animationType="slide" transparent>
-        <View style={[styles.modalOverlay, { backgroundColor: themeColors.overlay }]}>
-          <View style={[styles.modalContent, { backgroundColor: themeColors.card }]}>
+        <View
+          style={[styles.modalOverlay, { backgroundColor: themeColors.overlay }]}
+          accessibilityViewIsModal
+          importantForAccessibility="yes"
+        >
+          <View style={[styles.modalContent, { backgroundColor: themeColors.card }]} accessible>
             <Text style={[styles.modalTitle, { color: themeColors.text }]}>
               {reviewableParticipants.length > 0 
                 ? (() => {
@@ -774,14 +823,25 @@ useEffect(() => {
               multiline
               value={reviewText}
               onChangeText={setReviewText}
+              accessibilityLabel="Review input"
             />
             <View style={styles.starRow}>
               {[1, 2, 3, 4, 5].map((star) => (
-                <TouchableOpacity key={star} onPress={() => handleStarPress(star)}>
+                <TouchableOpacity
+                  key={star}
+                  onPress={() => handleStarPress(star)}
+                  accessible
+
+                  accessibilityRole="button"
+                  accessibilityLabel={`Rate ${star} ${star === 1 ? 'star' : 'stars'}`}
+                  accessibilityState={{ selected: rating >= star }}
+                >
                   <Ionicons
                     name={star <= rating ? 'star' : 'star-outline'}
                     size={28}
                     color={star <= rating ? themeColors.pink : themeColors.border}
+                    accessible={false}
+                    importantForAccessibility="no"
                   />
                 </TouchableOpacity>
               ))}
@@ -796,6 +856,11 @@ useEffect(() => {
                   setCurrentReviewIndex(0);
                 }}
                 disabled={submittingReview}
+                accessible
+
+                accessibilityRole="button"
+                accessibilityLabel="Cancel review"
+                accessibilityState={{ disabled: submittingReview }}
               >
                 <Text style={{ color: themeColors.text }}>Cancel</Text>
               </TouchableOpacity>
@@ -803,6 +868,11 @@ useEffect(() => {
                 style={[styles.modalButton, { backgroundColor: themeColors.pink }]}
                 onPress={handleSubmitReview}
                 disabled={submittingReview}
+                accessible
+
+                accessibilityRole="button"
+                accessibilityLabel={currentReviewIndex < reviewableParticipants.length - 1 ? 'Next participant' : 'Submit review'}
+                accessibilityState={{ disabled: submittingReview }}
               >
                 {submittingReview ? (
                   <ActivityIndicator size="small" color={themeColors.card} />
@@ -831,7 +901,14 @@ function DetailRow({
 }) {
   return (
     <View style={styles.infoRow}>
-      <Ionicons name={icon} size={25} color={themeColors.textMuted} style={styles.icon} />
+      <Ionicons
+        name={icon}
+        size={25}
+        color={themeColors.textMuted}
+        style={styles.icon}
+        accessible={false}
+        importantForAccessibility="no"
+      />
       <Text style={[styles.infoText, { color: themeColors.textMuted }]}>{value}</Text>
     </View>
   );
