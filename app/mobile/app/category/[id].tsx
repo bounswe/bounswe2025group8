@@ -58,8 +58,15 @@ export default function CategoryPage() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backBtn}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <Ionicons name="arrow-back" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
         </TouchableOpacity>
         <Text style={[styles.title, { color: colors.text }]}>{categoryName}</Text>
       </View>
@@ -77,6 +84,10 @@ export default function CategoryPage() {
                   params: { id: task.id },
                 })
               }
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel={`Open request ${task.title}`}
             >
               <Image source={require('../../assets/images/help.png')} style={styles.cardImage} />
               <View style={styles.cardContent}>

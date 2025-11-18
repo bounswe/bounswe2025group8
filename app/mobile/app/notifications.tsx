@@ -143,6 +143,11 @@ export default function NotificationsScreen() {
           router.push({ pathname: path, params: { id: item.related_task.id } });
         }
       }}
+      accessible
+
+      accessibilityRole="button"
+      accessibilityLabel={`${item.is_read ? 'Read' : 'Unread'} notification: ${item.type_display}. ${item.content}`}
+      accessibilityState={{ disabled: false }}
     >
       <View style={styles.notificationHeader}>
         <Text style={[styles.notificationType, { color: themeColors.text }]}>{item.type_display}</Text>
@@ -196,6 +201,10 @@ export default function NotificationsScreen() {
         <TouchableOpacity
           onPress={() => fetchNotifications(1)}
           style={[styles.retryButton, { borderColor: themeColors.primary }]}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Try loading notifications again"
         >
           <Text style={{ color: themeColors.primary }}>Try Again</Text>
         </TouchableOpacity>
@@ -209,12 +218,29 @@ export default function NotificationsScreen() {
         <TouchableOpacity
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/feed'))}
           style={styles.backButton}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
         >
-          <Ionicons name="arrow-back" size={24} color={themeColors.text} />
+          <Ionicons
+            name="arrow-back"
+            size={24}
+            color={themeColors.text}
+            accessible={false}
+            importantForAccessibility="no"
+          />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: themeColors.text }]}>Notifications</Text>
         {unreadCount > 0 && (
-          <TouchableOpacity onPress={handleMarkAllRead} style={styles.markAllReadButton}>
+          <TouchableOpacity
+            onPress={handleMarkAllRead}
+            style={styles.markAllReadButton}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Mark all notifications as read"
+          >
             <Text style={{ color: themeColors.primary }}>Mark All Read ({unreadCount})</Text>
           </TouchableOpacity>
         )}

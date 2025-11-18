@@ -43,17 +43,37 @@ export default function CRDeadline() {
             <Image source={require('../assets/images/logo.png')} style={{ width: 28, height: 28, resizeMode: 'contain' }} />
           </View>
           <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => router.push('/notifications')} style={{ marginRight: 16 }}>
-              <Ionicons name="notifications-outline" size={24} color={colors.text} />
+            <TouchableOpacity
+              onPress={() => router.push('/notifications')}
+              style={{ marginRight: 16 }}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Open notifications"
+            >
+              <Ionicons name="notifications-outline" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/settings')}>
-              <Ionicons name="settings-outline" size={24} color={colors.text} />
+            <TouchableOpacity
+              onPress={() => router.push('/settings')}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Open settings"
+            >
+              <Ionicons name="settings-outline" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
             </TouchableOpacity>
           </View>
         </View>
         <View style={styles.titleRow}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => router.back()}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <Ionicons name="arrow-back" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
           </TouchableOpacity>
           <Text style={[styles.pageTitle, { color: colors.text }]}>Create Request</Text>
         </View>
@@ -69,6 +89,10 @@ export default function CRDeadline() {
         <TouchableOpacity
           style={[styles.dateBox, { backgroundColor: colors.card, borderColor: colors.border }]}
           onPress={() => setShowDatePicker(true)}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel={`Select date. Currently ${formattedDate}`}
         >
           <Text style={[styles.dateText, { color: colors.text }]}>{formattedDate}</Text>
           <Ionicons name="calendar-outline" size={20} color={colors.primary} />
@@ -86,7 +110,14 @@ export default function CRDeadline() {
         )}
 
         <Text style={[styles.label, { color: colors.text }]}>Select time</Text>
-        <TouchableOpacity style={[styles.timeBox, { backgroundColor: colors.card, borderColor: colors.primary }]} onPress={() => setShowTimePicker(true)}>
+        <TouchableOpacity
+          style={[styles.timeBox, { backgroundColor: colors.card, borderColor: colors.primary }]}
+          onPress={() => setShowTimePicker(true)}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel={`Select time. Currently ${formattedTime}`}
+        >
           <Text style={[styles.timeText, { color: colors.text }]}>{formattedTime}</Text>
           <Ionicons name="time-outline" size={20} color={colors.primary} />
         </TouchableOpacity>
@@ -109,6 +140,10 @@ export default function CRDeadline() {
               params: { ...params, deadline: date.toISOString() },
             })
           }
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Next step set address"
         >
           <Text style={[styles.nextBtnText, { color: colors.onPrimary }]}>Next</Text>
         </TouchableOpacity>

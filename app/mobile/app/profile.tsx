@@ -267,10 +267,24 @@ export default function ProfileScreen() {
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
         <Text style={{ color: colors.text, fontSize: 20, marginBottom: 16 }}>You are browsing as a guest.</Text>
         <Text style={{ color: colors.text, fontSize: 16, marginBottom: 24 }}>Sign up or sign in to access your profile!</Text>
-        <TouchableOpacity style={{ backgroundColor: colors.primary, paddingHorizontal: 32, paddingVertical: 12, borderRadius: 24, marginBottom: 12 }} onPress={() => router.push('/signup')}>
+        <TouchableOpacity
+          style={{ backgroundColor: colors.primary, paddingHorizontal: 32, paddingVertical: 12, borderRadius: 24, marginBottom: 12 }}
+          onPress={() => router.push('/signup')}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Sign up"
+        >
           <Text style={{ color: colors.background, fontWeight: 'bold', fontSize: 16 }}>Sign Up</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={{ borderColor: colors.primary, borderWidth: 2, paddingHorizontal: 32, paddingVertical: 12, borderRadius: 24 }} onPress={() => router.push('/signin')}>
+        <TouchableOpacity
+          style={{ borderColor: colors.primary, borderWidth: 2, paddingHorizontal: 32, paddingVertical: 12, borderRadius: 24 }}
+          onPress={() => router.push('/signin')}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Sign in"
+        >
           <Text style={{ color: colors.primary, fontWeight: 'bold', fontSize: 16 }}>Sign In</Text>
         </TouchableOpacity>
       </View>
@@ -305,6 +319,10 @@ export default function ProfileScreen() {
                     Alert.alert("Error", "Cannot retry: User ID is not available.");
                 }
             }}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Retry loading profile"
           >
             <Text style={{ color: colors.background, fontWeight: 'bold' }}>Retry</Text>
           </TouchableOpacity>
@@ -342,7 +360,13 @@ export default function ProfileScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background }}>
       <ScrollView contentContainerStyle={[styles.container, { backgroundColor: themeColors.background }]}>
         <View style={[styles.profileHeaderRow, { /* marginTop might need adjustment if SafeAreaView adds too much space */ }]}>
-          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/feed')} style={styles.backButton}>
+          <TouchableOpacity
+            onPress={() => router.canGoBack() ? router.back() : router.replace('/feed')}
+            style={styles.backButton}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
             <Ionicons name="arrow-back" size={28} color={themeColors.text} />
           </TouchableOpacity>
           <Image
@@ -372,10 +396,22 @@ export default function ProfileScreen() {
           </View>
           {isOwnProfile && (
               <>
-                  <TouchableOpacity onPress={() => router.push('/notifications')} style={{ marginLeft: 12 }}>
+                  <TouchableOpacity
+                    onPress={() => router.push('/notifications')}
+                    style={{ marginLeft: 12 }}
+                    accessible={true}
+                    accessibilityRole="button"
+                    accessibilityLabel="Open notifications"
+                  >
                       <Ionicons name="notifications-outline" size={28} color={themeColors.text} />
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => router.push('/settings')} style={{ marginLeft: 12 }}>
+                  <TouchableOpacity
+                    onPress={() => router.push('/settings')}
+                    style={{ marginLeft: 12 }}
+                    accessible={true}
+                    accessibilityRole="button"
+                    accessibilityLabel="Open settings"
+                  >
                       <Ionicons name="settings-outline" size={28} color={themeColors.text} />
                   </TouchableOpacity>
               </>
@@ -386,6 +422,11 @@ export default function ProfileScreen() {
           <TouchableOpacity
             style={[styles.tabButton, { backgroundColor: selectedTab === 'volunteer' ? themeColors.primary : 'transparent' } ]}
             onPress={() => setSelectedTab('volunteer')}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Show volunteer tasks"
+            accessibilityState={{ selected: selectedTab === 'volunteer' }}
           >
             <Text style={[styles.tabButtonText, { color: selectedTab === 'volunteer' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'volunteer' ? 'bold' : 'normal' }]}>
               {isOwnProfile ? 'My Volunteer Tasks' : 'Volunteer Tasks'}
@@ -394,6 +435,11 @@ export default function ProfileScreen() {
           <TouchableOpacity
             style={[styles.tabButton, { backgroundColor: selectedTab === 'requester' ? themeColors.primary : 'transparent' } ]}
             onPress={() => setSelectedTab('requester')}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Show created tasks"
+            accessibilityState={{ selected: selectedTab === 'requester' }}
           >
             <Text style={[styles.tabButtonText, { color: selectedTab === 'requester' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'requester' ? 'bold' : 'normal' }]}>
               {isOwnProfile ? 'My Created Tasks' : 'Created Tasks'}
