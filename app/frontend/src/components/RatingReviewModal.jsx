@@ -38,7 +38,7 @@ const RatingReviewModal = ({
 }) => {
   // State for form
   const [selectedUser, setSelectedUser] = useState(null);
-  const [rating, setRating] = useState(4.5);
+  const [rating, setRating] = useState(3.0);
   const [comment, setComment] = useState("");
 
   // State for UI
@@ -130,7 +130,7 @@ const RatingReviewModal = ({
   useEffect(() => {
     if (!open) {
       setSelectedUser(null);
-      setRating(4.5);
+      setRating(3.0);
       setComment("");
       setError(null);
       setSuccess(false);
@@ -199,7 +199,7 @@ const RatingReviewModal = ({
       // Just show success message and reset form for next review
       setTimeout(() => {
         setSuccess(false);
-        setRating(4.5);
+        setRating(3.0);
         setComment("");
 
         // If no more users to review, close modal
