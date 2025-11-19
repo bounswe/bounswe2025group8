@@ -175,7 +175,19 @@ class UserReviewsView(views.APIView):
         
         # Get reviews received by the user
         reviews = Review.objects.filter(reviewee=user)
-        
+        # Get role filter parameter
+        role = request.query_params.get('role', None)
+
+        # Filter by role if specified
+        if role:
+            if role.lower() == 'requester':
+                # Reviews where the user was the task creator (requester)
+                reviews = reviews.filter(task__creator=user)
+            elif role.lower() == 'volunteer':
+                # Reviews where the user was a volunteer (not the creator)
+                # This includes cases where user was assignee or volunteer
+                reviews = reviews.exclude(task__creator=user)
+
         # Get page and limit parameters
         page = int(request.query_params.get('page', 1))
         limit = int(request.query_params.get('limit', 20))
