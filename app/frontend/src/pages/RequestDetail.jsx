@@ -410,7 +410,9 @@ const RequestDetail = () => {
     try {
       const response = await updateTask(request.id, payload);
       const updatedTask = response?.data ?? response;
-      setRequest((prev) => ({ ...prev, ...updatedTask }));
+      // Preserve volunteers array when updating task
+      const volunteers = request.volunteers || [];
+      setRequest((prev) => ({ ...prev, ...updatedTask, volunteers }));
       setEditDialogOpen(false);
     } catch (err) {
       console.error("Failed to update task:", err);
@@ -610,8 +612,19 @@ const RequestDetail = () => {
     }
   };
 
-  const handleRateAndReview = () => {
+  const handleRateAndReview = async () => {
     if (canRateAndReview) {
+      // Fetch latest volunteers data before opening modal
+      try {
+        const volunteers = await getTaskVolunteers(request.id);
+        console.log(
+          "Fetched volunteers before opening review modal:",
+          volunteers
+        );
+        setRequest((prev) => ({ ...prev, volunteers }));
+      } catch (error) {
+        console.warn("Could not fetch volunteers for review modal:", error);
+      }
       setRatingDialogOpen(true);
     }
   };
@@ -753,25 +766,25 @@ const RequestDetail = () => {
             <div className="p-6 flex flex-col justify-between">
               {/* Requester Info */}
               <div
-              className="flex items-center mb-6 p-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
-              onClick={() => navigate(`/profile/${request.creator.id}`)}
-            >
-              <div className="w-12 h-12 mr-4">
-                {requesterPhoto ? (
-                  <img
-                    src={requesterPhoto}
-                    alt={`${request.creator.name} ${request.creator.surname}`}
-                    className="w-full h-full rounded-full object-cover border border-gray-200"
-                  />
-                ) : (
-                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                    {request.creator.name.charAt(0)}
-                  </div>
-                )}
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {request.creator.name} {request.creator.surname}
+                className="flex items-center mb-6 p-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => navigate(`/profile/${request.creator.id}`)}
+              >
+                <div className="w-12 h-12 mr-4">
+                  {requesterPhoto ? (
+                    <img
+                      src={requesterPhoto}
+                      alt={`${request.creator.name} ${request.creator.surname}`}
+                      className="w-full h-full rounded-full object-cover border border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                      {request.creator.name.charAt(0)}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {request.creator.name} {request.creator.surname}
                   </h3>
                   <p className="text-sm text-gray-500">
                     {getTimeAgo(request.created_at)}
