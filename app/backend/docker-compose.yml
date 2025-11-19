@@ -1,27 +1,20 @@
-version: "3.8"
-
 services:
   db:
     image: postgres:14
     container_name: neighborhood_db
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_USER: postgres
       POSTGRES_DB: neighborhood_assistance
     ports:
       - "5433:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - app-network
 
   backend:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     container_name: neighborhood_backend
@@ -34,21 +27,16 @@ services:
         python manage.py migrate &&
         python manage.py runserver 0.0.0.0:8000
       "
-    volumes:
-      - .:/app
-    ports:
-      - "8000:8000"
-    depends_on:
-      db:
-        condition: service_healthy
     environment:
-      DEBUG: 1
       DATABASE_HOST: db
       DATABASE_NAME: neighborhood_assistance
       DATABASE_USER: postgres
       DATABASE_PASSWORD: postgres
       DATABASE_PORT: 5432
-      ALLOWED_HOSTS: localhost,127.0.0.1,backend,165.227.152.202
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
     networks:
       - app-network
 
@@ -56,14 +44,11 @@ services:
     build:
       context: ../frontend
       dockerfile: Dockerfile
+      target: build
     container_name: neighborhood_frontend
-    ports:
-      - "5173:5173"
+    # Only build — doesn't run
     volumes:
-      - ../frontend:/app
-      - node_modules:/app/node_modules
-    environment:
-      VITE_API_URL: https://neighborhelp.webhop.me/api
+      - ../frontend/dist:/dist_build
     networks:
       - app-network
 
@@ -74,11 +59,11 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "443:443/udp"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+      - ../frontend/dist:/usr/share/caddy/frontend
     depends_on:
       - backend
       - frontend
@@ -87,10 +72,8 @@ services:
 
 networks:
   app-network:
-    driver: bridge
 
 volumes:
   postgres_data:
-  node_modules:
   caddy_data:
   caddy_config:
