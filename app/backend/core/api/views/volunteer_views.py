@@ -16,21 +16,49 @@ class VolunteerViewSet(viewsets.ModelViewSet):
     serializer_class = VolunteerSerializer
     
     def get_queryset(self):
-        """Filter volunteers by current user, excluding withdrawn and rejected for list"""
-        if self.request.user.is_authenticated:
-            # For list/retrieve actions, exclude WITHDRAWN and REJECTED
-            # For destroy action, include all records (needed to access the record to withdraw)
-            if self.action in ['destroy', 'retrieve']:
-                # Allow access to all user's volunteer records
-                return Volunteer.objects.filter(user=self.request.user)
-            else:
-                # Only return active volunteer records (PENDING or ACCEPTED)
-                return Volunteer.objects.filter(
-                    user=self.request.user
-                ).exclude(
-                    status__in=[VolunteerStatus.WITHDRAWN, VolunteerStatus.REJECTED]
-                )
-        return Volunteer.objects.none()
+        """Filter volunteers by current user, with optional filtering by task status and volunteer status"""
+        if not self.request.user.is_authenticated:
+            return Volunteer.objects.none()
+        
+        # Start with user's volunteer records
+        queryset = Volunteer.objects.filter(user=self.request.user)
+        
+        # For destroy/retrieve actions, include all records
+        if self.action in ['destroy', 'retrieve']:
+            return queryset
+        
+        # For list actions, apply filters based on query parameters
+        # Get volunteer_id filter (for compatibility, but user is already filtered by auth)
+        volunteer_id = self.request.query_params.get('volunteer_id')
+        if volunteer_id:
+            try:
+                volunteer_id = int(volunteer_id)
+                # Ensure the volunteer_id matches current user
+                if volunteer_id != self.request.user.id:
+                    return Volunteer.objects.none()
+            except (ValueError, TypeError):
+                return Volunteer.objects.none()
+        
+        # Filter by volunteer status - by default show only ACCEPTED volunteers
+        volunteer_status = self.request.query_params.get('volunteer_status', 'ACCEPTED')
+        if volunteer_status and volunteer_status != 'all':
+            queryset = queryset.filter(status=volunteer_status)
+        
+        # Filter by task status - separate active from completed tasks
+        task_status = self.request.query_params.get('task_status')
+        if task_status == 'active':
+            # Active tasks are those not completed, cancelled or expired
+            queryset = queryset.exclude(
+                task__status__in=['COMPLETED', 'CANCELLED', 'EXPIRED']
+            )
+        elif task_status == 'COMPLETED':
+            # Completed tasks only
+            queryset = queryset.filter(task__status='COMPLETED')
+        elif task_status:
+            # Specific task status
+            queryset = queryset.filter(task__status=task_status)
+        
+        return queryset
     
     def get_permissions(self):
         """
@@ -136,11 +164,29 @@ class TaskVolunteersView(views.APIView):
         # Get task
         task = get_object_or_404(Task, id=task_id)
         
-        # Check if user is the creator
-        if request.user != task.creator:
+        # Check if user is the creator OR if task is completed and user is a participant
+        is_creator = request.user == task.creator
+        is_participant = False
+        
+        # If task is completed, allow participants to view volunteers (for review purposes)
+        if task.status == 'COMPLETED':
+            participant_ids = set()
+            participant_ids.add(task.creator_id)
+            participant_ids.update(task.get_assignees().values_list('id', flat=True))
+            if task.assignee_id:
+                participant_ids.add(task.assignee_id)
+            
+            # Add accepted volunteers
+            accepted_volunteers = task.get_assigned_volunteers()
+            for volunteer in accepted_volunteers:
+                participant_ids.add(volunteer.user.id)
+            
+            is_participant = request.user.id in participant_ids
+        
+        if not is_creator and not is_participant:
             return Response(format_response(
                 status='error',
-                message='Only the task creator can view volunteers.'
+                message='Only the task creator or participants of completed tasks can view volunteers.'
             ), status=status.HTTP_403_FORBIDDEN)
         
         # Get volunteers
