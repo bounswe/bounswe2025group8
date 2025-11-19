@@ -1,16 +1,47 @@
 from rest_framework import serializers
 from core.models import Photo
 from .task_serializers import TaskSerializer
+from typing import Optional
 
 
 class PhotoSerializer(serializers.ModelSerializer):
-    """Serializer for Photo model"""
+    """Serializer for Photo model with absolute URLs and accessibility fields"""
     task = TaskSerializer(read_only=True)
-    
+    url = serializers.SerializerMethodField()
+    photo_url = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+    alt_text = serializers.SerializerMethodField()
+
     class Meta:
         model = Photo
-        fields = ['id', 'url', 'uploaded_at', 'task']
-        read_only_fields = ['id', 'uploaded_at', 'task']
+        # Keep backward-compatibility by exposing multiple keys for the image URL
+        fields = ['id', 'url', 'photo_url', 'image', 'uploaded_at', 'alt_text', 'task']
+        read_only_fields = ['id', 'uploaded_at', 'alt_text', 'task']
+
+    def _absolute(self, url: Optional[str]) -> Optional[str]:
+        request = self.context.get('request') if hasattr(self, 'context') else None
+        if request and url:
+            try:
+                return request.build_absolute_uri(url)
+            except Exception:
+                return url
+        return url
+
+    def get_url(self, obj: Photo) -> Optional[str]:
+        return self._absolute(obj.get_url())
+
+    def get_photo_url(self, obj: Photo) -> Optional[str]:
+        # Alias used in some frontend usages
+        return self.get_url(obj)
+
+    def get_image(self, obj: Photo) -> Optional[str]:
+        # Alias used by some components as a generic image field
+        return self.get_url(obj)
+
+    def get_alt_text(self, obj: Photo) -> str:
+        # Provide a helpful default alt text for accessibility
+        task_title = getattr(obj.task, 'title', None)
+        return f"Photo for {task_title}" if task_title else "Task photo"
 
 
 class PhotoCreateSerializer(serializers.ModelSerializer):

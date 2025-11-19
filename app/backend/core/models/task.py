@@ -281,20 +281,20 @@ class Task(models.Model):
         return False
     
     def update_status_based_on_assignees(self):
-        """Update task status based on assignee count vs volunteer_number requirement"""
+        """Update task status based on assignee count"""
         current_assignee_count = self.assignees.count()
-        
-        # If we have fewer assignees than required, status should be POSTED
-        if current_assignee_count < self.volunteer_number:
+
+        # If we have no assignees, status should be POSTED
+        if current_assignee_count < 1:
             if self.status == TaskStatus.ASSIGNED:
                 self.status = TaskStatus.POSTED
                 self.save()
                 return True
-        # If we have enough assignees, status should be ASSIGNED
-        elif current_assignee_count >= self.volunteer_number:
+        # If we have at least one assignee, status should be ASSIGNED
+        elif current_assignee_count >= 1:
             if self.status == TaskStatus.POSTED:
                 self.status = TaskStatus.ASSIGNED
                 self.save()
                 return True
-        
+
         return False

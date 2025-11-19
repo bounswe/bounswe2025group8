@@ -10,13 +10,14 @@ class TaskSerializer(serializers.ModelSerializer):
     assignee = UserSerializer(read_only=True)
     status_display = serializers.SerializerMethodField()
     category_display = serializers.SerializerMethodField()
+    primary_photo_url = serializers.SerializerMethodField()
     
     class Meta:
         model = Task
         fields = ['id', 'title', 'description', 'category', 'category_display',
                   'location', 'deadline', 'requirements', 'urgency_level', 
                   'volunteer_number', 'status', 'status_display', 'is_recurring',
-                  'creator', 'assignee', 'created_at', 'updated_at']
+                  'creator', 'assignee', 'created_at', 'updated_at', 'primary_photo_url']
         read_only_fields = ['id', 'created_at', 'updated_at', 'status_display',
                            'category_display', 'creator', 'assignee']
     
@@ -27,6 +28,17 @@ class TaskSerializer(serializers.ModelSerializer):
     def get_category_display(self, obj):
         """Get the display name for the category"""
         return dict(TaskCategory.choices)[obj.category]
+
+    def get_primary_photo_url(self, obj: Task):
+        photo = getattr(obj, 'photos', None).first() if hasattr(obj, 'photos') else None
+        if not photo or not photo.url:
+            return None
+        try:
+            request = self.context.get('request') if hasattr(self, 'context') else None
+            url = photo.url.url
+            return request.build_absolute_uri(url) if request else url
+        except Exception:
+            return photo.url.url
 
 
 class TaskCreateSerializer(serializers.ModelSerializer):
