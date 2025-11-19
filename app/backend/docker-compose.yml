@@ -31,8 +31,7 @@ services:
           echo 'Waiting for database...'
           sleep 2
         done
-        echo 'Database is ready!'
-        python manage.py migrate
+        python manage.py migrate &&
         python manage.py runserver 0.0.0.0:8000
       "
     volumes:
@@ -53,10 +52,23 @@ services:
     networks:
       - app-network
 
-  caddy:
+  frontend:
     build:
       context: ../frontend
-    dockerfile: Dockerfile
+      dockerfile: Dockerfile
+    container_name: neighborhood_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ../frontend:/app
+      - node_modules:/app/node_modules
+    environment:
+      VITE_API_URL: https://neighborhelp.webhop.me/api
+    networks:
+      - app-network
+
+  caddy:
+    image: caddy:2-alpine
     container_name: neighborhood_caddy
     restart: unless-stopped
     ports:
@@ -64,10 +76,12 @@ services:
       - "443:443"
       - "443:443/udp"
     volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
       - backend
+      - frontend
     networks:
       - app-network
 
@@ -77,5 +91,6 @@ networks:
 
 volumes:
   postgres_data:
+  node_modules:
   caddy_data:
   caddy_config:
