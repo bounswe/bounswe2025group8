@@ -163,11 +163,14 @@ const ProfilePage = () => {
       await dispatch(fetchUserProfile(currentId)).unwrap();
 
       // Use object parameter for reviews to pass pagination info
+      // Determine role based on roleTab: 0 = volunteer, 1 = requester
+      const reviewRole = roleTab === 0 ? "volunteer" : "requester";
       await dispatch(
         fetchUserReviews({
           userId: currentId,
           page: reviewPage,
           limit: reviewsPerPage,
+          role: reviewRole,
         })
       ).unwrap();
       // For requester tab (roleTab = 1), fetch created tasks with appropriate status
@@ -319,6 +322,7 @@ const ProfilePage = () => {
   const handleRoleChange = (event, newValue) => {
     setRoleTab(newValue);
     setRequestsTab(0); // Reset to active requests whenever role changes
+    setReviewPage(1); // Reset to first page of reviews when role changes
     // No need to trigger data reload here, as the effect hook will handle it
   };
 
@@ -334,11 +338,13 @@ const ProfilePage = () => {
     const currentId = userId || localStorage.getItem("userId");
 
     if (currentId) {
+      const reviewRole = roleTab === 0 ? "volunteer" : "requester";
       dispatch(
         fetchUserReviews({
           userId: currentId,
           page: value,
           limit: reviewsPerPage,
+          role: reviewRole,
         })
       );
     } else {
