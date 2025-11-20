@@ -160,8 +160,81 @@ class Migration(migrations.Migration):
                     related_name='reports',
                     to='core.task'
                 )),
+            ],options={
+                'ordering': ['-created_at'],
+            },
+        ),
+        
+        # Create UserReport model
+        migrations.CreateModel(
+            name='UserReport',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('report_type', models.CharField(
+                    choices=[
+                        ('SPAM', 'Spam'),
+                        ('INAPPROPRIATE_CONTENT', 'Inappropriate Content'),
+                        ('HARASSMENT', 'Harassment'),
+                        ('FRAUD', 'Fraud'),
+                        ('FAKE_REQUEST', 'Fake Request'),
+                        ('NO_SHOW', 'No Show'),
+                        ('SAFETY_CONCERN', 'Safety Concern'),
+                        ('OTHER', 'Other')
+                    ],
+                    default='OTHER',
+                    max_length=50
+                )),
+                ('description', models.TextField()),
+                ('status', models.CharField(
+                    choices=[
+                        ('PENDING', 'Pending'),
+                        ('UNDER_REVIEW', 'Under Review'),
+                        ('RESOLVED', 'Resolved'),
+                        ('DISMISSED', 'Dismissed')
+                    ],
+                    default='PENDING',
+                    max_length=20
+                )),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+                ('admin_notes', models.TextField(blank=True)),
+                ('related_task', models.ForeignKey(
+                    blank=True,
+                    null=True,
+                    on_delete=django.db.models.deletion.SET_NULL,
+                    related_name='user_reports',
+                    to='core.task'
+                )),
+                ('reported_user', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE,
+                    related_name='reports_received',
+                    to=settings.AUTH_USER_MODEL
+                )),
+                ('reporter', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE,
+                    related_name='user_reports_made',
+                    to=settings.AUTH_USER_MODEL
+                )),
+                ('reviewed_by', models.ForeignKey(
+                    blank=True,
+                    null=True,
+                    on_delete=django.db.models.deletion.SET_NULL,
+                    related_name='user_reports_reviewed',
+                    to='core.administrator'
+                )),
             ],
-            options={},
-            bases=(models.Model,),
+            options={
+                'ordering': ['-created_at'],
+            },
+        ),
+        
+        # Add unique constraints
+        migrations.AlterUniqueTogether(
+            name='taskreport',
+            unique_together={('task', 'reporter')},
+        ),
+        migrations.AlterUniqueTogether(
+            name='userreport',
+            unique_together={('reported_user', 'reporter')},
         ),
     ]
