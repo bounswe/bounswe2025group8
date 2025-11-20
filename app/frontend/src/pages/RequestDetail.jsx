@@ -74,6 +74,62 @@ const RequestDetail = () => {
     return now > deadlineDate;
   };
 
+  // Helper function to parse and filter location based on permissions
+  const getFilteredLocation = (locationString, canSeePrivateInfo) => {
+    if (!locationString) return "";
+
+    // Split the location string into parts
+    const parts = locationString.split(", ");
+
+    // Check if it's the formatted version with prefixes
+    const isFormatted = parts.some(
+      (part) =>
+        part.includes("Country:") ||
+        part.includes("State:") ||
+        part.includes("City:")
+    );
+
+    if (!isFormatted) {
+      // For unformatted locations, show everything if can see private info
+      // Otherwise show first 3 parts (assumed to be public region info)
+      return canSeePrivateInfo ? locationString : parts.slice(0, 3).join(", ");
+    }
+
+    // For formatted locations, filter based on permissions
+    const publicPrefixes = ["Country:", "State:", "City:"];
+    const privatePrefixes = [
+      "Neighborhood:",
+      "Street:",
+      "Building:",
+      "Door:",
+      "Description:",
+    ];
+
+    if (canSeePrivateInfo) {
+      // Show everything
+      return locationString;
+    } else {
+      // Show only public parts (Country, State/Province, City/District)
+      const publicParts = parts.filter((part) =>
+        publicPrefixes.some((prefix) => part.trim().startsWith(prefix))
+      );
+      return publicParts.join(", ");
+    }
+  };
+
+  // Helper function to check if user can see private information
+  const canSeePrivateInfo = () => {
+    // Task creator can always see their own info
+    if (isTaskCreator) return true;
+
+    // Selected volunteers (ACCEPTED status) can see private info
+    if (volunteerRecord && volunteerRecord.status === "ACCEPTED") {
+      return true;
+    }
+
+    return false;
+  };
+
   // Fetch request details and volunteer status
   useEffect(() => {
     const fetchRequest = async () => {
@@ -753,25 +809,25 @@ const RequestDetail = () => {
             <div className="p-6 flex flex-col justify-between">
               {/* Requester Info */}
               <div
-              className="flex items-center mb-6 p-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
-              onClick={() => navigate(`/profile/${request.creator.id}`)}
-            >
-              <div className="w-12 h-12 mr-4">
-                {requesterPhoto ? (
-                  <img
-                    src={requesterPhoto}
-                    alt={`${request.creator.name} ${request.creator.surname}`}
-                    className="w-full h-full rounded-full object-cover border border-gray-200"
-                  />
-                ) : (
-                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                    {request.creator.name.charAt(0)}
-                  </div>
-                )}
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {request.creator.name} {request.creator.surname}
+                className="flex items-center mb-6 p-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => navigate(`/profile/${request.creator.id}`)}
+              >
+                <div className="w-12 h-12 mr-4">
+                  {requesterPhoto ? (
+                    <img
+                      src={requesterPhoto}
+                      alt={`${request.creator.name} ${request.creator.surname}`}
+                      className="w-full h-full rounded-full object-cover border border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                      {request.creator.name.charAt(0)}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {request.creator.name} {request.creator.surname}
                   </h3>
                   <p className="text-sm text-gray-500">
                     {getTimeAgo(request.created_at)}
@@ -798,7 +854,9 @@ const RequestDetail = () => {
 
                 <div className="flex items-center text-gray-600">
                   <LocationOnIcon className="w-5 h-5 mr-3 text-gray-400" />
-                  <span className="text-sm">{request.location}</span>
+                  <span className="text-sm">
+                    {getFilteredLocation(request.location, canSeePrivateInfo())}
+                  </span>
                 </div>
 
                 <div className="flex items-center text-gray-600">
@@ -809,12 +867,14 @@ const RequestDetail = () => {
                   </span>
                 </div>
 
-                <div className="flex items-center text-gray-600">
-                  <PhoneIcon className="w-5 h-5 mr-3 text-gray-400" />
-                  <span className="text-sm">
-                    {request.creator.phone_number}
-                  </span>
-                </div>
+                {canSeePrivateInfo() && request.creator.phone_number && (
+                  <div className="flex items-center text-gray-600">
+                    <PhoneIcon className="w-5 h-5 mr-3 text-gray-400" />
+                    <span className="text-sm">
+                      {request.creator.phone_number}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Status */}
