@@ -408,6 +408,21 @@ const ProfilePage = () => {
   const earnedBadges = badgesToUse.filter((badge) => badge.earned);
   const inProgressBadges = badgesToUse.filter((badge) => !badge.earned);
 
+  // Get initials from name and surname for fallback avatar
+  const getInitials = () => {
+    const name = user?.name || "";
+    const surname = user?.surname || "";
+
+    if (name && surname) {
+      return `${name.charAt(0)}${surname.charAt(0)}`.toUpperCase();
+    } else if (name) {
+      return name.charAt(0).toUpperCase();
+    } else if (user?.username) {
+      return user.username.charAt(0).toUpperCase();
+    }
+    return "U";
+  };
+
   // Handler for profile picture upload
   const handleProfilePictureUpload = (event) => {
     const file = event.target.files[0];
@@ -492,21 +507,31 @@ const ProfilePage = () => {
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <Box sx={{ position: "relative" }}>
-                <Avatar
-                  src={
-                    toAbsoluteUrl(
+                {toAbsoluteUrl(
+                  user.profile_photo || user.profilePhoto || user.profilePicture
+                ) ? (
+                  <Avatar
+                    src={toAbsoluteUrl(
                       user.profile_photo ||
                         user.profilePhoto ||
                         user.profilePicture
-                    ) ||
-                    `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                      `${user.name || ""} ${user.surname || ""}`.trim() ||
-                        "User"
-                    )}&background=random`
-                  }
-                  alt={user.name}
-                  sx={{ width: 80, height: 80 }}
-                />
+                    )}
+                    alt={user.name}
+                    sx={{ width: 80, height: 80 }}
+                  />
+                ) : (
+                  <Avatar
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      backgroundColor: colors.brand.primary,
+                      fontSize: "2rem",
+                      fontWeight: "semibold",
+                    }}
+                  >
+                    {getInitials()}
+                  </Avatar>
+                )}
                 {/* Only show edit button for current user's profile */}
                 {(() => {
                   // Get logged-in user ID with fallback to user object if direct ID is not available
