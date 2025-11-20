@@ -203,6 +203,14 @@ const RequestDetail = () => {
     });
   };
 
+  const requesterPhoto = toAbsoluteUrl(
+    request?.creator?.profile_photo ||
+      request?.creator?.profilePhoto ||
+      request?.creator?.profilePicture ||
+      request?.creator?.photo ||
+      request?.creator?.avatar
+  );
+
   // Get time ago
   const getTimeAgo = (dateString) => {
     const now = new Date();

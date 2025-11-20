@@ -71,6 +71,8 @@ const initialState = {
     username: '',
     email: '', // Read-only field, displayed but not editable
     phone: '', // Read-only field, displayed but not editable
+    profile_photo: null,
+    profilePhoto: null,
     profilePicture: null,
     rating: 0,
     reviewCount: 0
@@ -172,8 +174,16 @@ const editProfileSlice = createSlice({
         state.uploading = false;
         
         // Update user with new profile picture
-        if (action.payload.profilePicture || action.payload.photo) {
-          state.user.profilePicture = action.payload.profilePicture || action.payload.photo;
+        const newPhoto =
+          action.payload?.profile_photo ||
+          action.payload?.profilePhoto ||
+          action.payload?.profilePicture ||
+          action.payload?.photo ||
+          null;
+        if (newPhoto !== undefined) {
+          state.user.profile_photo = newPhoto;
+          state.user.profilePhoto = newPhoto;
+          state.user.profilePicture = newPhoto;
         }
         
         state.error = null;

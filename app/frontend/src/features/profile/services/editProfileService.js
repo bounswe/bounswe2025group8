@@ -1,5 +1,25 @@
 import api from '../../../services/api';
+import { toAbsoluteUrl } from '../../../utils/url';
 import { authStorage } from '../../authentication/utils';
+
+const normalizeProfileData = (data) => {
+  if (!data || typeof data !== 'object') return data;
+  const resolvedPhoto =
+    data.profile_photo ||
+    data.profilePhoto ||
+    data.profilePicture ||
+    data.photo ||
+    data.avatar ||
+    null;
+  const normalizedPhoto = toAbsoluteUrl(resolvedPhoto) || null;
+
+  return {
+    ...data,
+    profile_photo: normalizedPhoto,
+    profilePhoto: normalizedPhoto,
+    profilePicture: normalizedPhoto,
+  };
+};
 
 /**
  * Update user profile details
@@ -78,6 +98,8 @@ export const updateUserProfile = async (profileData) => {
       throw new Error('Invalid response format from server');
     }
     
+    updatedUser = normalizeProfileData(updatedUser);
+    
     // Update localStorage with the new user data using authStorage
     const existingUser = authStorage.getUser();
     if (existingUser) {
@@ -100,6 +122,7 @@ export const updateUserProfile = async (profileData) => {
         if (freshData.phone_number && !freshData.phone) {
           freshData.phone = freshData.phone_number;
         }
+        freshData = normalizeProfileData(freshData);
         
         console.log('Fresh data after update:', JSON.stringify(freshData, null, 2));
         
@@ -152,6 +175,7 @@ export const getCurrentUserProfile = async () => {
     if (userData.phone_number && !userData.phone) {
       userData.phone = userData.phone_number;
     }
+    userData = normalizeProfileData(userData);
     
     // Update localStorage with fresh data using authStorage
     authStorage.updateUser(userData);
@@ -184,13 +208,13 @@ export const uploadProfilePicture = async (file) => {
     const formData = new FormData();
     formData.append('photo', file);
 
-    const response = await api.post(`/users/${currentUserId}/photo/`, formData, {
+    const response = await api.post(`/users/${currentUserId}/upload-photo/`, formData, {
       headers: { 
         'Content-Type': 'multipart/form-data' 
       },
     });
     
-    const updatedUser = response.data?.data || response.data;
+    const updatedUser = normalizeProfileData(response.data?.data || response.data);
     
     // Update localStorage with the new profile picture using authStorage
     const existingUserData = authStorage.getUser();

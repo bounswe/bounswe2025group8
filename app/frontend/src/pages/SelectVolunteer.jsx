@@ -32,6 +32,7 @@ import {
   getMockTaskVolunteers,
 } from "../features/request/services/requestService";
 import Sidebar from "../components/Sidebar";
+import { toAbsoluteUrl } from "../utils/url";
 
 const SelectVolunteer = () => {
   const { requestId } = useParams();
@@ -81,8 +82,13 @@ const SelectVolunteer = () => {
                 volunteer.completedTasks ||
                 0,
               avatar:
-                volunteer.user?.avatar ||
-                volunteer.avatar ||
+                toAbsoluteUrl(
+                  volunteer.user?.profile_photo ||
+                    volunteer.user?.profilePhoto ||
+                    volunteer.user?.profilePicture ||
+                    volunteer.user?.avatar ||
+                    volunteer.avatar
+                ) ||
                 `https://ui-avatars.com/api/?name=${
                   volunteer.user?.name || volunteer.name
                 }&background=random`,

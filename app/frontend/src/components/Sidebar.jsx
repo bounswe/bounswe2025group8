@@ -14,6 +14,8 @@ import DataObjectIcon from "@mui/icons-material/DataObject";
 import logo from "../assets/logo.png";
 import useAuth from "../features/authentication/hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
+import { toAbsoluteUrl } from "../utils/url";
+import { useUnreadCount } from "../features/notification";
 // import { logout } from "../store/slices/authSlice";
 // import { logout as logoutService } from "../services/authService";
 
@@ -22,6 +24,25 @@ const Sidebar = () => {
   const location = useLocation();
   const { isAuthenticated, currentUser, userRole, logout } = useAuth();
   const { colors, theme } = useTheme();
+  const fallbackName =
+    `${currentUser?.name || ""} ${currentUser?.surname || ""}`.trim() ||
+    currentUser?.username ||
+    currentUser?.email ||
+    "User";
+  const resolvedAvatar =
+    toAbsoluteUrl(
+      currentUser?.profile_photo ||
+        currentUser?.profilePhoto ||
+        currentUser?.profilePicture ||
+        currentUser?.avatar
+    ) ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      fallbackName
+    )}&background=random`;
+  const { unreadCount } = useUnreadCount({
+    autoFetch: isAuthenticated,
+    pollInterval: isAuthenticated ? 60000 : 0, // Poll every minute if authenticated
+  });
 
   const handleLogout = async () => {
     try {
@@ -283,11 +304,7 @@ const Sidebar = () => {
             aria-label="View your profile"
           >
             <img
-              src={
-                currentUser?.avatar ||
-                currentUser?.profilePicture ||
-                "https://randomuser.me/api/portraits/men/32.jpg"
-              }
+              src={resolvedAvatar}
               alt={`${currentUser?.name || "User"}'s avatar`}
               className="w-10 h-10 rounded-full object-cover"
             />
@@ -329,7 +346,7 @@ const Sidebar = () => {
             <div className="flex items-center">
               <button
                 title="Notifications"
-                className="p-1 mr-2 rounded transition-colors"
+                className="p-1 mr-2 rounded transition-colors relative"
                 onClick={() => navigate("/notifications")}
                 style={{ color: colors.text.secondary }}
                 onMouseEnter={(e) => {
@@ -350,9 +367,23 @@ const Sidebar = () => {
                     e.currentTarget.style.outline = "none";
                   }
                 }}
-                aria-label="View notifications"
+                aria-label={unreadCount > 0 ? `View notifications (${unreadCount} unread)` : "View notifications"}
               >
                 <NotificationsIcon fontSize="small" />
+                {unreadCount > 0 && (
+                  <span
+                    className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] text-xs font-bold rounded-full"
+                    style={{
+                      backgroundColor: colors.semantic.error,
+                      color: colors.text.inverse,
+                      fontSize: '0.625rem',
+                      padding: '0 4px',
+                    }}
+                    aria-label={`${unreadCount} unread notifications`}
+                  >
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </span>
+                )}
               </button>
               <button
                 title="Settings"

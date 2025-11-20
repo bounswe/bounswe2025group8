@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   fetchCategories,
   nextStep,
@@ -15,6 +15,7 @@ import DetermineDeadlineStep from "./DetermineDeadlineStep";
 import SetupAddressStep from "./SetupAddressStep";
 import { useAttachTaskPhoto } from "../features/photo";
 import { useTheme } from "../hooks/useTheme";
+import useAuth from "../features/authentication/hooks/useAuth";
 
 const steps = [
   "General Information",
@@ -26,6 +27,8 @@ const steps = [
 const CreateRequestPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated } = useAuth();
   const { currentStep, loading, success, error, formData } = useSelector(
     (state) => state.createRequest
   );

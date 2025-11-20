@@ -1,4 +1,25 @@
 import api from '../../../services/api';
+import { toAbsoluteUrl } from '../../../utils/url';
+import { authStorage } from '../../authentication/utils';
+
+const normalizeProfileData = (data) => {
+  if (!data || typeof data !== 'object') return data;
+  const resolvedPhoto =
+    data.profile_photo ||
+    data.profilePhoto ||
+    data.profilePicture ||
+    data.photo ||
+    data.avatar ||
+    null;
+  const normalizedPhoto = toAbsoluteUrl(resolvedPhoto) || null;
+
+  return {
+    ...data,
+    profile_photo: normalizedPhoto,
+    profilePhoto: normalizedPhoto,
+    profilePicture: normalizedPhoto,
+  };
+};
 
 /**
  * Fetch user profile data
@@ -10,7 +31,8 @@ export const getUserProfile = async (userId) => {
       if (!userId) throw new Error('User not authenticated');
     }
     const res = await api.get(`/users/${userId}/`);
-    return (res.data && res.data.data) ? res.data.data : res.data;
+    const payload = (res.data && res.data.data) ? res.data.data : res.data;
+    return normalizeProfileData(payload);
   } catch (error) {
     console.error('Error fetching user profile:', error);
     throw error;
@@ -116,7 +138,15 @@ export const updateUserProfile = async (userData) => {
     const currentUserId = localStorage.getItem('userId');
     if (!currentUserId) throw new Error('User ID not found. Please log in again.');
     const res = await api.patch(`/users/${currentUserId}/`, userData);
-    return (res.data && res.data.data) ? res.data.data : res.data;
+    const payload = (res.data && res.data.data) ? res.data.data : res.data;
+    const normalized = normalizeProfileData(payload);
+
+    const storedUser = authStorage.getUser();
+    if (storedUser && String(storedUser.id) === String(currentUserId)) {
+      authStorage.updateUser({ ...storedUser, ...normalized });
+    }
+
+    return normalized;
   } catch (error) {
     if (error.response && error.response.status === 400) {
       console.error('Validation error when updating profile:', error.response.data);
@@ -132,7 +162,6 @@ export const updateUserProfile = async (userData) => {
  */
 export const uploadProfilePicture = async (file) => {
   try {
-    console.warn('Profile picture upload endpoint not found in backend. Implementation may need adjustment.');
     const currentUserId = localStorage.getItem('userId');
     if (!currentUserId) throw new Error('User ID not found. Please log in again.');
 
@@ -140,10 +169,18 @@ export const uploadProfilePicture = async (file) => {
     formData.append('photo', file);
     formData.append('user_id', currentUserId);
 
-    const res = await api.post(`/users/${currentUserId}/photo/`, formData, {
+    const res = await api.post(`/users/${currentUserId}/upload-photo/`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return (res.data && res.data.data) ? res.data.data : res.data;
+    const payload = (res.data && res.data.data) ? res.data.data : res.data;
+    const normalized = normalizeProfileData(payload);
+
+    const storedUser = authStorage.getUser();
+    if (storedUser && String(storedUser.id) === String(currentUserId)) {
+      authStorage.updateUser({ ...storedUser, ...normalized });
+    }
+
+    return normalized;
   } catch (error) {
     console.error('Error uploading profile picture:', error);
     throw error;
