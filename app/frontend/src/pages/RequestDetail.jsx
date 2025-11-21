@@ -456,7 +456,9 @@ const RequestDetail = () => {
     try {
       const response = await updateTask(request.id, payload);
       const updatedTask = response?.data ?? response;
-      setRequest((prev) => ({ ...prev, ...updatedTask }));
+      // Preserve volunteers array when updating task
+      const volunteers = request.volunteers || [];
+      setRequest((prev) => ({ ...prev, ...updatedTask, volunteers }));
       setEditDialogOpen(false);
     } catch (err) {
       console.error("Failed to update task:", err);
@@ -656,8 +658,19 @@ const RequestDetail = () => {
     }
   };
 
-  const handleRateAndReview = () => {
+  const handleRateAndReview = async () => {
     if (canRateAndReview) {
+      // Fetch latest volunteers data before opening modal
+      try {
+        const volunteers = await getTaskVolunteers(request.id);
+        console.log(
+          "Fetched volunteers before opening review modal:",
+          volunteers
+        );
+        setRequest((prev) => ({ ...prev, volunteers }));
+      } catch (error) {
+        console.warn("Could not fetch volunteers for review modal:", error);
+      }
       setRatingDialogOpen(true);
     }
   };
@@ -875,15 +888,8 @@ const RequestDetail = () => {
             <div className="p-6 flex flex-col justify-between">
               {/* Requester Info */}
               <div
-                className="flex items-center mb-6 p-3 rounded-lg cursor-pointer transition-colors"
+                className="flex items-center mb-6 p-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
                 onClick={() => navigate(`/profile/${request.creator.id}`)}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor =
-                    colors.interactive.hover;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
               >
                 <div className="w-12 h-12 mr-4">
                   {requesterPhoto ? (
@@ -899,10 +905,7 @@ const RequestDetail = () => {
                   )}
                 </div>
                 <div>
-                  <h3
-                    className="text-lg font-semibold"
-                    style={{ color: colors.text.primary }}
-                  >
+                  <h3 className="text-lg font-semibold text-gray-900">
                     {request.creator.name} {request.creator.surname}
                   </h3>
                   <p
