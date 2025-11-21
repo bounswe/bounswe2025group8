@@ -76,6 +76,62 @@ const RequestDetail = () => {
     return now > deadlineDate;
   };
 
+  // Helper function to parse and filter location based on permissions
+  const getFilteredLocation = (locationString, canSeePrivateInfo) => {
+    if (!locationString) return "";
+
+    // Split the location string into parts
+    const parts = locationString.split(", ");
+
+    // Check if it's the formatted version with prefixes
+    const isFormatted = parts.some(
+      (part) =>
+        part.includes("Country:") ||
+        part.includes("State:") ||
+        part.includes("City:")
+    );
+
+    if (!isFormatted) {
+      // For unformatted locations, show everything if can see private info
+      // Otherwise show first 3 parts (assumed to be public region info)
+      return canSeePrivateInfo ? locationString : parts.slice(0, 3).join(", ");
+    }
+
+    // For formatted locations, filter based on permissions
+    const publicPrefixes = ["Country:", "State:", "City:"];
+    const privatePrefixes = [
+      "Neighborhood:",
+      "Street:",
+      "Building:",
+      "Door:",
+      "Description:",
+    ];
+
+    if (canSeePrivateInfo) {
+      // Show everything
+      return locationString;
+    } else {
+      // Show only public parts (Country, State/Province, City/District)
+      const publicParts = parts.filter((part) =>
+        publicPrefixes.some((prefix) => part.trim().startsWith(prefix))
+      );
+      return publicParts.join(", ");
+    }
+  };
+
+  // Helper function to check if user can see private information
+  const canSeePrivateInfo = () => {
+    // Task creator can always see their own info
+    if (isTaskCreator) return true;
+
+    // Selected volunteers (ACCEPTED status) can see private info
+    if (volunteerRecord && volunteerRecord.status === "ACCEPTED") {
+      return true;
+    }
+
+    return false;
+  };
+
   // Fetch request details and volunteer status
   useEffect(() => {
     const fetchRequest = async () => {
@@ -997,19 +1053,21 @@ const RequestDetail = () => {
                     {request.volunteer_number > 1 ? "s" : ""} required
                   </span>
                 </div>
-                <div
-                  className="flex items-center"
-                  style={{ color: colors.text.secondary }}
-                >
-                  <PhoneIcon
-                    className="w-5 h-5 mr-3"
-                    style={{ color: colors.text.tertiary }}
-                    aria-hidden="true"
-                  />
-                  <span className="text-sm">
-                    {request.creator.phone_number}
-                  </span>
-                </div>
+                {canSeePrivateInfo() && request.creator.phone_number && (
+                  <div
+                    className="flex items-center"
+                    style={{ color: colors.text.secondary }}
+                  >
+                    <PhoneIcon
+                      className="w-5 h-5 mr-3"
+                      style={{ color: colors.text.tertiary }}
+                      aria-hidden="true"
+                    />
+                    <span className="text-sm">
+                      {request.creator.phone_number}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Status */}
