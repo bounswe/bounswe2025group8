@@ -279,3 +279,156 @@ class ReviewModelTests(TestCase):
                 score=5.0,
                 comment='I am awesome'
             )
+
+    def test_review_with_empty_comment(self):
+        """Test creating review with empty comment"""
+        # Create a new task to avoid conflicts
+        new_task = Task.objects.create(
+            title='Another Completed Task',
+            description='Task Description',
+            category='OTHER',
+            location='Test Location',
+            deadline=timezone.now() + datetime.timedelta(days=3),
+            creator=self.creator,
+            assignee=self.assignee,
+            status='COMPLETED'
+        )
+        
+        # Create review with empty comment
+        review = Review.submit_review(
+            reviewer=self.creator,
+            reviewee=self.assignee,
+            task=new_task,
+            score=4.0,
+            comment=''
+        )
+        
+        # Verify review was created with empty comment
+        self.assertIsNotNone(review)
+        self.assertEqual(review.comment, '')
+        self.assertEqual(review.score, 4.0)
+
+    def test_review_score_decimal_precision(self):
+        """Test review score with various decimal precisions"""
+        # Test various decimal scores by creating separate tasks for each
+        test_scores = [1.1, 2.25, 3.333, 4.99, 5.0]
+        
+        for i, score in enumerate(test_scores):
+            # Create a new task for each review to avoid unique constraint
+            new_task = Task.objects.create(
+                title=f'Decimal Score Task {i}',
+                description='Task Description',
+                category='OTHER',
+                location='Test Location',
+                deadline=timezone.now() + datetime.timedelta(days=3),
+                creator=self.creator,
+                assignee=self.assignee,
+                status='COMPLETED'
+            )
+            
+            review = Review.objects.create(
+                score=score,
+                comment=f'Score {score} test',
+                reviewer=self.creator,
+                reviewee=self.assignee,
+                task=new_task
+            )
+            
+            # Verify score is stored correctly
+            self.assertAlmostEqual(review.score, score, places=2)
+
+    def test_delete_task_cascades_to_reviews(self):
+        """Test that deleting a task also deletes associated reviews"""
+        # Count reviews before deletion
+        initial_review_count = Review.objects.count()
+        self.assertGreater(initial_review_count, 0)
+        
+        # Delete the task
+        task_id = self.task.id
+        self.task.delete()
+        
+        # Verify task is deleted
+        with self.assertRaises(Task.DoesNotExist):
+            Task.objects.get(id=task_id)
+        
+        # Verify reviews associated with this task are also deleted
+        final_review_count = Review.objects.count()
+        self.assertLess(final_review_count, initial_review_count)
+
+    def test_delete_user_cascades_to_reviews(self):
+        """Test that deleting a user also deletes their reviews"""
+        # Create a temporary user
+        temp_user = RegisteredUser.objects.create_user(
+            email='temp@example.com',
+            name='Temp',
+            surname='User',
+            username='tempuser',
+            phone_number='5555555555',
+            password='password123'
+        )
+        
+        # Create a task with temp user
+        temp_task = Task.objects.create(
+            title='Temp Task',
+            description='Task Description',
+            category='OTHER',
+            location='Test Location',
+            deadline=timezone.now() + datetime.timedelta(days=3),
+            creator=temp_user,
+            assignee=self.assignee,
+            status='COMPLETED'
+        )
+        
+        # Create a review by temp user
+        temp_review = Review.submit_review(
+            reviewer=temp_user,
+            reviewee=self.assignee,
+            task=temp_task,
+            score=4.5,
+            comment='Review by temp user'
+        )
+        
+        review_id = temp_review.id
+        
+        # Delete the temp user
+        temp_user.delete()
+        
+        # Verify review by temp user is also deleted
+        with self.assertRaises(Review.DoesNotExist):
+            Review.objects.get(id=review_id)
+
+    def test_review_ordering_by_timestamp(self):
+        """Test that reviews can be ordered by timestamp"""
+        import time
+        
+        # Create multiple reviews with small time delays
+        reviews = []
+        for i in range(3):
+            new_task = Task.objects.create(
+                title=f'Task {i}',
+                description='Task Description',
+                category='OTHER',
+                location='Test Location',
+                deadline=timezone.now() + datetime.timedelta(days=3),
+                creator=self.creator,
+                assignee=self.assignee,
+                status='COMPLETED'
+            )
+            
+            review = Review.submit_review(
+                reviewer=self.assignee,
+                reviewee=self.creator,
+                task=new_task,
+                score=3.0 + i,
+                comment=f'Review {i}'
+            )
+            reviews.append(review)
+            time.sleep(0.01)  # Small delay to ensure different timestamps
+        
+        # Get all reviews ordered by timestamp
+        ordered_reviews = Review.objects.filter(
+            id__in=[r.id for r in reviews]
+        ).order_by('timestamp')
+        
+        # Verify they are in chronological order
+        self.assertEqual(list(ordered_reviews), reviews)
