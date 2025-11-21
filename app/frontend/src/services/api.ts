@@ -16,7 +16,6 @@ function getApiBaseUrl(): string {
       const ipMatch = currentOrigin.match(/^https?:\/\/([\d.]+)(:\d+)?/);
       if (ipMatch) {
         const ip = ipMatch[1];
-        const port = ipMatch[2] || '';
         return `http://${ip}:8000/api`;
       }
     }
@@ -29,7 +28,8 @@ function getApiBaseUrl(): string {
 }
 
 // Create an axios instance with base URL
-const API_BASE_URL: string = getApiBaseUrl();
+export const API_BASE_URL: string = getApiBaseUrl();
+export const API_ORIGIN: string = new URL(API_BASE_URL).origin;
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
