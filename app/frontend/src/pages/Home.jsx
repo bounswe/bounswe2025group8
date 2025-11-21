@@ -26,59 +26,63 @@ const Home = () => {
     requests: null,
   });
 
+  // Fetch categories function
+  const fetchCategories = async () => {
+    setLoading((prev) => ({ ...prev, categories: true }));
+    try {
+      const popularCategories = await categoryService.getPopularCategories(4);
+      // Transform API response to match UI component expectations
+      const formattedCategories = popularCategories.map((category) => ({
+        id: category.value,
+        title: category.name,
+        image: getCategoryImage(category.value),
+        requestCount: category.task_count,
+      }));
+      setCategories(formattedCategories);
+      setError((prev) => ({ ...prev, categories: null }));
+    } catch (err) {
+      console.error("Failed to fetch categories:", err);
+      setError((prev) => ({
+        ...prev,
+        categories: "Failed to load categories",
+      }));
+    } finally {
+      setLoading((prev) => ({ ...prev, categories: false }));
+    }
+  };
+
+  // Fetch requests function
+  const fetchRequests = async () => {
+    setLoading((prev) => ({ ...prev, requests: true }));
+    try {
+      const popularTasks = await requestService.getPopularTasks(6);
+      const withImages = popularTasks.map((t) => {
+        const photoFromList =
+          t.photos?.[0]?.url ||
+          t.photos?.[0]?.image ||
+          t.photos?.[0]?.photo_url;
+        const preferred = t.primary_photo_url || photoFromList || null;
+        return { ...t, imageUrl: toAbsoluteUrl(preferred) };
+      });
+      setRequests(withImages);
+      setError((prev) => ({ ...prev, requests: null }));
+    } catch (err) {
+      console.error("Failed to fetch popular requests:", err);
+      setError((prev) => ({
+        ...prev,
+        requests: "Failed to load popular requests",
+      }));
+      // Clear requests on error
+      setRequests([]);
+    } finally {
+      setLoading((prev) => ({ ...prev, requests: false }));
+    }
+  };
+
   // Fetch data from API
   useEffect(() => {
-    const fetchData = async () => {
-      // Fetch categories
-      setLoading((prev) => ({ ...prev, categories: true }));
-      try {
-        const popularCategories = await categoryService.getPopularCategories(4);
-        // Transform API response to match UI component expectations
-        const formattedCategories = popularCategories.map((category) => ({
-          id: category.value,
-          title: category.name,
-          image: getCategoryImage(category.value),
-          requestCount: category.task_count,
-        }));
-        setCategories(formattedCategories);
-        setError((prev) => ({ ...prev, categories: null }));
-      } catch (err) {
-        console.error("Failed to fetch categories:", err);
-        setError((prev) => ({
-          ...prev,
-          categories: "Failed to load categories",
-        }));
-      } finally {
-        setLoading((prev) => ({ ...prev, categories: false }));
-      }
-
-      // Fetch popular requests
-      setLoading((prev) => ({ ...prev, requests: true }));
-      try {
-        const popularTasks = await requestService.getPopularTasks(6);
-        const withImages = popularTasks.map((t) => {
-          const photoFromList =
-            t.photos?.[0]?.url ||
-            t.photos?.[0]?.image ||
-            t.photos?.[0]?.photo_url;
-          const preferred = t.primary_photo_url || photoFromList || null;
-          return { ...t, imageUrl: toAbsoluteUrl(preferred) };
-        });
-        setRequests(withImages);
-        setError((prev) => ({ ...prev, requests: null }));
-      } catch (err) {
-        console.error("Failed to fetch popular requests:", err);
-        setError((prev) => ({
-          ...prev,
-          requests: "Failed to load popular requests",
-        }));
-        // Clear requests on error
-        setRequests([]);
-      } finally {
-        setLoading((prev) => ({ ...prev, requests: false }));
-      }
-    };
-    fetchData();
+    fetchCategories();
+    fetchRequests();
   }, []);
   // Using the centralized getCategoryImage function from constants/categories.js
 
@@ -174,32 +178,7 @@ const Home = () => {
               onBlur={(e) => {
                 e.currentTarget.style.outline = "none";
               }}
-              onClick={() => {
-                setLoading((prev) => ({ ...prev, categories: true }));
-                categoryService
-                  .getPopularCategories(4)
-                  .then((data) => {
-                    const formattedCategories = data.map((category) => ({
-                      id: category.value,
-                      title: category.name,
-                      image: getCategoryImage(category.value),
-                      requestCount: category.task_count,
-                    }));
-                    setCategories(formattedCategories);
-                    setError((prev) => ({ ...prev, categories: null }));
-                  })
-                  .catch((err) => {
-                    console.error("Failed to fetch categories:", err);
-                    setError((prev) => ({
-                      ...prev,
-                      categories: "Failed to load categories",
-                    }));
-                  })
-                  .finally(() => {
-                    setLoading((prev) => ({ ...prev, categories: false }));
-                  });
-              }}
-              aria-label="Retry loading categories"
+              onClick={fetchCategories}
             >
               Try Again
             </button>
@@ -312,27 +291,7 @@ const Home = () => {
               onBlur={(e) => {
                 e.currentTarget.style.outline = "none";
               }}
-              onClick={() => {
-                setLoading((prev) => ({ ...prev, requests: true }));
-                requestService
-                  .getPopularTasks(6)
-                  .then((data) => {
-                    setRequests(data);
-                    setError((prev) => ({ ...prev, requests: null }));
-                  })
-                  .catch((err) => {
-                    console.error("Failed to fetch popular requests:", err);
-                    setError((prev) => ({
-                      ...prev,
-                      requests: "Failed to load popular requests",
-                    }));
-                    setRequests([]); // Clear requests on error
-                  })
-                  .finally(() => {
-                    setLoading((prev) => ({ ...prev, requests: false }));
-                  });
-              }}
-              aria-label="Retry loading requests"
+              onClick={fetchRequests}
             >
               Try Again
             </button>

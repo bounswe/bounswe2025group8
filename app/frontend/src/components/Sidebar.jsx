@@ -29,16 +29,29 @@ const Sidebar = () => {
     currentUser?.username ||
     currentUser?.email ||
     "User";
-  const resolvedAvatar =
-    toAbsoluteUrl(
-      currentUser?.profile_photo ||
-        currentUser?.profilePhoto ||
-        currentUser?.profilePicture ||
-        currentUser?.avatar
-    ) ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      fallbackName
-    )}&background=random`;
+
+  // Get initials from name and surname
+  const getInitials = () => {
+    const name = currentUser?.name || "";
+    const surname = currentUser?.surname || "";
+
+    if (name && surname) {
+      return `${name.charAt(0)}${surname.charAt(0)}`.toUpperCase();
+    } else if (name) {
+      return name.charAt(0).toUpperCase();
+    } else if (currentUser?.username) {
+      return currentUser.username.charAt(0).toUpperCase();
+    }
+    return "U";
+  };
+
+  const resolvedAvatar = toAbsoluteUrl(
+    currentUser?.profile_photo ||
+      currentUser?.profilePhoto ||
+      currentUser?.profilePicture ||
+      currentUser?.avatar
+  );
+
   const { unreadCount } = useUnreadCount({
     autoFetch: isAuthenticated,
     pollInterval: isAuthenticated ? 60000 : 0, // Poll every minute if authenticated
@@ -303,11 +316,22 @@ const Sidebar = () => {
             }}
             aria-label="View your profile"
           >
-            <img
-              src={resolvedAvatar}
-              alt={`${currentUser?.name || "User"}'s avatar`}
-              className="w-10 h-10 rounded-full object-cover"
-            />
+            {resolvedAvatar ? (
+              <img
+                src={resolvedAvatar}
+                alt={`${currentUser?.name || "User"}'s avatar`}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm"
+                style={{
+                  backgroundColor: colors.brand.primary,
+                }}
+              >
+                {getInitials()}
+              </div>
+            )}
           </div>
 
           {/* Username and buttons on the right */}
@@ -367,7 +391,11 @@ const Sidebar = () => {
                     e.currentTarget.style.outline = "none";
                   }
                 }}
-                aria-label={unreadCount > 0 ? `View notifications (${unreadCount} unread)` : "View notifications"}
+                aria-label={
+                  unreadCount > 0
+                    ? `View notifications (${unreadCount} unread)`
+                    : "View notifications"
+                }
               >
                 <NotificationsIcon fontSize="small" />
                 {unreadCount > 0 && (
@@ -376,12 +404,12 @@ const Sidebar = () => {
                     style={{
                       backgroundColor: colors.semantic.error,
                       color: colors.text.inverse,
-                      fontSize: '0.625rem',
-                      padding: '0 4px',
+                      fontSize: "0.625rem",
+                      padding: "0 4px",
                     }}
                     aria-label={`${unreadCount} unread notifications`}
                   >
-                    {unreadCount > 99 ? '99+' : unreadCount}
+                    {unreadCount > 99 ? "99+" : unreadCount}
                   </span>
                 )}
               </button>
