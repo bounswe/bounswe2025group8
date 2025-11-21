@@ -133,6 +133,7 @@ const ResetPassword = () => {
           value={theme}
           onChange={(e) => setTheme(e.target.value)}
           className="px-3 py-2 rounded-md border text-sm focus:outline-none"
+          aria-label="Theme selection"
           style={{
             backgroundColor: colors.background.secondary,
             color: colors.text.primary,
@@ -149,13 +150,18 @@ const ResetPassword = () => {
         </select>
       </div>
 
-      <div className="w-full max-w-sm mx-auto">
+      <main
+        role="main"
+        aria-labelledby="reset-page-title"
+        className="w-full max-w-sm mx-auto"
+      >
         {/* Logo and Title updated to be side by side */}
         <div className="flex flex-row items-center justify-center mb-3">
           <img src={logoImage} alt="Logo" width="160" height="160" />
           <h1
             className="text-4xl font-bold ml-2"
             style={{ color: colors.text.primary }}
+            id="reset-page-title"
           >
             Neighborhood
             <br />
@@ -193,6 +199,8 @@ const ResetPassword = () => {
                     backgroundColor: colors.semantic.errorBackground,
                     borderColor: colors.semantic.error,
                   }}
+                  role="alert"
+                  aria-live="assertive"
                 >
                   <p
                     className="text-sm"
@@ -210,6 +218,8 @@ const ResetPassword = () => {
                     backgroundColor: colors.semantic.successBackground,
                     borderColor: colors.semantic.success,
                   }}
+                  role="alert"
+                  aria-live="polite"
                 >
                   <p
                     className="text-sm"
@@ -222,6 +232,23 @@ const ResetPassword = () => {
 
               <form onSubmit={handleSubmit} noValidate className="w-full">
                 <div className="relative mt-2 mb-2">
+                  <label
+                    htmlFor="password"
+                    className="sr-only"
+                    style={{
+                      position: "absolute",
+                      width: 1,
+                      height: 1,
+                      padding: 0,
+                      margin: -1,
+                      overflow: "hidden",
+                      clip: "rect(0, 0, 0, 0)",
+                      whiteSpace: "nowrap",
+                      border: 0,
+                    }}
+                  >
+                    New Password
+                  </label>
                   <input
                     required
                     className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none"
@@ -240,6 +267,7 @@ const ResetPassword = () => {
                     id="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    aria-required="true"
                   />
                   <button
                     type="button"
@@ -252,12 +280,32 @@ const ResetPassword = () => {
                       (e.currentTarget.style.color = colors.text.tertiary)
                     }
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                   >
                     {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
                   </button>
                 </div>
 
                 <div className="relative mt-2 mb-2">
+                  <label
+                    htmlFor="confirmPassword"
+                    className="sr-only"
+                    style={{
+                      position: "absolute",
+                      width: 1,
+                      height: 1,
+                      padding: 0,
+                      margin: -1,
+                      overflow: "hidden",
+                      clip: "rect(0, 0, 0, 0)",
+                      whiteSpace: "nowrap",
+                      border: 0,
+                    }}
+                  >
+                    Confirm Password
+                  </label>
                   <input
                     required
                     className="w-full px-3 py-2 text-sm border rounded-md focus:outline-none"
@@ -276,6 +324,7 @@ const ResetPassword = () => {
                     id="confirmPassword"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
+                    aria-required="true"
                   />
                   <button
                     type="button"
@@ -288,6 +337,11 @@ const ResetPassword = () => {
                       (e.currentTarget.style.color = colors.text.tertiary)
                     }
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={
+                      showPassword
+                        ? "Hide confirm password"
+                        : "Show confirm password"
+                    }
                   >
                     {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
                   </button>
@@ -340,7 +394,7 @@ const ResetPassword = () => {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

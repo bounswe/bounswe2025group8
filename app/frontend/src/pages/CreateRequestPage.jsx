@@ -35,15 +35,30 @@ const CreateRequestPage = () => {
   const { attachPhoto } = useAttachTaskPhoto();
   const generalInfoRef = useRef();
   const setupAddressRef = useRef();
+  const successRef = useRef(null);
+  const errorRef = useRef(null);
+  const validationRef = useRef(null);
   const [validationError, setValidationError] = useState(null);
   const { colors } = useTheme();
 
-  // Redirect to login if not authenticated
+  // Focus success/error/validation banners when they appear
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login", { state: { from: location.pathname }, replace: true });
+    if (success && successRef.current) {
+      successRef.current.focus();
     }
-  }, [isAuthenticated, navigate, location.pathname]);
+  }, [success]);
+
+  useEffect(() => {
+    if (error && errorRef.current) {
+      errorRef.current.focus();
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (validationError && validationRef.current) {
+      validationRef.current.focus();
+    }
+  }, [validationError]);
 
   useEffect(() => {
     // Fetch categories when component mounts
@@ -132,7 +147,11 @@ const CreateRequestPage = () => {
   return (
     <div style={{ display: "flex", height: "100vh" }}>
       {/* Main content */}
-      <main style={{ flexGrow: 1, padding: "24px", overflow: "auto" }}>
+      <main
+        role="main"
+        aria-labelledby="create-request-title"
+        style={{ flexGrow: 1, padding: "24px", overflow: "auto" }}
+      >
         <div style={{ maxWidth: "56rem", margin: "0 auto" }}>
           {/* Form header */}
           <div
@@ -149,6 +168,7 @@ const CreateRequestPage = () => {
                 fontWeight: 500,
                 color: colors.text.primary,
               }}
+              id="create-request-title"
             >
               Create Request &gt; {steps[currentStep]}
             </h1>
@@ -161,6 +181,8 @@ const CreateRequestPage = () => {
               justifyContent: "center",
               marginBottom: "32px",
             }}
+            role="tablist"
+            aria-label="Create request steps"
           >
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
               {steps.map((label, index) => (
@@ -179,6 +201,17 @@ const CreateRequestPage = () => {
                           : colors.text.tertiary,
                     }}
                     onClick={() => dispatch(setStep(index))}
+                    role="tab"
+                    aria-selected={index === currentStep}
+                    aria-controls={`step-panel-${index}`}
+                    id={`step-tab-${index}`}
+                    tabIndex={index === currentStep ? 0 : -1}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        dispatch(setStep(index));
+                      }
+                    }}
                   >
                     <div
                       style={{
@@ -218,6 +251,7 @@ const CreateRequestPage = () => {
                         fontWeight: 500,
                         display: window.innerWidth >= 640 ? "block" : "none",
                       }}
+                      aria-hidden={window.innerWidth < 640}
                     >
                       {label}
                     </span>
@@ -252,6 +286,10 @@ const CreateRequestPage = () => {
                 boxShadow: colors.shadow.sm,
                 border: `1px solid ${colors.semantic.success}`,
               }}
+              role="alert"
+              aria-live="assertive"
+              tabIndex={-1}
+              ref={successRef}
             >
               <h3
                 style={{
@@ -281,6 +319,10 @@ const CreateRequestPage = () => {
                 boxShadow: colors.shadow.sm,
                 border: `1px solid ${colors.semantic.error}`,
               }}
+              role="alert"
+              aria-live="assertive"
+              tabIndex={-1}
+              ref={errorRef}
             >
               <h3
                 style={{
@@ -306,6 +348,10 @@ const CreateRequestPage = () => {
                 boxShadow: colors.shadow.sm,
                 border: `1px solid ${colors.semantic.error}`,
               }}
+              role="alert"
+              aria-live="assertive"
+              tabIndex={-1}
+              ref={validationRef}
             >
               <p
                 style={{
@@ -328,6 +374,9 @@ const CreateRequestPage = () => {
               border: `1px solid ${colors.border.primary}`,
               backgroundColor: colors.background.elevated,
             }}
+            role="tabpanel"
+            id={`step-panel-${currentStep}`}
+            aria-labelledby={`step-tab-${currentStep}`}
           >
             {renderStep()}
           </div>

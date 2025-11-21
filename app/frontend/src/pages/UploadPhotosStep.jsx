@@ -4,7 +4,10 @@ import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import { removePhoto, uploadPhotos as uploadPhotosThunk } from "../features/request/store/createRequestSlice";
+import {
+  removePhoto,
+  uploadPhotos as uploadPhotosThunk,
+} from "../features/request/store/createRequestSlice";
 
 const MAX_PHOTOS = 4;
 const MAX_SIZE_MB = 10; // keep in sync with backend limit
@@ -27,7 +30,10 @@ const UploadPhotosStep = () => {
     if (uploadedPhotos.length < MAX_PHOTOS) {
       setLocalError((prev) => {
         if (!prev) return prev;
-        if (prev.includes("Only the first") || prev.includes("You can upload up to")) {
+        if (
+          prev.includes("Only the first") ||
+          prev.includes("You can upload up to")
+        ) {
           return "";
         }
         return prev;
@@ -52,7 +58,9 @@ const UploadPhotosStep = () => {
     const imageFiles = files.filter((file) => file.type.startsWith("image/"));
 
     const invalidTypeCount = files.length - imageFiles.length;
-    const sizeValidImages = imageFiles.filter((file) => file.size <= MAX_SIZE_MB * 1024 * 1024);
+    const sizeValidImages = imageFiles.filter(
+      (file) => file.size <= MAX_SIZE_MB * 1024 * 1024
+    );
     const oversizedCount = imageFiles.length - sizeValidImages.length;
 
     const filesToUpload = sizeValidImages.slice(0, availableSlots);
@@ -67,7 +75,9 @@ const UploadPhotosStep = () => {
     } else if (oversizedCount > 0) {
       message = `Some files exceed ${MAX_SIZE_MB}MB and were skipped.`;
     } else if (capacityTruncated) {
-      message = `Only the first ${availableSlots} image${availableSlots === 1 ? "" : "s"} were added.`;
+      message = `Only the first ${availableSlots} image${
+        availableSlots === 1 ? "" : "s"
+      } were added.`;
     }
 
     setLocalError(message);
@@ -132,7 +142,10 @@ const UploadPhotosStep = () => {
         role="button"
         aria-label="Upload photos by dragging and dropping or selecting files"
       >
-        <CloudUploadIcon sx={{ fontSize: 52, color: "#2563eb" }} />
+        <CloudUploadIcon
+          sx={{ fontSize: 52, color: "#2563eb" }}
+          aria-hidden="true"
+        />
         <div>
           <h3 className="text-lg font-semibold text-gray-800">
             Drag & drop photos here
@@ -147,8 +160,14 @@ const UploadPhotosStep = () => {
           className="flex items-center gap-2 rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
           onClick={triggerFileDialog}
           disabled={remainingSlots === 0 || loading}
+          aria-disabled={remainingSlots === 0 || loading}
+          aria-label={
+            remainingSlots === 0
+              ? "Maximum photos reached"
+              : "Select photos to upload"
+          }
         >
-          <AddAPhotoIcon fontSize="small" />
+          <AddAPhotoIcon fontSize="small" aria-hidden="true" />
           {remainingSlots === 0 ? "Maximum reached" : "Select photos"}
         </button>
 
@@ -159,18 +178,25 @@ const UploadPhotosStep = () => {
           multiple
           className="hidden"
           onChange={handleFileChange}
+          aria-label="Select photos"
         />
 
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-gray-500" id="photos-remaining-hint">
           {remainingSlots === 0
             ? "You cannot add more photos."
-            : `You can add ${remainingSlots} more photo${remainingSlots === 1 ? "" : "s"}.`}
+            : `You can add ${remainingSlots} more photo${
+                remainingSlots === 1 ? "" : "s"
+              }.`}
         </p>
       </div>
 
       {localError ? (
-        <div className="flex items-start gap-2 rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-700">
-          <ErrorOutlineIcon fontSize="small" />
+        <div
+          className="flex items-start gap-2 rounded-lg border border-red-100 bg-red-50 p-3 text-sm text-red-700"
+          role="alert"
+          aria-live="assertive"
+        >
+          <ErrorOutlineIcon fontSize="small" aria-hidden="true" />
           <span>{localError}</span>
         </div>
       ) : null}
@@ -203,8 +229,9 @@ const UploadPhotosStep = () => {
                     type="button"
                     onClick={() => handleRemovePhoto(photo.id)}
                     className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600 transition hover:border-red-200 hover:text-red-600"
+                    aria-label={`Remove photo ${photo.name}`}
                   >
-                    <DeleteOutlineIcon fontSize="inherit" />
+                    <DeleteOutlineIcon fontSize="inherit" aria-hidden="true" />
                     Remove
                   </button>
                 </div>
@@ -215,8 +242,8 @@ const UploadPhotosStep = () => {
       ) : (
         <div className="rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-600">
           <p>
-            Adding photos helps volunteers understand your request quickly.
-            You can continue without photos if needed.
+            Adding photos helps volunteers understand your request quickly. You
+            can continue without photos if needed.
           </p>
         </div>
       )}

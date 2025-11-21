@@ -8,20 +8,38 @@ import { useTheme } from "../hooks/useTheme";
 
 // Custom icons to replace Material-UI icons
 const AccessTimeIcon = ({ className }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+  <svg
+    className={className}
+    fill="currentColor"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+    focusable="false"
+  >
     <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" />
     <path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
   </svg>
 );
 
 const LocationOnIcon = ({ className }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+  <svg
+    className={className}
+    fill="currentColor"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+    focusable="false"
+  >
     <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
   </svg>
 );
 
 const PriorityHighIcon = ({ className }) => (
-  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+  <svg
+    className={className}
+    fill="currentColor"
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+    focusable="false"
+  >
     <circle cx="12" cy="19" r="2" />
     <path d="M10 3h4v12h-4z" />
   </svg>

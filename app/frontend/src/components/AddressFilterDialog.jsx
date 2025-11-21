@@ -170,6 +170,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
       fullWidth
       maxWidth="sm"
       fullScreen={fullScreen}
+      aria-labelledby="address-filter-title"
       PaperProps={{
         sx: {
           backgroundColor: colors.background.elevated,
@@ -177,13 +178,18 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
         },
       }}
     >
-      <DialogTitle sx={{ color: colors.text.primary }}>
+      <DialogTitle
+        id="address-filter-title"
+        sx={{ color: colors.text.primary }}
+      >
         Filter by Address
       </DialogTitle>
       <DialogContent>
         {error && (
           <Typography
             variant="body2"
+            role="alert"
+            aria-live="assertive"
             sx={{
               mb: 2,
               color: colors.semantic.error,
@@ -198,16 +204,18 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
           {/* Country */}
           <div>
-            <h3
+            <label
+              htmlFor="country-select"
               style={{
                 fontSize: "0.875rem",
                 fontWeight: "bold",
                 marginBottom: "8px",
                 color: colors.text.primary,
+                display: "block",
               }}
             >
               Country
-            </h3>
+            </label>
             <div style={{ position: "relative" }}>
               {loading.countries && (
                 <div
@@ -226,10 +234,12 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                       width: "20px",
                       borderBottom: `2px solid ${colors.brand.primary}`,
                     }}
+                    aria-hidden="true"
                   />
                 </div>
               )}
               <select
+                id="country-select"
                 style={{
                   width: "100%",
                   padding: "12px",
@@ -242,6 +252,8 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                 value={countryCode}
                 disabled={loading.countries}
                 onChange={(e) => setCountryCode(e.target.value)}
+                aria-busy={loading.countries ? "true" : undefined}
+                aria-describedby="country-help"
               >
                 <option value="">Select Country</option>
                 {countries.map((c) => (
@@ -250,21 +262,33 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                   </option>
                 ))}
               </select>
+              <p
+                id="country-help"
+                style={{
+                  fontSize: "0.75rem",
+                  color: colors.text.tertiary,
+                  marginTop: 4,
+                }}
+              >
+                Choose a country to load states and cities.
+              </p>
             </div>
           </div>
 
           {/* State */}
           <div>
-            <h3
+            <label
+              htmlFor="state-select"
               style={{
                 fontSize: "0.875rem",
                 fontWeight: "bold",
                 marginBottom: "8px",
                 color: colors.text.primary,
+                display: "block",
               }}
             >
               State/Province
-            </h3>
+            </label>
             <div style={{ position: "relative" }}>
               {loading.states && (
                 <div
@@ -283,10 +307,12 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                       width: "20px",
                       borderBottom: `2px solid ${colors.brand.primary}`,
                     }}
+                    aria-hidden="true"
                   />
                 </div>
               )}
               <select
+                id="state-select"
                 style={{
                   width: "100%",
                   padding: "12px",
@@ -299,6 +325,8 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                 value={stateName}
                 onChange={(e) => setStateName(e.target.value)}
                 disabled={!countryCode || loading.states}
+                aria-busy={loading.states ? "true" : undefined}
+                aria-describedby="state-help"
               >
                 <option value="">Select State/Province</option>
                 {states.map((s) => (
@@ -307,21 +335,33 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                   </option>
                 ))}
               </select>
+              <p
+                id="state-help"
+                style={{
+                  fontSize: "0.75rem",
+                  color: colors.text.tertiary,
+                  marginTop: 4,
+                }}
+              >
+                Select a state or province to load cities.
+              </p>
             </div>
           </div>
 
           {/* District/City */}
           <div>
-            <h3
+            <label
+              htmlFor="city-select"
               style={{
                 fontSize: "0.875rem",
                 fontWeight: "bold",
                 marginBottom: "8px",
                 color: colors.text.primary,
+                display: "block",
               }}
             >
               District or City
-            </h3>
+            </label>
             <div style={{ position: "relative" }}>
               {loading.cities && (
                 <div
@@ -340,10 +380,12 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                       width: "20px",
                       borderBottom: `2px solid ${colors.brand.primary}`,
                     }}
+                    aria-hidden="true"
                   />
                 </div>
               )}
               <select
+                id="city-select"
                 style={{
                   width: "100%",
                   padding: "12px",
@@ -356,6 +398,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                 value={cityName}
                 onChange={(e) => setCityName(e.target.value)}
                 disabled={!stateName || loading.cities}
+                aria-busy={loading.cities ? "true" : undefined}
               >
                 <option value="">Select District/City</option>
                 {cities.map((c) => (
@@ -370,6 +413,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
           {/* Advanced region details (optional) */}
           <div>
             <h3
+              id="advanced-section-title"
               style={{
                 fontSize: "0.875rem",
                 fontWeight: "bold",
@@ -386,7 +430,20 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                 gap: "8px",
               }}
             >
+              <label
+                htmlFor="neighborhood-input"
+                style={{
+                  position: "absolute",
+                  left: "-10000px",
+                  width: 1,
+                  height: 1,
+                  overflow: "hidden",
+                }}
+              >
+                Neighborhood
+              </label>
               <input
+                id="neighborhood-input"
                 type="text"
                 style={{
                   width: "100%",
@@ -400,7 +457,20 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                 value={neighborhood}
                 onChange={(e) => setNeighborhood(e.target.value)}
               />
+              <label
+                htmlFor="street-input"
+                style={{
+                  position: "absolute",
+                  left: "-10000px",
+                  width: 1,
+                  height: 1,
+                  overflow: "hidden",
+                }}
+              >
+                Street
+              </label>
               <input
+                id="street-input"
                 type="text"
                 style={{
                   width: "100%",
@@ -414,7 +484,20 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                 value={street}
                 onChange={(e) => setStreet(e.target.value)}
               />
+              <label
+                htmlFor="building-input"
+                style={{
+                  position: "absolute",
+                  left: "-10000px",
+                  width: 1,
+                  height: 1,
+                  overflow: "hidden",
+                }}
+              >
+                Building Number
+              </label>
               <input
+                id="building-input"
                 type="text"
                 style={{
                   width: "100%",
@@ -428,7 +511,20 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                 value={buildingNo}
                 onChange={(e) => setBuildingNo(e.target.value)}
               />
+              <label
+                htmlFor="door-input"
+                style={{
+                  position: "absolute",
+                  left: "-10000px",
+                  width: 1,
+                  height: 1,
+                  overflow: "hidden",
+                }}
+              >
+                Door Number
+              </label>
               <input
+                id="door-input"
                 type="text"
                 style={{
                   width: "100%",
@@ -475,6 +571,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                 color: colors.text.tertiary,
                 marginTop: "4px",
               }}
+              id="advanced-help"
             >
               Broad match uses your most specific entry (e.g., Neighborhood or
               District). Exact phrase builds a combined string (e.g., "Country:
