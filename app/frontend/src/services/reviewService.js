@@ -105,6 +105,15 @@ export const getAllPotentialReviewees = (task, currentUser) => {
     return [];
   }
 
+  console.log('getAllPotentialReviewees - Debug:', {
+    taskId: task.id,
+    currentUserId: currentUser.id,
+    taskCreatorId: task.creator?.id,
+    volunteers: task.volunteers,
+    assignees: task.assignees,
+    assignee: task.assignee,
+  });
+
   const reviewableUsers = [];
   
   // If current user is the task creator, they can review volunteers
@@ -139,10 +148,20 @@ export const getAllPotentialReviewees = (task, currentUser) => {
     isVolunteer = task.volunteers.some(v => {
       const volunteerId = v.user?.id || v.volunteer?.id || v.id;
       const volunteerStatus = v.status;
+      console.log('Checking volunteer:', {
+        volunteerId,
+        volunteerStatus,
+        currentUserId: currentUser.id,
+        matches: volunteerId === currentUser.id,
+        statusCheck: volunteerStatus === 'ACCEPTED' || task.status === 'COMPLETED',
+        volunteerObject: v
+      });
       return volunteerId === currentUser.id && 
              (volunteerStatus === 'ACCEPTED' || task.status === 'COMPLETED');
     });
   }
+  
+  console.log('isVolunteer result:', isVolunteer);
   
   // Check if user is in assignees array
   if (!isVolunteer && task.assignees && task.assignees.length > 0) {
@@ -155,6 +174,7 @@ export const getAllPotentialReviewees = (task, currentUser) => {
   }
   
   if (isVolunteer && task.creator) {
+    console.log('Adding requester to reviewable users:', task.creator);
     reviewableUsers.push({
       id: task.creator.id,
       name: task.creator.name,
@@ -168,6 +188,7 @@ export const getAllPotentialReviewees = (task, currentUser) => {
     index === self.findIndex(u => u.id === user.id)
   );
 
+  console.log('getAllPotentialReviewees - Final result:', uniqueUsers);
   return uniqueUsers;
 };
 

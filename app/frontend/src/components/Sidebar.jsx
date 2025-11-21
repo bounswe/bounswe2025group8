@@ -109,7 +109,11 @@ const Sidebar = () => {
       </div>
 
       {/* Navigation Menu */}
-      <nav className="px-4 py-2">
+      <nav
+        className="px-4 py-2"
+        role="navigation"
+        aria-label="Primary navigation"
+      >
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
 

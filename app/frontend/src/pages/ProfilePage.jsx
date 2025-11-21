@@ -441,6 +441,9 @@ const ProfilePage = () => {
           height: "100vh",
           backgroundColor: colors.background.primary,
         }}
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
       >
         <CircularProgress sx={{ color: colors.brand.primary }} />
       </Box>
@@ -456,6 +459,8 @@ const ProfilePage = () => {
           backgroundColor: colors.background.primary,
           minHeight: "100vh",
         }}
+        role="alert"
+        aria-live="assertive"
       >
         <Typography
           variant="h6"
@@ -478,6 +483,7 @@ const ProfilePage = () => {
               backgroundColor: colors.brand.secondary,
             },
           }}
+          aria-label="Retry loading profile"
         >
           Retry
         </Button>
@@ -494,7 +500,12 @@ const ProfilePage = () => {
       }}
     >
       {/* Main content */}
-      <Box component="main" sx={{ flexGrow: 1, p: 3, overflow: "auto" }}>
+      <Box
+        component="main"
+        role="main"
+        aria-labelledby="profile-page-title"
+        sx={{ flexGrow: 1, p: 3, overflow: "auto" }}
+      >
         <Container maxWidth="lg">
           {/* Profile header */}
           <Box
@@ -567,6 +578,7 @@ const ProfilePage = () => {
                         backgroundColor: "rgba(255,255,255,0.8)",
                         "&:hover": { backgroundColor: "rgba(255,255,255,0.9)" },
                       }}
+                      aria-label="Upload profile picture"
                     >
                       <input
                         type="file"
@@ -584,6 +596,7 @@ const ProfilePage = () => {
                   variant="h5"
                   component="h1"
                   sx={{ textAlign: "left", color: colors.text.primary }}
+                  id="profile-page-title"
                 >
                   {user.name} {user.surname}
                 </Typography>
@@ -633,6 +646,7 @@ const ProfilePage = () => {
                   textTransform: "none",
                   fontWeight: 500,
                 }}
+                aria-label="Edit profile"
               >
                 Edit Profile
               </Button>
@@ -667,6 +681,7 @@ const ProfilePage = () => {
                     color: colors.text.inverted,
                   },
                 }}
+                aria-label={`Earned badges: ${earnedBadges.length}`}
               />
             </Box>
 
@@ -791,7 +806,10 @@ const ProfilePage = () => {
                 <IconButton
                   onClick={() => handleRequestTabChange(0)}
                   sx={{ mr: -1 }}
-                ></IconButton>
+                  aria-label="Back to active requests"
+                >
+                  <ArrowBack fontSize="small" />
+                </IconButton>
               )}
               <Typography
                 variant="h6"

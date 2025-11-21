@@ -203,8 +203,13 @@ const DetermineDeadlineStep = () => {
           backgroundColor: colors.background.secondary,
           borderColor: colors.border.primary,
         }}
+        role="group"
+        aria-label={`Calendar for ${format(currentMonth, "MMMM yyyy")}`}
       >
-        <table className="w-full">
+        <table className="w-full" aria-labelledby="calendar-caption">
+          <caption id="calendar-caption" className="sr-only">
+            {format(currentMonth, "MMMM yyyy")}
+          </caption>
           <thead>
             <tr>
               {dayOfWeek.map((day) => (
@@ -212,6 +217,7 @@ const DetermineDeadlineStep = () => {
                   key={day}
                   className="py-2 text-center text-sm font-medium"
                   style={{ color: colors.text.primary }}
+                  scope="col"
                 >
                   {day}
                 </th>
@@ -273,28 +279,45 @@ const DetermineDeadlineStep = () => {
                         key={`cell-${cellIndex}`}
                         className={cellClasses}
                         style={getCellStyle()}
-                        onClick={() => {
-                          if (isClickable) {
-                            handleDateChange(date);
-                          }
-                        }}
-                        onMouseOver={(e) => {
-                          if (isClickable && !isSelected) {
-                            e.currentTarget.querySelector(
-                              "div"
-                            ).style.backgroundColor =
-                              colors.background.tertiary;
-                          }
-                        }}
-                        onMouseOut={(e) => {
-                          if (isClickable && !isSelected) {
-                            e.currentTarget.querySelector(
-                              "div"
-                            ).style.backgroundColor = "";
-                          }
-                        }}
                       >
-                        <div className={innerClasses} style={getInnerStyle()}>
+                        <div
+                          className={innerClasses}
+                          style={getInnerStyle()}
+                          role={isClickable ? "button" : undefined}
+                          aria-disabled={!isClickable}
+                          aria-pressed={isSelected}
+                          tabIndex={isClickable ? 0 : -1}
+                          aria-label={`${format(date, "MMMM d, yyyy")}${
+                            isSelected ? ", selected" : ""
+                          }${isTodayCell ? ", today" : ""}${
+                            !isClickable ? ", unavailable" : ""
+                          }`}
+                          onClick={() => {
+                            if (isClickable) {
+                              handleDateChange(date);
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (
+                              (e.key === "Enter" || e.key === " ") &&
+                              isClickable
+                            ) {
+                              e.preventDefault();
+                              handleDateChange(date);
+                            }
+                          }}
+                          onMouseOver={(e) => {
+                            if (isClickable && !isSelected) {
+                              e.currentTarget.style.backgroundColor =
+                                colors.background.tertiary;
+                            }
+                          }}
+                          onMouseOut={(e) => {
+                            if (isClickable && !isSelected) {
+                              e.currentTarget.style.backgroundColor = "";
+                            }
+                          }}
+                        >
                           {format(date, "d")}
                         </div>
                       </td>
@@ -349,6 +372,7 @@ const DetermineDeadlineStep = () => {
                     backgroundColor: colors.background.secondary,
                     color: colors.text.primary,
                   }}
+                  aria-label="Previous month"
                   onMouseOver={(e) =>
                     (e.currentTarget.style.backgroundColor =
                       colors.background.tertiary)
@@ -358,7 +382,7 @@ const DetermineDeadlineStep = () => {
                       colors.background.secondary)
                   }
                 >
-                  <ArrowBackIosIcon fontSize="small" />
+                  <ArrowBackIosIcon fontSize="small" aria-hidden="true" />
                 </button>
                 <button
                   type="button"
@@ -368,6 +392,7 @@ const DetermineDeadlineStep = () => {
                     backgroundColor: colors.background.secondary,
                     color: colors.text.primary,
                   }}
+                  aria-label="Next month"
                   onMouseOver={(e) =>
                     (e.currentTarget.style.backgroundColor =
                       colors.background.tertiary)
@@ -377,7 +402,7 @@ const DetermineDeadlineStep = () => {
                       colors.background.secondary)
                   }
                 >
-                  <ArrowForwardIosIcon fontSize="small" />
+                  <ArrowForwardIosIcon fontSize="small" aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -403,6 +428,7 @@ const DetermineDeadlineStep = () => {
               referenceDate={effectiveSelectedDate}
               slotProps={{
                 textField: {
+                  label: "Select time",
                   variant: "outlined",
                   fullWidth: true,
                   size: "medium",

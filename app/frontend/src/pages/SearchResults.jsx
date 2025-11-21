@@ -85,7 +85,15 @@ const SearchResults = () => {
     return () => {
       dispatch(clearError());
     };
-  }, [dispatch, searchQuery, currentPage, categoryFilter, urgencyFilter, locationFilter, navigate]);
+  }, [
+    dispatch,
+    searchQuery,
+    currentPage,
+    categoryFilter,
+    urgencyFilter,
+    locationFilter,
+    navigate,
+  ]);
 
   // Handle pagination
   const handlePageChange = (newPage) => {
@@ -196,7 +204,7 @@ const SearchResults = () => {
           height: "24rem",
         }}
       >
-        <div style={{ textAlign: "center" }}>
+        <div style={{ textAlign: "center" }} role="alert" aria-live="assertive">
           <h3
             style={{
               fontSize: "1.125rem",
@@ -212,7 +220,12 @@ const SearchResults = () => {
           </p>
           <button
             onClick={() =>
-              dispatch(fetchAllTasks({ filters: { search: searchQuery.trim() }, page: currentPage }))
+              dispatch(
+                fetchAllTasks({
+                  filters: { search: searchQuery.trim() },
+                  page: currentPage,
+                })
+              )
             }
             style={{
               padding: "8px 16px",
@@ -230,6 +243,7 @@ const SearchResults = () => {
             onMouseOut={(e) =>
               (e.currentTarget.style.backgroundColor = colors.brand.primary)
             }
+            aria-label="Retry loading search results"
           >
             Try Again
           </button>
@@ -239,7 +253,11 @@ const SearchResults = () => {
   }
 
   return (
-    <>
+    <main
+      role="main"
+      aria-busy={loading ? "true" : "false"}
+      aria-labelledby="search-results-title"
+    >
       {/* Header Section */}
       <div
         style={{
@@ -258,6 +276,7 @@ const SearchResults = () => {
               color: colors.text.primary,
               fontFamily: "Inter, sans-serif",
             }}
+            id="search-results-title"
           >
             Search Results
           </h1>
@@ -308,7 +327,10 @@ const SearchResults = () => {
                 `${categoryFilter ? " • " : ""}${
                   urgencyLevels[urgencyFilter]?.name || urgencyFilter
                 } priority`}
-              {locationFilter && `${categoryFilter || urgencyFilter ? " • " : ""}Near: ${locationFilter}`}
+              {locationFilter &&
+                `${
+                  categoryFilter || urgencyFilter ? " • " : ""
+                }Near: ${locationFilter}`}
             </p>
           )}
         </div>
@@ -343,6 +365,7 @@ const SearchResults = () => {
               onKeyDown={(e) => {
                 if (e.key === "Enter") applyLocationFilter();
               }}
+              aria-label="Filter by location (district or city)"
             />
             <button
               onClick={applyLocationFilter}
@@ -362,6 +385,7 @@ const SearchResults = () => {
               onMouseOut={(e) =>
                 (e.currentTarget.style.backgroundColor = colors.brand.primary)
               }
+              aria-label="Apply location filter"
             >
               Apply
             </button>
@@ -388,7 +412,8 @@ const SearchResults = () => {
           >
             <img
               src={sortIcon}
-              alt="Sort"
+              alt=""
+              aria-hidden="true"
               style={{
                 width: "100%",
                 height: "100%",
@@ -421,7 +446,8 @@ const SearchResults = () => {
           >
             <img
               src={filterIcon}
-              alt="Filter"
+              alt=""
+              aria-hidden="true"
               style={{
                 width: "100%",
                 height: "100%",
@@ -708,6 +734,8 @@ const SearchResults = () => {
                           colors.background.secondary;
                       }
                     }}
+                    aria-label={`Go to page ${pageNumber}`}
+                    aria-current={isActive ? "page" : undefined}
                   >
                     {pageNumber}
                   </button>
@@ -787,7 +815,7 @@ const SearchResults = () => {
           setSearchParams(newSearchParams);
         }}
       />
-    </>
+    </main>
   );
 };
 

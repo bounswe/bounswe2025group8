@@ -290,14 +290,15 @@ const RequestDetail = () => {
       <div
         className="flex justify-center items-center min-h-[50vh] flex-col gap-4"
         style={{ backgroundColor: colors.background.primary }}
+        role="status"
+        aria-busy="true"
       >
         <div
           className="animate-spin rounded-full h-12 w-12 border-b-2"
           style={{ borderColor: colors.brand.primary }}
+          aria-hidden="true"
         ></div>
-        <p style={{ color: colors.text.secondary }}>
-          Loading request details...
-        </p>
+        <p style={{ color: colors.text.secondary }}>Loading request details...</p>
       </div>
     );
   }
@@ -311,7 +312,11 @@ const RequestDetail = () => {
       >
         <Sidebar />
         <div className="flex-grow p-6 flex items-center justify-center">
-          <div className="text-center max-w-md">
+          <div
+            className="text-center max-w-md"
+            role="alert"
+            aria-live="assertive"
+          >
             <h2
               className="text-2xl font-semibold mb-4"
               style={{ color: colors.semantic.error }}
@@ -335,6 +340,7 @@ const RequestDetail = () => {
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = colors.brand.primary;
               }}
+              aria-label="Back to Requests"
             >
               <ArrowBackIcon className="mr-2 w-4 h-4" />
               Back to Requests
@@ -354,7 +360,11 @@ const RequestDetail = () => {
       >
         <Sidebar />
         <div className="flex-grow p-6 flex items-center justify-center">
-          <div className="text-center max-w-md">
+          <div
+            className="text-center max-w-md"
+            role="alert"
+            aria-live="assertive"
+          >
             <h2
               className="text-2xl font-semibold mb-4"
               style={{ color: colors.text.primary }}
@@ -378,6 +388,7 @@ const RequestDetail = () => {
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = colors.brand.primary;
               }}
+              aria-label="Back to Requests"
             >
               <ArrowBackIcon className="mr-2 w-4 h-4" />
               Back to Requests
@@ -512,7 +523,9 @@ const RequestDetail = () => {
     try {
       const response = await updateTask(request.id, payload);
       const updatedTask = response?.data ?? response;
-      setRequest((prev) => ({ ...prev, ...updatedTask }));
+      // Preserve volunteers array when updating task
+      const volunteers = request.volunteers || [];
+      setRequest((prev) => ({ ...prev, ...updatedTask, volunteers }));
       setEditDialogOpen(false);
     } catch (err) {
       console.error("Failed to update task:", err);
@@ -712,8 +725,19 @@ const RequestDetail = () => {
     }
   };
 
-  const handleRateAndReview = () => {
+  const handleRateAndReview = async () => {
     if (canRateAndReview) {
+      // Fetch latest volunteers data before opening modal
+      try {
+        const volunteers = await getTaskVolunteers(request.id);
+        console.log(
+          "Fetched volunteers before opening review modal:",
+          volunteers
+        );
+        setRequest((prev) => ({ ...prev, volunteers }));
+      } catch (error) {
+        console.warn("Could not fetch volunteers for review modal:", error);
+      }
       setRatingDialogOpen(true);
     }
   };
@@ -738,6 +762,8 @@ const RequestDetail = () => {
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
           <div
             className="px-4 py-3 rounded shadow-lg flex items-center"
+            role="alert"
+            aria-live="polite"
             style={{
               backgroundColor: colors.semantic.successBg,
               border: `1px solid ${colors.semantic.success}`,
@@ -766,6 +792,8 @@ const RequestDetail = () => {
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
           <div
             className="px-4 py-3 rounded shadow-lg flex items-center"
+            role="alert"
+            aria-live="assertive"
             style={{
               backgroundColor: colors.semantic.errorBg,
               border: `1px solid ${colors.semantic.error}`,
@@ -793,6 +821,8 @@ const RequestDetail = () => {
       {/* Main Content */}
       <div
         className="flex-grow p-6"
+        role="main"
+        aria-labelledby="request-title"
         style={{ backgroundColor: colors.background.primary }}
       >
         {/* Back Button and Title */}
@@ -809,11 +839,13 @@ const RequestDetail = () => {
               e.currentTarget.style.color = colors.text.secondary;
               e.currentTarget.style.backgroundColor = "transparent";
             }}
+            aria-label="Back to Requests"
           >
-            <ArrowBackIcon className="w-6 h-6" />
+            <ArrowBackIcon className="w-6 h-6" aria-hidden="true" />
           </button>
           <h1
             className="flex-grow text-3xl font-bold"
+            id="request-title"
             style={{ color: colors.text.primary }}
           >
             {request.title}
@@ -849,8 +881,9 @@ const RequestDetail = () => {
                 e.currentTarget.style.color = colors.text.secondary;
                 e.currentTarget.style.backgroundColor = "transparent";
               }}
+              aria-label="More options"
             >
-              <MoreVertIcon className="w-6 h-6" />
+              <MoreVertIcon className="w-6 h-6" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -931,15 +964,17 @@ const RequestDetail = () => {
             <div className="p-6 flex flex-col justify-between">
               {/* Requester Info */}
               <div
-                className="flex items-center mb-6 p-3 rounded-lg cursor-pointer transition-colors"
+                className="flex items-center mb-6 p-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
                 onClick={() => navigate(`/profile/${request.creator.id}`)}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor =
-                    colors.interactive.hover;
+                role="link"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    navigate(`/profile/${request.creator.id}`);
+                  }
                 }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
+                aria-label={`View profile of ${request.creator.name} ${request.creator.surname}`}
               >
                 <div className="w-12 h-12 mr-4">
                   {requesterPhoto ? (
@@ -955,10 +990,7 @@ const RequestDetail = () => {
                   )}
                 </div>
                 <div>
-                  <h3
-                    className="text-lg font-semibold"
-                    style={{ color: colors.text.primary }}
-                  >
+                  <h3 className="text-lg font-semibold text-gray-900">
                     {request.creator.name} {request.creator.surname}
                   </h3>
                   <p
@@ -989,13 +1021,13 @@ const RequestDetail = () => {
                   <AccessTimeIcon
                     className="w-5 h-5 mr-3"
                     style={{ color: colors.text.tertiary }}
+                    aria-hidden="true"
                   />
                   <span className="text-sm">
                     {formatDate(request.deadline)} -{" "}
                     {formatTime(request.deadline)}
                   </span>
                 </div>
-
                 <div
                   className="flex items-center"
                   style={{ color: colors.text.secondary }}
@@ -1003,10 +1035,10 @@ const RequestDetail = () => {
                   <LocationOnIcon
                     className="w-5 h-5 mr-3"
                     style={{ color: colors.text.tertiary }}
+                    aria-hidden="true"
                   />
                   <span className="text-sm">{request.location}</span>
                 </div>
-
                 <div
                   className="flex items-center"
                   style={{ color: colors.text.secondary }}
@@ -1014,13 +1046,13 @@ const RequestDetail = () => {
                   <PersonIcon
                     className="w-5 h-5 mr-3"
                     style={{ color: colors.text.tertiary }}
+                    aria-hidden="true"
                   />
                   <span className="text-sm">
                     {request.volunteer_number} person
                     {request.volunteer_number > 1 ? "s" : ""} required
                   </span>
                 </div>
-
                 {canSeePrivateInfo() && request.creator.phone_number && (
                   <div
                     className="flex items-center"
@@ -1029,6 +1061,7 @@ const RequestDetail = () => {
                     <PhoneIcon
                       className="w-5 h-5 mr-3"
                       style={{ color: colors.text.tertiary }}
+                      aria-hidden="true"
                     />
                     <span className="text-sm">
                       {request.creator.phone_number}

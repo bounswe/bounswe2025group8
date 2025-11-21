@@ -262,6 +262,7 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
       onClose={onClose}
       fullWidth
       maxWidth="sm"
+      aria-labelledby="edit-profile-title"
       PaperProps={{
         sx: {
           borderRadius: 2,
@@ -270,7 +271,7 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
         },
       }}
     >
-      <DialogTitle sx={{ pb: 0 }}>
+      <DialogTitle id="edit-profile-title" sx={{ pb: 0 }}>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography
             variant="h6"
@@ -281,6 +282,7 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
           </Typography>
           <IconButton
             onClick={onClose}
+            aria-label="Close"
             sx={{
               color: colors.text.secondary,
               "&:hover": {
@@ -337,12 +339,14 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
                   },
                   color: colors.brand.primary,
                 }}
+                aria-label="Upload profile picture"
               >
                 <input
                   type="file"
                   accept="image/*"
                   hidden
                   onChange={handleProfilePictureUpload}
+                  aria-label="Choose profile picture file"
                 />
                 <PhotoCamera />
               </IconButton>
