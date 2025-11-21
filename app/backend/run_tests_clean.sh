@@ -3,8 +3,10 @@
 # Test sonuçları için dosya
 OUTPUT_FILE="test_results.txt"
 
-# Testleri çalıştır
-python manage.py test \
+echo "🧹 Cleaning up test environment..."
+
+# Force clean test database (--keepdb olmadan çalıştır, böylece her seferinde yeniden oluşturulur)
+python manage.py test --noinput \
   core.tests.test_user_models \
   core.tests.test_task_models \
   core.tests.test_volunteer_models \
@@ -24,9 +26,18 @@ python manage.py test \
 
 # Test sonuçlarını kontrol et
 if [ $? -eq 0 ]; then
-  echo "Successful Results at: $OUTPUT_FILE "
+  echo ""
+  echo "✅ ALL TESTS PASSED!"
+  echo ""
+  grep -E "Ran [0-9]+ test" "$OUTPUT_FILE"
+  grep "OK" "$OUTPUT_FILE"
 else
-  echo "Unsuccessful. Details at: $OUTPUT_FILE"
+  echo ""
+  echo "❌ TESTS FAILED!"
+  echo ""
+  echo "Last 30 lines of output:"
+  tail -30 "$OUTPUT_FILE"
 fi
 
-echo "Result file: $(pwd)/$OUTPUT_FILE"
+echo ""
+echo "📄 Full results: $(pwd)/$OUTPUT_FILE"

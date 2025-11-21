@@ -76,17 +76,29 @@ class Review(models.Model):
     # Legacy field for backward compatibility
     score = models.FloatField(
         validators=[MinValueValidator(1.0), MaxValueValidator(5.0)],
+        default=0.0,
         help_text="Overall average score (calculated automatically)"
     )
     
     class Meta:
         unique_together = ['reviewer', 'reviewee', 'task']
     
+    def __init__(self, *args, **kwargs):
+        # Check if score is being explicitly set
+        if 'score' in kwargs and kwargs['score'] != 0.0:
+            self._explicit_score = True
+        super().__init__(*args, **kwargs)
+
     def __str__(self):
         return f"Review by {self.reviewer.username} for {self.reviewee.username} ({self.score}/5)"
     
     def save(self, *args, **kwargs):
         """Calculate overall score before saving"""
+        # If score was explicitly set, use it (for backward compatibility)
+        if hasattr(self, '_explicit_score'):
+            super().save(*args, **kwargs)
+            return
+            
         # Determine review direction
         is_volunteer_to_requester = self.accuracy_of_request is not None
         
@@ -147,6 +159,12 @@ class Review(models.Model):
         self.comment = comment
         self.save()
     
+    def set_score(self, score):
+        """Set the review score explicitly"""
+        self.score = score
+        self._explicit_score = True  # Mark that score was explicitly set
+        self.save()
+    
     # Business logic methods
     @classmethod
     def submit_review(cls, reviewer, reviewee, task, comment='', **ratings):
@@ -198,14 +216,24 @@ class Review(models.Model):
         if existing:
             # Update existing review
             existing.comment = comment
+            
+            # Handle legacy score parameter
+            if 'score' in ratings:
+                existing.score = ratings['score']
+                existing._explicit_score = True
+                ratings = {k: v for k, v in ratings.items() if k != 'score'}
+            
             for key, value in ratings.items():
                 if hasattr(existing, key):
                     setattr(existing, key, value)
             existing.save()
             existing.update_user_rating()
             return existing
-        
+
         # Create new review
+        # Handle legacy score parameter
+        explicit_score = ratings.pop('score', None)
+        
         review = cls(
             reviewer=reviewer,
             reviewee=reviewee,
@@ -213,9 +241,13 @@ class Review(models.Model):
             comment=comment,
             **ratings
         )
-        review.save()
         
-        # Update user rating
+        # Set explicit score if provided (for backward compatibility)
+        if explicit_score is not None:
+            review.score = explicit_score
+            review._explicit_score = True
+            
+        review.save()        # Update user rating
         review.update_user_rating()
         
         # Send notification

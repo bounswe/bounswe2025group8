@@ -84,12 +84,14 @@ class ReportWorkflowIntegrationTests(TestCase):
             notes='Task was spam and has been removed'
         )
         
-        # Delete the task (admin action)
+        # Verify report status before deletion
+        self.assertEqual(report.status, ReportStatus.RESOLVED)
+        
+        # Delete the task (admin action) - this will also delete the report due to CASCADE
         task.delete()
         
-        # Verify report status
-        report.refresh_from_db()
-        self.assertEqual(report.status, ReportStatus.RESOLVED)
+        # Verify report was deleted along with the task
+        self.assertFalse(TaskReport.objects.filter(id=report.id).exists())
 
     def test_complete_user_report_workflow(self):
         """Test complete workflow of user reporting"""
