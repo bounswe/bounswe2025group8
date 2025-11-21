@@ -35,10 +35,12 @@ import { urgencyLevels } from "../constants/urgency_level";
 import { getCategoryImage } from "../constants/categories";
 import { toAbsoluteUrl } from "../utils/url";
 import { getReviewableUsers } from "../services/reviewService";
+import { useTheme } from "../hooks/useTheme";
 
 const RequestDetail = () => {
   const { requestId } = useParams();
   const navigate = useNavigate();
+  const { colors } = useTheme();
 
   // Authentication state
   const currentUser = useAppSelector(selectCurrentUser);
@@ -229,9 +231,17 @@ const RequestDetail = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[50vh] flex-col gap-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <p className="text-gray-600">Loading request details...</p>
+      <div
+        className="flex justify-center items-center min-h-[50vh] flex-col gap-4"
+        style={{ backgroundColor: colors.background.primary }}
+      >
+        <div
+          className="animate-spin rounded-full h-12 w-12 border-b-2"
+          style={{ borderColor: colors.brand.primary }}
+        ></div>
+        <p style={{ color: colors.text.secondary }}>
+          Loading request details...
+        </p>
       </div>
     );
   }
@@ -239,17 +249,36 @@ const RequestDetail = () => {
   // Error state
   if (error) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
+      <div
+        className="flex min-h-screen"
+        style={{ backgroundColor: colors.background.primary }}
+      >
         <Sidebar />
         <div className="flex-grow p-6 flex items-center justify-center">
           <div className="text-center max-w-md">
-            <h2 className="text-2xl font-semibold text-red-600 mb-4">
+            <h2
+              className="text-2xl font-semibold mb-4"
+              style={{ color: colors.semantic.error }}
+            >
               Error loading request
             </h2>
-            <p className="text-gray-600 mb-6">{error}</p>
+            <p className="mb-6" style={{ color: colors.text.secondary }}>
+              {error}
+            </p>
             <button
               onClick={() => navigate("/requests")}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center px-4 py-2 rounded-md transition-colors"
+              style={{
+                backgroundColor: colors.brand.primary,
+                color: colors.text.inverse,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor =
+                  colors.brand.primaryHover;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = colors.brand.primary;
+              }}
             >
               <ArrowBackIcon className="mr-2 w-4 h-4" />
               Back to Requests
@@ -263,19 +292,36 @@ const RequestDetail = () => {
   // Request not found
   if (!request) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
+      <div
+        className="flex min-h-screen"
+        style={{ backgroundColor: colors.background.primary }}
+      >
         <Sidebar />
         <div className="flex-grow p-6 flex items-center justify-center">
           <div className="text-center max-w-md">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+            <h2
+              className="text-2xl font-semibold mb-4"
+              style={{ color: colors.text.primary }}
+            >
               Request not found
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="mb-6" style={{ color: colors.text.secondary }}>
               The request you're looking for doesn't exist or has been removed.
             </p>
             <button
               onClick={() => navigate("/requests")}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center px-4 py-2 rounded-md transition-colors"
+              style={{
+                backgroundColor: colors.brand.primary,
+                color: colors.text.inverse,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor =
+                  colors.brand.primaryHover;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = colors.brand.primary;
+              }}
             >
               <ArrowBackIcon className="mr-2 w-4 h-4" />
               Back to Requests
@@ -647,11 +693,25 @@ const RequestDetail = () => {
       {/* Success/Error Messages */}
       {deleteSuccess && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg flex items-center">
+          <div
+            className="px-4 py-3 rounded shadow-lg flex items-center"
+            style={{
+              backgroundColor: colors.semantic.successBg,
+              border: `1px solid ${colors.semantic.success}`,
+              color: colors.semantic.success,
+            }}
+          >
             <span>Request deleted successfully! Redirecting...</span>
             <button
               onClick={() => setDeleteSuccess(false)}
-              className="ml-4 text-green-700 hover:text-green-900"
+              className="ml-4 transition-colors"
+              style={{ color: colors.semantic.success }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = "0.7";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = "1";
+              }}
             >
               ×
             </button>
@@ -661,11 +721,25 @@ const RequestDetail = () => {
 
       {deleteError && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg flex items-center">
+          <div
+            className="px-4 py-3 rounded shadow-lg flex items-center"
+            style={{
+              backgroundColor: colors.semantic.errorBg,
+              border: `1px solid ${colors.semantic.error}`,
+              color: colors.semantic.error,
+            }}
+          >
             <span>{deleteError}</span>
             <button
               onClick={() => setDeleteError(null)}
-              className="ml-4 text-red-700 hover:text-red-900"
+              className="ml-4 transition-colors"
+              style={{ color: colors.semantic.error }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = "0.7";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = "1";
+              }}
             >
               ×
             </button>
@@ -674,36 +748,78 @@ const RequestDetail = () => {
       )}
 
       {/* Main Content */}
-      <div className="flex-grow p-6">
+      <div
+        className="flex-grow p-6"
+        style={{ backgroundColor: colors.background.primary }}
+      >
         {/* Back Button and Title */}
         <div className="flex items-center mb-6">
           <button
             onClick={() => navigate("/requests")}
-            className="mr-4 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
+            className="mr-4 p-2 rounded-full transition-colors"
+            style={{ color: colors.text.secondary }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = colors.text.primary;
+              e.currentTarget.style.backgroundColor = colors.interactive.hover;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = colors.text.secondary;
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
           >
             <ArrowBackIcon className="w-6 h-6" />
           </button>
-          <h1 className="flex-grow text-3xl font-bold text-gray-900">
+          <h1
+            className="flex-grow text-3xl font-bold"
+            style={{ color: colors.text.primary }}
+          >
             {request.title}
           </h1>
           <div className="flex gap-2 items-center">
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+            <span
+              className="px-3 py-1 text-sm font-medium rounded-full"
+              style={{
+                backgroundColor: colors.interactive.default,
+                color: colors.brand.primary,
+              }}
+            >
               {request.category_display}
             </span>
             <span
-              className="px-3 py-1 text-white text-sm font-medium rounded-full"
-              style={{ backgroundColor: urgency.color }}
+              className="px-3 py-1 text-sm font-medium rounded-full"
+              style={{
+                backgroundColor: urgency.color,
+                color: colors.text.inverse,
+              }}
             >
               {urgency.name} Urgency
             </span>
-            <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors">
+            <button
+              className="p-2 rounded-full transition-colors"
+              style={{ color: colors.text.secondary }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = colors.text.primary;
+                e.currentTarget.style.backgroundColor =
+                  colors.interactive.hover;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = colors.text.secondary;
+                e.currentTarget.style.backgroundColor = "transparent";
+              }}
+            >
               <MoreVertIcon className="w-6 h-6" />
             </button>
           </div>
         </div>
 
         {/* Main Content Card - Improved Layout */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
+        <div
+          className="rounded-lg overflow-hidden mb-6"
+          style={{
+            backgroundColor: colors.background.elevated,
+            boxShadow: `0 10px 15px -3px ${colors.shadow.lg}`,
+          }}
+        >
           <div className="grid grid-cols-1 lg:grid-cols-2">
             {/* Left Column - Image/Gallery */}
             <div className="relative h-120">
@@ -756,7 +872,13 @@ const RequestDetail = () => {
               )}
               {/* Image overlay with category */}
               <div className="absolute bottom-4 left-4">
-                <span className="px-3 py-2 bg-black bg-opacity-60 text-white text-sm font-medium rounded-lg">
+                <span
+                  className="px-3 py-2 text-sm font-medium rounded-lg"
+                  style={{
+                    backgroundColor: "rgba(0, 0, 0, 0.6)",
+                    color: colors.text.inverse,
+                  }}
+                >
                   {request.category_display}
                 </span>
               </div>
@@ -786,7 +908,10 @@ const RequestDetail = () => {
                   <h3 className="text-lg font-semibold text-gray-900">
                     {request.creator.name} {request.creator.surname}
                   </h3>
-                  <p className="text-sm text-gray-500">
+                  <p
+                    className="text-sm"
+                    style={{ color: colors.text.secondary }}
+                  >
                     {getTimeAgo(request.created_at)}
                   </p>
                 </div>
@@ -794,36 +919,63 @@ const RequestDetail = () => {
 
               {/* Description */}
               <div className="mb-6 flex-grow">
-                <p className="text-gray-700 leading-relaxed">
+                <p
+                  className="leading-relaxed"
+                  style={{ color: colors.text.primary }}
+                >
                   {request.description}
                 </p>
               </div>
 
               {/* Details Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                <div className="flex items-center text-gray-600">
-                  <AccessTimeIcon className="w-5 h-5 mr-3 text-gray-400" />
+                <div
+                  className="flex items-center"
+                  style={{ color: colors.text.secondary }}
+                >
+                  <AccessTimeIcon
+                    className="w-5 h-5 mr-3"
+                    style={{ color: colors.text.tertiary }}
+                  />
                   <span className="text-sm">
                     {formatDate(request.deadline)} -{" "}
                     {formatTime(request.deadline)}
                   </span>
                 </div>
 
-                <div className="flex items-center text-gray-600">
-                  <LocationOnIcon className="w-5 h-5 mr-3 text-gray-400" />
+                <div
+                  className="flex items-center"
+                  style={{ color: colors.text.secondary }}
+                >
+                  <LocationOnIcon
+                    className="w-5 h-5 mr-3"
+                    style={{ color: colors.text.tertiary }}
+                  />
                   <span className="text-sm">{request.location}</span>
                 </div>
 
-                <div className="flex items-center text-gray-600">
-                  <PersonIcon className="w-5 h-5 mr-3 text-gray-400" />
+                <div
+                  className="flex items-center"
+                  style={{ color: colors.text.secondary }}
+                >
+                  <PersonIcon
+                    className="w-5 h-5 mr-3"
+                    style={{ color: colors.text.tertiary }}
+                  />
                   <span className="text-sm">
                     {request.volunteer_number} person
                     {request.volunteer_number > 1 ? "s" : ""} required
                   </span>
                 </div>
 
-                <div className="flex items-center text-gray-600">
-                  <PhoneIcon className="w-5 h-5 mr-3 text-gray-400" />
+                <div
+                  className="flex items-center"
+                  style={{ color: colors.text.secondary }}
+                >
+                  <PhoneIcon
+                    className="w-5 h-5 mr-3"
+                    style={{ color: colors.text.tertiary }}
+                  />
                   <span className="text-sm">
                     {request.creator.phone_number}
                   </span>
@@ -837,19 +989,39 @@ const RequestDetail = () => {
                 request.status === "COMPLETED") && (
                 <div className="mb-6">
                   {request.status === "COMPLETED" ? (
-                    <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div
+                      className="p-4 rounded-lg"
+                      style={{
+                        backgroundColor: colors.semantic.successBg,
+                        border: `1px solid ${colors.semantic.success}`,
+                      }}
+                    >
                       <div className="flex items-center">
                         <div className="flex-shrink-0">
-                          <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                            <span className="text-white text-sm">✓</span>
+                          <div
+                            className="w-6 h-6 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: colors.semantic.success }}
+                          >
+                            <span
+                              className="text-sm"
+                              style={{ color: colors.text.inverse }}
+                            >
+                              ✓
+                            </span>
                           </div>
                         </div>
                         <div className="ml-3">
-                          <p className="text-green-800 font-medium">
+                          <p
+                            className="font-medium"
+                            style={{ color: colors.semantic.success }}
+                          >
                             Task Completed Successfully!
                           </p>
                           {isTaskCreator && (
-                            <p className="text-green-600 text-sm mt-1">
+                            <p
+                              className="text-sm mt-1"
+                              style={{ color: colors.semantic.success }}
+                            >
                               Don't forget to rate and review your volunteers to
                               help the community.
                             </p>
@@ -858,7 +1030,10 @@ const RequestDetail = () => {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-500">
+                    <p
+                      className="text-sm"
+                      style={{ color: colors.text.secondary }}
+                    >
                       {request.status === "POSTED"
                         ? "Waiting for Volunteers"
                         : request.status === "ASSIGNED"
@@ -890,7 +1065,20 @@ const RequestDetail = () => {
                   request?.status === "COMPLETED" && (
                     <button
                       onClick={handleRateAndReview}
-                      className="w-full py-3 px-6 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-base font-medium rounded-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 flex items-center justify-center shadow-lg"
+                      className="w-full py-3 px-6 text-base font-medium rounded-lg transition-all duration-200 transform hover:scale-105 flex items-center justify-center shadow-lg"
+                      style={{
+                        background:
+                          "linear-gradient(to right, #ec4899, #9333ea)",
+                        color: colors.text.inverse,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background =
+                          "linear-gradient(to right, #db2777, #7e22ce)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background =
+                          "linear-gradient(to right, #ec4899, #9333ea)";
+                      }}
                     >
                       ⭐ Rate & Review Volunteers
                     </button>
@@ -908,9 +1096,21 @@ const RequestDetail = () => {
                       {/* Select Volunteer Button */}
                       <button
                         onClick={handleSelectVolunteer}
-                        className={`py-3 px-6 bg-purple-600 text-white text-base font-medium rounded-lg hover:bg-purple-700 transition-colors ${
+                        className={`py-3 px-6 text-base font-medium rounded-lg transition-colors ${
                           canMarkAsComplete ? "" : "w-full"
                         }`}
+                        style={{
+                          backgroundColor: colors.brand.secondary,
+                          color: colors.text.inverse,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor =
+                            colors.brand.secondaryHover;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor =
+                            colors.brand.secondary;
+                        }}
                       >
                         {request.status === "ASSIGNED"
                           ? "Change Volunteers"
@@ -922,7 +1122,21 @@ const RequestDetail = () => {
                         <button
                           onClick={handleMarkAsComplete}
                           disabled={isMarkingComplete}
-                          className="py-3 px-6 bg-green-600 text-white text-base font-medium rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                          className="py-3 px-6 text-base font-medium rounded-lg disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                          style={{
+                            backgroundColor: isMarkingComplete
+                              ? colors.interactive.disabled
+                              : colors.semantic.success,
+                            color: colors.text.inverse,
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isMarkingComplete)
+                              e.currentTarget.style.opacity = "0.9";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isMarkingComplete)
+                              e.currentTarget.style.opacity = "1";
+                          }}
                         >
                           {isMarkingComplete ? (
                             <>
@@ -945,7 +1159,21 @@ const RequestDetail = () => {
                     <button
                       onClick={handleMarkAsComplete}
                       disabled={isMarkingComplete}
-                      className="w-full py-3 px-6 bg-green-600 text-white text-base font-medium rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                      className="w-full py-3 px-6 text-base font-medium rounded-lg disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                      style={{
+                        backgroundColor: isMarkingComplete
+                          ? colors.interactive.disabled
+                          : colors.semantic.success,
+                        color: colors.text.inverse,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isMarkingComplete)
+                          e.currentTarget.style.opacity = "0.9";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isMarkingComplete)
+                          e.currentTarget.style.opacity = "1";
+                      }}
                     >
                       {isMarkingComplete ? (
                         <>
@@ -962,7 +1190,20 @@ const RequestDetail = () => {
                   <button
                     onClick={handleVolunteer}
                     disabled={isVolunteering}
-                    className="w-full py-3 px-6 bg-green-600 text-white text-base font-medium rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                    className="w-full py-3 px-6 text-base font-medium rounded-lg disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                    style={{
+                      backgroundColor: isVolunteering
+                        ? colors.interactive.disabled
+                        : colors.semantic.success,
+                      color: colors.text.inverse,
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isVolunteering)
+                        e.currentTarget.style.opacity = "0.9";
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isVolunteering) e.currentTarget.style.opacity = "1";
+                    }}
                   >
                     <VolunteerActivismIcon className="w-5 h-5 mr-2" />
                     {isVolunteering
@@ -975,7 +1216,25 @@ const RequestDetail = () => {
                   <button
                     onClick={handleWithdrawVolunteer}
                     disabled={isVolunteering}
-                    className="w-full py-3 px-6 border-2 border-red-500 text-red-600 text-base font-medium rounded-lg hover:bg-red-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                    className="w-full py-3 px-6 border-2 text-base font-medium rounded-lg disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                    style={{
+                      borderColor: isVolunteering
+                        ? colors.border.secondary
+                        : colors.semantic.error,
+                      color: isVolunteering
+                        ? colors.text.disabled
+                        : colors.semantic.error,
+                      backgroundColor: "transparent",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isVolunteering)
+                        e.currentTarget.style.backgroundColor =
+                          colors.semantic.errorBg;
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isVolunteering)
+                        e.currentTarget.style.backgroundColor = "transparent";
+                    }}
                   >
                     <VolunteerActivismIcon className="w-5 h-5 mr-2" />
                     {isVolunteering ? "Withdrawing..." : "Withdraw from Task"}
@@ -986,7 +1245,17 @@ const RequestDetail = () => {
                 {canRateAndReview && !isTaskCreator && (
                   <button
                     onClick={handleRateAndReview}
-                    className="w-full py-3 px-6 bg-pink-500 text-white text-base font-medium rounded-lg hover:bg-pink-600 transition-colors flex items-center justify-center"
+                    className="w-full py-3 px-6 text-base font-medium rounded-lg transition-colors flex items-center justify-center"
+                    style={{
+                      backgroundColor: "#ec4899",
+                      color: colors.text.inverse,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "#db2777";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "#ec4899";
+                    }}
                   >
                     ⭐ Rate & Review Requester
                   </button>
@@ -995,7 +1264,19 @@ const RequestDetail = () => {
                 {!isAuthenticated && (
                   <button
                     onClick={() => navigate("/login")}
-                    className="w-full py-3 px-6 bg-blue-600 text-white text-base font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                    className="w-full py-3 px-6 text-base font-medium rounded-lg transition-colors"
+                    style={{
+                      backgroundColor: colors.brand.primary,
+                      color: colors.text.inverse,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor =
+                        colors.brand.primaryHover;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor =
+                        colors.brand.primary;
+                    }}
                   >
                     Login to Volunteer
                   </button>
@@ -1006,7 +1287,19 @@ const RequestDetail = () => {
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={handleEditTask}
-                      className="py-2 px-4 border-2 border-amber-500 text-amber-600 text-sm font-medium rounded-lg hover:bg-amber-50 transition-colors flex items-center justify-center"
+                      className="py-2 px-4 border-2 text-sm font-medium rounded-lg transition-colors flex items-center justify-center"
+                      style={{
+                        borderColor: colors.semantic.warning,
+                        color: colors.semantic.warning,
+                        backgroundColor: "transparent",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor =
+                          colors.semantic.warningBg;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                      }}
                     >
                       <EditIcon className="w-4 h-4 mr-2" />
                       Edit
@@ -1014,7 +1307,25 @@ const RequestDetail = () => {
                     <button
                       onClick={handleDeleteTask}
                       disabled={isDeleting}
-                      className="py-2 px-4 border-2 border-red-500 text-red-600 text-sm font-medium rounded-lg hover:bg-red-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                      className="py-2 px-4 border-2 text-sm font-medium rounded-lg disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                      style={{
+                        borderColor: isDeleting
+                          ? colors.border.secondary
+                          : colors.semantic.error,
+                        color: isDeleting
+                          ? colors.text.disabled
+                          : colors.semantic.error,
+                        backgroundColor: "transparent",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isDeleting)
+                          e.currentTarget.style.backgroundColor =
+                            colors.semantic.errorBg;
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isDeleting)
+                          e.currentTarget.style.backgroundColor = "transparent";
+                      }}
                     >
                       {isDeleting ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500 mr-2"></div>
