@@ -46,7 +46,8 @@ class GuestBrowsingTest(unittest.TestCase):
     
     #Locators
     #Login and Register Pages
-    GUEST_LINK_XPATH = '//*[@id="root"]/div/div[2]/div[4]/a'
+    GUEST_LINK_XPATH = '/html/body/div/div/main/div[4]/a'
+    
     
     #Seachbar
     SEARCH_INPUT_XPATH = '//*[@id="root"]/div/header/div/div/form/input'
@@ -62,15 +63,15 @@ class GuestBrowsingTest(unittest.TestCase):
     REGISTER_BUTTON_XPATH = '//*[@id="root"]/div/div[1]/div[4]/button[2]'
     
     #Home Page
-    POPULAR_CATEGORIES_OTHER_XPATH = '//*[@id="root"]/div/div[2]/div/div/div[1]/div[2]/div[1]/div'
+    POPULAR_CATEGORIES_OTHER_XPATH = '//*[@id="root"]/div/div[2]/div/main/div[1]/div[2]/div[1]/div'
     
     #Categories Page
-    CATEGORIES_OTHER_SERVICES_XPATH = '//*[@id="root"]/div/div[2]/div/div[2]/div[1]/div'
+    CATEGORIES_OTHER_SERVICES_XPATH = '//*[@id="root"]/div/div[2]/div/main/div[2]/div[1]/div'
     
     #Requests Page
     FIRST_REQUEST_CARD_XPATH = '//*[@id="root"]/div/div[2]/div/div[2]/div/div[1]'
-    FILTER_LOCATION_INPUT_XPATH = '//*[@id="root"]/div/div[2]/div/div[1]/div[2]/div/input'
-    FILTER_LOCATION_BUTTON_XPATH = '//*[@id="root"]/div/div[2]/div/div[1]/div[2]/div/button'
+    FILTER_LOCATION_INPUT_XPATH = '//*[@id="root"]/div/div[2]/div/main/div[1]/div[2]/div/input'
+    FILTER_LOCATION_BUTTON_XPATH = '//*[@id="root"]/div/div[2]/div/main/div[1]/div[2]/div/button'
     OPEN_ADDRESS_FILTER_BUTTON_XPATH = '//*[@id="root"]/div/div[2]/div/div[1]/div[2]/button[2]'
     
 
