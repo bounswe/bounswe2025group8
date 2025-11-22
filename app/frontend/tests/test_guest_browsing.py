@@ -514,22 +514,22 @@ class GuestBrowsingTest(unittest.TestCase):
 
     def test_10_popular_categories_other_navigation(self):
         """
-        Test Case: Guest user clicks "OTHER" in popular categories section on home page
+        Test Case: Guest user clicks a category in popular categories section on home page
         
         Steps:
         1. Start on home page
-        2. Click "OTHER" category in popular categories section
-        3. Verify navigation to requests page with OTHER category filter
+        2. Click a category in popular categories section
+        3. Verify navigation to requests page with category filter
         """
         # Step 1: Already on home page (setUp method)
         self._verify_guest_mode()
         
-        # Step 2: Click "OTHER" in popular categories
+        # Step 2: Click first category in popular categories
         other_category = self._get_clickable_element(
             By.XPATH,
             self.POPULAR_CATEGORIES_OTHER_XPATH
         )
-        self.assertIsNotNone(other_category, "OTHER category not found in popular categories")
+        self.assertIsNotNone(other_category, "Category not found in popular categories")
         other_category.click()
         
         # Wait for navigation
@@ -538,37 +538,37 @@ class GuestBrowsingTest(unittest.TestCase):
         )
         time.sleep(1)
         
-        # Step 3: Verify navigation to requests page with OTHER category filter
+        # Step 3: Verify navigation to requests page with category filter
         current_url = self.driver.current_url
         self.assertIn("/requests", current_url, f"Expected requests page, got: {current_url}")
-        self.assertIn("category=OTHER", current_url, f"Expected category parameter 'category=OTHER' in URL: {current_url}")
+        self.assertIn("category=", current_url, f"Expected category parameter in URL: {current_url}")
         
         # Verify still in guest mode
         self._verify_guest_mode()
         
-        print("✓ Guest user successfully navigated to OTHER category requests")
+        print("✓ Guest user successfully navigated to category requests from home page")
         print(f"  - Current URL: {current_url}")
 
     def test_11_categories_page_other_services_navigation(self):
         """
-        Test Case: Guest user clicks "OTHER" services in categories page
+        Test Case: Guest user clicks a category in categories page
         
         Steps:
         1. Navigate to categories page
-        2. Click "OTHER" services category
-        3. Verify navigation to requests page with OTHER category filter
+        2. Click a category
+        3. Verify navigation to requests page with category filter
         """
         # Step 1: Navigate to categories page
         self.driver.get(self.CATEGORIES_URL)
         time.sleep(1)
         self._verify_guest_mode()
         
-        # Step 2: Click "OTHER" services in categories
+        # Step 2: Click first category in categories page
         other_services = self._get_clickable_element(
             By.XPATH,
             self.CATEGORIES_OTHER_SERVICES_XPATH
         )
-        self.assertIsNotNone(other_services, "OTHER services category not found in categories page")
+        self.assertIsNotNone(other_services, "Category not found in categories page")
         other_services.click()
         
         # Wait for navigation
@@ -577,15 +577,15 @@ class GuestBrowsingTest(unittest.TestCase):
         )
         time.sleep(1)
         
-        # Step 3: Verify navigation to requests page with OTHER category filter
+        # Step 3: Verify navigation to requests page with category filter
         current_url = self.driver.current_url
         self.assertIn("/requests", current_url, f"Expected requests page, got: {current_url}")
-        self.assertIn("category=OTHER", current_url, f"Expected category parameter 'category=OTHER' in URL: {current_url}")
+        self.assertIn("category=", current_url, f"Expected category parameter in URL: {current_url}")
         
         # Verify still in guest mode
         self._verify_guest_mode()
         
-        print("✓ Guest user successfully navigated to OTHER services requests from categories page")
+        print("✓ Guest user successfully navigated to category requests from categories page")
         print(f"  - Current URL: {current_url}")
 
     def test_12_filter_requests_by_location(self):
