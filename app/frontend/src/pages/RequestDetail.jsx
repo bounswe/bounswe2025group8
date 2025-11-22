@@ -76,6 +76,62 @@ const RequestDetail = () => {
     return now > deadlineDate;
   };
 
+  // Helper function to parse and filter location based on permissions
+  const getFilteredLocation = (locationString, canSeePrivateInfo) => {
+    if (!locationString) return "";
+
+    // Split the location string into parts
+    const parts = locationString.split(", ");
+
+    // Check if it's the formatted version with prefixes
+    const isFormatted = parts.some(
+      (part) =>
+        part.includes("Country:") ||
+        part.includes("State:") ||
+        part.includes("City:")
+    );
+
+    if (!isFormatted) {
+      // For unformatted locations, show everything if can see private info
+      // Otherwise show first 3 parts (assumed to be public region info)
+      return canSeePrivateInfo ? locationString : parts.slice(0, 3).join(", ");
+    }
+
+    // For formatted locations, filter based on permissions
+    const publicPrefixes = ["Country:", "State:", "City:"];
+    const privatePrefixes = [
+      "Neighborhood:",
+      "Street:",
+      "Building:",
+      "Door:",
+      "Description:",
+    ];
+
+    if (canSeePrivateInfo) {
+      // Show everything
+      return locationString;
+    } else {
+      // Show only public parts (Country, State/Province, City/District)
+      const publicParts = parts.filter((part) =>
+        publicPrefixes.some((prefix) => part.trim().startsWith(prefix))
+      );
+      return publicParts.join(", ");
+    }
+  };
+
+  // Helper function to check if user can see private information
+  const canSeePrivateInfo = () => {
+    // Task creator can always see their own info
+    if (isTaskCreator) return true;
+
+    // Selected volunteers (ACCEPTED status) can see private info
+    if (volunteerRecord && volunteerRecord.status === "ACCEPTED") {
+      return true;
+    }
+
+    return false;
+  };
+
   // Fetch request details and volunteer status
   useEffect(() => {
     const fetchRequest = async () => {
@@ -234,14 +290,15 @@ const RequestDetail = () => {
       <div
         className="flex justify-center items-center min-h-[50vh] flex-col gap-4"
         style={{ backgroundColor: colors.background.primary }}
+        role="status"
+        aria-busy="true"
       >
         <div
           className="animate-spin rounded-full h-12 w-12 border-b-2"
           style={{ borderColor: colors.brand.primary }}
+          aria-hidden="true"
         ></div>
-        <p style={{ color: colors.text.secondary }}>
-          Loading request details...
-        </p>
+        <p style={{ color: colors.text.secondary }}>Loading request details...</p>
       </div>
     );
   }
@@ -255,7 +312,11 @@ const RequestDetail = () => {
       >
         <Sidebar />
         <div className="flex-grow p-6 flex items-center justify-center">
-          <div className="text-center max-w-md">
+          <div
+            className="text-center max-w-md"
+            role="alert"
+            aria-live="assertive"
+          >
             <h2
               className="text-2xl font-semibold mb-4"
               style={{ color: colors.semantic.error }}
@@ -279,6 +340,7 @@ const RequestDetail = () => {
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = colors.brand.primary;
               }}
+              aria-label="Back to Requests"
             >
               <ArrowBackIcon className="mr-2 w-4 h-4" />
               Back to Requests
@@ -298,7 +360,11 @@ const RequestDetail = () => {
       >
         <Sidebar />
         <div className="flex-grow p-6 flex items-center justify-center">
-          <div className="text-center max-w-md">
+          <div
+            className="text-center max-w-md"
+            role="alert"
+            aria-live="assertive"
+          >
             <h2
               className="text-2xl font-semibold mb-4"
               style={{ color: colors.text.primary }}
@@ -322,6 +388,7 @@ const RequestDetail = () => {
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = colors.brand.primary;
               }}
+              aria-label="Back to Requests"
             >
               <ArrowBackIcon className="mr-2 w-4 h-4" />
               Back to Requests
@@ -695,6 +762,8 @@ const RequestDetail = () => {
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
           <div
             className="px-4 py-3 rounded shadow-lg flex items-center"
+            role="alert"
+            aria-live="polite"
             style={{
               backgroundColor: colors.semantic.successBg,
               border: `1px solid ${colors.semantic.success}`,
@@ -723,6 +792,8 @@ const RequestDetail = () => {
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
           <div
             className="px-4 py-3 rounded shadow-lg flex items-center"
+            role="alert"
+            aria-live="assertive"
             style={{
               backgroundColor: colors.semantic.errorBg,
               border: `1px solid ${colors.semantic.error}`,
@@ -750,6 +821,8 @@ const RequestDetail = () => {
       {/* Main Content */}
       <div
         className="flex-grow p-6"
+        role="main"
+        aria-labelledby="request-title"
         style={{ backgroundColor: colors.background.primary }}
       >
         {/* Back Button and Title */}
@@ -766,11 +839,13 @@ const RequestDetail = () => {
               e.currentTarget.style.color = colors.text.secondary;
               e.currentTarget.style.backgroundColor = "transparent";
             }}
+            aria-label="Back to Requests"
           >
-            <ArrowBackIcon className="w-6 h-6" />
+            <ArrowBackIcon className="w-6 h-6" aria-hidden="true" />
           </button>
           <h1
             className="flex-grow text-3xl font-bold"
+            id="request-title"
             style={{ color: colors.text.primary }}
           >
             {request.title}
@@ -806,8 +881,9 @@ const RequestDetail = () => {
                 e.currentTarget.style.color = colors.text.secondary;
                 e.currentTarget.style.backgroundColor = "transparent";
               }}
+              aria-label="More options"
             >
-              <MoreVertIcon className="w-6 h-6" />
+              <MoreVertIcon className="w-6 h-6" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -890,6 +966,15 @@ const RequestDetail = () => {
               <div
                 className="flex items-center mb-6 p-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
                 onClick={() => navigate(`/profile/${request.creator.id}`)}
+                role="link"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    navigate(`/profile/${request.creator.id}`);
+                  }
+                }}
+                aria-label={`View profile of ${request.creator.name} ${request.creator.surname}`}
               >
                 <div className="w-12 h-12 mr-4">
                   {requesterPhoto ? (
@@ -936,13 +1021,13 @@ const RequestDetail = () => {
                   <AccessTimeIcon
                     className="w-5 h-5 mr-3"
                     style={{ color: colors.text.tertiary }}
+                    aria-hidden="true"
                   />
                   <span className="text-sm">
                     {formatDate(request.deadline)} -{" "}
                     {formatTime(request.deadline)}
                   </span>
                 </div>
-
                 <div
                   className="flex items-center"
                   style={{ color: colors.text.secondary }}
@@ -950,10 +1035,10 @@ const RequestDetail = () => {
                   <LocationOnIcon
                     className="w-5 h-5 mr-3"
                     style={{ color: colors.text.tertiary }}
+                    aria-hidden="true"
                   />
                   <span className="text-sm">{request.location}</span>
                 </div>
-
                 <div
                   className="flex items-center"
                   style={{ color: colors.text.secondary }}
@@ -961,25 +1046,28 @@ const RequestDetail = () => {
                   <PersonIcon
                     className="w-5 h-5 mr-3"
                     style={{ color: colors.text.tertiary }}
+                    aria-hidden="true"
                   />
                   <span className="text-sm">
                     {request.volunteer_number} person
                     {request.volunteer_number > 1 ? "s" : ""} required
                   </span>
                 </div>
-
-                <div
-                  className="flex items-center"
-                  style={{ color: colors.text.secondary }}
-                >
-                  <PhoneIcon
-                    className="w-5 h-5 mr-3"
-                    style={{ color: colors.text.tertiary }}
-                  />
-                  <span className="text-sm">
-                    {request.creator.phone_number}
-                  </span>
-                </div>
+                {canSeePrivateInfo() && request.creator.phone_number && (
+                  <div
+                    className="flex items-center"
+                    style={{ color: colors.text.secondary }}
+                  >
+                    <PhoneIcon
+                      className="w-5 h-5 mr-3"
+                      style={{ color: colors.text.tertiary }}
+                      aria-hidden="true"
+                    />
+                    <span className="text-sm">
+                      {request.creator.phone_number}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Status */}

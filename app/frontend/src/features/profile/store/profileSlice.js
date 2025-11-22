@@ -19,13 +19,13 @@ export const fetchUserProfile = createAsyncThunk(
 
 export const fetchUserReviews = createAsyncThunk(
   'profile/fetchUserReviews',
-  async ({ userId, page = 1, limit = 20 }, { rejectWithValue }) => {
+  async ({ userId, page = 1, limit = 20, role = null }, { rejectWithValue }) => {
     try {
       // For 'current' user, replace with the actual ID from local storage
       const currentUserId = localStorage.getItem('userId');
       const actualUserId = userId === 'current' && currentUserId ? currentUserId : userId;
       
-      const response = await profileService.getUserReviews(actualUserId, page, limit);
+      const response = await profileService.getUserReviews(actualUserId, page, limit, 'createdAt', 'desc', role);
       return response;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.response?.data || 'Error fetching reviews');

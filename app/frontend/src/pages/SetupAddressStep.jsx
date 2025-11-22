@@ -156,6 +156,8 @@ const SetupAddressStep = (props, ref) => {
             borderColor: colors.semantic.error,
             color: colors.semantic.error,
           }}
+          role="alert"
+          aria-live="assertive"
         >
           {error}
         </div>
@@ -166,12 +168,13 @@ const SetupAddressStep = (props, ref) => {
         <div className="flex flex-col md:flex-row gap-6 mb-6">
           {/* Country */}
           <div className="flex-1">
-            <h3
-              className="text-sm font-bold mb-2"
+            <label
+              htmlFor="country-select"
+              className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
               Country
-            </h3>
+            </label>
             <Controller
               name="country"
               control={control}
@@ -189,6 +192,7 @@ const SetupAddressStep = (props, ref) => {
                     )}
                     <select
                       {...field}
+                      id="country-select"
                       className={`w-full px-3 py-3 border rounded-md focus:outline-none ${
                         loading.countries ? "pl-12" : ""
                       }`}
@@ -199,6 +203,11 @@ const SetupAddressStep = (props, ref) => {
                           ? colors.semantic.error
                           : colors.border.primary,
                       }}
+                      aria-required="true"
+                      aria-invalid={errors.country ? "true" : "false"}
+                      aria-describedby={
+                        errors.country ? "country-error" : undefined
+                      }
                       onFocus={(e) =>
                         (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
                       }
@@ -229,6 +238,7 @@ const SetupAddressStep = (props, ref) => {
                     <p
                       className="mt-1 text-sm"
                       style={{ color: colors.semantic.error }}
+                      id="country-error"
                     >
                       {errors.country.message}
                     </p>
@@ -240,12 +250,13 @@ const SetupAddressStep = (props, ref) => {
 
           {/* State/Province */}
           <div className="flex-1">
-            <h3
-              className="text-sm font-bold mb-2"
+            <label
+              htmlFor="state-select"
+              className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
               State/Province
-            </h3>
+            </label>
             <Controller
               name="state"
               control={control}
@@ -263,6 +274,7 @@ const SetupAddressStep = (props, ref) => {
                     )}
                     <select
                       {...field}
+                      id="state-select"
                       className={`w-full px-3 py-3 border rounded-md focus:outline-none ${
                         loading.states ? "pl-12" : ""
                       }`}
@@ -273,6 +285,11 @@ const SetupAddressStep = (props, ref) => {
                           ? colors.semantic.error
                           : colors.border.primary,
                       }}
+                      aria-required="true"
+                      aria-invalid={errors.state ? "true" : "false"}
+                      aria-describedby={
+                        errors.state ? "state-error" : undefined
+                      }
                       onFocus={(e) =>
                         (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
                       }
@@ -304,6 +321,7 @@ const SetupAddressStep = (props, ref) => {
                     <p
                       className="mt-1 text-sm"
                       style={{ color: colors.semantic.error }}
+                      id="state-error"
                     >
                       {errors.state.message}
                     </p>
@@ -316,12 +334,13 @@ const SetupAddressStep = (props, ref) => {
         {/* City */}
         <div className="flex flex-col md:flex-row gap-6 mb-6">
           <div className="flex-1">
-            <h3
-              className="text-sm font-bold mb-2"
+            <label
+              htmlFor="city-select"
+              className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
               City/District
-            </h3>
+            </label>
             <Controller
               name="city"
               control={control}
@@ -339,6 +358,7 @@ const SetupAddressStep = (props, ref) => {
                     )}
                     <select
                       {...field}
+                      id="city-select"
                       className={`w-full px-3 py-3 border rounded-md focus:outline-none ${
                         loading.cities ? "pl-12" : ""
                       }`}
@@ -349,6 +369,9 @@ const SetupAddressStep = (props, ref) => {
                           ? colors.semantic.error
                           : colors.border.primary,
                       }}
+                      aria-required="true"
+                      aria-invalid={errors.city ? "true" : "false"}
+                      aria-describedby={errors.city ? "city-error" : undefined}
                       onFocus={(e) =>
                         (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
                       }
@@ -374,6 +397,7 @@ const SetupAddressStep = (props, ref) => {
                     <p
                       className="mt-1 text-sm"
                       style={{ color: colors.semantic.error }}
+                      id="city-error"
                     >
                       {errors.city.message}
                     </p>
@@ -387,12 +411,13 @@ const SetupAddressStep = (props, ref) => {
         <div className="flex flex-col md:flex-row gap-6 mb-6">
           {/* Neighborhood */}
           <div className="flex-1">
-            <h3
-              className="text-sm font-bold mb-2"
+            <label
+              htmlFor="neighborhood-input"
+              className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
               Neighborhood
-            </h3>
+            </label>
             <Controller
               name="neighborhood"
               control={control}
@@ -400,6 +425,7 @@ const SetupAddressStep = (props, ref) => {
                 <input
                   {...field}
                   type="text"
+                  id="neighborhood-input"
                   className="w-full px-3 py-3 border rounded-md focus:outline-none disabled:cursor-not-allowed"
                   style={{
                     backgroundColor: !watchCity
@@ -425,12 +451,13 @@ const SetupAddressStep = (props, ref) => {
 
           {/* Street */}
           <div className="flex-1">
-            <h3
-              className="text-sm font-bold mb-2"
+            <label
+              htmlFor="street-input"
+              className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
               Street
-            </h3>
+            </label>
             <Controller
               name="street"
               control={control}
@@ -438,6 +465,7 @@ const SetupAddressStep = (props, ref) => {
                 <input
                   {...field}
                   type="text"
+                  id="street-input"
                   className="w-full px-3 py-3 border rounded-md focus:outline-none disabled:cursor-not-allowed"
                   style={{
                     backgroundColor: !watchCity
@@ -465,12 +493,13 @@ const SetupAddressStep = (props, ref) => {
         <div className="flex flex-col md:flex-row gap-6 mb-6">
           {/* Building No */}
           <div className="flex-1">
-            <h3
-              className="text-sm font-bold mb-2"
+            <label
+              htmlFor="building-input"
+              className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
               Building Number
-            </h3>
+            </label>
             <Controller
               name="buildingNo"
               control={control}
@@ -478,6 +507,7 @@ const SetupAddressStep = (props, ref) => {
                 <input
                   {...field}
                   type="text"
+                  id="building-input"
                   className="w-full px-3 py-3 border rounded-md focus:outline-none"
                   style={{
                     backgroundColor: colors.background.secondary,
@@ -500,12 +530,13 @@ const SetupAddressStep = (props, ref) => {
 
           {/* Door No */}
           <div className="flex-1">
-            <h3
-              className="text-sm font-bold mb-2"
+            <label
+              htmlFor="door-input"
+              className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
               Door / Apartment Number
-            </h3>
+            </label>
             <Controller
               name="doorNo"
               control={control}
@@ -513,6 +544,7 @@ const SetupAddressStep = (props, ref) => {
                 <input
                   {...field}
                   type="text"
+                  id="door-input"
                   className="w-full px-3 py-3 border rounded-md focus:outline-none"
                   style={{
                     backgroundColor: colors.background.secondary,
@@ -535,18 +567,20 @@ const SetupAddressStep = (props, ref) => {
         </div>
         {/* Additional Address Details */}
         <div className="mb-6">
-          <h3
-            className="text-sm font-bold mb-2"
+          <label
+            htmlFor="address-description"
+            className="text-sm font-bold mb-2 block"
             style={{ color: colors.text.primary }}
           >
             Additional Address Details
-          </h3>
+          </label>
           <Controller
             name="addressDescription"
             control={control}
             render={({ field }) => (
               <textarea
                 {...field}
+                id="address-description"
                 rows={4}
                 className="w-full px-3 py-3 border rounded-md focus:outline-none resize-vertical"
                 style={{

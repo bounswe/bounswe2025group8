@@ -142,8 +142,21 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
       setSaving(true);
       setSubmitError(null);
       await onSubmit(payload);
-    } catch (error: any) {
-      setSubmitError(error?.response?.data?.message ?? error?.message ?? 'Failed to update request.');
+    } catch (error: unknown) {
+      // Try to extract a meaningful message safely without using `any`
+      let message = 'Failed to update request.';
+      if (typeof error === 'object' && error !== null) {
+        const maybeMessage = (error as { message?: string }).message;
+        if (maybeMessage) message = maybeMessage;
+        const maybeResponse = (error as { response?: { data?: { message?: string; error?: string; errors?: Record<string, string[]> } } }).response;
+        if (maybeResponse?.data?.message) message = maybeResponse.data.message;
+        else if (maybeResponse?.data?.error) message = maybeResponse.data.error;
+        else if (maybeResponse?.data?.errors) {
+          const combined = Object.values(maybeResponse.data.errors).flat().join(', ');
+          if (combined) message = combined;
+        }
+      }
+      setSubmitError(message);
     } finally {
       setSaving(false);
     }
@@ -153,19 +166,22 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
     <dialog
       ref={dialogRef}
       className="backdrop:bg-black/40 rounded-2xl border-0 p-0 text-base w-full max-w-2xl m-auto overflow-hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="edit-request-title"
     >
       <form
         onSubmit={handleSubmit}
         className="flex h-full max-h-[92vh] flex-col bg-white text-gray-900"
       >
         <header className="border-b border-gray-200 px-6 py-4">
-          <h2 className="text-lg font-semibold">Update Request</h2>
+          <h2 id="edit-request-title" className="text-lg font-semibold">Update Request</h2>
         </header>
 
         <section className="flex-1 overflow-y-auto px-6 py-5">
           <div className="flex flex-col gap-4">
             {submitError && (
-              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert" aria-live="assertive">
                 {submitError}
               </div>
             )}
@@ -196,6 +212,7 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                 value={formState.category}
                 onChange={handleChange('category')}
+                aria-label="Category"
               >
 
                 {categories.map((category) => (
@@ -212,6 +229,7 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                 value={formState.urgency_level}
                 onChange={handleChange('urgency_level')}
+                aria-label="Urgency"
               >
                 {Object.entries(urgencyLevels).map(([key, value]) => (
                   <option key={key} value={key}>
@@ -227,6 +245,7 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                 value={formState.location}
                 onChange={handleChange('location')}
+                aria-label="Location"
               />
             </label>
 
@@ -237,6 +256,7 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                 value={formState.deadline}
                 onChange={handleChange('deadline')}
+                aria-label="Deadline"
               />
             </label>
 
@@ -248,6 +268,7 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                 value={formState.volunteer_number}
                 onChange={handleChange('volunteer_number')}
+                aria-label="Volunteers needed"
               />
             </label>
           </div>
