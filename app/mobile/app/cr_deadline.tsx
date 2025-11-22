@@ -69,6 +69,7 @@ export default function CRDeadline() {
         <TouchableOpacity
           style={[styles.dateBox, { backgroundColor: colors.card, borderColor: colors.border }]}
           onPress={() => setShowDatePicker(true)}
+          testID="deadline-date-box"
         >
           <Text style={[styles.dateText, { color: colors.text }]}>{formattedDate}</Text>
           <Ionicons name="calendar-outline" size={20} color={colors.primary} />
@@ -81,12 +82,17 @@ export default function CRDeadline() {
             onChange={onChangeDate}
             minimumDate={new Date()}
             themeVariant={pickerThemeVariant}
+            testID="deadline-date-picker"
             {...(Platform.OS === 'ios' ? { textColor: colors.text } : {})}
           />
         )}
 
         <Text style={[styles.label, { color: colors.text }]}>Select time</Text>
-        <TouchableOpacity style={[styles.timeBox, { backgroundColor: colors.card, borderColor: colors.primary }]} onPress={() => setShowTimePicker(true)}>
+        <TouchableOpacity
+          style={[styles.timeBox, { backgroundColor: colors.card, borderColor: colors.primary }]}
+          onPress={() => setShowTimePicker(true)}
+          testID="deadline-time-box"
+        >
           <Text style={[styles.timeText, { color: colors.text }]}>{formattedTime}</Text>
           <Ionicons name="time-outline" size={20} color={colors.primary} />
         </TouchableOpacity>
@@ -97,9 +103,23 @@ export default function CRDeadline() {
             display={Platform.OS === 'ios' ? 'spinner' : 'default'}
             onChange={onChangeTime}
             themeVariant={pickerThemeVariant}
+            testID="deadline-time-picker"
             {...(Platform.OS === 'ios' ? { textColor: colors.text } : {})}
           />
         )}
+
+        {/* Test Helper Button */}
+        <TouchableOpacity
+          style={[styles.nextBtn, { backgroundColor: colors.card, marginBottom: 20, borderWidth: 1, borderColor: colors.border }]}
+          onPress={() => {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            setDate(tomorrow);
+          }}
+          testID="set-next-day-button"
+        >
+          <Text style={[styles.nextBtnText, { color: colors.text }]}>Set Next Day (Test)</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.nextBtn, { backgroundColor: colors.primary }]}
@@ -109,6 +129,7 @@ export default function CRDeadline() {
               params: { ...params, deadline: date.toISOString() },
             })
           }
+          testID="deadline-next-button"
         >
           <Text style={[styles.nextBtnText, { color: colors.onPrimary }]}>Next</Text>
         </TouchableOpacity>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import SearchBarWithResults, { Category, Request, Profile, Location } from '../components/ui/SearchBarWithResults';
+import SearchBarWithResults, { Category, Request, Profile } from '../components/ui/SearchBarWithResults';
 import { getTasks, searchUsers, type Task, type Category as ApiCategory, type UserProfile } from '../lib/api';
 import { useAuth } from '../lib/auth';
 
@@ -11,7 +11,6 @@ export default function SearchPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [requests, setRequests] = useState<Request[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
-  const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [allTasks, setAllTasks] = useState<Task[]>([]);
 
@@ -57,24 +56,8 @@ export default function SearchPage() {
             }
           });
           setCategories(Array.from(uniqueCategoriesMap.values()));
-
-          const uniqueLocationsMap = new Map<string, Location>();
-          activeTasks.forEach((task) => {
-            if (task.location) {
-              if (!uniqueLocationsMap.has(task.location)) {
-                uniqueLocationsMap.set(task.location, {
-                  id: task.location,
-                  title: task.location,
-                  image: require('../assets/images/help.png'),
-                  count: activeTasks.filter((t) => t.location === task.location).length,
-                });
-              }
-            }
-          });
-          setLocations(Array.from(uniqueLocationsMap.values()));
         } else {
           setCategories([]);
-          setLocations([]);
         }
 
         if (user) {
@@ -95,7 +78,6 @@ export default function SearchPage() {
         setRequests([]);
         setCategories([]);
         setProfiles([]);
-        setLocations([]);
       } finally {
         setLoading(false);
       }
@@ -117,13 +99,11 @@ export default function SearchPage() {
         categories={categories}
         requests={requests}
         profiles={profiles}
-        locations={locations}
         onSelect={(item, type: string) => {
-          let mappedType: 'category' | 'request' | 'profile' | 'location' = type as any;
+          let mappedType: 'category' | 'request' | 'profile' = type as any;
           if (type === 'Categories') mappedType = 'category';
           else if (type === 'Requests') mappedType = 'request';
           else if (type === 'Profiles') mappedType = 'profile';
-          else if (type === 'Locations') mappedType = 'location';
           if (mappedType === 'category') router.push(('/category/' + item.id) as any);
           else if (mappedType === 'request') {
             // Find the full task object to check if user is creator
@@ -136,10 +116,6 @@ export default function SearchPage() {
           }
           else if (mappedType === 'profile')
             router.push({ pathname: '/profile', params: { userId: item.id } });
-          else if (mappedType === 'location') {
-            // Navigate to requests page filtered by location
-            router.push({ pathname: '/requests', params: { location: item.id } });
-          }
         }}
       />
     </SafeAreaView>

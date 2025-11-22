@@ -14,22 +14,19 @@ import {
 } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { getTasks, type Task } from '../lib/api';
 import { useAuth } from '../lib/auth';
-import { useAppTheme } from '../theme/ThemeProvider';
+import type { ThemeTokens } from '../constants/Colors';
 
 export default function Requests() {
   const { colors } = useTheme();
-  const { tokens: themeColors } = useAppTheme();
+  const themeColors = colors as ThemeTokens;
   const router = useRouter();
-  const params = useLocalSearchParams();
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  
-  const locationFilter = params.location as string | undefined;
 
   // Filter out completed and cancelled tasks
   const filterActiveTasks = (tasksList: Task[]): Task[] => {
@@ -44,14 +41,7 @@ export default function Requests() {
       const response = await getTasks();
       const fetchedTasks = response.results || [];
       const activeTasks = filterActiveTasks(fetchedTasks);
-      
-      // Filter by location if location parameter is provided
-      let filteredTasks = activeTasks;
-      if (locationFilter) {
-        filteredTasks = activeTasks.filter(task => task.location === locationFilter);
-      }
-      
-      setTasks(filteredTasks);
+      setTasks(activeTasks);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       Alert.alert('Error', 'Failed to load tasks. Please try again.');
@@ -63,7 +53,7 @@ export default function Requests() {
 
   useEffect(() => {
     fetchTasks();
-  }, [locationFilter]);
+  }, []);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -141,33 +131,21 @@ export default function Requests() {
           <TouchableOpacity onPress={() => router.push('/notifications')}>
             <Ionicons name="notifications-outline" size={24} color={colors.text} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/settings')}>
+          <TouchableOpacity onPress={() => router.push('/settings')} testID="feed-settings-button">
             <Ionicons name="settings-outline" size={24} color={colors.text} />
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Search bar */}
-      <TouchableOpacity style={[styles.searchWrapper, { borderColor: colors.border }]} onPress={() => router.push('/search')}>
-        <Ionicons name="search-outline" size={20} color={themeColors.icon} />
+      <TouchableOpacity style={[styles.searchWrapper, { borderColor: colors.border }]} onPress={() => router.push('/search')} testID="requests-search-bar">
+        <Ionicons name="search-outline" size={20} color={colors.icon} />
         <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>What do you need help with</Text>
       </TouchableOpacity>
 
       {/* Title + Sort/Filter */}
       <View style={styles.titleRow}>
-        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            {locationFilter ? `Requests in ${locationFilter}` : 'All Requests'}
-          </Text>
-          {locationFilter && (
-            <TouchableOpacity
-              onPress={() => router.replace('/requests')}
-              style={{ marginLeft: 8, padding: 4 }}
-            >
-              <Ionicons name="close-circle" size={20} color={colors.text} />
-            </TouchableOpacity>
-          )}
-        </View>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>All Requests</Text>
         <View style={styles.controlIcons}>
           <TouchableOpacity style={styles.controlButton}>
             <Ionicons name="swap-vertical-outline" size={20} color={colors.text} />
@@ -183,6 +161,7 @@ export default function Requests() {
         style={styles.list}
         contentContainerStyle={{ paddingBottom: 80 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        testID="requests-list"
       >
         {tasks.map((task) => {
           const statusPalette = getStatusPalette(task.status_display || task.status);
@@ -196,6 +175,7 @@ export default function Requests() {
                   params: { id: task.id },
                 })
               }
+              testID={`request-card-${task.id}`}
             >
               <Image source={require('../assets/images/help.png')} style={styles.cardImage} />
 
@@ -235,16 +215,16 @@ export default function Requests() {
 
       {/* Bottom tab bar */}
       <View style={[styles.bottomBar, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
-        <TouchableOpacity style={styles.tabItem} onPress={() => router.replace('/feed')}>
+        <TouchableOpacity style={styles.tabItem} onPress={() => router.replace('/feed')} testID="tab-home">
           <Ionicons name="home" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Home</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/categories')}>
+        <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/categories')} testID="tab-categories">
           <Ionicons name="pricetag-outline" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Categories</Text>
         </TouchableOpacity>
         {user ? (
-          <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/create_request')}>
+          <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/create_request')} testID="tab-create">
             <Ionicons name="add-circle-outline" size={24} color={colors.text} />
             <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
           </TouchableOpacity>
@@ -254,11 +234,11 @@ export default function Requests() {
             <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
           </View>
         )}
-        <TouchableOpacity style={styles.tabItem}>
+        <TouchableOpacity style={styles.tabItem} testID="tab-requests">
           <Ionicons name="list-outline" size={24} color={colors.primary} />
           <Text style={[styles.tabLabel, { color: colors.primary }]}>Requests</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/profile')}>
+        <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/profile')} testID="tab-profile">
           <Ionicons name="person-outline" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Profile</Text>
         </TouchableOpacity>

@@ -30,6 +30,7 @@ export default function Index() {
             { backgroundColor: colors.primary },
           ]}
           onPress={() => router.push('/signin')}
+          testID="landing-login-button"
         >
           <Text style={[styles.primaryText, { color: colors.onPrimary }]}>Login</Text>
         </TouchableOpacity>
@@ -41,6 +42,7 @@ export default function Index() {
             { borderColor: colors.primary },
           ]}
           onPress={() => router.push('/signup')}
+          testID="landing-register-button"
         >
           <Text style={[styles.secondaryText, { color: colors.primary }]}>
             Register
@@ -123,8 +125,8 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
   guestLink: {
-      marginTop: 16,
-      fontSize: 14,
-      textAlign: 'center',
-    },
+    marginTop: 16,
+    fontSize: 14,
+    textAlign: 'center',
+  },
 });

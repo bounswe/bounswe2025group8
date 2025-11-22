@@ -24,6 +24,7 @@ import { CategoryPicker } from '../components/forms/CategoryPicker';
 import { DeadlinePicker } from '../components/forms/DeadlinePicker';
 import { AddressFields } from '../components/forms/AddressFields';
 import { AddressFieldsValue, emptyAddress, parseAddressString, formatAddress } from '../utils/address';
+import { DetailRow } from '../components/DetailRow';
 
 export default function RequestDetails() {
   const params = useLocalSearchParams();
@@ -75,8 +76,8 @@ export default function RequestDetails() {
       (property === 'Text'
         ? themeColors.text
         : property === 'Background'
-        ? themeColors.labelDefaultBackground
-        : themeColors.labelDefaultBorder || themeColors.border)
+          ? themeColors.labelDefaultBackground
+          : themeColors.labelDefaultBorder || themeColors.border)
     );
   };
 
@@ -175,12 +176,12 @@ export default function RequestDetails() {
     }
     setCurrentVolunteerIndex(0);
     const currentVolunteer = assignedVolunteers[0];
-    
+
     // Check if review already exists for this volunteer
     const existingReview = existingReviews.find(
       (review) => review.reviewee.id === currentVolunteer.user.id && review.reviewer.id === user?.id
     );
-    
+
     if (existingReview) {
       setRating(existingReview.score);
       setReviewText(existingReview.comment);
@@ -188,7 +189,7 @@ export default function RequestDetails() {
       setRating(0);
       setReviewText('');
     }
-    
+
     setModalVisible(true);
     setIsEdit(false);
   };
@@ -201,8 +202,8 @@ export default function RequestDetails() {
 
   const hasReviewedAllVolunteers = (): boolean => {
     if (assignedVolunteers.length === 0) return false;
-    return assignedVolunteers.every((volunteer) => 
-      existingReviews.some((review) => 
+    return assignedVolunteers.every((volunteer) =>
+      existingReviews.some((review) =>
         review.reviewee.id === volunteer.user.id && review.reviewer.id === user?.id
       )
     );
@@ -286,12 +287,12 @@ export default function RequestDetails() {
         const nextIndex = currentVolunteerIndex + 1;
         setCurrentVolunteerIndex(nextIndex);
         const nextVolunteer = assignedVolunteers[nextIndex];
-        
+
         // Load existing review for next volunteer if it exists
         const nextReview = updatedReviews.find(
           (review) => review.reviewee.id === nextVolunteer.user.id && review.reviewer.id === user?.id
         );
-        
+
         if (nextReview) {
           setRating(nextReview.score);
           setReviewText(nextReview.comment);
@@ -299,7 +300,7 @@ export default function RequestDetails() {
           setRating(0);
           setReviewText('');
         }
-        
+
         Alert.alert('Success', `Review submitted for ${currentVolunteer.user.name}!`);
       } else {
         // All volunteers reviewed
@@ -405,12 +406,12 @@ export default function RequestDetails() {
           style: 'destructive',
           onPress: async () => {
             if (!id || !request) return;
-            
+
             setCompletingTask(true);
             try {
               const response = await completeTask(id);
               Alert.alert('Success', response.message || 'Request marked as completed successfully!');
-              
+
               // Refresh task data to get updated status
               await fetchTaskData();
             } catch (err: any) {
@@ -439,12 +440,12 @@ export default function RequestDetails() {
           style: 'destructive',
           onPress: async () => {
             if (!id || !request) return;
-            
+
             setCancellingTask(true);
             try {
               const response = await cancelTask(id);
               Alert.alert('Success', response.message || 'Request deleted successfully!');
-              
+
               // Navigate back to feed
               router.back();
             } catch (err: any) {
@@ -535,10 +536,11 @@ export default function RequestDetails() {
               }
             }}
             style={styles.backButton}
+            testID="creator-back-button"
           >
             <Ionicons name="arrow-back" size={24} color={themeColors.text} />
           </TouchableOpacity>
-          <Text style={[styles.title, { color: themeColors.text }]} numberOfLines={1} ellipsizeMode="tail">
+          <Text style={[styles.title, { color: themeColors.text }]} numberOfLines={1} ellipsizeMode="tail" testID="creator-request-title">
             {title}
           </Text>
         </View>
@@ -582,36 +584,36 @@ export default function RequestDetails() {
               const firstPhoto = photos[0];
               const photoUrl = firstPhoto.photo_url || firstPhoto.url || firstPhoto.image || '';
               console.log(photoUrl);
-              const absoluteUrl = photoUrl.startsWith('http') 
-                ? photoUrl 
+              const absoluteUrl = photoUrl.startsWith('http')
+                ? photoUrl
                 : `${BACKEND_BASE_URL}${photoUrl}`;
               return (
-                <Image 
-                  source={{ uri: absoluteUrl }} 
+                <Image
+                  source={{ uri: absoluteUrl }}
                   style={styles.heroImage}
                   resizeMode="cover"
                 />
               );
             })()}
-            
+
             {/* Show remaining photos as thumbnails if there are more */}
             {photos.length > 1 && (
               <View style={[styles.thumbnailsContainer, { backgroundColor: themeColors.lightGray }]}>
-                <ScrollView 
-                  horizontal 
+                <ScrollView
+                  horizontal
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.thumbnailsScrollContent}
                 >
                   {photos.slice(1).map((photo) => {
                     const photoUrl = photo.photo_url || photo.url || photo.image || '';
-                    const absoluteUrl = photoUrl.startsWith('http') 
-                      ? photoUrl 
+                    const absoluteUrl = photoUrl.startsWith('http')
+                      ? photoUrl
                       : `${BACKEND_BASE_URL}${photoUrl}`;
-                    
+
                     return (
                       <TouchableOpacity key={photo.id} style={[styles.smallThumbnail, { borderColor: themeColors.card }]}>
-                        <Image 
-                          source={{ uri: absoluteUrl }} 
+                        <Image
+                          source={{ uri: absoluteUrl }}
                           style={styles.smallThumbnailImage}
                           resizeMode="cover"
                         />
@@ -625,7 +627,7 @@ export default function RequestDetails() {
         ) : (
           <Image source={{ uri: imageUrl }} style={styles.heroImage} />
         )}
-        
+
         <View style={[styles.section, { backgroundColor: themeColors.card }]}>
           <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Requester</Text>
           <View style={styles.requesterRow}>
@@ -676,6 +678,7 @@ export default function RequestDetails() {
           <TouchableOpacity
             style={[styles.primaryButton, { backgroundColor: themeColors.primary }]}
             onPress={() => router.push({ pathname: '/select-volunteer', params: { id, requiredVolunteers: String(request.volunteer_number) } })}
+            testID="creator-select-volunteer-button"
           >
             <Text style={[styles.buttonText, { color: themeColors.card }]}>
               {requiredPerson === 1 ? 'Select Volunteer' : 'Select Volunteers'}
@@ -688,6 +691,7 @@ export default function RequestDetails() {
             style={[styles.primaryButton, { backgroundColor: themeColors.primary }]}
             onPress={handleMarkAsComplete}
             disabled={completingTask}
+            testID="creator-complete-button"
           >
             {completingTask ? (
               <ActivityIndicator size="small" color={themeColors.card} />
@@ -702,6 +706,7 @@ export default function RequestDetails() {
             <TouchableOpacity
               style={[styles.halfButton, { borderColor: themeColors.secondary }]}
               onPress={openEditModal}
+              testID="creator-edit-button"
             >
               <View style={styles.buttonContent}>
                 <Ionicons name="pencil" size={18} color={themeColors.secondary} style={{ marginRight: 6 }} />
@@ -712,6 +717,7 @@ export default function RequestDetails() {
               style={[styles.halfButton, { borderColor: themeColors.error, marginLeft: 12 }]}
               onPress={handleDeleteRequest}
               disabled={cancellingTask}
+              testID="creator-delete-button"
             >
               {cancellingTask ? (
                 <ActivityIndicator size="small" color={themeColors.error} />
@@ -756,7 +762,7 @@ export default function RequestDetails() {
               onPress={handleOpenReviewModal}
             >
               <Text style={[styles.buttonText, { color: themeColors.card }]}>
-                {hasReviewedAllVolunteers() 
+                {hasReviewedAllVolunteers()
                   ? `Edit Rate & Review ${numAssigned === 1 ? 'Volunteer' : 'Volunteers'}`
                   : `Rate & Review ${numAssigned === 1 ? 'Volunteer' : 'Volunteers'}`
                 }
@@ -770,16 +776,16 @@ export default function RequestDetails() {
         <View style={[styles.modalOverlay, { backgroundColor: themeColors.overlay }]}>
           <View style={[styles.modalContent, { backgroundColor: themeColors.card }]}>
             <Text style={[styles.modalTitle, { color: themeColors.text }]}>
-              {isEdit 
-                ? 'Edit Request' 
-                : assignedVolunteers.length > 0 
+              {isEdit
+                ? 'Edit Request'
+                : assignedVolunteers.length > 0
                   ? (() => {
-                      const currentVolunteer = assignedVolunteers[currentVolunteerIndex];
-                      const existingReview = getExistingReviewForVolunteer(currentVolunteer?.user?.id);
-                      return existingReview 
-                        ? `Edit Rate & Review ${currentVolunteer?.user?.name || 'Volunteer'}`
-                        : `Rate & Review ${currentVolunteer?.user?.name || 'Volunteer'}`;
-                    })()
+                    const currentVolunteer = assignedVolunteers[currentVolunteerIndex];
+                    const existingReview = getExistingReviewForVolunteer(currentVolunteer?.user?.id);
+                    return existingReview
+                      ? `Edit Rate & Review ${currentVolunteer?.user?.name || 'Volunteer'}`
+                      : `Rate & Review ${currentVolunteer?.user?.name || 'Volunteer'}`;
+                  })()
                   : 'Rate Request'
               }
             </Text>
@@ -949,14 +955,7 @@ export default function RequestDetails() {
   );
 }
 
-function DetailRow({ label, value, themeColors }: { label: string; value: string; themeColors: ThemeTokens }) {
-  return (
-    <View style={styles.detailRow}>
-      <Text style={[styles.detailLabel, { color: themeColors.textMuted }]}>{label}</Text>
-      <Text style={[styles.detailValue, { color: themeColors.text }]}>{value}</Text>
-    </View>
-  );
-}
+
 
 const styles = StyleSheet.create({
   header: {

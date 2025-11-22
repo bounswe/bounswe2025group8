@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Scro
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
-import { createTask, uploadTaskPhoto} from '../lib/api';
+import { createTask, uploadTaskPhoto } from '../lib/api';
 import { AddressFields } from '../components/forms/AddressFields';
 import { AddressFieldsValue, emptyAddress, formatAddress } from '../utils/address';
 
@@ -28,7 +28,7 @@ export default function CRAddress() {
     options: string[];
     selected: string;
     onSelect: (v: string) => void;
-  }>({ visible: false, options: [], selected: '', onSelect: () => {} });
+  }>({ visible: false, options: [], selected: '', onSelect: () => { } });
 
   const openModal = (options: string[], selected: string, onSelect: (v: string) => void) => {
     setModal({ visible: true, options, selected, onSelect });
@@ -39,7 +39,7 @@ export default function CRAddress() {
   const handleCreateRequest = async () => {
     try {
       setUploading(true);
-      
+
       const title = params.title as string;
       const taskDescription = params.description as string;
       const category = params.category as string;
@@ -77,21 +77,21 @@ export default function CRAddress() {
       // If photos were selected, upload them
       const photosParam = params.photos as string;
       console.log('Photos param received:', photosParam);
-      
+
       if (photosParam && createdTask.id) {
         try {
           const photosData = JSON.parse(photosParam);
           console.log('Parsed photos data:', photosData);
-          
+
           if (Array.isArray(photosData) && photosData.length > 0) {
             console.log(`Uploading ${photosData.length} photos for task ${createdTask.id}`);
-            
+
             // Upload each photo
             const uploadPromises = photosData.map((photo: { uri: string; name: string }) => {
               console.log(`Preparing to upload photo: ${photo.name} from ${photo.uri}`);
               return uploadTaskPhoto(createdTask.id, photo.uri, photo.name);
             });
-            
+
             const results = await Promise.all(uploadPromises);
             console.log('All photos uploaded successfully:', results);
           } else {
@@ -101,7 +101,7 @@ export default function CRAddress() {
           console.error('Error uploading photos:', photoError);
           // Don't fail the entire task creation if photos fail
           Alert.alert(
-            'Warning', 
+            'Warning',
             'Task created but some photos could not be uploaded.',
             [{ text: 'OK', onPress: () => router.replace('/requests') }]
           );
@@ -162,12 +162,14 @@ export default function CRAddress() {
           value={description}
           onChangeText={setDescription}
           multiline
+          testID="address-description-input"
         />
 
-        <TouchableOpacity 
-          style={[styles.nextBtn, { backgroundColor: colors.primary, opacity: uploading ? 0.6 : 1 }]} 
+        <TouchableOpacity
+          style={[styles.nextBtn, { backgroundColor: colors.primary, opacity: uploading ? 0.6 : 1 }]}
           onPress={handleCreateRequest}
           disabled={uploading}
+          testID="create-request-submit-button"
         >
           {uploading ? (
             <ActivityIndicator color={colors.onPrimary} />
@@ -230,7 +232,7 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 20,
-    paddingBottom: 40,
+    paddingBottom: 120,
     flexGrow: 1,
   },
   header: {
