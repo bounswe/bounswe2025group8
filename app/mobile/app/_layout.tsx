@@ -1,7 +1,10 @@
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
+import { LogBox } from 'react-native';
 import 'react-native-reanimated';
+
+LogBox.ignoreAllLogs(true);
 
 import { AuthProvider, useAuth } from '../lib/auth';
 import { AppThemeProvider, useAppTheme } from '@/theme/ThemeProvider';

@@ -5,25 +5,22 @@ import { useTheme } from '@react-navigation/native';
 export type Category = { id: string; title: string; count: number; image: ImageSourcePropType };
 export type Request = { id: string; title: string; urgency: string; meta?: string; category?: string; color?: string; image?: ImageSourcePropType };
 export type Profile = { id: string; name: string; image?: ImageSourcePropType };
-export type Location = { id: string; title: string; count: number; image?: ImageSourcePropType };
 
 interface Props {
   categories?: Category[];
   requests?: Request[];
   profiles?: Profile[];
-  locations?: Location[];
-  onSelect?: (item: Category | Request | Profile | Location, tab: string) => void;
+  onSelect?: (item: Category | Request | Profile, tab: string) => void;
   onFocus?: () => void;
 }
 
-const TABS = ['Categories', 'Requests', 'Profiles', 'Locations'] as const;
+const TABS = ['Categories', 'Requests', 'Profiles'] as const;
 const URGENCY_LEVELS = ['All', 'High', 'Medium', 'Low'] as const;
 
 export default function SearchBarWithResults({
   categories = [],
   requests = [],
   profiles = [],
-  locations = [],
   onSelect,
   onFocus,
 }: Props) {
@@ -43,7 +40,7 @@ export default function SearchBarWithResults({
     });
   }
 
-  let filtered: (Category | Request | Profile | Location)[] = [];
+  let filtered: (Category | Request | Profile)[] = [];
   if (tab === 'Categories') {
     filtered = sortByName(
       categories.filter((cat) => cat.title.toLowerCase().includes(lowerSearch))
@@ -60,10 +57,6 @@ export default function SearchBarWithResults({
     filtered = sortByName(
       profiles.filter((profile) => profile.name.toLowerCase().includes(lowerSearch))
     );
-  } else if (tab === 'Locations') {
-    filtered = sortByName(
-      locations.filter((loc) => loc.title.toLowerCase().includes(lowerSearch))
-    );
   }
 
   return (
@@ -76,6 +69,7 @@ export default function SearchBarWithResults({
           value={search}
           onChangeText={setSearch}
           onFocus={onFocus}
+          testID="search-input"
         />
         <TouchableOpacity onPress={() => setSortAsc((v) => !v)}>
           <Text style={[styles.sortBtn, { color: colors.primary }]}>{sortAsc ? 'A-Z' : 'Z-A'}</Text>
@@ -87,6 +81,7 @@ export default function SearchBarWithResults({
             key={t}
             style={[styles.tab, tab === t && { borderBottomColor: colors.primary }]}
             onPress={() => setTab(t)}
+            testID={`search-tab-${t.toLowerCase()}`}
           >
             <Text style={[styles.tabText, { color: colors.text }, tab === t && { color: colors.primary }]}>{t}</Text>
           </TouchableOpacity>
@@ -117,7 +112,7 @@ export default function SearchBarWithResults({
           ))}
         </View>
       )}
-      <ScrollView style={styles.results} contentContainerStyle={{ flexGrow: 1, width: '100%' }}>
+      <ScrollView style={styles.results} contentContainerStyle={{ flexGrow: 1, width: '100%' }} testID="search-results-scrollview">
         {filtered.length === 0 && (
           <Text style={[styles.noResults, { color: colors.text }]}>No results found.</Text>
         )}
@@ -129,17 +124,12 @@ export default function SearchBarWithResults({
               { borderBottomColor: colors.border, backgroundColor: colors.card, flexDirection: 'row', alignItems: 'center' },
             ]}
             onPress={() => onSelect && onSelect(item, tab)}
+            testID={`search-result-${item.id}`}
           >
-            {(tab === 'Categories' || tab === 'Profiles' || tab === 'Locations') && (
+            {tab === 'Profiles' && (
               <Image
-                source={
-                  tab === 'Profiles'
-                    ? ((item as Profile).image || require('../../assets/images/empty_profile_photo.png'))
-                    : tab === 'Categories'
-                    ? ((item as Category).image || require('../../assets/images/help.png'))
-                    : ((item as Location).image || require('../../assets/images/help.png'))
-                }
-                style={{ width: 36, height: 36, borderRadius: tab === 'Profiles' ? 18 : 8, marginRight: 12, backgroundColor: colors.border }}
+                source={(item as Profile).image || require('../../assets/images/empty_profile_photo.png')}
+                style={{ width: 36, height: 36, borderRadius: 18, marginRight: 12, backgroundColor: colors.border }}
               />
             )}
             <View style={{ flex: 1 }}>
@@ -150,7 +140,7 @@ export default function SearchBarWithResults({
                 <Text style={[styles.resultMeta, { color: colors.text }]}>{item.urgency} urgency</Text>
               )}
               {'count' in item && (
-                <Text style={[styles.resultMeta, { color: colors.text }]}>{item.count} {tab === 'Locations' ? 'requests' : 'requests'}</Text>
+                <Text style={[styles.resultMeta, { color: colors.text }]}>{item.count} requests</Text>
               )}
               {'meta' in item && item.meta && (
                 <Text style={[styles.resultMeta, { color: colors.text }]}>{item.meta}</Text>

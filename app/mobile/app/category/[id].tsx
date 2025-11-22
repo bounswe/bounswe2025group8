@@ -58,12 +58,12 @@ export default function CategoryPage() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} testID="category-back-button">
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.title, { color: colors.text }]}>{categoryName}</Text>
+        <Text style={[styles.title, { color: colors.text }]} testID="category-title">{categoryName}</Text>
       </View>
-      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 80 }]}>
+      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 80 }]} testID="category-requests-scrollview">
         {tasks.length === 0 ? (
           <Text style={[styles.noTasks, { color: colors.text }]}>No requests found for this category.</Text>
         ) : (
@@ -77,6 +77,7 @@ export default function CategoryPage() {
                   params: { id: task.id },
                 })
               }
+              testID={`category-request-card-${task.id}`}
             >
               <Image source={require('../../assets/images/help.png')} style={styles.cardImage} />
               <View style={styles.cardContent}>
@@ -91,8 +92,8 @@ export default function CategoryPage() {
                           task.urgency_level === 3
                             ? '#e74c3c'
                             : task.urgency_level === 2
-                            ? '#f1c40f'
-                            : '#2ecc71',
+                              ? '#f1c40f'
+                              : '#2ecc71',
                       },
                     ]}
                   >

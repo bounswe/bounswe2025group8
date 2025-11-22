@@ -43,13 +43,13 @@ const validatePassword = (password: string) => {
 export default function SignUp() {
   const router = useRouter();
   const { colors } = useTheme();
-  const [fullName, setFullName]   = useState('');
-  const [username, setUsername]   = useState('');
-  const [phone, setPhone]         = useState('');
-  const [email, setEmail]         = useState('');
-  const [password, setPassword]   = useState('');
-  const [agree, setAgree]         = useState(false);
-  const [showPwd, setShowPwd]     = useState(false);
+  const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [agree, setAgree] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
 
@@ -146,6 +146,7 @@ export default function SignUp() {
               value={fullName}
               onChangeText={setFullName}
               editable={!isLoading}
+              testID="signup-fullname-input"
               returnKeyType="next"
             />
           </View>
@@ -161,6 +162,7 @@ export default function SignUp() {
               onChangeText={setUsername}
               autoCapitalize="none"
               editable={!isLoading}
+              testID="signup-username-input"
               returnKeyType="next"
             />
           </View>
@@ -176,6 +178,7 @@ export default function SignUp() {
               onChangeText={setPhone}
               keyboardType="phone-pad"
               editable={!isLoading}
+              testID="signup-phone-input"
               returnKeyType="next"
             />
           </View>
@@ -192,6 +195,7 @@ export default function SignUp() {
               keyboardType="email-address"
               autoCapitalize="none"
               editable={!isLoading}
+              testID="signup-email-input"
               returnKeyType="next"
             />
           </View>
@@ -208,6 +212,10 @@ export default function SignUp() {
               onChangeText={setPassword}
               editable={!isLoading}
               returnKeyType="done"
+              testID="signup-password-input"
+              textContentType="oneTimeCode"
+              autoComplete="off"
+              autoCorrect={false}
               onSubmitEditing={Keyboard.dismiss}
             />
             <Pressable onPress={() => setShowPwd(v => !v)}>
@@ -220,10 +228,11 @@ export default function SignUp() {
           </View>
 
           <View style={styles.rememberWrapper}>
-            <Pressable 
-              onPress={() => setAgree(a => !a)} 
+            <Pressable
+              onPress={() => setAgree(a => !a)}
               hitSlop={8}
               disabled={isLoading}
+              testID="signup-terms-checkbox"
             >
               <Ionicons
                 name={agree ? 'checkbox' : 'square-outline'}
@@ -236,7 +245,7 @@ export default function SignUp() {
               I agree with{' '}
             </Text>
 
-            <Pressable 
+            <Pressable
               onPress={() => router.push({ pathname: '/terms' })}
               hitSlop={8}
               disabled={isLoading}
@@ -250,12 +259,13 @@ export default function SignUp() {
           {/* Sign Up Button */}
           <TouchableOpacity
             style={[
-              styles.button, 
+              styles.button,
               { backgroundColor: colors.primary },
               (!agree || isLoading) && { opacity: 0.5 }
             ]}
             disabled={!agree || isLoading}
             onPress={handleSignUp}
+            testID="signup-button"
           >
             <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
               {isLoading ? 'Signing up...' : 'Sign Up'}
@@ -267,7 +277,7 @@ export default function SignUp() {
             <Text style={[styles.promptText, { color: colors.text }]}>
               Have an account?
             </Text>
-            <TouchableOpacity onPress={() => router.replace('/signin')}>
+            <TouchableOpacity onPress={() => router.replace('/signin')} testID="signup-login-link">
               <Text style={[styles.promptLink, { color: colors.primary }]}>
                 {' '}Login
               </Text>

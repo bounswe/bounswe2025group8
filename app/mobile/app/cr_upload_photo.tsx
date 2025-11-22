@@ -109,6 +109,7 @@ export default function CRUploadPhoto() {
               },
             });
           }}
+          testID="upload-photo-next-button"
         >
           <Text style={[styles.nextBtnText, { color: colors.onPrimary }]}>Next</Text>
         </TouchableOpacity>

@@ -61,16 +61,16 @@ export default function Feed() {
   const fetchTasks = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch all tasks for categories
       const response = await getTasks();
       const fetchedTasks = response.results || [];
       const activeTasks = filterActiveTasks(fetchedTasks);
-      
+
       // Fetch popular tasks separately
       const popular = await getPopularTasks(6);
       const activePopularTasks = filterActiveTasks(popular);
-      
+
       setPopularTasks(activePopularTasks);
 
       if (activeTasks.length > 0) {
@@ -129,6 +129,7 @@ export default function Feed() {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
+        testID="feed-scroll-view"
       >
         {/* — Header — */}
         <View style={styles.header}>
@@ -143,14 +144,14 @@ export default function Feed() {
             <TouchableOpacity onPress={() => router.push('/notifications')} style={{ marginRight: 12 }}>
               <Ionicons name="notifications-outline" size={24} color={colors.text} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/settings')}>
+            <TouchableOpacity onPress={() => router.push('/settings')} testID="feed-settings-button">
               <Ionicons name="settings-outline" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
         </View>
 
         {/* — Search bar — */}
-        <TouchableOpacity style={[styles.searchWrapper, { borderColor: colors.border }]} onPress={() => router.push('/search')}>
+        <TouchableOpacity style={[styles.searchWrapper, { borderColor: colors.border }]} onPress={() => router.push('/search')} testID="feed-search-bar">
           <Ionicons name="search-outline" size={20} color={colors.icon} />
           <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>What are you looking for?</Text>
         </TouchableOpacity>
@@ -225,7 +226,7 @@ export default function Feed() {
             <Ionicons name="chevron-forward" size={20} color={colors.text} />
           </TouchableOpacity>
         ))}
-        <TouchableOpacity onPress={() => router.push('/requests')} style={styles.seeAllLink}>
+        <TouchableOpacity onPress={() => router.push('/requests')} style={styles.seeAllLink} testID="see-all-requests-link">
           <Text style={[styles.seeAllText, { color: colors.primary }]}>See all requests</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -237,6 +238,7 @@ export default function Feed() {
           onPress={() => {
             scrollRef.current?.scrollTo({ y: 0, animated: true });
           }}
+          testID="tab-home"
         >
           <Ionicons name="home" size={24} color={colors.primary} />
           <Text style={[styles.tabLabel, { color: colors.primary }]}>Home</Text>
@@ -245,6 +247,7 @@ export default function Feed() {
         <TouchableOpacity
           style={styles.tabItem}
           onPress={() => router.push('/categories')}
+          testID="tab-categories"
         >
           <Ionicons name="pricetag-outline" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>
@@ -256,12 +259,13 @@ export default function Feed() {
           <TouchableOpacity
             style={styles.tabItem}
             onPress={() => { router.push('/create_request'); }}
+            testID="tab-create"
           >
             <Ionicons name="add-circle-outline" size={24} color={colors.text} />
             <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
           </TouchableOpacity>
         ) : (
-          <View style={[styles.tabItem, { opacity: 0.5 }]}> 
+          <View style={[styles.tabItem, { opacity: 0.5 }]}>
             <Ionicons name="add-circle-outline" size={24} color={colors.text} />
             <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
           </View>
@@ -270,6 +274,7 @@ export default function Feed() {
         <TouchableOpacity
           style={styles.tabItem}
           onPress={() => router.push('/requests')}
+          testID="tab-requests"
         >
           <Ionicons name="list-outline" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Requests</Text>
@@ -278,6 +283,7 @@ export default function Feed() {
         <TouchableOpacity
           style={styles.tabItem}
           onPress={() => router.push('/profile')}
+          testID="tab-profile"
         >
           <Ionicons name="person-outline" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Profile</Text>

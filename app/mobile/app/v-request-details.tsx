@@ -20,6 +20,7 @@ import { getTaskDetails, listVolunteers, type Task, type Volunteer, volunteerFor
 import { useAuth } from '../lib/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ThemeTokens } from '../constants/Colors';
+import { DetailRow } from '../components/DetailRow';
 
 export default function RequestDetailsVolunteer() {
   const params = useLocalSearchParams();
@@ -69,8 +70,8 @@ export default function RequestDetailsVolunteer() {
       (property === 'Text'
         ? themeColors.text
         : property === 'Background'
-        ? 'transparent'
-        : themeColors.border)
+          ? 'transparent'
+          : themeColors.border)
     );
   };
 
@@ -89,7 +90,7 @@ export default function RequestDetailsVolunteer() {
       const isCreatorView = user?.id && details.creator?.id === user.id;
       const currentRecord = volunteerRecordRef.current;
 
-      const taskVolunteers = await listVolunteers( {task:id,limit: 100 });
+      const taskVolunteers = await listVolunteers({ task: id, limit: 100 });
 
       const volunteers = taskVolunteers.filter((vol) => {
         const taskField = typeof (vol as any).task === 'number' ? (vol as any).task : (vol.task as any)?.id;
@@ -118,7 +119,7 @@ export default function RequestDetailsVolunteer() {
               console.warn('Failed to persist volunteer state:', storageError);
             });
             if (legacyStorageKey) {
-              AsyncStorage.removeItem(legacyStorageKey).catch(() => {});
+              AsyncStorage.removeItem(legacyStorageKey).catch(() => { });
             }
           }
           return updated;
@@ -134,14 +135,14 @@ export default function RequestDetailsVolunteer() {
             console.warn('Failed to persist volunteer state:', storageError);
           });
           if (legacyStorageKey) {
-            AsyncStorage.removeItem(legacyStorageKey).catch(() => {});
+            AsyncStorage.removeItem(legacyStorageKey).catch(() => { });
           }
         }
       } else {
         setHasVolunteered(false);
         setVolunteerRecord(null);
         if (storageKey) {
-          AsyncStorage.removeItem(storageKey).catch(() => {});
+          AsyncStorage.removeItem(storageKey).catch(() => { });
         }
       }
 
@@ -152,7 +153,7 @@ export default function RequestDetailsVolunteer() {
           if (reviewsResponse.status === 'success') {
             setExistingReviews(reviewsResponse.data.reviews || []);
           }
-          
+
           // Build list of reviewable participants (creator + other volunteers, excluding self)
           const participants: UserProfile[] = [];
           if (details.creator && details.creator.id !== user.id) {
@@ -197,70 +198,70 @@ export default function RequestDetailsVolunteer() {
     }
   }, [id, user?.id, storageKey]);
 
-useEffect(() => {
-  fetchRequestDetails();
-}, [fetchRequestDetails]);
-
-useFocusEffect(
-  useCallback(() => {
+  useEffect(() => {
     fetchRequestDetails();
-  }, [fetchRequestDetails])
-);
+  }, [fetchRequestDetails]);
 
-useEffect(() => {
-  let isMounted = true;
-  const hydrateVolunteerState = async () => {
-    if (!storageKey) {
-      if (isMounted) {
-        setVolunteerRecord(null);
-        setHasVolunteered(false);
-      }
-      if (legacyStorageKey) {
-        AsyncStorage.removeItem(legacyStorageKey).catch(() => {});
-      }
-      return;
-    }
-    try {
-      let value = await AsyncStorage.getItem(storageKey);
-      if (!value && legacyStorageKey) {
-        value = await AsyncStorage.getItem(legacyStorageKey);
-        if (value) {
-          await AsyncStorage.setItem(storageKey, value);
-          await AsyncStorage.removeItem(legacyStorageKey);
-        }
-      }
-      if (!isMounted) {
-        return;
-      }
-      if (value) {
-        try {
-          const parsed = JSON.parse(value);
-          setVolunteerRecord(parsed);
-          setHasVolunteered(isActiveVolunteerStatus(parsed.status));
-        } catch (parseError) {
-          console.warn('Failed to parse stored volunteer record:', parseError);
+  useFocusEffect(
+    useCallback(() => {
+      fetchRequestDetails();
+    }, [fetchRequestDetails])
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+    const hydrateVolunteerState = async () => {
+      if (!storageKey) {
+        if (isMounted) {
           setVolunteerRecord(null);
           setHasVolunteered(false);
         }
-      } else {
-        setVolunteerRecord(null);
-        setHasVolunteered(false);
+        if (legacyStorageKey) {
+          AsyncStorage.removeItem(legacyStorageKey).catch(() => { });
+        }
+        return;
       }
-    } catch (storageError) {
-      console.warn('Failed to read volunteer state from storage:', storageError);
-      if (isMounted) {
-        setVolunteerRecord(null);
-        setHasVolunteered(false);
+      try {
+        let value = await AsyncStorage.getItem(storageKey);
+        if (!value && legacyStorageKey) {
+          value = await AsyncStorage.getItem(legacyStorageKey);
+          if (value) {
+            await AsyncStorage.setItem(storageKey, value);
+            await AsyncStorage.removeItem(legacyStorageKey);
+          }
+        }
+        if (!isMounted) {
+          return;
+        }
+        if (value) {
+          try {
+            const parsed = JSON.parse(value);
+            setVolunteerRecord(parsed);
+            setHasVolunteered(isActiveVolunteerStatus(parsed.status));
+          } catch (parseError) {
+            console.warn('Failed to parse stored volunteer record:', parseError);
+            setVolunteerRecord(null);
+            setHasVolunteered(false);
+          }
+        } else {
+          setVolunteerRecord(null);
+          setHasVolunteered(false);
+        }
+      } catch (storageError) {
+        console.warn('Failed to read volunteer state from storage:', storageError);
+        if (isMounted) {
+          setVolunteerRecord(null);
+          setHasVolunteered(false);
+        }
       }
-    }
-  };
+    };
 
-  hydrateVolunteerState();
+    hydrateVolunteerState();
 
-  return () => {
-    isMounted = false;
-  };
-}, [storageKey]);
+    return () => {
+      isMounted = false;
+    };
+  }, [storageKey]);
 
   const handleStarPress = (star: number) => setRating(star);
 
@@ -273,8 +274,8 @@ useEffect(() => {
 
   const hasReviewedAllParticipants = (): boolean => {
     if (reviewableParticipants.length === 0) return false;
-    return reviewableParticipants.every((participant) => 
-      existingReviews.some((review) => 
+    return reviewableParticipants.every((participant) =>
+      existingReviews.some((review) =>
         review.reviewee.id === participant.id && review.reviewer.id === user?.id
       )
     );
@@ -287,10 +288,10 @@ useEffect(() => {
     }
     setCurrentReviewIndex(0);
     const currentParticipant = reviewableParticipants[0];
-    
+
     // Check if review already exists for this participant
     const existingReview = getExistingReviewForParticipant(currentParticipant.id);
-    
+
     if (existingReview) {
       setRating(existingReview.score);
       setReviewText(existingReview.comment);
@@ -344,12 +345,12 @@ useEffect(() => {
         const nextIndex = currentReviewIndex + 1;
         setCurrentReviewIndex(nextIndex);
         const nextParticipant = reviewableParticipants[nextIndex];
-        
+
         // Load existing review for next participant if it exists
         const nextReview = updatedReviews.find(
           (review) => review.reviewee.id === nextParticipant.id && review.reviewer.id === user?.id
         );
-        
+
         if (nextReview) {
           setRating(nextReview.score);
           setReviewText(nextReview.comment);
@@ -357,7 +358,7 @@ useEffect(() => {
           setRating(0);
           setReviewText('');
         }
-        
+
         Alert.alert('Success', `Review submitted for ${currentParticipant.name}!`);
       } else {
         // All participants reviewed
@@ -409,7 +410,7 @@ useEffect(() => {
             console.warn('Failed to persist volunteer state:', storageError);
           });
           if (legacyStorageKey) {
-            AsyncStorage.removeItem(legacyStorageKey).catch(() => {});
+            AsyncStorage.removeItem(legacyStorageKey).catch(() => { });
           }
         }
       }
@@ -444,9 +445,9 @@ useEffect(() => {
       setVolunteerRecord(updatedRecord);
       volunteerRecordRef.current = updatedRecord;
       if (storageKey) {
-        AsyncStorage.setItem(storageKey, JSON.stringify(updatedRecord)).catch(() => {});
+        AsyncStorage.setItem(storageKey, JSON.stringify(updatedRecord)).catch(() => { });
         if (legacyStorageKey) {
-          AsyncStorage.removeItem(legacyStorageKey).catch(() => {});
+          AsyncStorage.removeItem(legacyStorageKey).catch(() => { });
         }
       }
       await fetchRequestDetails();
@@ -505,24 +506,24 @@ useEffect(() => {
 
   const volunteerStatusMessage = !isCreatorView && (userAssigned || ['pending', 'accepted', 'rejected', 'withdrawn'].includes(volunteerStatusLabel ?? ''))
     ? (() => {
-        if (userAssigned || volunteerStatusLabel === 'accepted') {
-          console.log("userAssigned", userAssigned);
-          console.log("volunteerStatusLabel", volunteerStatusLabel);
-          console.log(request);
-          console.log(user);
-          return 'You have been assigned to this request.';
-        }
-        if (volunteerStatusLabel === 'rejected') {
-          return 'Your volunteer request was declined.';
-        }
-        if (volunteerStatusLabel === 'withdrawn') {
-          return 'You withdrew your volunteer request. Contact the requester if you wish to volunteer again.';
-        }
-        if (volunteerStatusLabel === 'pending') {
-          return 'Your volunteer request is pending approval.';
-        }
-        return 'You have volunteered for this request.';
-      })()
+      if (userAssigned || volunteerStatusLabel === 'accepted') {
+        console.log("userAssigned", userAssigned);
+        console.log("volunteerStatusLabel", volunteerStatusLabel);
+        console.log(request);
+        console.log(user);
+        return 'You have been assigned to this request.';
+      }
+      if (volunteerStatusLabel === 'rejected') {
+        return 'Your volunteer request was declined.';
+      }
+      if (volunteerStatusLabel === 'withdrawn') {
+        return 'You withdrew your volunteer request. Contact the requester if you wish to volunteer again.';
+      }
+      if (volunteerStatusLabel === 'pending') {
+        return 'Your volunteer request is pending approval.';
+      }
+      return 'You have volunteered for this request.';
+    })()
     : null;
 
   const showWithdrawButton =
@@ -552,7 +553,7 @@ useEffect(() => {
           >
             <Ionicons name="arrow-back" size={24} color={themeColors.text} />
           </TouchableOpacity>
-          <Text style={[styles.title, { color: themeColors.text }]}>{request.title}</Text>
+          <Text style={[styles.title, { color: themeColors.text }]} testID="request-details-title">{request.title}</Text>
         </View>
         <Text style={[styles.categoryLabel, { color: themeColors.primary, backgroundColor: themeColors.lightPurple }]}>
           {request.category_display || request.category}
@@ -579,18 +580,18 @@ useEffect(() => {
             {(() => {
               const firstPhoto = photos[0];
               const photoUrl = firstPhoto.photo_url || firstPhoto.url || firstPhoto.image || '';
-              const absoluteUrl = photoUrl.startsWith('http') 
-                ? photoUrl 
+              const absoluteUrl = photoUrl.startsWith('http')
+                ? photoUrl
                 : `${BACKEND_BASE_URL}${photoUrl}`;
               return (
-                <Image 
-                  source={{ uri: absoluteUrl }} 
+                <Image
+                  source={{ uri: absoluteUrl }}
                   style={styles.heroImage}
                   resizeMode="cover"
                 />
               );
             })()}
-            
+
             {/* Show remaining photos as thumbnails if there are more */}
             {photos.length > 1 && (
               <View style={[styles.thumbnailsContainer, { backgroundColor: themeColors.lightGray }]}>
@@ -601,14 +602,14 @@ useEffect(() => {
                 >
                   {photos.slice(1).map((photo) => {
                     const photoUrl = photo.photo_url || photo.url || photo.image || '';
-                    const absoluteUrl = photoUrl.startsWith('http') 
-                      ? photoUrl 
+                    const absoluteUrl = photoUrl.startsWith('http')
+                      ? photoUrl
                       : `${BACKEND_BASE_URL}${photoUrl}`;
-                    
+
                     return (
                       <TouchableOpacity key={photo.id} style={[styles.smallThumbnail, { borderColor: themeColors.card }]}>
-                        <Image 
-                          source={{ uri: absoluteUrl }} 
+                        <Image
+                          source={{ uri: absoluteUrl }}
                           style={styles.smallThumbnailImage}
                           resizeMode="cover"
                         />
@@ -620,7 +621,7 @@ useEffect(() => {
             )}
           </>
         )}
-        
+
         <View style={[styles.detailsContainer, { backgroundColor: themeColors.card }]}>
           <TouchableOpacity
             style={styles.avatarRow}
@@ -641,7 +642,7 @@ useEffect(() => {
           <Text style={[styles.descriptionText, { color: themeColors.text }]}>{request.description}</Text>
           <View style={styles.infoContainer}>
             <DetailRow icon="time-outline" value={datetime} themeColors={themeColors} />
-            <DetailRow icon="location-outline" value={locationDisplay} themeColors={themeColors} />
+            <DetailRow icon="location-outline" value={locationDisplay} themeColors={themeColors} testID="location-display" />
             <DetailRow
               icon="people-circle-outline"
               value={`Volunteers needed: ${requiredPerson}`}
@@ -707,7 +708,7 @@ useEffect(() => {
               }}
             >
               <Text style={[styles.buttonText, { color: themeColors.card }]}>
-                {hasReviewedAllParticipants() 
+                {hasReviewedAllParticipants()
                   ? `Edit Rate & Review ${reviewableParticipants.length === 1 ? 'Participant' : 'Participants'}`
                   : `Rate & Review ${reviewableParticipants.length === 1 ? 'Participant' : 'Participants'}`
                 }
@@ -718,6 +719,7 @@ useEffect(() => {
               style={[styles.actionButton, { backgroundColor: themeColors.primary }]}
               onPress={handleBeVolunteer}
               disabled={actionLoading}
+              testID="volunteer-button"
             >
               <Text style={[styles.buttonText, { color: themeColors.card }]}>Be a Volunteer</Text>
             </TouchableOpacity>
@@ -729,6 +731,7 @@ useEffect(() => {
             style={[styles.secondaryButton, { borderColor: themeColors.error }]}
             onPress={handleWithdraw}
             disabled={actionLoading}
+            testID="withdraw-volunteer-button"
           >
             <Text style={[styles.buttonText, { color: themeColors.error }]}>Withdraw Volunteer Request</Text>
           </TouchableOpacity>
@@ -748,14 +751,14 @@ useEffect(() => {
         <View style={[styles.modalOverlay, { backgroundColor: themeColors.overlay }]}>
           <View style={[styles.modalContent, { backgroundColor: themeColors.card }]}>
             <Text style={[styles.modalTitle, { color: themeColors.text }]}>
-              {reviewableParticipants.length > 0 
+              {reviewableParticipants.length > 0
                 ? (() => {
-                    const currentParticipant = reviewableParticipants[currentReviewIndex];
-                    const existingReview = getExistingReviewForParticipant(currentParticipant?.id);
-                    return existingReview 
-                      ? `Edit Rate & Review ${currentParticipant?.name || 'Participant'}`
-                      : `Rate & Review ${currentParticipant?.name || 'Participant'}`;
-                  })()
+                  const currentParticipant = reviewableParticipants[currentReviewIndex];
+                  const existingReview = getExistingReviewForParticipant(currentParticipant?.id);
+                  return existingReview
+                    ? `Edit Rate & Review ${currentParticipant?.name || 'Participant'}`
+                    : `Rate & Review ${currentParticipant?.name || 'Participant'}`;
+                })()
                 : 'Rate & Review'
               }
             </Text>
@@ -765,10 +768,10 @@ useEffect(() => {
               </Text>
             )}
             <TextInput
-                style={[
-                  styles.modalInput,
-                  { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background },
-                ]}
+              style={[
+                styles.modalInput,
+                { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background },
+              ]}
               placeholder="Leave your review..."
               placeholderTextColor={themeColors.textMuted}
               multiline
@@ -820,22 +823,7 @@ useEffect(() => {
   );
 }
 
-function DetailRow({
-  icon,
-  value,
-  themeColors,
-}: {
-  icon: React.ComponentProps<typeof Ionicons>['name'];
-  value: string;
-  themeColors: ThemeTokens;
-}) {
-  return (
-    <View style={styles.infoRow}>
-      <Ionicons name={icon} size={25} color={themeColors.textMuted} style={styles.icon} />
-      <Text style={[styles.infoText, { color: themeColors.textMuted }]}>{value}</Text>
-    </View>
-  );
-}
+
 
 const styles = StyleSheet.create({
   header: {

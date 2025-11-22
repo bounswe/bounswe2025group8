@@ -94,7 +94,7 @@ export default function Categories() {
       </View>
 
       {/* Search bar */}
-      <TouchableOpacity style={[styles.searchWrapper, { borderColor: colors.border }]} onPress={() => router.push('/search')}>
+      <TouchableOpacity style={[styles.searchWrapper, { borderColor: colors.border }]} onPress={() => router.push('/search')} testID="category-search-bar">
         <Ionicons name="search-outline" size={20} color={colors.icon} />
         <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>Search a Category</Text>
       </TouchableOpacity>
@@ -115,6 +115,7 @@ export default function Categories() {
             key={cat.id}
             style={[styles.catRow, { backgroundColor: colors.card, shadowColor: colors.overlay }]}
             onPress={() => router.push(('/category/' + cat.id) as any)}
+            testID={`category-row-${cat.id}`}
           >
             <Image source={require('../assets/images/help.png')} style={styles.catImage} />
             <View>
@@ -126,16 +127,16 @@ export default function Categories() {
 
       {/* Bottom navigation bar */}
       <View style={[styles.bottomBar, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
-        <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/feed')}>
+        <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/feed')} testID="tab-home">
           <Ionicons name="home" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Home</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem}>
+        <TouchableOpacity style={styles.tabItem} testID="tab-categories">
           <Ionicons name="pricetag-outline" size={24} color={colors.primary} />
           <Text style={[styles.tabLabel, { color: colors.primary }]}>Categories</Text>
         </TouchableOpacity>
         {user ? (
-          <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/create_request')}>
+          <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/create_request')} testID="tab-create">
             <Ionicons name="add-circle-outline" size={24} color={colors.text} />
             <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
           </TouchableOpacity>
@@ -145,11 +146,11 @@ export default function Categories() {
             <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
           </View>
         )}
-        <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/requests')}>
+        <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/requests')} testID="tab-requests">
           <Ionicons name="list-outline" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Requests</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/profile')}>
+        <TouchableOpacity style={styles.tabItem} onPress={() => router.push('/profile')} testID="tab-profile">
           <Ionicons name="person-outline" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Profile</Text>
         </TouchableOpacity>

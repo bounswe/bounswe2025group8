@@ -19,7 +19,7 @@ export default function CreateRequest() {
   const [showUrgencyModal, setShowUrgencyModal] = useState(false);
   const [category, setCategory] = useState('GROCERY_SHOPPING');
 
-  
+
   useEffect(() => {
     if (!user) {
       Alert.alert('Authentication Required', 'You need to be logged in to create a request.', [
@@ -123,7 +123,7 @@ export default function CreateRequest() {
         <View style={styles.tabBar}>
           <View style={[styles.activeTab, { backgroundColor: colors.primary }]} />
           <View style={styles.inactiveTab} />
-            <View style={styles.inactiveTab} />
+          <View style={styles.inactiveTab} />
           <View style={styles.inactiveTab} />
         </View>
 
@@ -136,6 +136,7 @@ export default function CreateRequest() {
             placeholderTextColor={colors.border}
             value={title}
             onChangeText={setTitle}
+            testID="create-request-title-input"
           />
         </View>
 
@@ -147,6 +148,7 @@ export default function CreateRequest() {
           value={description}
           onChangeText={setDescription}
           multiline
+          testID="create-request-description-input"
         />
 
         <CategoryPicker value={category} onChange={setCategory} />
@@ -155,6 +157,7 @@ export default function CreateRequest() {
         <Pressable
           style={[styles.selectorBtn, { backgroundColor: colors.card }]}
           onPress={() => setShowUrgencyModal(true)}
+          testID="create-request-urgency-selector"
         >
           <Text style={[styles.selectorText, { color: colors.text }]}>{urgency}</Text>
           <Ionicons name="chevron-down" size={20} color={colors.border} />
@@ -199,6 +202,7 @@ export default function CreateRequest() {
               },
             });
           }}
+          testID="create-request-next-button"
         >
           <Text style={[styles.nextBtnText, { color: colors.onPrimary }]}>Next</Text>
         </TouchableOpacity>

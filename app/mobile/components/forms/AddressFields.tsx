@@ -32,7 +32,7 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
     title: '',
     options: [],
     selected: '',
-    onSelect: () => {},
+    onSelect: () => { },
   });
 
   const openPicker = (title: string, options: string[], selected: string, onSelect: (val: string) => void) => {
@@ -77,6 +77,7 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
       <TouchableOpacity
         style={[styles.selectorButton, { borderColor: colors.border, backgroundColor: colors.card }]}
         onPress={() => openPicker('Select City', CITY_LIST, value.city, (val) => updateField('city', val))}
+        testID="address-city-selector"
       >
         <Text style={[styles.selectorText, { color: colors.text }]}>{value.city || 'Select city'}</Text>
         <Ionicons name="chevron-down" size={20} color={colors.border} />
@@ -92,6 +93,7 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
         onPress={() =>
           openPicker('Select District', getDistricts, value.district, (val) => updateField('district', val))
         }
+        testID="address-district-selector"
       >
         <Text style={[styles.selectorText, { color: colors.text }]}>{value.district || 'Select district'}</Text>
         <Ionicons name="chevron-down" size={20} color={colors.border} />
@@ -112,6 +114,7 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
             (val) => updateField('neighborhood', val),
           )
         }
+        testID="address-neighborhood-selector"
       >
         <Text style={[styles.selectorText, { color: colors.text }]}>{value.neighborhood || 'Select neighborhood'}</Text>
         <Ionicons name="chevron-down" size={20} color={colors.border} />
@@ -124,6 +127,7 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
         placeholderTextColor={colors.border}
         value={value.street}
         onChangeText={(text) => updateField('street', text)}
+        testID="address-street-input"
       />
 
       <View style={styles.row}>
@@ -135,6 +139,7 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
             placeholderTextColor={colors.border}
             value={value.buildingNo}
             onChangeText={(text) => updateField('buildingNo', text)}
+            testID="address-building-input"
           />
         </View>
         <View style={{ flex: 1, marginLeft: 8 }}>
@@ -145,6 +150,7 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
             placeholderTextColor={colors.border}
             value={value.doorNo}
             onChangeText={(text) => updateField('doorNo', text)}
+            testID="address-door-input"
           />
         </View>
       </View>
@@ -158,7 +164,7 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
                 <Ionicons name="close" size={24} color={colors.primary} />
               </TouchableOpacity>
             </View>
-            <ScrollView>
+            <ScrollView testID="address-picker-scrollview">
               {pickerModal.options.map((option) => (
                 <TouchableOpacity
                   key={option}
@@ -167,6 +173,7 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
                     pickerModal.onSelect(option);
                     closePicker();
                   }}
+                  testID={`address-option-${option}`}
                 >
                   <Text
                     style={[

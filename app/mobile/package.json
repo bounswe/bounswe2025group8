@@ -5,10 +5,17 @@
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:e2e:ios": "detox test --configuration ios.sim.debug",
+    "test:e2e:android": "detox test --configuration android.emu.debug",
+    "test:e2e:build:ios": "detox build --configuration ios.sim.debug",
+    "test:e2e:build:android": "detox build --configuration android.emu.debug"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
@@ -44,9 +51,20 @@
     "turkey-neighbourhoods": "^4.0.3"
   },
   "devDependencies": {
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^13.3.3",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.1.0",
+    "detox": "^20.46.0",
+    "detox-recorder": "^1.0.151",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
+    "jest": "^30.2.0",
+    "jest-circus": "^30.2.0",
+    "jest-expo": "^54.0.13",
+    "react-test-renderer": "^19.1.0",
+    "ts-jest": "^29.4.5",
     "typescript": "~5.9.2"
   },
   "private": true

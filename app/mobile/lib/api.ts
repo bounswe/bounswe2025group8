@@ -28,15 +28,15 @@ const port = Constants.expoConfig?.extra?.apiPort ?? '8000';
 
 // LOCAL DEVELOPMENT: Use your computer's LAN IP for iOS simulator and physical devices
 // Replace '172.20.10.3' with your actual LAN IP if different
-// Find your LAN IP with: ipconfig getifaddr en0
+// Find your LAN IP with: ifconfig | grep "inet " | grep -v 127.0.0.1
 // use the first one returned by the command
 // do not forget to also change the export const API_BASE_URL constant below.
-const LOCAL_LAN_IP = '192.168.4.23'; // Change this to your LAN IP if needed
+const LOCAL_LAN_IP = '192.168.1.156'; // Change this to your LAN IP if needed
 
 const API_HOST = Platform.select({
   web: 'localhost',           // Web uses localhost
   android: '10.0.2.2',        // Android emulator uses special IP to access host machine
-  ios: LOCAL_LAN_IP,          // iOS simulator: use LAN IP instead of localhost
+  ios: 'localhost',           // iOS simulator: localhost works fine
   default: LOCAL_LAN_IP,      // Physical devices: use LAN IP
 });
 
@@ -196,15 +196,15 @@ export interface NotificationsListResponse {
 
 // Add MarkReadResponse (can be generic if backend sends consistent success/data structure)
 export interface MarkReadResponse {
-    status: string;
-    message: string;
-    data?: Notification; // mark_as_read returns the updated notification
+  status: string;
+  message: string;
+  data?: Notification; // mark_as_read returns the updated notification
 }
 
 export interface MarkAllReadResponse {
-    status: string;
-    message: string;
-    // data is not typically returned for mark_all_as_read, just a success message
+  status: string;
+  message: string;
+  // data is not typically returned for mark_all_as_read, just a success message
 }
 
 // Add Volunteer Interface
@@ -230,7 +230,7 @@ export interface GetTaskApplicantsResponse {
 export interface UpdateVolunteerStatusResponse {
   status: string;
   message: string;
-  data: Volunteer; 
+  data: Volunteer;
 }
 
 export interface UpdateTaskPayload {
@@ -265,7 +265,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // 10 second timeout
+  timeout: 30000, // 30 second timeout
 });
 
 // Add a request interceptor to add auth token
@@ -302,11 +302,11 @@ api.interceptors.response.use(
         baseURL: error.config?.baseURL,
         fullURL: `${error.config?.baseURL}${error.config?.url}`,
         platform: Platform.OS,
-        suggestion: Platform.OS === 'android' 
+        suggestion: Platform.OS === 'android'
           ? 'Make sure backend is running and use 10.0.2.2 for Android emulator'
           : Platform.OS === 'ios'
-          ? 'Try using your LAN IP address instead of localhost for iOS simulator'
-          : 'Check if backend is accessible from your device'
+            ? 'Try using your LAN IP address instead of localhost for iOS simulator'
+            : 'Check if backend is accessible from your device'
       });
     }
     return Promise.reject(error);
@@ -337,18 +337,18 @@ export const register = async (
 ): Promise<RegisterResponse> => {
   try {
     console.log('Sending registration request to:', `${API_BASE_URL}/auth/register/`);
-    
+
     // Split full name into name and surname
     const nameParts = fullName.trim().split(' ');
     const name = nameParts[0];
     const surname = nameParts.slice(1).join(' ') || ''; // Use first name as surname if no surname provided
-    
+
     // Validate phone number format (10-15 digits, optional + prefix)
     const phoneRegex = /^\+?[0-9]{10,15}$/;
     if (!phoneRegex.test(phone)) {
       throw new Error('Phone number must be 10-15 digits with an optional + prefix');
     }
-    
+
     // Validate password requirements
     const passwordValidation = {
       length: password.length >= 8,
@@ -357,7 +357,7 @@ export const register = async (
       number: /[0-9]/.test(password),
       special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
     };
-    
+
     if (!Object.values(passwordValidation).every(Boolean)) {
       const missing = [];
       if (!passwordValidation.length) missing.push('at least 8 characters');
@@ -367,7 +367,7 @@ export const register = async (
       if (!passwordValidation.special) missing.push('a special character');
       throw new Error(`Password must contain ${missing.join(', ')}`);
     }
-    
+
     // Match backend's expected field order exactly
     const requestData = {
       name,
@@ -378,7 +378,7 @@ export const register = async (
       password,
       confirm_password: password
     };
-    
+
     console.log('Registration request data:', requestData);
     const response = await api.post<RegisterResponse>('/auth/register/', requestData);
     console.log('Registration response:', response.data);
@@ -392,11 +392,11 @@ export const register = async (
         status: error.response?.status,
         headers: error.response?.headers
       });
-      
+
       // Check for specific validation errors from backend
       if (error.response?.data?.data) {
         const errors = error.response.data.data;
-        
+
         // Password validation errors
         if (errors.password) {
           const passwordErrors = errors.password;
@@ -406,7 +406,7 @@ export const register = async (
             throw new Error(passwordErrors);
           }
         }
-        
+
         // Phone number validation errors
         if (errors.phone_number) {
           const phoneErrors = errors.phone_number;
@@ -416,7 +416,7 @@ export const register = async (
             throw new Error(phoneErrors);
           }
         }
-        
+
         // Username validation errors
         if (errors.username) {
           const usernameErrors = errors.username;
@@ -426,7 +426,7 @@ export const register = async (
             throw new Error(usernameErrors);
           }
         }
-        
+
         // Email validation errors
         if (errors.email) {
           const emailErrors = errors.email;
@@ -436,7 +436,7 @@ export const register = async (
             throw new Error(emailErrors);
           }
         }
-        
+
         // Name validation errors
         if (errors.name) {
           const nameErrors = errors.name;
@@ -446,7 +446,7 @@ export const register = async (
             throw new Error(nameErrors);
           }
         }
-        
+
         // Surname validation errors
         if (errors.surname) {
           const surnameErrors = errors.surname;
@@ -472,11 +472,11 @@ export const login = async (email: string, password: string): Promise<LoginRespo
       password
     });
     console.log('Response data:', response.data);
-    
+
     // Store the token from the response data
     if (response.data.data?.token) {
       await AsyncStorage.setItem('token', response.data.data.token);
-      
+
       // Fetch and store user profile
       if (response.data.data?.user_id) {
         const profileFromApi = await getUserProfile(response.data.data.user_id);
@@ -487,7 +487,7 @@ export const login = async (email: string, password: string): Promise<LoginRespo
         }
       }
     }
-    
+
     return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -498,11 +498,11 @@ export const login = async (email: string, password: string): Promise<LoginRespo
           code: error.code,
           attemptedURL: `${API_BASE_URL}/auth/login/`,
           platform: Platform.OS,
-          suggestion: Platform.OS === 'android' 
+          suggestion: Platform.OS === 'android'
             ? 'Android emulator needs 10.0.2.2 instead of localhost'
             : Platform.OS === 'ios'
-            ? 'iOS simulator may need your LAN IP instead of localhost'
-            : 'Check if backend is running and accessible'
+              ? 'iOS simulator may need your LAN IP instead of localhost'
+              : 'Check if backend is running and accessible'
         });
       } else {
         console.error('Login error details:', {
@@ -514,14 +514,14 @@ export const login = async (email: string, password: string): Promise<LoginRespo
           headers: error.response?.headers
         });
       }
-      
+
       // Provide more helpful error messages
       if (error.code === 'ECONNREFUSED' || error.message.includes('Network Error')) {
         const helpfulMessage = Platform.OS === 'android'
           ? 'Cannot connect to backend. Make sure backend is running and try using 10.0.2.2 if on Android emulator.'
           : Platform.OS === 'ios'
-          ? 'Cannot connect to backend. Try using your computer\'s LAN IP address instead of localhost.'
-          : 'Cannot connect to backend. Check if backend is running and accessible.';
+            ? 'Cannot connect to backend. Try using your computer\'s LAN IP address instead of localhost.'
+            : 'Cannot connect to backend. Check if backend is running and accessible.';
         throw new Error(helpfulMessage);
       }
     }
@@ -570,7 +570,7 @@ export const getUserProfile = async (userId: number): Promise<UserProfile> => {
   try {
     console.log('Fetching user profile for (expecting direct object):', userId);
     // Expect UserProfile directly as response.data
-    const response = await api.get<UserProfile>(`/users/${userId}/`); 
+    const response = await api.get<UserProfile>(`/users/${userId}/`);
     console.log('User profile response (direct object expected):', response.data);
     return response.data; // response.data should now be UserProfile
   } catch (error) {
@@ -679,7 +679,7 @@ export const getPopularTasks = async (limit: number = 6): Promise<Task[]> => {
       params: { limit },
     });
     console.log('Popular tasks response:', response.data);
-    
+
     // Handle different response formats
     if (response.data?.data && Array.isArray(response.data.data)) {
       return response.data.data as Task[];
@@ -800,13 +800,13 @@ export const createTask = async (taskData: {
     console.log('Creating task:', taskData);
     const response = await api.post('/tasks/', taskData);
     console.log('Create task response:', response.data);
-    
+
     // Backend returns { status, message, data: Task }
     // Extract the actual task from the nested structure
     if (response.data && typeof response.data === 'object' && 'data' in response.data) {
       return (response.data as any).data as Task;
     }
-    
+
     // Fallback: if response is directly a Task
     return response.data as Task;
   } catch (error) {
@@ -927,7 +927,7 @@ export const createReview = async (data: CreateReviewRequest): Promise<CreateRev
       // Extract detailed error message from backend
       const errorData = error.response?.data;
       let errMessage = 'Failed to create review.';
-      
+
       if (errorData?.message) {
         errMessage = errorData.message;
       } else if (errorData?.error) {
@@ -938,12 +938,12 @@ export const createReview = async (data: CreateReviewRequest): Promise<CreateRev
         // Try to extract validation errors
         const validationErrors = Object.values(errorData).flat();
         if (validationErrors.length > 0) {
-          errMessage = Array.isArray(validationErrors[0]) 
-            ? validationErrors[0][0] 
+          errMessage = Array.isArray(validationErrors[0])
+            ? validationErrors[0][0]
             : String(validationErrors[0]);
         }
       }
-      
+
       throw new Error(errMessage);
     }
     const errMessage = (error as Error).message || 'An unexpected error occurred while trying to create review.';
@@ -1061,7 +1061,7 @@ export const getTaskApplicants = async (taskId: number, status: string = 'PENDIN
       }
     });
     console.log(`Get task applicants for ${taskId} (status: ${status}) response:`, response.data);
-    return response.data; 
+    return response.data;
   } catch (error) {
     if (error instanceof AxiosError) {
       console.error(`Get task ${taskId} applicants error details:`, {
@@ -1257,7 +1257,7 @@ export const getTaskPhotos = async (taskId: number): Promise<TaskPhotosResponse>
         status: error.response?.status,
         headers: error.response?.headers,
       });
-      
+
       // If 404, it likely means no photos exist for this task yet - return empty array
       if (error.response?.status === 404) {
         console.log(`No photos found for task ${taskId}, returning empty array`);
@@ -1281,10 +1281,10 @@ export const uploadTaskPhoto = async (
   try {
     // Create FormData for multipart upload
     const formData = new FormData();
-    
+
     // Extract file extension from fileName or URI
     const fileExtension = fileName.split('.').pop()?.toLowerCase() || 'jpg';
-    
+
     // Determine MIME type based on file extension
     let mimeType = 'image/jpeg';
     if (fileExtension === 'png') {
@@ -1294,7 +1294,7 @@ export const uploadTaskPhoto = async (
     } else if (fileExtension === 'webp') {
       mimeType = 'image/webp';
     }
-    
+
     // Append the photo file to FormData
     // On React Native, we need to use a specific format for file uploads
     formData.append('photo', {

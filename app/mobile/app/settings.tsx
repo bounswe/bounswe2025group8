@@ -46,7 +46,7 @@ export default function Settings() {
         style: 'cancel',
       },
       {
-        text: 'Logout',
+        text: 'Confirm',
         style: 'destructive',
         onPress: async () => {
           try {
@@ -130,6 +130,7 @@ export default function Settings() {
         <TouchableOpacity
           style={[styles.logoutButton, { backgroundColor: themeColors.error, borderColor: themeColors.error }]}
           onPress={handleLogout}
+          testID="settings-logout-button"
         >
           <Ionicons name="log-out-outline" size={22} color={themeColors.card} />
           <Text style={[styles.logoutText, { color: themeColors.card }]}>Logout</Text>
