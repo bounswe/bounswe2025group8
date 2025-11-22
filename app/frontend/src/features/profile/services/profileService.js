@@ -42,11 +42,13 @@ export const getUserProfile = async (userId) => {
 /**
  * Fetch reviews for a user
  */
-export const getUserReviews = async (userId, page = 1, limit = 20, sort = 'createdAt', order = 'desc') => {
+export const getUserReviews = async (userId, page = 1, limit = 20, sort = 'createdAt', order = 'desc', role = null) => {
   try {
     if (!userId) throw new Error('User ID is required');
+    const params = { page, limit, sort, order };
+    if (role) params.role = role;
     const res = await api.get(`/users/${userId}/reviews/`, {
-      params: { page, limit, sort, order },
+      params,
     });
     return (res.data && res.data.data) ? res.data.data : res.data;
   } catch (error) {
