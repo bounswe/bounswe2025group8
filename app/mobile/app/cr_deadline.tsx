@@ -118,7 +118,7 @@ export default function CRDeadline() {
           }}
           testID="set-next-day-button"
         >
-          <Text style={[styles.nextBtnText, { color: colors.text }]}>Set Next Day (Test)</Text>
+          <Text style={[styles.nextBtnText, { color: colors.text }]}>Set Next Day </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
