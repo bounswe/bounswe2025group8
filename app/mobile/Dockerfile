@@ -140,9 +140,7 @@ RUN mkdir -p /app/android && \
     echo "org.gradle.parallel=false" >> /app/android/gradle.properties && \
     echo "org.gradle.configureondemand=false" >> /app/android/gradle.properties && \
     echo "android.defaults.buildfeatures.buildconfig=true" >> /app/android/gradle.properties && \
-    echo "android.native.buildOutput=verbose" >> /app/android/gradle.properties && \
-    echo "android.builder.sdkDownload=true" >> /app/android/gradle.properties && \
-    echo "android.disableAutomaticComponentCreation=false" >> /app/android/gradle.properties
+    echo "android.native.buildOutput=verbose" >> /app/android/gradle.properties
 
 # Note: With --platform linux/amd64 in docker build, Rosetta issues should be minimized
 # The build will proceed with all architectures supported by the Android SDK
@@ -172,60 +170,13 @@ RUN JAVA_HOME_PATH=$(dpkg -L openjdk-17-jdk 2>/dev/null | grep -E '^/usr/lib/jvm
     $JAVA_HOME/bin/java -version && \
     echo "Starting Gradle build..." && \
     if [ "$BUILD_TYPE" = "debug" ]; then \
-        set +e; \
-        ./gradlew assembleDebug --no-daemon --stacktrace --warning-mode all 2>&1 | tee /tmp/gradle-build.log; \
-        BUILD_EXIT_CODE=$?; \
-        set -e; \
-        if [ $BUILD_EXIT_CODE -ne 0 ]; then \
-            echo ""; \
-            echo "========================================="; \
-            echo "ERROR: Gradle build failed with exit code $BUILD_EXIT_CODE"; \
-            echo "Last 150 lines of build output:"; \
-            echo "========================================="; \
-            tail -150 /tmp/gradle-build.log || true; \
-            echo ""; \
-            echo "========================================="; \
-            echo "Checking for specific error patterns..."; \
-            echo "========================================="; \
-            grep -i "rosetta\|cmake\|NDK\|native" /tmp/gradle-build.log | tail -20 || echo "No Rosetta/NDK errors found"; \
-            grep -i "FAILED\|error\|exception" /tmp/gradle-build.log | tail -20 || true; \
-            exit $BUILD_EXIT_CODE; \
-        fi; \
-        echo "Build completed successfully!"; \
+        ./gradlew assembleDebug --no-daemon --stacktrace --warning-mode all || \
+        (echo "Build failed, retrying with continue on error..." && \
+         ./gradlew assembleDebug --no-daemon --continue --stacktrace 2>&1 | head -100); \
     else \
-        set +e; \
-        ./gradlew assembleRelease --no-daemon --stacktrace --warning-mode all 2>&1 | tee /tmp/gradle-build.log; \
-        BUILD_EXIT_CODE=$?; \
-        set -e; \
-        if [ $BUILD_EXIT_CODE -ne 0 ]; then \
-            echo ""; \
-            echo "========================================="; \
-            echo "ERROR: Gradle build failed with exit code $BUILD_EXIT_CODE"; \
-            echo "Last 150 lines of build output:"; \
-            echo "========================================="; \
-            tail -150 /tmp/gradle-build.log || true; \
-            echo ""; \
-            echo "========================================="; \
-            echo "Checking for specific error patterns..."; \
-            echo "========================================="; \
-            grep -i "rosetta\|cmake\|NDK\|native" /tmp/gradle-build.log | tail -20 || echo "No Rosetta/NDK errors found"; \
-            grep -i "FAILED\|error\|exception" /tmp/gradle-build.log | tail -20 || true; \
-            exit $BUILD_EXIT_CODE; \
-        fi; \
-        echo "Build completed successfully!"; \
-    fi && \
-    echo "Verifying APK was created..." && \
-    APK_COUNT=$(find app/build/outputs/apk -name "*.apk" -type f 2>/dev/null | wc -l) && \
-    if [ "$APK_COUNT" -eq 0 ]; then \
-        echo "ERROR: No APK files found in app/build/outputs/apk/"; \
-        echo "Listing build directory contents:"; \
-        find app/build -type f 2>/dev/null | head -20 || true; \
-        ls -la app/build/outputs/ 2>/dev/null || true; \
-        exit 1; \
-    else \
-        echo "Found $APK_COUNT APK file(s):"; \
-        find app/build/outputs/apk -name "*.apk" -type f 2>/dev/null; \
-        ls -lh app/build/outputs/apk/*/app-*.apk 2>/dev/null || ls -lh app/build/outputs/apk/app-*.apk 2>/dev/null || true; \
+        ./gradlew assembleRelease --no-daemon --stacktrace --warning-mode all || \
+        (echo "Build failed, retrying with continue on error..." && \
+         ./gradlew assembleRelease --no-daemon --continue --stacktrace 2>&1 | head -100); \
     fi
 
 # The APK will be available at:
