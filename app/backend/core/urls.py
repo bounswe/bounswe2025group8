@@ -1,9 +1,9 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .api.views import (
-    user_views, auth_views, task_views, volunteer_views, 
-    review_views, bookmark_views, notification_views, 
-    photo_views, admin_views, comment_views
+    user_views, auth_views, task_views, volunteer_views,
+    review_views, bookmark_views, notification_views,
+    photo_views, admin_views, comment_views, report_views
 )
 
 # Create a router and register our viewsets
@@ -15,6 +15,8 @@ router.register(r'reviews', review_views.ReviewViewSet)
 router.register(r'bookmarks', bookmark_views.BookmarkViewSet)
 router.register(r'notifications', notification_views.NotificationViewSet)
 router.register(r'comments', comment_views.CommentViewSet)
+router.register(r'task-reports', report_views.TaskReportViewSet, basename='task-report')
+router.register(r'user-reports', report_views.UserReportViewSet, basename='user-report')
 
 # URLs that don't use the router
 urlpatterns = [
