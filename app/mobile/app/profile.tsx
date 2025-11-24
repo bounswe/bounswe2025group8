@@ -554,7 +554,7 @@ export default function ProfileScreen() {
                 rating={review.score}
                 comment={review.comment}
                 timestamp={new Date(review.timestamp).toLocaleDateString()}
-                avatarUrl={review.reviewer.photo}
+                avatarUrl={review.reviewer.profile_photo || review.reviewer.photo}
               />
             ))}
         </View>
