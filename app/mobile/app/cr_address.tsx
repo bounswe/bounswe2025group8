@@ -47,6 +47,7 @@ export default function CRAddress() {
       const people = parseInt(params.people as string) || 1;
       const deadline =
         (params.deadline as string) || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      const deadlineDate = new Date(deadline);
 
       if (!title || !taskDescription || !category) {
         Alert.alert('Error', 'Missing task data. Please go back and try again.');
@@ -54,8 +55,20 @@ export default function CRAddress() {
         return;
       }
 
-      if (!address.city || !address.district) {
-        Alert.alert('Error', 'Please select a city and district for the address.');
+      if (Number.isNaN(deadlineDate.getTime())) {
+        Alert.alert('Error', 'Invalid deadline. Please pick a valid deadline.');
+        setUploading(false);
+        return;
+      }
+
+      if (deadlineDate.getTime() <= Date.now()) {
+        Alert.alert('Invalid Deadline', 'Please select a future date and time.');
+        setUploading(false);
+        return;
+      }
+
+      if (!address.country || !address.state || !address.city) {
+        Alert.alert('Error', 'Please select a country, state and city for the address.');
         return;
       }
 
