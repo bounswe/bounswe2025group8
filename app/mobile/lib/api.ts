@@ -40,10 +40,13 @@ const API_HOST = Platform.select({
   default: LOCAL_LAN_IP,      // Physical devices: use LAN IP
 });
 
-// For local development, use dynamic host detection
-// For production, comment out the line below and uncomment the hardcoded Production URL
-//export const BACKEND_BASE_URL = `http://35.222.191.20:${port}`; // Production URL
-export const BACKEND_BASE_URL = `http://${API_HOST}:${port}`;
+// Check for production API URL from environment variables first
+const productionApiUrl = Constants.expoConfig?.extra?.productionApiUrl;
+const BACKEND_BASE_URL = productionApiUrl 
+  ? productionApiUrl 
+  : `http://${API_HOST}:${port}`;
+
+export { BACKEND_BASE_URL };
 
 export const API_BASE_URL = `${BACKEND_BASE_URL}/api`;
 

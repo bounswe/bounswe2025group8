@@ -1,8 +1,10 @@
-# Welcome to your Expo app 👋
+# Mobile Application
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+This is a React Native mobile application built with [Expo](https://expo.dev).
 
-## Get started
+## Quick Start
+
+### Development
 
 1. Install dependencies
 
@@ -24,6 +26,38 @@ In the output, you'll find options to open the app in a
 - [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+
+## Building Android APK
+
+This project uses Docker to build Android APK files without requiring Expo EAS or local Android SDK setup.
+
+### Prerequisites
+
+- Docker installed and running
+- Environment variables configured (see `.env.example`)
+
+### Quick Build
+
+1. **Configure environment variables:**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your API configuration
+   ```
+
+2. **Build the APK:**
+   ```bash
+   # For development (debug) build
+   ./build.sh
+   
+   # For production (release) build
+   BUILD_TYPE=release ./build.sh
+   ```
+
+3. **Find your APK:**
+   - Debug: `build/outputs/apk/app-debug.apk`
+   - Release: `build/outputs/apk/app-release.apk`
+
+For detailed build instructions, troubleshooting, and advanced options, see **[BUILD.md](./BUILD.md)**.
 
 ## Get a fresh project
 
