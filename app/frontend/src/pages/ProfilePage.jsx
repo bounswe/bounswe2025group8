@@ -49,6 +49,7 @@ import RequestCard from "../components/RequestCard";
 import ReviewCard from "../components/ReviewCard";
 import Badge from "../components/Badge";
 import EditProfileDialog from "../components/EditProfileDialog";
+import RatingCategoriesModal from "../components/RatingCategoriesModal";
 import { useTheme } from "../hooks/useTheme";
 import { toAbsoluteUrl } from "../utils/url";
 // No need for CSS module import as we're using Material UI's sx prop
@@ -127,7 +128,8 @@ const ProfilePage = () => {
   const [reviewPage, setReviewPage] = useState(1);
   const [reviewsPerPage] = useState(5);
   const [refreshData, setRefreshData] = useState(false);
-  const [editProfileOpen, setEditProfileOpen] = useState(false); // Empty array for badges since we'll use API data
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [ratingCategoriesOpen, setRatingCategoriesOpen] = useState(false); // Empty array for badges since we'll use API data
   const [mockBadges] = useState([]);
 
   const loadProfileData = useCallback(async () => {
@@ -621,13 +623,20 @@ const ProfilePage = () => {
                     }}
                   />
                   <Chip
-                    label={`${user.rating} (${
-                      user.reviewCount || reviews.length
+                    label={`${(
+                      Math.round((user.rating || 0) * 10) / 10
+                    ).toFixed(1)} (${
+                      user.reviewCount || reviews?.reviews?.length || 0
                     } reviews)`}
+                    onClick={() => setRatingCategoriesOpen(true)}
                     sx={{
                       backgroundColor: colors.brand.primary,
                       color: colors.text.inverted,
                       "& .MuiChip-label": { px: 2 },
+                      cursor: "pointer",
+                      "&:hover": {
+                        backgroundColor: colors.brand.secondary,
+                      },
                     }}
                   />
                 </Box>
@@ -960,9 +969,9 @@ const ProfilePage = () => {
                 Reviews
               </Typography>
               <Chip
-                label={`${user.rating || 0} (${
-                  reviews?.reviews?.length || 0
-                } reviews)`}
+                label={`${(Math.round((user.rating || 0) * 10) / 10).toFixed(
+                  1
+                )} (${reviews?.reviews?.length || 0} reviews)`}
                 size="small"
                 sx={{
                   backgroundColor: colors.brand.primary,
@@ -1027,6 +1036,14 @@ const ProfilePage = () => {
           setRefreshData(true);
         }}
         user={user}
+      />
+
+      {/* Rating Categories Modal */}
+      <RatingCategoriesModal
+        open={ratingCategoriesOpen}
+        onClose={() => setRatingCategoriesOpen(false)}
+        user={user}
+        role={roleTab === 0 ? "volunteer" : "requester"}
       />
     </Box>
   );

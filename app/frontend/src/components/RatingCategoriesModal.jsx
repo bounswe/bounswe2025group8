@@ -69,24 +69,32 @@ const RatingCategoriesModal = ({ open, onClose, user, role = "volunteer" }) => {
   // Get rating value for a category (with fallback to overall rating)
   const getCategoryRating = (categoryKey) => {
     // Try to get from user's rating breakdown if available
+    let rating = 0;
     if (user?.rating_breakdown && user.rating_breakdown[categoryKey]) {
-      return user.rating_breakdown[categoryKey];
+      rating = user.rating_breakdown[categoryKey];
+    } else {
+      // Fallback to overall rating
+      rating = user?.rating || 0;
     }
-    // Fallback to overall rating
-    return user?.rating || 0;
+    // Round to 1 decimal place
+    return Math.round(rating * 10) / 10;
   };
 
   // Calculate overall average from categories
   const calculateOverallRating = () => {
+    let rating = 0;
     if (user?.rating_breakdown) {
       const values = categories
         .map((cat) => user.rating_breakdown[cat.key])
         .filter((val) => val != null);
       if (values.length > 0) {
-        return values.reduce((sum, val) => sum + val, 0) / values.length;
+        rating = values.reduce((sum, val) => sum + val, 0) / values.length;
       }
+    } else {
+      rating = user?.rating || 0;
     }
-    return user?.rating || 0;
+    // Round to 1 decimal place
+    return Math.round(rating * 10) / 10;
   };
 
   const overallRating = calculateOverallRating();

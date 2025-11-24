@@ -240,7 +240,14 @@ const RatingReviewModal = ({
           (user) => user.id !== reviewed.id && !user.reviewed
         );
         if (remainingUsers.length === 0) {
-          setTimeout(() => onClose(), 500);
+          // Close the modal after all users have been reviewed
+          onClose();
+        } else {
+          // Auto-select next user if available
+          const nextUser = remainingUsers[0];
+          if (nextUser) {
+            setSelectedUser(nextUser);
+          }
         }
       }, 1500);
     } catch (err) {
@@ -311,11 +318,7 @@ const RatingReviewModal = ({
       <DialogContent sx={{ pt: 1 }}>
         {/* Success Message */}
         {success && (
-          <Alert
-            severity="success"
-            sx={{ mb: 2 }}
-            onClose={() => setSuccess(false)}
-          >
+          <Alert severity="success" sx={{ mb: 2 }}>
             Review submitted successfully!
           </Alert>
         )}
