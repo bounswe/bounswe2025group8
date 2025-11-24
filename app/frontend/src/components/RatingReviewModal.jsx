@@ -205,8 +205,6 @@ const RatingReviewModal = ({
         }
       }
 
-      setSuccess(true);
-
       // Mark the user as reviewed in our local state
       setAllUsersWithStatus((prevUsers) =>
         prevUsers.map((user) =>
@@ -219,37 +217,42 @@ const RatingReviewModal = ({
         prevUsers.filter((user) => user.id !== selectedUser.id)
       );
 
-      // Clear selected user and form fields
+      // Store reviewed user info before clearing
       const reviewed = selectedUser;
-      setSelectedUser(null);
-      setRating(3.0);
-      setComment("");
-      setDimensionRatings({});
-      setPrivateFeedback("");
 
       // Call success callback if provided
       if (onSubmitSuccess) {
         onSubmitSuccess(reviewed, finalScore, publicComment);
       }
 
-      // Show success briefly then reset
-      setTimeout(() => {
-        setSuccess(false);
+      // Check if there are more users to review
+      const remainingUsers = allUsersWithStatus.filter(
+        (user) => user.id !== reviewed.id && !user.reviewed
+      );
 
-        const remainingUsers = allUsersWithStatus.filter(
-          (user) => user.id !== reviewed.id && !user.reviewed
-        );
-        if (remainingUsers.length === 0) {
-          // Close the modal after all users have been reviewed
-          onClose();
-        } else {
-          // Auto-select next user if available
+      if (remainingUsers.length === 0) {
+        // No more users to review - close the modal immediately
+        onClose();
+      } else {
+        // Show brief success message then auto-select next user
+        setSuccess(true);
+
+        setTimeout(() => {
+          setSuccess(false);
+
+          // Clear form fields
+          setRating(3.0);
+          setComment("");
+          setDimensionRatings({});
+          setPrivateFeedback("");
+
+          // Auto-select next user
           const nextUser = remainingUsers[0];
           if (nextUser) {
             setSelectedUser(nextUser);
           }
-        }
-      }, 1500);
+        }, 1000);
+      }
     } catch (err) {
       console.error("Error submitting review (aggregated):", err);
       const errorMessage =

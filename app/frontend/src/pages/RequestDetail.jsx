@@ -298,7 +298,9 @@ const RequestDetail = () => {
           style={{ borderColor: colors.brand.primary }}
           aria-hidden="true"
         ></div>
-        <p style={{ color: colors.text.secondary }}>Loading request details...</p>
+        <p style={{ color: colors.text.secondary }}>
+          Loading request details...
+        </p>
       </div>
     );
   }
@@ -964,7 +966,19 @@ const RequestDetail = () => {
             <div className="p-6 flex flex-col justify-between">
               {/* Requester Info */}
               <div
-                className="flex items-center mb-6 p-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                className="flex items-center mb-6 p-3 rounded-lg cursor-pointer transition-colors"
+                style={{
+                  "&:hover": {
+                    backgroundColor: colors.background.tertiary,
+                  },
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor =
+                    colors.background.tertiary;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }}
                 onClick={() => navigate(`/profile/${request.creator.id}`)}
                 role="link"
                 tabIndex={0}
@@ -990,7 +1004,10 @@ const RequestDetail = () => {
                   )}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3
+                    className="text-lg font-semibold"
+                    style={{ color: colors.text.primary }}
+                  >
                     {request.creator.name} {request.creator.surname}
                   </h3>
                   <p
