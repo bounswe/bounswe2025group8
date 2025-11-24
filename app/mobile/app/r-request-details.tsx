@@ -738,7 +738,9 @@ export default function RequestDetails() {
                   <Image
                     source={
                       (volunteer.user.profile_photo || volunteer.user.photo)
-                        ? { uri: volunteer.user.profile_photo || volunteer.user.photo } 
+                        ? { uri: (volunteer.user.profile_photo || volunteer.user.photo).startsWith('http')
+                            ? volunteer.user.profile_photo || volunteer.user.photo
+                            : `${BACKEND_BASE_URL}${volunteer.user.profile_photo || volunteer.user.photo}` } 
                         : require('../assets/images/empty_profile_photo.png')
                     }
                     style={[styles.volunteerAvatar, { backgroundColor: themeColors.border }]}

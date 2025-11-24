@@ -688,17 +688,21 @@ export default function RequestDetailsVolunteer() {
           >
             {(() => {
               const photoUrl = request.creator?.profile_photo || request.creator?.photo;
+              const absolutePhotoUrl = photoUrl
+                ? (photoUrl.startsWith('http') ? photoUrl : `${BACKEND_BASE_URL}${photoUrl}`)
+                : null;
               console.log('[v-request-details] Rendering avatar Image:', {
                 creatorId: request.creator?.id,
                 creatorName: request.creator?.name,
                 photoUrl,
+                absolutePhotoUrl,
                 hasPhoto: !!photoUrl
               });
               return (
                 <Image
                   source={
-                    photoUrl
-                      ? { uri: photoUrl }
+                    absolutePhotoUrl
+                      ? { uri: absolutePhotoUrl }
                       : require('../assets/images/empty_profile_photo.png')
                   }
                   style={[styles.avatar, { backgroundColor: themeColors.gray }]}
