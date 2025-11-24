@@ -1,10 +1,22 @@
 import React from "react";
 import { Box, Typography, Avatar, Rating, Paper } from "@mui/material";
-import { formatDate, formatRelativeTime } from "../utils/dateUtils";
+import { formatDate } from "../utils/dateUtils";
 import { useTheme } from "../hooks/useTheme";
+import { toAbsoluteUrl } from "../utils/url";
 
 const ReviewCard = ({ review }) => {
   const { colors } = useTheme();
+  const reviewerPhoto =
+    toAbsoluteUrl(
+      review.reviewer?.profile_photo ||
+        review.reviewer?.profilePhoto ||
+        review.reviewer?.profilePicture ||
+        review.reviewer?.photo ||
+        review.reviewer?.avatar
+    ) ||
+    `https://randomuser.me/api/portraits/men/${Math.floor(
+      Math.random() * 100
+    )}.jpg`;
 
   return (
     <Paper
@@ -20,12 +32,7 @@ const ReviewCard = ({ review }) => {
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Avatar
-            src={
-              review.reviewer?.profilePicture ||
-              `https://randomuser.me/api/portraits/men/${Math.floor(
-                Math.random() * 100
-              )}.jpg`
-            }
+            src={reviewerPhoto}
             alt={review.reviewer?.name || "User"}
             sx={{
               border: `2px solid ${colors.border.primary}`,

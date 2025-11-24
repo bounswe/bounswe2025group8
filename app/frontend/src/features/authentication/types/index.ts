@@ -80,6 +80,8 @@ export interface AuthUser {
   surname?: string;
   username?: string;
   phone?: string;
+  profile_photo?: string | null;
+  profilePhoto?: string | null;
   profilePicture?: string | null;
   rating?: number;
 }

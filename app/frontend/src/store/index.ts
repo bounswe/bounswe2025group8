@@ -5,6 +5,7 @@ import allRequestsReducer from '../features/request/store/allRequestsSlice'
 import profileReducer from '../features/profile/store/profileSlice'
 import editProfileReducer from '../features/profile/store/editProfileSlice'
 import adminReducer from '../features/admin/store/adminSlice'
+import notificationReducer from '../features/notification/store/notificationSlice'
 
 const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ const store = configureStore({
     profile: profileReducer,
     editProfile: editProfileReducer,
     admin: adminReducer,
+    notification: notificationReducer,
   },
 })
 

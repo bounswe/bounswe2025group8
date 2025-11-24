@@ -76,6 +76,7 @@ const LoginPage = () => {
           value={theme}
           onChange={(e) => setTheme(e.target.value)}
           className="px-3 py-2 rounded-md border text-sm focus:outline-none"
+          aria-label="Theme selection"
           style={{
             backgroundColor: colors.background.secondary,
             color: colors.text.primary,
@@ -92,13 +93,18 @@ const LoginPage = () => {
         </select>
       </div>
 
-      <div className="w-full max-w-md">
+      <main
+        role="main"
+        aria-labelledby="login-page-title"
+        className="w-full max-w-md"
+      >
         {/* Logo and Title updated to be side by side */}
         <div className="flex flex-row items-center justify-center mb-1">
           <img src={logoImage} alt="Logo" width="160" height="160" />
           <h1
             className="text-4xl font-bold ml-2"
             style={{ color: colors.text.primary }}
+            id="login-page-title"
           >
             Neighborhood
             <br />
@@ -182,6 +188,8 @@ const LoginPage = () => {
                     borderColor: colors.semantic.success,
                     color: colors.semantic.success,
                   }}
+                  role="alert"
+                  aria-live="assertive"
                 >
                   Registration successful! You can now log in with your
                   credentials.
@@ -190,18 +198,31 @@ const LoginPage = () => {
 
               {/* Show either the login error or the Redux error */}
               {(loginError || error) && (
-                <p className="mb-4" style={{ color: colors.semantic.error }}>
+                <p
+                  className="mb-4"
+                  style={{ color: colors.semantic.error }}
+                  role="alert"
+                  aria-live="assertive"
+                >
                   {loginError || error}
                 </p>
               )}
 
-              <form onSubmit={handleSubmit} noValidate className="w-full">
+              <form
+                onSubmit={handleSubmit}
+                noValidate
+                className="w-full"
+                aria-describedby={
+                  loginError || error ? "login-error" : undefined
+                }
+              >
                 <div className="mb-4">
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <img
                         src={mailIcon}
-                        alt="Email"
+                        alt=""
+                        aria-hidden="true"
                         width="16"
                         height="16"
                         style={{
@@ -212,6 +233,23 @@ const LoginPage = () => {
                         }}
                       />
                     </div>
+                    <label
+                      htmlFor="email"
+                      className="sr-only"
+                      style={{
+                        position: "absolute",
+                        width: 1,
+                        height: 1,
+                        padding: 0,
+                        margin: -1,
+                        overflow: "hidden",
+                        clip: "rect(0, 0, 0, 0)",
+                        whiteSpace: "nowrap",
+                        border: 0,
+                      }}
+                    >
+                      Email
+                    </label>
                     <input
                       type="email"
                       id="email"
@@ -232,6 +270,7 @@ const LoginPage = () => {
                         (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
                       }
                       onBlur={(e) => (e.target.style.boxShadow = "none")}
+                      aria-required="true"
                     />
                   </div>
                 </div>
@@ -241,7 +280,8 @@ const LoginPage = () => {
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <img
                         src={lockIcon}
-                        alt="Password"
+                        alt=""
+                        aria-hidden="true"
                         width="16"
                         height="16"
                         style={{
@@ -252,6 +292,23 @@ const LoginPage = () => {
                         }}
                       />
                     </div>
+                    <label
+                      htmlFor="password"
+                      className="sr-only"
+                      style={{
+                        position: "absolute",
+                        width: 1,
+                        height: 1,
+                        padding: 0,
+                        margin: -1,
+                        overflow: "hidden",
+                        clip: "rect(0, 0, 0, 0)",
+                        whiteSpace: "nowrap",
+                        border: 0,
+                      }}
+                    >
+                      Password
+                    </label>
                     <input
                       type={showPassword ? "text" : "password"}
                       id="password"
@@ -271,12 +328,16 @@ const LoginPage = () => {
                         (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
                       }
                       onBlur={(e) => (e.target.style.boxShadow = "none")}
+                      aria-required="true"
                     />
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="focus:outline-none"
+                        aria-label={
+                          showPassword ? "Hide password" : "Show password"
+                        }
                         style={{ color: colors.text.tertiary }}
                         onMouseOver={(e) =>
                           (e.currentTarget.style.color = colors.text.secondary)
@@ -381,7 +442,7 @@ const LoginPage = () => {
             Continue as a guest
           </RouterLink>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

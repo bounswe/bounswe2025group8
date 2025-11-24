@@ -35,13 +35,16 @@ import {
   fetchUserBadges,
   uploadProfilePicture,
   clearUpdateSuccess,
+  clearUploadSuccess,
 } from "../features/profile/store/profileSlice";
 import {
   selectUpdateSuccess,
   clearSuccess as clearEditProfileSuccess,
   fetchCurrentUserProfile,
   updateUserLocally,
+  selectUploadSuccess as selectEditUploadSuccess,
 } from "../features/profile/store/editProfileSlice";
+import { updateUserProfile as updateAuthUser } from "../features/authentication/store/authSlice";
 import RequestCard from "../components/RequestCard";
 import ReviewCard from "../components/ReviewCard";
 import Badge from "../components/Badge";
@@ -160,11 +163,14 @@ const ProfilePage = () => {
       await dispatch(fetchUserProfile(currentId)).unwrap();
 
       // Use object parameter for reviews to pass pagination info
+      // Determine role based on roleTab: 0 = volunteer, 1 = requester
+      const reviewRole = roleTab === 0 ? "volunteer" : "requester";
       await dispatch(
         fetchUserReviews({
           userId: currentId,
           page: reviewPage,
           limit: reviewsPerPage,
+          role: reviewRole,
         })
       ).unwrap();
       // For requester tab (roleTab = 1), fetch created tasks with appropriate status
@@ -224,6 +230,10 @@ const ProfilePage = () => {
   // Close edit profile dialog and refresh data when update is successful
   const { updateSuccess } = useSelector((state) => state.profile);
   const editProfileUpdateSuccess = useSelector(selectUpdateSuccess);
+  const editProfileUploadSuccess = useSelector(selectEditUploadSuccess);
+  const profileUploadSuccess = useSelector(
+    (state) => state.profile?.uploadSuccess
+  );
 
   useEffect(() => {
     if (updateSuccess) {
@@ -242,6 +252,32 @@ const ProfilePage = () => {
     }
   }, [editProfileUpdateSuccess, dispatch]);
 
+  // Refresh profile when profile photo upload succeeds (either from profile or edit dialog)
+  useEffect(() => {
+    if (editProfileUploadSuccess || profileUploadSuccess) {
+      const refreshId =
+        effectiveProfileId ||
+        effectiveLoggedInId ||
+        localStorage.getItem("userId");
+      if (refreshId) {
+        dispatch(fetchUserProfile(refreshId));
+        dispatch(fetchCurrentUserProfile());
+      }
+      if (profileUploadSuccess) {
+        dispatch(clearUploadSuccess());
+      }
+      if (editProfileUploadSuccess) {
+        dispatch(clearEditProfileSuccess());
+      }
+    }
+  }, [
+    editProfileUploadSuccess,
+    profileUploadSuccess,
+    dispatch,
+    effectiveProfileId,
+    effectiveLoggedInId,
+  ]);
+
   // Update review page when user changes
   useEffect(() => {
     if (userId) {
@@ -255,9 +291,38 @@ const ProfilePage = () => {
       dispatch(updateUserLocally(user));
     }
   }, [user, canEdit, dispatch]);
+
+  // Sync new profile photo into auth slice so sidebar/footer avatar updates without refresh
+  useEffect(() => {
+    if (!canEdit) return;
+    const newPhoto =
+      user?.profile_photo || user?.profilePhoto || user?.profilePicture;
+    if (!newPhoto) return;
+    const authPhoto =
+      auth?.user?.profile_photo ||
+      auth?.user?.profilePhoto ||
+      auth?.user?.profilePicture;
+    if (newPhoto !== authPhoto) {
+      dispatch(
+        updateAuthUser({
+          profile_photo: newPhoto,
+          profilePhoto: newPhoto,
+          profilePicture: newPhoto,
+        })
+      );
+    }
+  }, [
+    canEdit,
+    user?.profile_photo,
+    user?.profilePhoto,
+    user?.profilePicture,
+    auth?.user,
+    dispatch,
+  ]);
   const handleRoleChange = (event, newValue) => {
     setRoleTab(newValue);
     setRequestsTab(0); // Reset to active requests whenever role changes
+    setReviewPage(1); // Reset to first page of reviews when role changes
     // No need to trigger data reload here, as the effect hook will handle it
   };
 
@@ -273,11 +338,13 @@ const ProfilePage = () => {
     const currentId = userId || localStorage.getItem("userId");
 
     if (currentId) {
+      const reviewRole = roleTab === 0 ? "volunteer" : "requester";
       dispatch(
         fetchUserReviews({
           userId: currentId,
           page: value,
           limit: reviewsPerPage,
+          role: reviewRole,
         })
       );
     } else {
@@ -347,6 +414,21 @@ const ProfilePage = () => {
   const earnedBadges = badgesToUse.filter((badge) => badge.earned);
   const inProgressBadges = badgesToUse.filter((badge) => !badge.earned);
 
+  // Get initials from name and surname for fallback avatar
+  const getInitials = () => {
+    const name = user?.name || "";
+    const surname = user?.surname || "";
+
+    if (name && surname) {
+      return `${name.charAt(0)}${surname.charAt(0)}`.toUpperCase();
+    } else if (name) {
+      return name.charAt(0).toUpperCase();
+    } else if (user?.username) {
+      return user.username.charAt(0).toUpperCase();
+    }
+    return "U";
+  };
+
   // Handler for profile picture upload
   const handleProfilePictureUpload = (event) => {
     const file = event.target.files[0];
@@ -365,6 +447,9 @@ const ProfilePage = () => {
           height: "100vh",
           backgroundColor: colors.background.primary,
         }}
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
       >
         <CircularProgress sx={{ color: colors.brand.primary }} />
       </Box>
@@ -380,6 +465,8 @@ const ProfilePage = () => {
           backgroundColor: colors.background.primary,
           minHeight: "100vh",
         }}
+        role="alert"
+        aria-live="assertive"
       >
         <Typography
           variant="h6"
@@ -402,6 +489,7 @@ const ProfilePage = () => {
               backgroundColor: colors.brand.secondary,
             },
           }}
+          aria-label="Retry loading profile"
         >
           Retry
         </Button>
@@ -418,7 +506,12 @@ const ProfilePage = () => {
       }}
     >
       {/* Main content */}
-      <Box component="main" sx={{ flexGrow: 1, p: 3, overflow: "auto" }}>
+      <Box
+        component="main"
+        role="main"
+        aria-labelledby="profile-page-title"
+        sx={{ flexGrow: 1, p: 3, overflow: "auto" }}
+      >
         <Container maxWidth="lg">
           {/* Profile header */}
           <Box
@@ -431,11 +524,31 @@ const ProfilePage = () => {
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <Box sx={{ position: "relative" }}>
-                <Avatar
-                  src={user.profilePicture}
-                  alt={user.name}
-                  sx={{ width: 80, height: 80 }}
-                />
+                {toAbsoluteUrl(
+                  user.profile_photo || user.profilePhoto || user.profilePicture
+                ) ? (
+                  <Avatar
+                    src={toAbsoluteUrl(
+                      user.profile_photo ||
+                        user.profilePhoto ||
+                        user.profilePicture
+                    )}
+                    alt={user.name}
+                    sx={{ width: 80, height: 80 }}
+                  />
+                ) : (
+                  <Avatar
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      backgroundColor: colors.brand.primary,
+                      fontSize: "2rem",
+                      fontWeight: "semibold",
+                    }}
+                  >
+                    {getInitials()}
+                  </Avatar>
+                )}
                 {/* Only show edit button for current user's profile */}
                 {(() => {
                   // Get logged-in user ID with fallback to user object if direct ID is not available
@@ -471,6 +584,7 @@ const ProfilePage = () => {
                         backgroundColor: "rgba(255,255,255,0.8)",
                         "&:hover": { backgroundColor: "rgba(255,255,255,0.9)" },
                       }}
+                      aria-label="Upload profile picture"
                     >
                       <input
                         type="file"
@@ -488,6 +602,7 @@ const ProfilePage = () => {
                   variant="h5"
                   component="h1"
                   sx={{ textAlign: "left", color: colors.text.primary }}
+                  id="profile-page-title"
                 >
                   {user.name} {user.surname}
                 </Typography>
@@ -537,6 +652,7 @@ const ProfilePage = () => {
                   textTransform: "none",
                   fontWeight: 500,
                 }}
+                aria-label="Edit profile"
               >
                 Edit Profile
               </Button>
@@ -571,6 +687,7 @@ const ProfilePage = () => {
                     color: colors.text.inverted,
                   },
                 }}
+                aria-label={`Earned badges: ${earnedBadges.length}`}
               />
             </Box>
 
@@ -695,7 +812,10 @@ const ProfilePage = () => {
                 <IconButton
                   onClick={() => handleRequestTabChange(0)}
                   sx={{ mr: -1 }}
-                ></IconButton>
+                  aria-label="Back to active requests"
+                >
+                  <ArrowBack fontSize="small" />
+                </IconButton>
               )}
               <Typography
                 variant="h6"
