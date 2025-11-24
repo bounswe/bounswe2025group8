@@ -3,27 +3,34 @@ import { authStorage } from '../features/authentication/utils';
 
 // Determine API base URL dynamically based on current origin
 function getApiBaseUrl(): string {
-  const envUrl = import.meta.env.VITE_API_URL;
+  const currentOrigin = window.location.origin;
   
-  // If VITE_API_URL is explicitly set, use it
-  if (envUrl) {
-    // Check if we're accessing via IP address
-    const currentOrigin = window.location.origin;
-    const isIpAddress = /^https?:\/\/(\d{1,3}\.){3}\d{1,3}(:\d+)?$/.test(currentOrigin);
-    
-    // If accessing via IP, use IP for backend too
-    if (isIpAddress) {
-      const ipMatch = currentOrigin.match(/^https?:\/\/([\d.]+)(:\d+)?/);
-      if (ipMatch) {
-        const ip = ipMatch[1];
-        return `http://${ip}:8000/api`;
-      }
-    }
-    
-    return envUrl;
+  console.log('Current origin:', currentOrigin);
+  
+  // If we're on production domain (neighborhelp.webhop.me), use production API
+  if (currentOrigin.includes('neighborhelp.webhop.me')) {
+    console.log('Using production API URL');
+    return 'https://neighborhelp.webhop.me/api';
   }
   
-  // Fallback to localhost
+  // Check if we're accessing via IP address
+  const isIpAddress = /^https?:\/\/(\d{1,3}\.){3}\d{1,3}(:\d+)?$/.test(currentOrigin);
+  
+  console.log('Is IP address?', isIpAddress);
+  
+  // If accessing via IP, use IP for backend too
+  if (isIpAddress) {
+    const ipMatch = currentOrigin.match(/^https?:\/\/([\d.]+)(:\d+)?/);
+    if (ipMatch) {
+      const ip = ipMatch[1];
+      const apiUrl = `http://${ip}:8000/api`;
+      console.log('Using IP-based API URL:', apiUrl);
+      return apiUrl;
+    }
+  }
+  
+  // Default to localhost for local development
+  console.log('Using localhost API URL');
   return 'http://localhost:8000/api';
 }
 
