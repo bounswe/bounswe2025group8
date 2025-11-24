@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, useColorScheme } from 'react-native';
-import { Colors } from '../../constants/Colors';
+import { View, Text, StyleSheet, Image } from 'react-native';
+import { useTheme } from '@react-navigation/native';
+import type { ThemeTokens } from '../../constants/Colors';
 
 export interface ReviewCardProps {
   reviewerName: string;
@@ -11,8 +12,8 @@ export interface ReviewCardProps {
 }
 
 const ReviewCard: React.FC<ReviewCardProps> = ({ reviewerName, comment, rating, timestamp, avatarUrl }) => {
-  const colorScheme = useColorScheme();
-  const themeColors = Colors[colorScheme || 'light'];
+  const { colors } = useTheme();
+  const themeColors = colors as ThemeTokens;
 
   return (
     <View style={[styles.card, { backgroundColor: themeColors.card }]}>
@@ -22,12 +23,26 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ reviewerName, comment, rating, 
           style={styles.avatar}
         />
         <View style={styles.headerText}>
-          <Text style={[styles.reviewerName, { color: themeColors.text }]}>{reviewerName}</Text>
-          <Text style={[styles.timestamp, { color: themeColors.textMuted }]}>{timestamp}</Text>
+          <View style={styles.nameRow}>
+            <Text style={[styles.reviewerName, { color: themeColors.text }]}>{reviewerName}</Text>
+            <Text style={[styles.timestamp, { color: themeColors.textMuted }]}>{timestamp}</Text>
+          </View>
+          <View style={styles.ratingContainer}>
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Text
+                key={star}
+                style={[
+                  styles.rating,
+                  { color: star <= Math.round(rating) ? themeColors.pink : themeColors.border },
+                ]}
+              >
+                ★
+              </Text>
+            ))}
+          </View>
         </View>
       </View>
       <Text style={[styles.comment, { color: themeColors.text }]}>{comment}</Text>
-      <Text style={[styles.rating, { color: themeColors.primary }]}>{'★'.repeat(Math.round(rating))}</Text>
     </View>
   );
 };
@@ -58,20 +73,33 @@ const styles = StyleSheet.create({
   headerText: {
     flex: 1,
   },
+  nameRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
   reviewerName: {
     fontWeight: '600',
     fontSize: 16,
+    flex: 1,
   },
   timestamp: {
     fontSize: 12,
+    marginLeft: 8,
   },
   comment: {
     fontSize: 14,
-    marginBottom: 8,
+    marginTop: 12,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   rating: {
     fontSize: 14,
     fontWeight: '600',
+    marginRight: 2,
   },
 });
 

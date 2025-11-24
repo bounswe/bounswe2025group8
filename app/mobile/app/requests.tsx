@@ -14,22 +14,44 @@ import {
 } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { getTasks, type Task } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import { useAppTheme } from '../theme/ThemeProvider';
 
 export default function Requests() {
   const { colors } = useTheme();
+  const { tokens: themeColors } = useAppTheme();
   const router = useRouter();
+  const params = useLocalSearchParams();
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  
+  const locationFilter = params.location as string | undefined;
+
+  // Filter out completed and cancelled tasks
+  const filterActiveTasks = (tasksList: Task[]): Task[] => {
+    return tasksList.filter(task => {
+      const status = task.status?.toUpperCase() || '';
+      return status !== 'COMPLETED' && status !== 'CANCELLED';
+    });
+  };
 
   const fetchTasks = async () => {
     try {
       const response = await getTasks();
-      setTasks(response.results || []);
+      const fetchedTasks = response.results || [];
+      const activeTasks = filterActiveTasks(fetchedTasks);
+      
+      // Filter by location if location parameter is provided
+      let filteredTasks = activeTasks;
+      if (locationFilter) {
+        filteredTasks = activeTasks.filter(task => task.location === locationFilter);
+      }
+      
+      setTasks(filteredTasks);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       Alert.alert('Error', 'Failed to load tasks. Please try again.');
@@ -41,7 +63,7 @@ export default function Requests() {
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [locationFilter]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -56,17 +78,45 @@ export default function Requests() {
     );
   }
 
-  const getUrgencyColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'urgent':
-        return '#e74c3c';
-      case 'medium':
-        return '#f1c40f';
-      case 'low':
-        return '#2ecc71';
-      default:
-        return '#f1c40f';
+  const getStatusPalette = (status?: string) => {
+    const normalized = (status || '').toLowerCase();
+
+    if (normalized.includes('urgent') || normalized.includes('high')) {
+      return { background: themeColors.urgencyHighBackground, text: themeColors.urgencyHighText };
     }
+    if (normalized.includes('medium')) {
+      return { background: themeColors.urgencyMediumBackground, text: themeColors.urgencyMediumText };
+    }
+    if (normalized.includes('low')) {
+      return { background: themeColors.urgencyLowBackground, text: themeColors.urgencyLowText };
+    }
+
+    switch (normalized) {
+      case 'posted':
+        return { background: themeColors.statusPostedBackground, text: themeColors.statusPostedText };
+      case 'assigned':
+        return { background: themeColors.statusAssignedBackground, text: themeColors.statusAssignedText };
+      case 'in_progress':
+      case 'in progress':
+        return { background: themeColors.statusInProgressBackground, text: themeColors.statusInProgressText };
+      case 'completed':
+        return { background: themeColors.statusCompletedBackground, text: themeColors.statusCompletedText };
+      case 'cancelled':
+        return { background: themeColors.statusCancelledBackground, text: themeColors.statusCancelledText };
+      case 'expired':
+        return { background: themeColors.statusExpiredBackground, text: themeColors.statusExpiredText };
+      default:
+        return { background: themeColors.statusGenericBackground, text: themeColors.statusGenericText };
+    }
+  };
+
+  const formatStatusLabel = (status?: string, display?: string) => {
+    const base = display || status || 'Status';
+    return base
+      .toLowerCase()
+      .split(/[\s_]+/)
+      .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
+      .join(' ');
   };
 
   const formatTimeAgo = (dateString: string) => {
@@ -98,14 +148,26 @@ export default function Requests() {
       </View>
 
       {/* Search bar */}
-      <TouchableOpacity style={[styles.searchWrapper, { borderColor: '#CCC' }]} onPress={() => router.push('/search')}>
-        <Ionicons name="search-outline" size={20} color="#888" />
+      <TouchableOpacity style={[styles.searchWrapper, { borderColor: colors.border }]} onPress={() => router.push('/search')}>
+        <Ionicons name="search-outline" size={20} color={themeColors.icon} />
         <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>What do you need help with</Text>
       </TouchableOpacity>
 
       {/* Title + Sort/Filter */}
       <View style={styles.titleRow}>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>All Requests</Text>
+        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            {locationFilter ? `Requests in ${locationFilter}` : 'All Requests'}
+          </Text>
+          {locationFilter && (
+            <TouchableOpacity
+              onPress={() => router.replace('/requests')}
+              style={{ marginLeft: 8, padding: 4 }}
+            >
+              <Ionicons name="close-circle" size={20} color={colors.text} />
+            </TouchableOpacity>
+          )}
+        </View>
         <View style={styles.controlIcons}>
           <TouchableOpacity style={styles.controlButton}>
             <Ionicons name="swap-vertical-outline" size={20} color={colors.text} />
@@ -122,44 +184,57 @@ export default function Requests() {
         contentContainerStyle={{ paddingBottom: 80 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        {tasks.map((task) => (
-          <TouchableOpacity
-            key={task.id}
-            style={[styles.card, { backgroundColor: colors.card }]}
-            onPress={() =>
-              router.push({
-                pathname: (task.creator && task.creator.id === user?.id) ? '/r-request-details' : '/v-request-details',
-                params: { id: task.id },
-              })
-            }
-          >
-            <Image source={require('../assets/images/help.png')} style={styles.cardImage} />
+        {tasks.map((task) => {
+          const statusPalette = getStatusPalette(task.status_display || task.status);
+          return (
+            <TouchableOpacity
+              key={task.id}
+              style={[styles.card, { backgroundColor: colors.card, shadowColor: themeColors.overlay }]}
+              onPress={() =>
+                router.push({
+                  pathname: (task.creator && task.creator.id === user?.id) ? '/r-request-details' : '/v-request-details',
+                  params: { id: task.id },
+                })
+              }
+            >
+              <Image source={require('../assets/images/help.png')} style={styles.cardImage} />
 
-            <View style={styles.cardContent}>
-              <Text style={[styles.cardTitle, { color: colors.text }]}>{task.title}</Text>
-              <Text style={[styles.cardMeta, { color: colors.text }]}>{`${task.location} • ${formatTimeAgo(task.created_at)}`}</Text>
+              <View style={styles.cardContent}>
+                <Text style={[styles.cardTitle, { color: colors.text }]}>{task.title}</Text>
+                <Text style={[styles.cardMeta, { color: colors.text }]}>{`${task.location} • ${formatTimeAgo(task.created_at)}`}</Text>
 
-              <View style={styles.pillRow}>
-                <View style={[styles.urgencyBadge, { backgroundColor: getUrgencyColor(task.status) }]}>
-                  <Text style={styles.urgencyText} numberOfLines={1} ellipsizeMode="tail">
-                    {task.status}
-                  </Text>
-                </View>
-                <View style={[styles.categoryPill, { backgroundColor: colors.primary }]}>
-                  <Text style={styles.categoryText} numberOfLines={1} ellipsizeMode="tail">
-                    {task.category}
-                  </Text>
+                <View style={styles.pillRow}>
+                  <View
+                    style={[
+                      styles.urgencyBadge,
+                      { backgroundColor: statusPalette.background, borderColor: colors.border },
+                    ]}
+                  >
+                    <Text style={[styles.urgencyText, { color: statusPalette.text }]} numberOfLines={1} ellipsizeMode="tail">
+                      {formatStatusLabel(task.status, task.status_display)}
+                    </Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.categoryPill,
+                      { backgroundColor: themeColors.lightPurple, borderColor: themeColors.primary },
+                    ]}
+                  >
+                    <Text style={[styles.categoryText, { color: themeColors.primary }]} numberOfLines={1} ellipsizeMode="tail">
+                      {task.category_display || task.category}
+                    </Text>
+                  </View>
                 </View>
               </View>
-            </View>
 
-            <Ionicons name="chevron-forward" size={20} color={colors.text} />
-          </TouchableOpacity>
-        ))}
+              <Ionicons name="chevron-forward" size={20} color={colors.text} />
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
 
       {/* Bottom tab bar */}
-      <View style={[styles.bottomBar, { backgroundColor: colors.card }]}>
+      <View style={[styles.bottomBar, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
         <TouchableOpacity style={styles.tabItem} onPress={() => router.replace('/feed')}>
           <Ionicons name="home" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Home</Text>
@@ -234,7 +309,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
-    shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 4,
     elevation: 1,
@@ -267,20 +341,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 2,
     marginRight: 8,
+    borderWidth: 1,
   },
   urgencyText: {
     fontSize: 12,
-    color: '#fff',
     fontWeight: 'bold',
   },
   categoryPill: {
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 2,
+    borderWidth: 1,
   },
   categoryText: {
     fontSize: 12,
-    color: '#fff',
     fontWeight: 'bold',
   },
   bottomBar: {

@@ -10,6 +10,8 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
+import FlagIcon from "@mui/icons-material/Flag";
+import { Menu, MenuItem } from "@mui/material";
 import {
   updateTask,
   updateTaskStatus,
@@ -31,6 +33,7 @@ import { removeTaskFromList } from "../features/request/store/allRequestsSlice";
 import Sidebar from "../components/Sidebar";
 import EditRequestModal from "../components/EditRequestModal";
 import RatingReviewModal from "../components/RatingReviewModal";
+import ReportModal from "../components/ReportModal";
 import { urgencyLevels } from "../constants/urgency_level";
 import { getCategoryImage } from "../constants/categories";
 import { toAbsoluteUrl } from "../utils/url";
@@ -57,6 +60,12 @@ const RequestDetail = () => {
 
   // Rating/Review dialog state
   const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
+
+  // Report dialog state
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+
+  // Menu state for 3-dot menu
+  const [menuAnchorEl, setMenuAnchorEl] = useState(null);
 
   // Add these new state variables
   const [isDeleting, setIsDeleting] = useState(false);
@@ -752,6 +761,33 @@ const RequestDetail = () => {
     alert(`Review submitted for ${reviewedUser.name} ${reviewedUser.surname}!`);
   };
 
+  const handleMenuOpen = (event) => {
+    setMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+  };
+
+  const handleMenuEdit = () => {
+    handleMenuClose();
+    setEditDialogOpen(true);
+  };
+
+  const handleMenuDelete = () => {
+    handleMenuClose();
+    handleDeleteRequest();
+  };
+
+  const handleMenuReport = () => {
+    handleMenuClose();
+    setReportDialogOpen(true);
+  };
+
+  const handleReportSubmitSuccess = () => {
+    alert("Thank you for reporting this task! Our team will review it shortly.");
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
@@ -870,6 +906,7 @@ const RequestDetail = () => {
               {urgency.name} Urgency
             </span>
             <button
+              onClick={handleMenuOpen}
               className="p-2 rounded-full transition-colors"
               style={{ color: colors.text.secondary }}
               onMouseEnter={(e) => {
@@ -885,6 +922,30 @@ const RequestDetail = () => {
             >
               <MoreVertIcon className="w-6 h-6" aria-hidden="true" />
             </button>
+            <Menu
+              anchorEl={menuAnchorEl}
+              open={Boolean(menuAnchorEl)}
+              onClose={handleMenuClose}
+            >
+              {isTaskCreator && (
+                <>
+                  <MenuItem onClick={handleMenuEdit}>
+                    <EditIcon className="w-4 h-4 mr-2" />
+                    Edit
+                  </MenuItem>
+                  <MenuItem onClick={handleMenuDelete}>
+                    <DeleteIcon className="w-4 h-4 mr-2" />
+                    Delete
+                  </MenuItem>
+                </>
+              )}
+              {isAuthenticated && !isTaskCreator && (
+                <MenuItem onClick={handleMenuReport}>
+                  <FlagIcon className="w-4 h-4 mr-2" />
+                  Report
+                </MenuItem>
+              )}
+            </Menu>
           </div>
         </div>
 
@@ -1443,6 +1504,14 @@ const RequestDetail = () => {
         task={request}
         currentUser={currentUser}
         onSubmitSuccess={handleReviewSubmitSuccess}
+      />
+
+      <ReportModal
+        open={reportDialogOpen}
+        onClose={() => setReportDialogOpen(false)}
+        task={request}
+        currentUser={currentUser}
+        onSubmitSuccess={handleReportSubmitSuccess}
       />
     </div>
   );

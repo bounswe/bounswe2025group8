@@ -16,7 +16,8 @@ import {
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { getTasks, getUserProfile, type Task, type UserProfile, type Category as ApiCategory } from '../lib/api';
+import { getTasks, getPopularTasks, getUserProfile, type Task, type UserProfile, type Category as ApiCategory } from '../lib/api';
+import type { ThemeTokens } from '@/constants/Colors';
 import { useAuth } from '../lib/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -25,21 +26,56 @@ export default function Feed() {
   const router = useRouter();
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [popularTasks, setPopularTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [taskDerivedCategories, setTaskDerivedCategories] = useState<ApiCategory[]>([]);
   const scrollRef = useRef<ScrollView>(null);
+  const themeColors = colors as ThemeTokens;
+
+  const formatUrgency = (level?: number) => {
+    if (level === 3) return 'High';
+    if (level === 2) return 'Medium';
+    if (level === 1) return 'Low';
+    return 'Medium';
+  };
+
+  const getUrgencyColors = (level?: number) => {
+    if (level === 3) {
+      return { background: themeColors.urgencyHighBackground, text: themeColors.urgencyHighText };
+    }
+    if (level === 1) {
+      return { background: themeColors.urgencyLowBackground, text: themeColors.urgencyLowText };
+    }
+    return { background: themeColors.urgencyMediumBackground, text: themeColors.urgencyMediumText };
+  };
+
+  // Filter out completed and cancelled tasks
+  const filterActiveTasks = (tasksList: Task[]): Task[] => {
+    return tasksList.filter(task => {
+      const status = task.status?.toUpperCase() || '';
+      return status !== 'COMPLETED' && status !== 'CANCELLED';
+    });
+  };
 
   const fetchTasks = async () => {
     try {
       setLoading(true);
+      
+      // Fetch all tasks for categories
       const response = await getTasks();
       const fetchedTasks = response.results || [];
-      setTasks(fetchedTasks);
+      const activeTasks = filterActiveTasks(fetchedTasks);
+      
+      // Fetch popular tasks separately
+      const popular = await getPopularTasks(6);
+      const activePopularTasks = filterActiveTasks(popular);
+      
+      setPopularTasks(activePopularTasks);
 
-      if (fetchedTasks.length > 0) {
+      if (activeTasks.length > 0) {
         const uniqueCategoriesMap = new Map<string, ApiCategory>();
-        fetchedTasks.forEach(task => {
+        activeTasks.forEach(task => {
           if (task.category && task.category_display) {
             if (!uniqueCategoriesMap.has(task.category)) {
               uniqueCategoriesMap.set(task.category, {
@@ -60,6 +96,7 @@ export default function Feed() {
       console.error('Error fetching tasks:', error);
       Alert.alert('Error', 'Failed to load tasks. Please try again.');
       setTasks([]);
+      setPopularTasks([]);
       setTaskDerivedCategories([]);
     } finally {
       setLoading(false);
@@ -113,8 +150,8 @@ export default function Feed() {
         </View>
 
         {/* — Search bar — */}
-        <TouchableOpacity style={[styles.searchWrapper, { borderColor: '#CCC' }]} onPress={() => router.push('/search')}>
-          <Ionicons name="search-outline" size={20} color="#888" />
+        <TouchableOpacity style={[styles.searchWrapper, { borderColor: colors.border }]} onPress={() => router.push('/search')}>
+          <Ionicons name="search-outline" size={20} color={colors.icon} />
           <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>What are you looking for?</Text>
         </TouchableOpacity>
 
@@ -142,7 +179,7 @@ export default function Feed() {
         <Text style={[styles.sectionTitle, { color: colors.text }]}>
           Popular Requests
         </Text>
-        {tasks.map((task) => (
+        {popularTasks.map((task) => (
           <TouchableOpacity
             key={task.id}
             style={[styles.requestRow, { backgroundColor: colors.card }]}
@@ -162,12 +199,23 @@ export default function Feed() {
                 {task.location} • {new Date(task.created_at).toLocaleDateString()}
               </Text>
               <View style={styles.requestCategoryRow}>
-                <View style={[styles.urgencyBadge, { backgroundColor: task.status === 'urgent' ? '#e74c3c' : task.status === 'medium' ? '#f1c40f' : '#2ecc71' }]}> 
-                  <Text style={styles.urgencyText} numberOfLines={1} ellipsizeMode="tail">
-                    {task.status}
-                  </Text>
-                </View>
-                <View style={styles.requestCategory}>
+                {(() => {
+                  const urgencyLabel = formatUrgency(task.urgency_level);
+                  const urgencyPalette = getUrgencyColors(task.urgency_level);
+                  return (
+                    <View
+                      style={[
+                        styles.urgencyBadge,
+                        { backgroundColor: urgencyPalette.background, borderColor: colors.border },
+                      ]}
+                    >
+                      <Text style={[styles.urgencyText, { color: urgencyPalette.text }]} numberOfLines={1} ellipsizeMode="tail">
+                        {`${urgencyLabel} Urgency`}
+                      </Text>
+                    </View>
+                  );
+                })()}
+                <View style={[styles.requestCategory, { borderColor: colors.border }]}>
                   <Text style={[styles.requestCategoryText, { color: colors.text }]} numberOfLines={1} ellipsizeMode="tail">
                     {task.category}
                   </Text>
@@ -183,7 +231,7 @@ export default function Feed() {
       </ScrollView>
 
       {/* — Bottom Navigation Bar — */}
-      <View style={[styles.bottomBar, { backgroundColor: colors.card }]}>
+      <View style={[styles.bottomBar, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
         <TouchableOpacity
           style={styles.tabItem}
           onPress={() => {
@@ -294,14 +342,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 60,
     borderTopWidth: 1,
-    borderTopColor: '#ddd',
   },
   tabItem: { alignItems: 'center' },
   tabLabel: { fontSize: 10, marginTop: 2 },
 
   seeAllLink: { alignSelf: 'flex-end', marginBottom: 16 },
   seeAllText: { fontSize: 13, fontWeight: '500' },
-  urgencyBadge: { borderRadius: 8, paddingHorizontal: 12, paddingVertical: 2, alignSelf: 'flex-start', marginRight: 4 },
-  urgencyText: { fontSize: 12, color: '#fff', fontWeight: 'bold' },
+  urgencyBadge: {
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 2,
+    alignSelf: 'flex-start',
+    marginRight: 4,
+    borderWidth: 1,
+  },
+  urgencyText: { fontSize: 12, fontWeight: 'bold' },
   requestCategoryRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
 });
