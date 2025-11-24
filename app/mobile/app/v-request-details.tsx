@@ -481,7 +481,6 @@ useEffect(() => {
   const statusDisplayLower = statusDisplay.toLowerCase();
   const requesterName = request.creator?.name || 'Unknown';
   const requestTitleForA11y = request.title || 'this request';
-  const requesterAvatar = request.creator?.photo || 'https://placehold.co/70x70';
   const datetime = request.deadline ? new Date(request.deadline).toLocaleString() : '';
   const locationDisplay = request.location || 'N/A';
   const requiredPerson = request.volunteer_number || 1;
@@ -657,12 +656,30 @@ useEffect(() => {
             accessibilityLabel={`View ${requesterName}'s profile`}
             accessibilityState={{ disabled: !request.creator?.id }}
           >
-            <Image
-              source={{ uri: requesterAvatar }}
-              style={[styles.avatar, { backgroundColor: themeColors.gray }]}
-              accessibilityRole="image"
-              accessibilityLabel={`Profile photo of ${requesterName}`}
-            />
+            {(() => {
+              const photoUrl = request.creator?.profile_photo || request.creator?.photo;
+              console.log('[v-request-details] Rendering avatar Image:', {
+                creatorId: request.creator?.id,
+                creatorName: request.creator?.name,
+                photoUrl,
+                hasPhoto: !!photoUrl
+              });
+              return (
+                <Image
+                  source={
+                    photoUrl
+                      ? { uri: photoUrl }
+                      : require('../assets/images/empty_profile_photo.png')
+                  }
+                  style={[styles.avatar, { backgroundColor: themeColors.gray }]}
+                  accessibilityRole="image"
+                  accessibilityLabel={`Profile photo of ${requesterName}`}
+                  onError={(error) => console.log('[v-request-details] Image load error:', error.nativeEvent)}
+                  onLoad={() => console.log('[v-request-details] Image loaded successfully for:', photoUrl)}
+                />
+              );
+            })()}
+
             <Text style={[styles.name, { color: themeColors.text }]}>{requesterName}</Text>
           </TouchableOpacity>
           <Text style={[styles.descriptionText, { color: themeColors.text }]}>{request.description}</Text>

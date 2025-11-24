@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, FlatList, 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
-import { getTaskApplicants, Volunteer, batchAssignVolunteers } from '../lib/api';
+import { getTaskApplicants, Volunteer, batchAssignVolunteers, BACKEND_BASE_URL } from '../lib/api';
 import type { ThemeTokens } from '../constants/Colors';
 
 export default function SelectVolunteer() {
@@ -149,7 +149,15 @@ export default function SelectVolunteer() {
                     accessibilityLabel={`View profile for ${item.user.name} ${item.user.surname}`}
                 >
                     <Image
-                        source={item.user.photo ? { uri: item.user.photo } : require('../assets/images/avatar.png')}
+                        source={
+                            item.user.profile_photo || item.user.photo
+                                ? {
+                                    uri: (item.user.profile_photo || item.user.photo).startsWith('http')
+                                        ? item.user.profile_photo || item.user.photo
+                                        : `${BACKEND_BASE_URL}${item.user.profile_photo || item.user.photo}`,
+                                }
+                                : require('../assets/images/avatar.png')
+                        }
                         style={[styles.avatar, { backgroundColor: themeColors.border }]}
                     />
                     <View style={styles.volunteerTextContainer}>
