@@ -1,0 +1,49 @@
+# =============================================================================
+# Docker Compose for Mobile APK Build
+# =============================================================================
+# This docker-compose file provides an alternative way to build the APK.
+#
+# Configuration is read from .env file in the same directory.
+# Copy .env.example to .env and modify the values as needed.
+#
+# Usage:
+#   docker-compose build                    # Build with defaults
+#   docker-compose up                       # Build and run (shows logs)
+#   docker-compose run mobile-build         # Build interactively
+#
+# To extract the APK after build:
+#   docker-compose run --rm mobile-build sh -c "cat /output/app.apk" > app.apk
+#
+# Or use the provided docker-build.sh script for a simpler experience.
+# =============================================================================
+
+services:
+  # Release build (optimized for distribution)
+  # Reads API_HOST, API_PORT from .env file
+  mobile-build:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_TYPE: ${BUILD_TYPE:-release}
+        API_HOST: ${API_HOST}
+        API_PORT: ${API_PORT}
+    image: neighborhood-assistance-mobile:release
+    volumes:
+      - ./build/outputs/apk:/host-output
+    command: sh -c "cp /output/app.apk /host-output/app-release.apk && echo 'APK copied to build/outputs/apk/app-release.apk'"
+
+  # Debug build (faster, includes debugging tools)
+  mobile-build-debug:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_TYPE: debug
+        API_HOST: ${API_HOST}
+        API_PORT: ${API_PORT}
+    image: neighborhood-assistance-mobile:debug
+    volumes:
+      - ./build/outputs/apk:/host-output
+    command: sh -c "cp /output/app.apk /host-output/app-debug.apk && echo 'APK copied to build/outputs/apk/app-debug.apk'"
+

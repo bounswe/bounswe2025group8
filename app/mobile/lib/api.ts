@@ -4,12 +4,28 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
-const resolveDefaultHost = () => {
-  const extraHost = Constants.expoConfig?.extra?.apiHost;
-  if (extraHost) {
-    return extraHost;
+// Backend port - can be configured via environment variable or expo config
+const port = Constants.expoConfig?.extra?.apiPort ?? '8000';
+
+// LOCAL DEVELOPMENT: Use your computer's LAN IP for iOS simulator and physical devices
+// Replace with your actual LAN IP if different
+// Find your LAN IP with: ipconfig getifaddr en0
+const LOCAL_LAN_IP = '192.168.4.23'; // Change this to your LAN IP if needed
+
+/**
+ * Resolve API host with priority:
+ * 1. Environment variable via Expo config (for Docker builds)
+ * 2. Platform-specific defaults (for development)
+ */
+const resolveApiHost = (): string => {
+  // First priority: Check for configured apiHost from environment/expo config
+  const configuredHost = Constants.expoConfig?.extra?.apiHost;
+  if (configuredHost && !configuredHost.includes('${')) {
+    // Return configured host if it's set and not an unresolved template variable
+    return configuredHost;
   }
 
+  // Second priority: Check hostUri from Expo dev server
   const hostUri = Constants.expoConfig?.hostUri;
   if (hostUri) {
     const [host] = hostUri.split(':');
@@ -18,31 +34,18 @@ const resolveDefaultHost = () => {
     }
   }
 
-  return 'localhost';
+  // Third priority: Platform-specific defaults
+  return Platform.select({
+    web: 'localhost',           // Web uses localhost
+    android: '10.0.2.2',        // Android emulator uses special IP to access host machine
+    ios: LOCAL_LAN_IP,          // iOS simulator: use LAN IP instead of localhost
+    default: LOCAL_LAN_IP,      // Physical devices: use LAN IP
+  }) ?? 'localhost';
 };
 
-const lanHost = resolveDefaultHost();
+const API_HOST = resolveApiHost();
 
-// Backend port is fixed at 8000
-const port = Constants.expoConfig?.extra?.apiPort ?? '8000';
-
-// LOCAL DEVELOPMENT: Use your computer's LAN IP for iOS simulator and physical devices
-// Replace '172.20.10.3' with your actual LAN IP if different
-// Find your LAN IP with: ipconfig getifaddr en0
-// use the first one returned by the command
-// do not forget to also change the export const API_BASE_URL constant below.
-const LOCAL_LAN_IP = '192.168.4.23'; // Change this to your LAN IP if needed
-
-const API_HOST = Platform.select({
-  web: 'localhost',           // Web uses localhost
-  android: '10.0.2.2',        // Android emulator uses special IP to access host machine
-  ios: LOCAL_LAN_IP,          // iOS simulator: use LAN IP instead of localhost
-  default: LOCAL_LAN_IP,      // Physical devices: use LAN IP
-});
-
-// For local development, use dynamic host detection
-// For production, comment out the line below and uncomment the hardcoded Production URL
-//export const BACKEND_BASE_URL = `http://35.222.191.20:${port}`; // Production URL
+// Construct the backend URL
 export const BACKEND_BASE_URL = `http://${API_HOST}:${port}`;
 
 export const API_BASE_URL = `${BACKEND_BASE_URL}/api`;
