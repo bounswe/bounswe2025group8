@@ -12,10 +12,12 @@ import {
   Alert,
   SafeAreaView,
   Dimensions,
+  Keyboard
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import { useAppTheme } from '../theme/ThemeProvider';
 import { getTaskDetails, listVolunteers, type Task, type Volunteer, volunteerForTask, withdrawVolunteer, createReview, getTaskReviews, type Review, type UserProfile, getTaskPhotos, BACKEND_BASE_URL, type Photo } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -24,7 +26,7 @@ import type { ThemeTokens } from '../constants/Colors';
 export default function RequestDetailsVolunteer() {
   const params = useLocalSearchParams();
   const { colors } = useTheme();
-  const themeColors = colors as ThemeTokens;
+  const { tokens: themeColors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
 
@@ -35,6 +37,9 @@ export default function RequestDetailsVolunteer() {
   const [error, setError] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [rating, setRating] = useState(0);
+  const [accuracyOfRequest, setAccuracyOfRequest] = useState(0);
+  const [communication, setCommunication] = useState(0);
+  const [safetyAndPreparedness, setSafetyAndPreparedness] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
   const [existingReviews, setExistingReviews] = useState<Review[]>([]);
@@ -69,8 +74,8 @@ export default function RequestDetailsVolunteer() {
       (property === 'Text'
         ? themeColors.text
         : property === 'Background'
-        ? 'transparent'
-        : themeColors.border)
+          ? 'transparent'
+          : themeColors.border)
     );
   };
 
@@ -89,7 +94,7 @@ export default function RequestDetailsVolunteer() {
       const isCreatorView = user?.id && details.creator?.id === user.id;
       const currentRecord = volunteerRecordRef.current;
 
-      const taskVolunteers = await listVolunteers( {task:id,limit: 100 });
+      const taskVolunteers = await listVolunteers({ task: id, limit: 100, volunteer_status: 'all' });
 
       const volunteers = taskVolunteers.filter((vol) => {
         const taskField = typeof (vol as any).task === 'number' ? (vol as any).task : (vol.task as any)?.id;
@@ -118,7 +123,7 @@ export default function RequestDetailsVolunteer() {
               console.warn('Failed to persist volunteer state:', storageError);
             });
             if (legacyStorageKey) {
-              AsyncStorage.removeItem(legacyStorageKey).catch(() => {});
+              AsyncStorage.removeItem(legacyStorageKey).catch(() => { });
             }
           }
           return updated;
@@ -134,14 +139,14 @@ export default function RequestDetailsVolunteer() {
             console.warn('Failed to persist volunteer state:', storageError);
           });
           if (legacyStorageKey) {
-            AsyncStorage.removeItem(legacyStorageKey).catch(() => {});
+            AsyncStorage.removeItem(legacyStorageKey).catch(() => { });
           }
         }
       } else {
         setHasVolunteered(false);
         setVolunteerRecord(null);
         if (storageKey) {
-          AsyncStorage.removeItem(storageKey).catch(() => {});
+          AsyncStorage.removeItem(storageKey).catch(() => { });
         }
       }
 
@@ -152,7 +157,7 @@ export default function RequestDetailsVolunteer() {
           if (reviewsResponse.status === 'success') {
             setExistingReviews(reviewsResponse.data.reviews || []);
           }
-          
+
           // Build list of reviewable participants (creator + other volunteers, excluding self)
           const participants: UserProfile[] = [];
           if (details.creator && details.creator.id !== user.id) {
@@ -197,72 +202,78 @@ export default function RequestDetailsVolunteer() {
     }
   }, [id, user?.id, storageKey]);
 
-useEffect(() => {
-  fetchRequestDetails();
-}, [fetchRequestDetails]);
-
-useFocusEffect(
-  useCallback(() => {
+  useEffect(() => {
     fetchRequestDetails();
-  }, [fetchRequestDetails])
-);
+  }, [fetchRequestDetails]);
 
-useEffect(() => {
-  let isMounted = true;
-  const hydrateVolunteerState = async () => {
-    if (!storageKey) {
-      if (isMounted) {
-        setVolunteerRecord(null);
-        setHasVolunteered(false);
-      }
-      if (legacyStorageKey) {
-        AsyncStorage.removeItem(legacyStorageKey).catch(() => {});
-      }
-      return;
-    }
-    try {
-      let value = await AsyncStorage.getItem(storageKey);
-      if (!value && legacyStorageKey) {
-        value = await AsyncStorage.getItem(legacyStorageKey);
-        if (value) {
-          await AsyncStorage.setItem(storageKey, value);
-          await AsyncStorage.removeItem(legacyStorageKey);
-        }
-      }
-      if (!isMounted) {
-        return;
-      }
-      if (value) {
-        try {
-          const parsed = JSON.parse(value);
-          setVolunteerRecord(parsed);
-          setHasVolunteered(isActiveVolunteerStatus(parsed.status));
-        } catch (parseError) {
-          console.warn('Failed to parse stored volunteer record:', parseError);
+  useFocusEffect(
+    useCallback(() => {
+      fetchRequestDetails();
+    }, [fetchRequestDetails])
+  );
+
+  useEffect(() => {
+    let isMounted = true;
+    const hydrateVolunteerState = async () => {
+      if (!storageKey) {
+        if (isMounted) {
           setVolunteerRecord(null);
           setHasVolunteered(false);
         }
-      } else {
-        setVolunteerRecord(null);
-        setHasVolunteered(false);
+        if (legacyStorageKey) {
+          AsyncStorage.removeItem(legacyStorageKey).catch(() => { });
+        }
+        return;
       }
-    } catch (storageError) {
-      console.warn('Failed to read volunteer state from storage:', storageError);
-      if (isMounted) {
-        setVolunteerRecord(null);
-        setHasVolunteered(false);
+      try {
+        let value = await AsyncStorage.getItem(storageKey);
+        if (!value && legacyStorageKey) {
+          value = await AsyncStorage.getItem(legacyStorageKey);
+          if (value) {
+            await AsyncStorage.setItem(storageKey, value);
+            await AsyncStorage.removeItem(legacyStorageKey);
+          }
+        }
+        if (!isMounted) {
+          return;
+        }
+        if (value) {
+          try {
+            const parsed = JSON.parse(value);
+            setVolunteerRecord(parsed);
+            setHasVolunteered(isActiveVolunteerStatus(parsed.status));
+          } catch (parseError) {
+            console.warn('Failed to parse stored volunteer record:', parseError);
+            setVolunteerRecord(null);
+            setHasVolunteered(false);
+          }
+        } else {
+          setVolunteerRecord(null);
+          setHasVolunteered(false);
+        }
+      } catch (storageError) {
+        console.warn('Failed to read volunteer state from storage:', storageError);
+        if (isMounted) {
+          setVolunteerRecord(null);
+          setHasVolunteered(false);
+        }
       }
+    };
+
+    hydrateVolunteerState();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [storageKey]);
+
+  const handleStarPress = (category: 'accuracyOfRequest' | 'communication' | 'safetyAndPreparedness', star: number) => {
+    switch (category) {
+      case 'accuracyOfRequest': setAccuracyOfRequest(star); break;
+      case 'communication': setCommunication(star); break;
+      case 'safetyAndPreparedness': setSafetyAndPreparedness(star); break;
     }
   };
-
-  hydrateVolunteerState();
-
-  return () => {
-    isMounted = false;
-  };
-}, [storageKey]);
-
-  const handleStarPress = (star: number) => setRating(star);
 
   const getExistingReviewForParticipant = (participantId: number): Review | undefined => {
     if (!user?.id) return undefined;
@@ -273,8 +284,8 @@ useEffect(() => {
 
   const hasReviewedAllParticipants = (): boolean => {
     if (reviewableParticipants.length === 0) return false;
-    return reviewableParticipants.every((participant) => 
-      existingReviews.some((review) => 
+    return reviewableParticipants.every((participant) =>
+      existingReviews.some((review) =>
         review.reviewee.id === participant.id && review.reviewer.id === user?.id
       )
     );
@@ -287,23 +298,29 @@ useEffect(() => {
     }
     setCurrentReviewIndex(0);
     const currentParticipant = reviewableParticipants[0];
-    
+
     // Check if review already exists for this participant
     const existingReview = getExistingReviewForParticipant(currentParticipant.id);
-    
+
     if (existingReview) {
       setRating(existingReview.score);
+      setAccuracyOfRequest(existingReview.accuracy_of_request || 0);
+      setCommunication(existingReview.communication_volunteer_to_requester || 0);
+      setSafetyAndPreparedness(existingReview.safety_and_preparedness || 0);
       setReviewText(existingReview.comment);
     } else {
       setRating(0);
+      setAccuracyOfRequest(0);
+      setCommunication(0);
+      setSafetyAndPreparedness(0);
       setReviewText('');
     }
     setModalVisible(true);
   };
 
   const handleSubmitReview = async () => {
-    if (!rating || rating < 1 || rating > 5) {
-      Alert.alert('Rating Required', 'Please select a rating from 1 to 5 stars.');
+    if (!accuracyOfRequest || !communication || !safetyAndPreparedness) {
+      Alert.alert('Ratings Required', 'Please provide a rating for all categories.');
       return;
     }
     if (!reviewText.trim()) {
@@ -320,10 +337,12 @@ useEffect(() => {
 
     try {
       await createReview({
-        score: Number(rating), // Ensure it's a number
         comment: reviewText.trim(),
         reviewee_id: currentParticipant.id,
         task_id: id,
+        accuracy_of_request: accuracyOfRequest,
+        communication_volunteer_to_requester: communication,
+        safety_and_preparedness: safetyAndPreparedness,
       });
 
       // Refresh reviews to get updated list
@@ -344,26 +363,35 @@ useEffect(() => {
         const nextIndex = currentReviewIndex + 1;
         setCurrentReviewIndex(nextIndex);
         const nextParticipant = reviewableParticipants[nextIndex];
-        
+
         // Load existing review for next participant if it exists
         const nextReview = updatedReviews.find(
           (review) => review.reviewee.id === nextParticipant.id && review.reviewer.id === user?.id
         );
-        
+
         if (nextReview) {
           setRating(nextReview.score);
+          setAccuracyOfRequest(nextReview.accuracy_of_request || 0);
+          setCommunication(nextReview.communication_volunteer_to_requester || 0);
+          setSafetyAndPreparedness(nextReview.safety_and_preparedness || 0);
           setReviewText(nextReview.comment);
         } else {
           setRating(0);
+          setAccuracyOfRequest(0);
+          setCommunication(0);
+          setSafetyAndPreparedness(0);
           setReviewText('');
         }
-        
+
         Alert.alert('Success', `Review submitted for ${currentParticipant.name}!`);
       } else {
         // All participants reviewed
         Alert.alert('Success', 'All reviews submitted successfully!');
         setModalVisible(false);
         setRating(0);
+        setAccuracyOfRequest(0);
+        setCommunication(0);
+        setSafetyAndPreparedness(0);
         setReviewText('');
         setCurrentReviewIndex(0);
         // Refresh task data to show updated reviews
@@ -409,7 +437,7 @@ useEffect(() => {
             console.warn('Failed to persist volunteer state:', storageError);
           });
           if (legacyStorageKey) {
-            AsyncStorage.removeItem(legacyStorageKey).catch(() => {});
+            AsyncStorage.removeItem(legacyStorageKey).catch(() => { });
           }
         }
       }
@@ -444,9 +472,9 @@ useEffect(() => {
       setVolunteerRecord(updatedRecord);
       volunteerRecordRef.current = updatedRecord;
       if (storageKey) {
-        AsyncStorage.setItem(storageKey, JSON.stringify(updatedRecord)).catch(() => {});
+        AsyncStorage.setItem(storageKey, JSON.stringify(updatedRecord)).catch(() => { });
         if (legacyStorageKey) {
-          AsyncStorage.removeItem(legacyStorageKey).catch(() => {});
+          AsyncStorage.removeItem(legacyStorageKey).catch(() => { });
         }
       }
       await fetchRequestDetails();
@@ -505,24 +533,24 @@ useEffect(() => {
 
   const volunteerStatusMessage = !isCreatorView && (userAssigned || ['pending', 'accepted', 'rejected', 'withdrawn'].includes(volunteerStatusLabel ?? ''))
     ? (() => {
-        if (userAssigned || volunteerStatusLabel === 'accepted') {
-          console.log("userAssigned", userAssigned);
-          console.log("volunteerStatusLabel", volunteerStatusLabel);
-          console.log(request);
-          console.log(user);
-          return 'You have been assigned to this request.';
-        }
-        if (volunteerStatusLabel === 'rejected') {
-          return 'Your volunteer request was declined.';
-        }
-        if (volunteerStatusLabel === 'withdrawn') {
-          return 'You withdrew your volunteer request. Contact the requester if you wish to volunteer again.';
-        }
-        if (volunteerStatusLabel === 'pending') {
-          return 'Your volunteer request is pending approval.';
-        }
-        return 'You have volunteered for this request.';
-      })()
+      if (userAssigned || volunteerStatusLabel === 'accepted') {
+        console.log("userAssigned", userAssigned);
+        console.log("volunteerStatusLabel", volunteerStatusLabel);
+        console.log(request);
+        console.log(user);
+        return 'You have been assigned to this request.';
+      }
+      if (volunteerStatusLabel === 'rejected') {
+        return 'Your volunteer request was declined.';
+      }
+      if (volunteerStatusLabel === 'withdrawn') {
+        return 'You withdrew your volunteer request. Contact the requester if you wish to volunteer again.';
+      }
+      if (volunteerStatusLabel === 'pending') {
+        return 'Your volunteer request is pending approval.';
+      }
+      return 'You have volunteered for this request.';
+    })()
     : null;
 
   const showWithdrawButton =
@@ -530,6 +558,8 @@ useEffect(() => {
     volunteerRecord?.id &&
     isTaskOpen &&
     volunteerStatusLabel === 'pending';
+
+  console.log('DEBUG: showWithdrawButton', !isCreator, volunteerRecord?.id, isTaskOpen, volunteerStatusLabel);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background }}>
@@ -589,8 +619,8 @@ useEffect(() => {
             {(() => {
               const firstPhoto = photos[0];
               const photoUrl = firstPhoto.photo_url || firstPhoto.url || firstPhoto.image || '';
-              const absoluteUrl = photoUrl.startsWith('http') 
-                ? photoUrl 
+              const absoluteUrl = photoUrl.startsWith('http')
+                ? photoUrl
                 : `${BACKEND_BASE_URL}${photoUrl}`;
               return (
                 <Image
@@ -602,7 +632,7 @@ useEffect(() => {
                 />
               );
             })()}
-            
+
             {/* Show remaining photos as thumbnails if there are more */}
             {photos.length > 1 && (
               <View style={[styles.thumbnailsContainer, { backgroundColor: themeColors.lightGray }]}>
@@ -613,10 +643,10 @@ useEffect(() => {
                 >
                   {photos.slice(1).map((photo, index) => {
                     const photoUrl = photo.photo_url || photo.url || photo.image || '';
-                    const absoluteUrl = photoUrl.startsWith('http') 
-                      ? photoUrl 
+                    const absoluteUrl = photoUrl.startsWith('http')
+                      ? photoUrl
                       : `${BACKEND_BASE_URL}${photoUrl}`;
-                    
+
                     return (
                       <View
                         key={photo.id}
@@ -639,7 +669,7 @@ useEffect(() => {
             )}
           </>
         )}
-        
+
         <View style={[styles.detailsContainer, { backgroundColor: themeColors.card }]}>
           <TouchableOpacity
             style={styles.avatarRow}
@@ -755,7 +785,7 @@ useEffect(() => {
               accessibilityLabel="Rate and review participants"
             >
               <Text style={[styles.buttonText, { color: themeColors.card }]}>
-                {hasReviewedAllParticipants() 
+                {hasReviewedAllParticipants()
                   ? `Edit Rate & Review ${reviewableParticipants.length === 1 ? 'Participant' : 'Participants'}`
                   : `Rate & Review ${reviewableParticipants.length === 1 ? 'Participant' : 'Participants'}`
                 }
@@ -776,6 +806,7 @@ useEffect(() => {
             </TouchableOpacity>
           ) : null)
         )}
+
 
         {showWithdrawButton && (
           <TouchableOpacity
@@ -814,14 +845,14 @@ useEffect(() => {
         >
           <View style={[styles.modalContent, { backgroundColor: themeColors.card }]} accessible>
             <Text style={[styles.modalTitle, { color: themeColors.text }]}>
-              {reviewableParticipants.length > 0 
+              {reviewableParticipants.length > 0
                 ? (() => {
-                    const currentParticipant = reviewableParticipants[currentReviewIndex];
-                    const existingReview = getExistingReviewForParticipant(currentParticipant?.id);
-                    return existingReview 
-                      ? `Edit Rate & Review ${currentParticipant?.name || 'Participant'}`
-                      : `Rate & Review ${currentParticipant?.name || 'Participant'}`;
-                  })()
+                  const currentParticipant = reviewableParticipants[currentReviewIndex];
+                  const existingReview = getExistingReviewForParticipant(currentParticipant?.id);
+                  return existingReview
+                    ? `Edit Rate & Review ${currentParticipant?.name || 'Participant'}`
+                    : `Rate & Review ${currentParticipant?.name || 'Participant'}`;
+                })()
                 : 'Rate & Review'
               }
             </Text>
@@ -831,37 +862,70 @@ useEffect(() => {
               </Text>
             )}
             <TextInput
-                style={[
-                  styles.modalInput,
-                  { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background },
-                ]}
+              style={[
+                styles.modalInput,
+                { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background },
+              ]}
               placeholder="Leave your review..."
               placeholderTextColor={themeColors.textMuted}
               multiline
+              returnKeyType="done"
+              blurOnSubmit
+              onSubmitEditing={Keyboard.dismiss}
               value={reviewText}
               onChangeText={setReviewText}
               accessibilityLabel="Review input"
             />
             <View style={styles.starRow}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <TouchableOpacity
-                  key={star}
-                  onPress={() => handleStarPress(star)}
-                  accessible
-
-                  accessibilityRole="button"
-                  accessibilityLabel={`Rate ${star} ${star === 1 ? 'star' : 'stars'}`}
-                  accessibilityState={{ selected: rating >= star }}
-                >
-                  <Ionicons
-                    name={star <= rating ? 'star' : 'star-outline'}
-                    size={28}
-                    color={star <= rating ? themeColors.pink : themeColors.border}
-                    accessible={false}
-                    importantForAccessibility="no"
-                  />
-                </TouchableOpacity>
-              ))}
+              <Text style={[styles.categoryLabel, { color: themeColors.text, marginBottom: 4 }]}>Accuracy of Request</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <TouchableOpacity
+                    key={`acc-${star}`}
+                    onPress={() => handleStarPress('accuracyOfRequest', star)}
+                  >
+                    <Ionicons
+                      name={star <= accuracyOfRequest ? 'star' : 'star-outline'}
+                      size={28}
+                      color={star <= accuracyOfRequest ? themeColors.pink : themeColors.border}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+            <View style={styles.starRow}>
+              <Text style={[styles.categoryLabel, { color: themeColors.text, marginBottom: 4 }]}>Communication</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <TouchableOpacity
+                    key={`comm-${star}`}
+                    onPress={() => handleStarPress('communication', star)}
+                  >
+                    <Ionicons
+                      name={star <= communication ? 'star' : 'star-outline'}
+                      size={28}
+                      color={star <= communication ? themeColors.pink : themeColors.border}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+            <View style={styles.starRow}>
+              <Text style={[styles.categoryLabel, { color: themeColors.text, marginBottom: 4 }]}>Safety & Preparedness</Text>
+              <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <TouchableOpacity
+                    key={`safe-${star}`}
+                    onPress={() => handleStarPress('safetyAndPreparedness', star)}
+                  >
+                    <Ionicons
+                      name={star <= safetyAndPreparedness ? 'star' : 'star-outline'}
+                      size={28}
+                      color={star <= safetyAndPreparedness ? themeColors.pink : themeColors.border}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
             <View style={styles.modalActions}>
               <TouchableOpacity
@@ -869,6 +933,9 @@ useEffect(() => {
                 onPress={() => {
                   setModalVisible(false);
                   setRating(0);
+                  setAccuracyOfRequest(0);
+                  setCommunication(0);
+                  setSafetyAndPreparedness(0);
                   setReviewText('');
                   setCurrentReviewIndex(0);
                 }}

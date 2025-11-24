@@ -13,6 +13,7 @@ import {
   SafeAreaView,
   Switch,
   Dimensions,
+  Keyboard
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -45,6 +46,10 @@ export default function RequestDetails() {
   const [modalVisible, setModalVisible] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [rating, setRating] = useState(0);
+  const [reliability, setReliability] = useState(0);
+  const [taskCompletion, setTaskCompletion] = useState(0);
+  const [communication, setCommunication] = useState(0);
+  const [safetyAndRespect, setSafetyAndRespect] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [currentVolunteerIndex, setCurrentVolunteerIndex] = useState(0);
   const [submittingReview, setSubmittingReview] = useState(false);
@@ -75,8 +80,8 @@ export default function RequestDetails() {
       (property === 'Text'
         ? themeColors.text
         : property === 'Background'
-        ? themeColors.labelDefaultBackground
-        : themeColors.labelDefaultBorder || themeColors.border)
+          ? themeColors.labelDefaultBackground
+          : themeColors.labelDefaultBorder || themeColors.border)
     );
   };
 
@@ -166,7 +171,14 @@ export default function RequestDetails() {
     }, [id, fetchTaskData])
   );
 
-  const handleStarPress = (star: number) => setRating(star);
+  const handleStarPress = (category: 'reliability' | 'taskCompletion' | 'communication' | 'safetyAndRespect', star: number) => {
+    switch (category) {
+      case 'reliability': setReliability(star); break;
+      case 'taskCompletion': setTaskCompletion(star); break;
+      case 'communication': setCommunication(star); break;
+      case 'safetyAndRespect': setSafetyAndRespect(star); break;
+    }
+  };
 
   const handleOpenReviewModal = () => {
     if (assignedVolunteers.length === 0) {
@@ -175,20 +187,28 @@ export default function RequestDetails() {
     }
     setCurrentVolunteerIndex(0);
     const currentVolunteer = assignedVolunteers[0];
-    
+
     // Check if review already exists for this volunteer
     const existingReview = existingReviews.find(
       (review) => review.reviewee.id === currentVolunteer.user.id && review.reviewer.id === user?.id
     );
-    
+
     if (existingReview) {
       setRating(existingReview.score);
+      setReliability(existingReview.reliability || 0);
+      setTaskCompletion(existingReview.task_completion || 0);
+      setCommunication(existingReview.communication_requester_to_volunteer || 0);
+      setSafetyAndRespect(existingReview.safety_and_respect || 0);
       setReviewText(existingReview.comment);
     } else {
       setRating(0);
+      setReliability(0);
+      setTaskCompletion(0);
+      setCommunication(0);
+      setSafetyAndRespect(0);
       setReviewText('');
     }
-    
+
     setModalVisible(true);
     setIsEdit(false);
   };
@@ -201,8 +221,8 @@ export default function RequestDetails() {
 
   const hasReviewedAllVolunteers = (): boolean => {
     if (assignedVolunteers.length === 0) return false;
-    return assignedVolunteers.every((volunteer) => 
-      existingReviews.some((review) => 
+    return assignedVolunteers.every((volunteer) =>
+      existingReviews.some((review) =>
         review.reviewee.id === volunteer.user.id && review.reviewer.id === user?.id
       )
     );
@@ -228,6 +248,10 @@ export default function RequestDetails() {
     setIsEdit(true);
     setModalVisible(true);
     setRating(0);
+    setReliability(0);
+    setTaskCompletion(0);
+    setCommunication(0);
+    setSafetyAndRespect(0);
     setReviewText('');
     setAddressFields(parseAddressString(request.location));
   };
@@ -245,8 +269,8 @@ export default function RequestDetails() {
   };
 
   const handleSubmitReview = async () => {
-    if (!rating || rating < 1 || rating > 5) {
-      Alert.alert('Rating Required', 'Please select a rating from 1 to 5 stars.');
+    if (!reliability || !taskCompletion || !communication || !safetyAndRespect) {
+      Alert.alert('Ratings Required', 'Please provide a rating for all categories.');
       return;
     }
     if (!reviewText.trim()) {
@@ -262,10 +286,13 @@ export default function RequestDetails() {
 
     try {
       await createReview({
-        score: Number(rating), // Ensure it's a number
         comment: reviewText.trim(),
         reviewee_id: currentVolunteer.user.id,
         task_id: id,
+        reliability,
+        task_completion: taskCompletion,
+        communication_requester_to_volunteer: communication,
+        safety_and_respect: safetyAndRespect,
       });
 
       // Refresh reviews to get updated list
@@ -286,26 +313,38 @@ export default function RequestDetails() {
         const nextIndex = currentVolunteerIndex + 1;
         setCurrentVolunteerIndex(nextIndex);
         const nextVolunteer = assignedVolunteers[nextIndex];
-        
+
         // Load existing review for next volunteer if it exists
         const nextReview = updatedReviews.find(
           (review) => review.reviewee.id === nextVolunteer.user.id && review.reviewer.id === user?.id
         );
-        
+
         if (nextReview) {
           setRating(nextReview.score);
+          setReliability(nextReview.reliability || 0);
+          setTaskCompletion(nextReview.task_completion || 0);
+          setCommunication(nextReview.communication_requester_to_volunteer || 0);
+          setSafetyAndRespect(nextReview.safety_and_respect || 0);
           setReviewText(nextReview.comment);
         } else {
           setRating(0);
+          setReliability(0);
+          setTaskCompletion(0);
+          setCommunication(0);
+          setSafetyAndRespect(0);
           setReviewText('');
         }
-        
+
         Alert.alert('Success', `Review submitted for ${currentVolunteer.user.name}!`);
       } else {
         // All volunteers reviewed
         Alert.alert('Success', 'All reviews submitted successfully!');
         setModalVisible(false);
         setRating(0);
+        setReliability(0);
+        setTaskCompletion(0);
+        setCommunication(0);
+        setSafetyAndRespect(0);
         setReviewText('');
         setCurrentVolunteerIndex(0);
         // Refresh task data to show updated reviews
@@ -340,7 +379,7 @@ export default function RequestDetails() {
       return;
     }
 
-    if (!addressFields.city.trim() || !addressFields.district.trim()) {
+    if (!addressFields.city.trim() || !addressFields.state.trim()) {
       Alert.alert('Validation Error', 'Please select a city and district for the address.');
       return;
     }
@@ -375,6 +414,10 @@ export default function RequestDetails() {
   const handleCloseReviewModal = () => {
     setModalVisible(false);
     setRating(0);
+    setReliability(0);
+    setTaskCompletion(0);
+    setCommunication(0);
+    setSafetyAndRespect(0);
     setReviewText('');
     setCurrentVolunteerIndex(0);
   };
@@ -405,12 +448,12 @@ export default function RequestDetails() {
           style: 'destructive',
           onPress: async () => {
             if (!id || !request) return;
-            
+
             setCompletingTask(true);
             try {
               const response = await completeTask(id);
               Alert.alert('Success', response.message || 'Request marked as completed successfully!');
-              
+
               // Refresh task data to get updated status
               await fetchTaskData();
             } catch (err: any) {
@@ -439,12 +482,12 @@ export default function RequestDetails() {
           style: 'destructive',
           onPress: async () => {
             if (!id || !request) return;
-            
+
             setCancellingTask(true);
             try {
               const response = await cancelTask(id);
               Alert.alert('Success', response.message || 'Request deleted successfully!');
-              
+
               // Navigate back to feed
               router.back();
             } catch (err: any) {
@@ -547,7 +590,7 @@ export default function RequestDetails() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Ionicons name="arrow-back" size={24} color={themeColors.text}  accessible={false} importantForAccessibility="no"/>
+            <Ionicons name="arrow-back" size={24} color={themeColors.text} accessible={false} importantForAccessibility="no" />
           </TouchableOpacity>
           <Text style={[styles.title, { color: themeColors.text }]} numberOfLines={1} ellipsizeMode="tail">
             {title}
@@ -593,32 +636,32 @@ export default function RequestDetails() {
               const firstPhoto = photos[0];
               const photoUrl = firstPhoto.photo_url || firstPhoto.url || firstPhoto.image || '';
               console.log(photoUrl);
-              const absoluteUrl = photoUrl.startsWith('http') 
-                ? photoUrl 
+              const absoluteUrl = photoUrl.startsWith('http')
+                ? photoUrl
                 : `${BACKEND_BASE_URL}${photoUrl}`;
               return (
-                <Image 
-                  source={{ uri: absoluteUrl }} 
+                <Image
+                  source={{ uri: absoluteUrl }}
                   style={styles.heroImage}
                   resizeMode="cover"
                 />
               );
             })()}
-            
+
             {/* Show remaining photos as thumbnails if there are more */}
             {photos.length > 1 && (
               <View style={[styles.thumbnailsContainer, { backgroundColor: themeColors.lightGray }]}>
-                <ScrollView 
-                  horizontal 
+                <ScrollView
+                  horizontal
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.thumbnailsScrollContent}
                 >
                   {photos.slice(1).map((photo) => {
                     const photoUrl = photo.photo_url || photo.url || photo.image || '';
-                    const absoluteUrl = photoUrl.startsWith('http') 
-                      ? photoUrl 
+                    const absoluteUrl = photoUrl.startsWith('http')
+                      ? photoUrl
                       : `${BACKEND_BASE_URL}${photoUrl}`;
-                    
+
                     return (
                       <TouchableOpacity
                         key={photo.id}
@@ -626,8 +669,8 @@ export default function RequestDetails() {
                         accessible={false}
                         importantForAccessibility="no"
                       >
-                        <Image 
-                          source={{ uri: absoluteUrl }} 
+                        <Image
+                          source={{ uri: absoluteUrl }}
                           style={styles.smallThumbnailImage}
                           resizeMode="cover"
                         />
@@ -641,7 +684,7 @@ export default function RequestDetails() {
         ) : (
           <Image source={{ uri: imageUrl }} style={styles.heroImage} />
         )}
-        
+
         <View style={[styles.section, { backgroundColor: themeColors.card }]}>
           <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Requester</Text>
           <View style={styles.requesterRow}>
@@ -823,7 +866,7 @@ export default function RequestDetails() {
               accessibilityLabel="Rate and review volunteers"
             >
               <Text style={[styles.buttonText, { color: themeColors.card }]}>
-                {hasReviewedAllVolunteers() 
+                {hasReviewedAllVolunteers()
                   ? `Edit Rate & Review ${numAssigned === 1 ? 'Volunteer' : 'Volunteers'}`
                   : `Rate & Review ${numAssigned === 1 ? 'Volunteer' : 'Volunteers'}`
                 }
@@ -841,16 +884,16 @@ export default function RequestDetails() {
         >
           <View style={[styles.modalContent, { backgroundColor: themeColors.card }]} accessible>
             <Text style={[styles.modalTitle, { color: themeColors.text }]}>
-              {isEdit 
-                ? 'Edit Request' 
-                : assignedVolunteers.length > 0 
+              {isEdit
+                ? 'Edit Request'
+                : assignedVolunteers.length > 0
                   ? (() => {
-                      const currentVolunteer = assignedVolunteers[currentVolunteerIndex];
-                      const existingReview = getExistingReviewForVolunteer(currentVolunteer?.user?.id);
-                      return existingReview 
-                        ? `Edit Rate & Review ${currentVolunteer?.user?.name || 'Volunteer'}`
-                        : `Rate & Review ${currentVolunteer?.user?.name || 'Volunteer'}`;
-                    })()
+                    const currentVolunteer = assignedVolunteers[currentVolunteerIndex];
+                    const existingReview = getExistingReviewForVolunteer(currentVolunteer?.user?.id);
+                    return existingReview
+                      ? `Edit Rate & Review ${currentVolunteer?.user?.name || 'Volunteer'}`
+                      : `Rate & Review ${currentVolunteer?.user?.name || 'Volunteer'}`;
+                  })()
                   : 'Rate Request'
               }
             </Text>
@@ -974,28 +1017,80 @@ export default function RequestDetails() {
                   placeholder="Leave your review..."
                   placeholderTextColor={themeColors.textMuted}
                   multiline
+                  returnKeyType="done"
+                  blurOnSubmit
+                  onSubmitEditing={Keyboard.dismiss}
                   value={reviewText}
                   onChangeText={setReviewText}
                   accessibilityLabel="Review input"
                 />
                 <View style={styles.starRow}>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <TouchableOpacity
-                      key={star}
-                      onPress={() => handleStarPress(star)}
-                      accessible
-
-                      accessibilityRole="button"
-                      accessibilityLabel={`Rate ${star} ${star === 1 ? 'star' : 'stars'}`}
-                      accessibilityState={{ selected: rating >= star }}
-                    >
-                      <Ionicons
-                        name={star <= rating ? 'star' : 'star-outline'}
-                        size={28}
-                        color={star <= rating ? themeColors.pink : themeColors.border}
-                      />
-                    </TouchableOpacity>
-                  ))}
+                  <Text style={[styles.editLabel, { color: themeColors.text, marginBottom: 4 }]}>Reliability</Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <TouchableOpacity
+                        key={`rel-${star}`}
+                        onPress={() => handleStarPress('reliability', star)}
+                      >
+                        <Ionicons
+                          name={star <= reliability ? 'star' : 'star-outline'}
+                          size={28}
+                          color={star <= reliability ? themeColors.pink : themeColors.border}
+                        />
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+                <View style={styles.starRow}>
+                  <Text style={[styles.editLabel, { color: themeColors.text, marginBottom: 4 }]}>Task Completion</Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <TouchableOpacity
+                        key={`comp-${star}`}
+                        onPress={() => handleStarPress('taskCompletion', star)}
+                      >
+                        <Ionicons
+                          name={star <= taskCompletion ? 'star' : 'star-outline'}
+                          size={28}
+                          color={star <= taskCompletion ? themeColors.pink : themeColors.border}
+                        />
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+                <View style={styles.starRow}>
+                  <Text style={[styles.editLabel, { color: themeColors.text, marginBottom: 4 }]}>Communication</Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <TouchableOpacity
+                        key={`comm-${star}`}
+                        onPress={() => handleStarPress('communication', star)}
+                      >
+                        <Ionicons
+                          name={star <= communication ? 'star' : 'star-outline'}
+                          size={28}
+                          color={star <= communication ? themeColors.pink : themeColors.border}
+                        />
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+                <View style={styles.starRow}>
+                  <Text style={[styles.editLabel, { color: themeColors.text, marginBottom: 4 }]}>Safety & Respect</Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <TouchableOpacity
+                        key={`safe-${star}`}
+                        onPress={() => handleStarPress('safetyAndRespect', star)}
+                      >
+                        <Ionicons
+                          name={star <= safetyAndRespect ? 'star' : 'star-outline'}
+                          size={28}
+                          color={star <= safetyAndRespect ? themeColors.pink : themeColors.border}
+                        />
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                 </View>
               </>
             )}
