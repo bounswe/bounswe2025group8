@@ -8,17 +8,29 @@ import { toAbsoluteUrl } from "../utils/url";
 const ReviewCard = ({ review }) => {
   const { colors } = useTheme();
   const navigate = useNavigate();
-  const reviewerPhoto =
-    toAbsoluteUrl(
-      review.reviewer?.profile_photo ||
-        review.reviewer?.profilePhoto ||
-        review.reviewer?.profilePicture ||
-        review.reviewer?.photo ||
-        review.reviewer?.avatar
-    ) ||
-    `https://randomuser.me/api/portraits/men/${Math.floor(
-      Math.random() * 100
-    )}.jpg`;
+
+  // Get reviewer photo using the same pattern as Sidebar
+  const reviewerPhoto = toAbsoluteUrl(
+    review.reviewer?.profile_photo ||
+      review.reviewer?.profilePhoto ||
+      review.reviewer?.profilePicture ||
+      review.reviewer?.avatar
+  );
+
+  // Get initials for fallback avatar
+  const getInitials = () => {
+    const name = review.reviewer?.name || "";
+    const surname = review.reviewer?.surname || "";
+
+    if (name && surname) {
+      return `${name.charAt(0)}${surname.charAt(0)}`.toUpperCase();
+    } else if (name) {
+      return name.charAt(0).toUpperCase();
+    } else if (review.reviewer?.username) {
+      return review.reviewer.username.charAt(0).toUpperCase();
+    }
+    return "?";
+  };
 
   const handleProfileClick = () => {
     if (review.reviewer?.id) {
@@ -90,14 +102,20 @@ const ReviewCard = ({ review }) => {
           onClick={handleProfileClick}
         >
           <Avatar
-            src={reviewerPhoto}
+            src={reviewerPhoto || undefined}
             alt={review.reviewer?.name || "User"}
             sx={{
               border: `2px solid ${colors.border.primary}`,
               width: 40,
               height: 40,
+              backgroundColor: !reviewerPhoto
+                ? colors.brand.primary
+                : undefined,
+              color: !reviewerPhoto ? colors.text.inverse : undefined,
             }}
-          />
+          >
+            {!reviewerPhoto && getInitials()}
+          </Avatar>
           <Box>
             <Typography
               variant="subtitle2"
