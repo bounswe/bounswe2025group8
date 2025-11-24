@@ -26,6 +26,7 @@ import {
   ArrowBack,
   People,
   EmojiEvents,
+  Flag as FlagIcon,
 } from "@mui/icons-material";
 import {
   fetchUserProfile,
@@ -46,6 +47,7 @@ import RequestCard from "../components/RequestCard";
 import ReviewCard from "../components/ReviewCard";
 import Badge from "../components/Badge";
 import EditProfileDialog from "../components/EditProfileDialog";
+import UserReportModal from "../components/UserReportModal";
 import { useTheme } from "../hooks/useTheme";
 import { toAbsoluteUrl } from "../utils/url";
 // No need for CSS module import as we're using Material UI's sx prop
@@ -125,6 +127,7 @@ const ProfilePage = () => {
   const [reviewsPerPage] = useState(5);
   const [refreshData, setRefreshData] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false); // Empty array for badges since we'll use API data
+  const [userReportDialogOpen, setUserReportDialogOpen] = useState(false);
   const [mockBadges] = useState([]);
 
   const loadProfileData = useCallback(async () => {
@@ -355,6 +358,19 @@ const ProfilePage = () => {
     }
   };
 
+  // Handler for user report
+  const handleUserReport = () => {
+    if (canEdit) {
+      // Don't allow users to report themselves
+      return;
+    }
+    setUserReportDialogOpen(true);
+  };
+
+  const handleUserReportSuccess = () => {
+    alert("Thank you for reporting this user! Our team will review it shortly.");
+  };
+
   if (loading) {
     return (
       <Box
@@ -483,39 +499,61 @@ const ProfilePage = () => {
                   ) : null;
                 })()}
               </Box>
-              <Box>
-                <Typography
-                  variant="h5"
-                  component="h1"
-                  sx={{ textAlign: "left", color: colors.text.primary }}
-                >
-                  {user.name} {user.surname}
-                </Typography>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Rating
-                    value={user.rating}
-                    precision={0.1}
-                    readOnly
-                    sx={{
-                      "& .MuiRating-iconFilled": {
-                        color: colors.semantic.warning,
-                      },
-                      "& .MuiRating-iconEmpty": {
-                        color: colors.border.secondary,
-                      },
-                    }}
-                  />
-                  <Chip
-                    label={`${user.rating} (${
-                      user.reviewCount || reviews.length
-                    } reviews)`}
-                    sx={{
-                      backgroundColor: colors.brand.primary,
-                      color: colors.text.inverted,
-                      "& .MuiChip-label": { px: 2 },
-                    }}
-                  />
+              <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
+                <Box>
+                  <Typography
+                    variant="h5"
+                    component="h1"
+                    sx={{ textAlign: "left", color: colors.text.primary }}
+                  >
+                    {user.name} {user.surname}
+                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Rating
+                      value={user.rating}
+                      precision={0.1}
+                      readOnly
+                      sx={{
+                        "& .MuiRating-iconFilled": {
+                          color: colors.semantic.warning,
+                        },
+                        "& .MuiRating-iconEmpty": {
+                          color: colors.border.secondary,
+                        },
+                      }}
+                    />
+                    <Chip
+                      label={`${user.rating} (${
+                        user.reviewCount || reviews.length
+                      } reviews)`}
+                      sx={{
+                        backgroundColor: colors.brand.primary,
+                        color: colors.text.inverted,
+                        "& .MuiChip-label": { px: 2 },
+                      }}
+                    />
+                  </Box>
                 </Box>
+                {/* Report button - only show for other users, not own profile */}
+                {!canEdit && (
+                  <Button
+                    onClick={handleUserReport}
+                    startIcon={<FlagIcon />}
+                    sx={{
+                      color: colors.semantic.error,
+                      borderColor: colors.semantic.error,
+                      mt: 0.5,
+                      textTransform: "none",
+                      "&:hover": {
+                        backgroundColor: `${colors.semantic.error}15`,
+                        borderColor: colors.semantic.error,
+                      },
+                    }}
+                    variant="outlined"
+                  >
+                    Report
+                  </Button>
+                )}
               </Box>
             </Box>
             {/* Edit Profile Button - Only show for current user */}
@@ -907,6 +945,15 @@ const ProfilePage = () => {
           setRefreshData(true);
         }}
         user={user}
+      />
+
+      {/* User Report Dialog */}
+      <UserReportModal
+        open={userReportDialogOpen}
+        onClose={() => setUserReportDialogOpen(false)}
+        user={user}
+        currentUser={loggedInUserData}
+        onSubmitSuccess={handleUserReportSuccess}
       />
     </Box>
   );

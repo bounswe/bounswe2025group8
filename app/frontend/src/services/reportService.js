@@ -55,3 +55,39 @@ export const getUserReports = async (params = {}) => {
     throw error;
   }
 };
+
+/**
+ * Submit a report for a user
+ * @param {number} userId - ID of the user to report
+ * @param {string} reportType - Type of report (SPAM, HARASSMENT, FRAUD, etc.)
+ * @param {string} description - Description/details of the report
+ * @returns {Promise} API response
+ */
+export const submitUserReport = async (userId, reportType, description) => {
+  try {
+    const response = await api.post('/user-reports/', {
+      reported_user_id: userId,
+      report_type: reportType,
+      description,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error submitting user report:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get user reports for the current user
+ * @param {Object} params - Query parameters (page, limit, status, etc.)
+ * @returns {Promise} API response with reports
+ */
+export const fetchUserReports = async (params = {}) => {
+  try {
+    const response = await api.get('/user-reports/', { params });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user reports:', error);
+    throw error;
+  }
+};
