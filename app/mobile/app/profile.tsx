@@ -5,7 +5,7 @@ import RatingPill from '../components/ui/RatingPill';
 import ReviewCard from '../components/ui/ReviewCard';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../lib/auth';
-import { getUserProfile, type UserProfile, getTasks, type Task, getUserReviews, type Review, listVolunteers, type Volunteer, uploadProfilePhoto, deleteProfilePhoto } from '../lib/api';
+import { getUserProfile, type UserProfile, getTasks, type Task, getUserReviews, type Review, listVolunteers, type Volunteer, uploadProfilePhoto, deleteProfilePhoto, BACKEND_BASE_URL } from '../lib/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RequestCard from '../components/ui/RequestCard';
 import { Ionicons } from '@expo/vector-icons';
@@ -550,14 +550,19 @@ export default function ProfileScreen() {
           {!reviewsLoading && !reviewsError && reviews.length === 0 && (
             <Text style={[styles.emptyListText, { color: themeColors.textMuted, marginTop: 8, marginBottom: 16 }]}>No reviews yet for this user.</Text>
           )}
-          {!reviewsLoading && !reviewsError && reviews.map((review) => (
+          {!reviewsLoading && !reviewsError && reviews.map((review) => {
+            const reviewerPhotoUrl = review.reviewer.profile_photo || review.reviewer.photo;
+            const avatarUrl = reviewerPhotoUrl
+              ? (reviewerPhotoUrl.startsWith('http') ? reviewerPhotoUrl : `${BACKEND_BASE_URL}${reviewerPhotoUrl}`)
+              : null;
+            return (
             <ReviewCard
               key={review.id}
               reviewerName={`${review.reviewer.name} ${review.reviewer.surname}`}
               rating={review.score}
               comment={review.comment}
               timestamp={new Date(review.timestamp).toLocaleDateString()}
-              avatarUrl={review.reviewer.profile_photo || review.reviewer.photo}
+              avatarUrl={avatarUrl}
               is_volunteer_to_requester={review.is_volunteer_to_requester}
               is_requester_to_volunteer={review.is_requester_to_volunteer}
               accuracy_of_request={review.accuracy_of_request}
@@ -568,7 +573,8 @@ export default function ProfileScreen() {
               communication_requester_to_volunteer={review.communication_requester_to_volunteer}
               safety_and_respect={review.safety_and_respect}
             />
-          ))}
+          );
+          })}
         </View>
 
       </ScrollView>
