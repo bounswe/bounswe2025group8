@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { urgencyLevels } from "../constants/urgency_level";
+import { useTheme } from "../hooks/useTheme";
 
 /**
  * RequestCardForHomePage component that displays a request card with image, title, location/time info,
@@ -31,6 +32,13 @@ const RequestCardForHomePage = ({
   onUrgencyClick,
   onNavigateClick,
 }) => {
+  const { colors } = useTheme();
+  const [isHovered, setIsHovered] = useState(false);
+  const [categoryHovered, setCategoryHovered] = useState(false);
+  const [navHovered, setNavHovered] = useState(false);
+  const [navFocused, setNavFocused] = useState(false);
+  const [categoryFocused, setCategoryFocused] = useState(false);
+
   const getBGColorForUrgency = (level) => {
     for (const key in urgencyLevels) {
       if (urgencyLevels[key].name === level) {
@@ -40,21 +48,59 @@ const RequestCardForHomePage = ({
   };
   return (
     <div
-      className="w-full bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer p-2 flex"
+      style={{
+        width: "100%",
+        backgroundColor: colors.background.elevated,
+        borderRadius: "12px",
+        border: `1px solid ${colors.border.primary}`,
+        boxShadow: isHovered ? colors.shadow.md : colors.shadow.sm,
+        transition: "box-shadow 0.2s ease",
+        cursor: "pointer",
+        padding: "8px",
+        display: "flex",
+      }}
       onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Left side - Request Image and Urgency Badge */}
-      <div className="flex flex-col justify-between w-16 sm:w-18 shrink-0">
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          width: "64px",
+          flexShrink: 0,
+        }}
+      >
         {/* Request Image */}
-        <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-xl overflow-hidden bg-gray-100">
+        <div
+          style={{
+            width: "64px",
+            height: "64px",
+            borderRadius: "12px",
+            overflow: "hidden",
+            backgroundColor: colors.background.secondary,
+          }}
+        >
           {imageUrl ? (
             <img
               src={imageUrl}
               alt={imageAlt}
-              className="w-full h-full object-cover"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: colors.text.tertiary,
+                fontSize: "0.75rem",
+              }}
+            >
               No Image
             </div>
           )}
@@ -62,8 +108,16 @@ const RequestCardForHomePage = ({
 
         {/* Urgency Badge */}
         <button
-          className={"text-xs rounded-xl px-2 py-0.5 mt-2"}
-          style={{ backgroundColor: getBGColorForUrgency(urgencyLevel) }}
+          style={{
+            fontSize: "0.75rem",
+            borderRadius: "12px",
+            padding: "2px 8px",
+            marginTop: "8px",
+            backgroundColor: getBGColorForUrgency(urgencyLevel),
+            border: "none",
+            cursor: "pointer",
+            color: colors.text.inverse,
+          }}
           onClick={(e) => {
             e.stopPropagation();
             onUrgencyClick?.(urgencyLevel);
@@ -74,50 +128,138 @@ const RequestCardForHomePage = ({
       </div>
 
       {/* Right side - Main Content */}
-      <div className="flex-1 flex flex-col ml-4 sm:ml-5 pr-3 sm:pr-4 pt-2">
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          marginLeft: "16px",
+          paddingRight: "12px",
+          paddingTop: "8px",
+        }}
+      >
         {/* Header with Title and Navigation Arrow */}
-        <div className="flex justify-between items-start mb-1">
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "start",
+            marginBottom: "4px",
+          }}
+        >
           {/* Main Title */}
-          <div className="flex-1 mr-2">
-            <h3 className="font-medium text-sm leading-5 text-gray-900 truncate font-inter">
+          <div style={{ flex: 1, marginRight: "8px" }}>
+            <h3
+              style={{
+                fontWeight: 500,
+                fontSize: "0.875rem",
+                lineHeight: "1.25rem",
+                color: colors.text.primary,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                fontFamily: "Inter, sans-serif",
+              }}
+            >
               {title}
             </h3>
           </div>
 
           {/* Navigation Arrow Button */}
           <button
-            className="w-8 h-8 shrink-0 flex items-center justify-center text-indigo-500 bg-transparent rounded-2xl border-none
-                       hover:bg-indigo-100 active:bg-indigo-200 
-                       disabled:opacity-40 transition-colors duration-150"
+            style={{
+              width: "32px",
+              height: "32px",
+              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: colors.brand.primary,
+              backgroundColor: navHovered
+                ? colors.interactive.hover
+                : "transparent",
+              borderRadius: "16px",
+              border: "none",
+              cursor: "pointer",
+              transition: "background-color 0.15s ease",
+              outline: navFocused ? `3px solid ${colors.border.focus}` : "none",
+              outlineOffset: "2px",
+            }}
             onClick={(e) => {
               e.stopPropagation();
               onNavigateClick?.();
             }}
+            onMouseEnter={() => setNavHovered(true)}
+            onMouseLeave={() => setNavHovered(false)}
+            onFocus={() => setNavFocused(true)}
+            onBlur={() => setNavFocused(false)}
+            aria-label="View request details"
           >
-            <svg className="w-5 h-5 fill-indigo-500" viewBox="0 0 24 24">
+            <svg
+              style={{
+                width: "20px",
+                height: "20px",
+                fill: colors.brand.primary,
+              }}
+              viewBox="0 0 24 24"
+            >
               <path d="M9.29 15.88L13.17 12L9.29 8.12C8.9 7.73 8.9 7.1 9.29 6.71C9.68 6.32 10.31 6.32 10.7 6.71L15.29 11.3C15.68 11.69 15.68 12.32 15.29 12.71L10.7 17.3C10.31 17.69 9.68 17.69 9.29 17.3C8.9 16.91 8.9 16.27 9.29 15.88Z" />
             </svg>
           </button>
         </div>
 
         {/* Location and Time */}
-        <div className="mb-2 sm:mb-3">
-          <p className="font-light text-xs leading-4 text-gray-600 font-inter">
+        <div style={{ marginBottom: "8px" }}>
+          <p
+            style={{
+              fontWeight: 300,
+              fontSize: "0.75rem",
+              lineHeight: "1rem",
+              color: colors.text.secondary,
+              fontFamily: "Inter, sans-serif",
+            }}
+          >
             {location} • {timeAgo}
           </p>
         </div>
 
         {/* Category Tag */}
         <button
-          className="w-full max-w-64 h-5 px-2 mt-2
-                     flex items-center justify-center text-xs leading-4 font-normal text-indigo-500 
-                     bg-indigo-50 rounded-xl border-none font-inter
-                     hover:bg-indigo-100 active:bg-indigo-200 
-                     disabled:opacity-40 transition-colors duration-150"
+          style={{
+            width: "100%",
+            maxWidth: "256px",
+            height: "20px",
+            padding: "0 8px",
+            marginTop: "8px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "0.75rem",
+            lineHeight: "1rem",
+            fontWeight: 400,
+            color: colors.brand.primary,
+            backgroundColor: categoryHovered
+              ? colors.interactive.hover
+              : colors.background.secondary,
+            borderRadius: "12px",
+            border: "none",
+            fontFamily: "Inter, sans-serif",
+            cursor: "pointer",
+            transition: "background-color 0.15s ease",
+            outline: categoryFocused
+              ? `3px solid ${colors.border.focus}`
+              : "none",
+            outlineOffset: "2px",
+          }}
           onClick={(e) => {
             e.stopPropagation();
             onCategoryClick?.(category);
           }}
+          onMouseEnter={() => setCategoryHovered(true)}
+          onMouseLeave={() => setCategoryHovered(false)}
+          onFocus={() => setCategoryFocused(true)}
+          onBlur={() => setCategoryFocused(false)}
+          aria-label={`Filter by ${category} category`}
         >
           {category}
         </button>

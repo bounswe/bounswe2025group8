@@ -18,6 +18,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { getTasks, type Task } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useAppTheme } from '../theme/ThemeProvider';
+import { locationMatches, normalizedLocationLabel } from '../utils/address';
 
 export default function Requests() {
   const { colors } = useTheme();
@@ -29,7 +30,7 @@ export default function Requests() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   
-  const locationFilter = params.location as string | undefined;
+  const locationLabel = (Array.isArray(params.location) ? params.location[0]?.trim() : params.location)?.trim() || undefined;
 
   // Filter out completed and cancelled tasks
   const filterActiveTasks = (tasksList: Task[]): Task[] => {
@@ -47,8 +48,8 @@ export default function Requests() {
       
       // Filter by location if location parameter is provided
       let filteredTasks = activeTasks;
-      if (locationFilter) {
-        filteredTasks = activeTasks.filter(task => task.location === locationFilter);
+      if (locationLabel) {
+        filteredTasks = activeTasks.filter(task => normalizedLocationLabel(task.location) === locationLabel);
       }
       
       setTasks(filteredTasks);
@@ -63,7 +64,7 @@ export default function Requests() {
 
   useEffect(() => {
     fetchTasks();
-  }, [locationFilter]);
+  }, [locationLabel]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -176,9 +177,9 @@ export default function Requests() {
       <View style={styles.titleRow}>
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            {locationFilter ? `Requests in ${locationFilter}` : 'All Requests'}
+            {locationLabel ? `Requests in ${locationLabel}` : 'All Requests'}
           </Text>
-          {locationFilter && (
+          {locationLabel && (
             <TouchableOpacity
               onPress={() => router.replace('/requests')}
               style={{ marginLeft: 8, padding: 4 }}
@@ -240,7 +241,7 @@ export default function Requests() {
 
               <View style={styles.cardContent}>
                 <Text style={[styles.cardTitle, { color: colors.text }]}>{task.title}</Text>
-                <Text style={[styles.cardMeta, { color: colors.text }]}>{`${task.location} • ${formatTimeAgo(task.created_at)}`}</Text>
+                <Text style={[styles.cardMeta, { color: colors.text }]}>{`${normalizedLocationLabel(task.location)} • ${formatTimeAgo(task.created_at)}`}</Text>
 
                 <View style={styles.pillRow}>
                   <View

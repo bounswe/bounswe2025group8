@@ -5,11 +5,12 @@ import RatingPill from '../components/ui/RatingPill';
 import ReviewCard from '../components/ui/ReviewCard';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../lib/auth';
-import { getUserProfile, type UserProfile, getTasks, type Task, getUserReviews, type Review, listVolunteers, type Volunteer } from '../lib/api';
+import { getUserProfile, type UserProfile, getTasks, type Task, getUserReviews, type Review, listVolunteers, type Volunteer, uploadProfilePhoto, deleteProfilePhoto } from '../lib/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RequestCard from '../components/ui/RequestCard';
 import { Ionicons } from '@expo/vector-icons';
 import type { ThemeTokens } from '../constants/Colors';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function ProfileScreen() {
   const { colors } = useTheme();
@@ -33,8 +34,48 @@ export default function ProfileScreen() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewsError, setReviewsError] = useState<string | null>(null);
+  const [photoUploading, setPhotoUploading] = useState(false);
 
   const [selectedTab, setSelectedTab] = useState<'volunteer' | 'requester'>(initialTab);
+
+  const handlePhotoUpload = async () => {
+    if (!user?.id) return;
+    
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        Alert.alert('Permission Required', 'Please allow access to your photo library.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        setPhotoUploading(true);
+        const asset = result.assets[0];
+        const fileName = asset.uri.split('/').pop() || 'profile.jpg';
+        
+        await uploadProfilePhoto(user.id, asset.uri, fileName);
+        
+        // Refresh profile
+        const updatedProfile = await getUserProfile(user.id);
+        setProfile(updatedProfile);
+        await AsyncStorage.setItem('userProfile', JSON.stringify(updatedProfile));
+        
+        Alert.alert('Success', 'Profile photo updated successfully!');
+      }
+    } catch (error) {
+      console.error('Photo upload error:', error);
+      Alert.alert('Error', 'Failed to upload profile photo. Please try again.');
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
 
   useEffect(() => {
     if (!targetUserId) {
@@ -369,10 +410,25 @@ export default function ProfileScreen() {
           >
             <Ionicons name="arrow-back" size={28} color={themeColors.text} />
           </TouchableOpacity>
-          <Image
-            source={ profile.photo ? {uri: profile.photo } : require('../assets/images/empty_profile_photo.png')}
-            style={[styles.profileAvatar, { backgroundColor: themeColors.card }]}
-          />
+          <View style={styles.avatarContainer}>
+            <Image
+              source={ (profile.profile_photo || profile.photo) ? {uri: profile.profile_photo || profile.photo } : require('../assets/images/empty_profile_photo.png')}
+              style={[styles.profileAvatar, { backgroundColor: themeColors.card }]}
+            />
+            {isOwnProfile && (
+              <TouchableOpacity 
+                style={[styles.editPhotoButton, { backgroundColor: themeColors.primary }]}
+                onPress={handlePhotoUpload}
+                disabled={photoUploading}
+              >
+                {photoUploading ? (
+                  <ActivityIndicator size="small" color={themeColors.card} />
+                ) : (
+                  <Ionicons name="camera" size={16} color={themeColors.card} />
+                )}
+              </TouchableOpacity>
+            )}
+          </View>
           <View style={{ flex: 1, marginLeft: 16, justifyContent: 'center' }}>
             <Text
               style={[styles.profileName, { marginTop: 16, marginBottom: 4, fontSize: 18, color: themeColors.text }]}
@@ -523,10 +579,25 @@ const styles = StyleSheet.create({
     padding: 8,
     marginRight: 8,
   },
+  avatarContainer: {
+    position: 'relative',
+  },
   profileAvatar: {
     width: 72,
     height: 72,
     borderRadius: 36,
+  },
+  editPhotoButton: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
   },
   profileName: {
     fontSize: 20,

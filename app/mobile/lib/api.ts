@@ -87,6 +87,7 @@ export interface UserProfile {
   completed_task_count: number;
   is_active: boolean;
   photo?: string;
+  profile_photo?: string;
 }
 
 export interface UserProfileResponse {
@@ -1332,6 +1333,69 @@ export const uploadTaskPhoto = async (
     }
     const errMessage = (error as Error).message || 'An unexpected error occurred while uploading photo.';
     throw new Error(errMessage);
+  }
+};
+
+// Profile photo functions
+export const uploadProfilePhoto = async (
+  userId: number,
+  photoUri: string,
+  fileName: string
+): Promise<{ status: string; message: string; data: { profile_photo: string } }> => {
+  try {
+    const formData = new FormData();
+    
+    const fileExtension = fileName.split('.').pop()?.toLowerCase() || 'jpg';
+    let mimeType = 'image/jpeg';
+    if (fileExtension === 'png') {
+      mimeType = 'image/png';
+    } else if (fileExtension === 'gif') {
+      mimeType = 'image/gif';
+    } else if (fileExtension === 'webp') {
+      mimeType = 'image/webp';
+    }
+    
+    formData.append('photo', {
+      uri: photoUri,
+      type: mimeType,
+      name: fileName,
+    } as any);
+
+    console.log(`Uploading profile photo for user ${userId}:`, { fileName, mimeType });
+
+    const response = await api.post(
+      `/users/${userId}/upload-photo/`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+
+    console.log(`Upload profile photo response:`, response.data);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error(`Upload profile photo error:`, error.response?.data);
+      throw new Error(error.response?.data?.message || 'Failed to upload profile photo.');
+    }
+    throw error;
+  }
+};
+
+export const deleteProfilePhoto = async (userId: number): Promise<{ status: string; message: string }> => {
+  try {
+    console.log(`Deleting profile photo for user ${userId}`);
+    const response = await api.delete(`/users/${userId}/delete-photo/`);
+    console.log(`Delete profile photo response:`, response.data);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error(`Delete profile photo error:`, error.response?.data);
+      throw new Error(error.response?.data?.message || 'Failed to delete profile photo.');
+    }
+    throw error;
   }
 };
 

@@ -1,11 +1,23 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+import os
+import uuid
+
+
+def user_profile_photo_path(instance, filename):
+    """Generate unique file path for user profile photos"""
+    # Get the file extension
+    ext = filename.split('.')[-1]
+    # Generate a unique filename
+    filename = f"{uuid.uuid4()}.{ext}"
+    # Return the upload path
+    return os.path.join('profile_photos', str(instance.id), filename)
 
 
 class UserManager(BaseUserManager):
     """Manager for user profiles"""
     
-    def create_user(self, email, name, surname, username, phone_number, password=None):
+    def create_user(self, email, name, surname, username, phone_number, password=None, is_staff=False, **extra_fields):
         """Create a new user profile"""
         if not email:
             raise ValueError('User must have an email address')
@@ -16,7 +28,9 @@ class UserManager(BaseUserManager):
             name=name,
             surname=surname,
             username=username,
-            phone_number=phone_number
+            phone_number=phone_number,
+            is_staff=is_staff,
+            **extra_fields
         )
         
         user.set_password(password)
@@ -58,6 +72,7 @@ class RegisteredUser(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     reset_token = models.CharField(max_length=100, null=True, blank=True)
     reset_token_expiry = models.DateTimeField(null=True, blank=True)
+    profile_photo = models.ImageField(upload_to=user_profile_photo_path, null=True, blank=True)
     
     objects = UserManager()
     

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
   Container,
@@ -46,10 +46,14 @@ import RequestCard from "../components/RequestCard";
 import ReviewCard from "../components/ReviewCard";
 import Badge from "../components/Badge";
 import EditProfileDialog from "../components/EditProfileDialog";
+import { useTheme } from "../hooks/useTheme";
+import { toAbsoluteUrl } from "../utils/url";
 // No need for CSS module import as we're using Material UI's sx prop
 
 const ProfilePage = () => {
+  const { colors } = useTheme();
   const { userId } = useParams();
+  const navigate = useNavigate();
 
   // Get logged-in user data from localStorage and Redux store
   const loggedInUserId = localStorage.getItem("userId");
@@ -181,15 +185,15 @@ const ProfilePage = () => {
       // For volunteer tab (roleTab = 0), fetch volunteered tasks
       // For volunteer tab, we also need to handle active vs completed tasks
       if (roleTab === 0) {
-        // If the API supports status parameter for volunteered tasks
-        const status = requestsTab === 0 ? "active" : "COMPLETED";
+        // Determine task status filter based on active/past tab
+        const taskStatus = requestsTab === 0 ? "active" : "COMPLETED";
 
         await dispatch(
           fetchUserVolunteeredRequests({
             userId: currentId,
             page: 1,
             limit: 10,
-            status: status, // Pass the status parameter for volunteered tasks too
+            taskStatus: taskStatus, // Pass the taskStatus parameter for volunteered tasks
           })
         ).unwrap();
       }
@@ -296,23 +300,45 @@ const ProfilePage = () => {
       dataArray = requests.data;
     }
 
-    // Normalize volunteer tasks (they wrap the actual task)
+    // For volunteer tab, we need to extract tasks from volunteer objects
     if (roleTab === 0) {
-      return dataArray.map((item) =>
-        item.task
-          ? { ...item.task, volunteerStatus: item.status, volunteerId: item.id }
-          : item
-      );
+      return dataArray
+        .filter((item) => item.task) // Only include items that have a task
+        .map((item) => {
+          const task = item.task;
+          // Process image URL similar to Home page
+          const photoFromList =
+            task.photos?.[0]?.url ||
+            task.photos?.[0]?.image ||
+            task.photos?.[0]?.photo_url;
+          const preferred = task.primary_photo_url || photoFromList || null;
+          return {
+            ...task,
+            imageUrl: toAbsoluteUrl(preferred),
+            volunteerStatus: item.status,
+            volunteerId: item.id,
+            // Ensure we only show tasks where this user is actually a volunteer
+            isVolunteer: true,
+          };
+        });
     }
 
-    return dataArray;
+    // For requester tab, process images for created requests
+    return dataArray.map((task) => {
+      const photoFromList =
+        task.photos?.[0]?.url ||
+        task.photos?.[0]?.image ||
+        task.photos?.[0]?.photo_url;
+      const preferred = task.primary_photo_url || photoFromList || null;
+      return {
+        ...task,
+        imageUrl: toAbsoluteUrl(preferred),
+      };
+    });
   };
-  // Get active and past requests for the current role tab
-  // We're now fetching requests directly from the API with appropriate status
-  const activeRequests = getCurrentRequests();
-
-  // Past requests are now also fetched from the API with status=COMPLETED
-  const pastRequests = requestsTab === 1 ? getCurrentRequests() : [];
+  // Get current requests based on the selected tab
+  // The API call already filters by active/completed status based on requestsTab
+  const currentRequests = getCurrentRequests();
 
   // No need for client-side pagination since we're using server pagination now
 
@@ -337,26 +363,45 @@ const ProfilePage = () => {
           justifyContent: "center",
           alignItems: "center",
           height: "100vh",
+          backgroundColor: colors.background.primary,
         }}
       >
-        <CircularProgress />
+        <CircularProgress sx={{ color: colors.brand.primary }} />
       </Box>
     );
   }
 
   if (error) {
     return (
-      <Box sx={{ p: 3, textAlign: "center" }}>
-        <Typography color="error" variant="h6" gutterBottom>
+      <Box
+        sx={{
+          p: 3,
+          textAlign: "center",
+          backgroundColor: colors.background.primary,
+          minHeight: "100vh",
+        }}
+      >
+        <Typography
+          variant="h6"
+          gutterBottom
+          sx={{ color: colors.semantic.error }}
+        >
           Failed to load profile
         </Typography>
-        <Typography color="text.secondary" paragraph>
+        <Typography paragraph sx={{ color: colors.text.secondary }}>
           {error}
         </Typography>
         <Button
           variant="contained"
           onClick={() => setRefreshData(true)}
-          sx={{ mt: 2 }}
+          sx={{
+            mt: 2,
+            backgroundColor: colors.brand.primary,
+            color: colors.text.inverted,
+            "&:hover": {
+              backgroundColor: colors.brand.secondary,
+            },
+          }}
         >
           Retry
         </Button>
@@ -365,7 +410,13 @@ const ProfilePage = () => {
   }
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box
+      sx={{
+        display: "flex",
+        backgroundColor: colors.background.primary,
+        minHeight: "100vh",
+      }}
+    >
       {/* Main content */}
       <Box component="main" sx={{ flexGrow: 1, p: 3, overflow: "auto" }}>
         <Container maxWidth="lg">
@@ -436,20 +487,31 @@ const ProfilePage = () => {
                 <Typography
                   variant="h5"
                   component="h1"
-                  sx={{ textAlign: "left" }}
+                  sx={{ textAlign: "left", color: colors.text.primary }}
                 >
                   {user.name} {user.surname}
                 </Typography>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Rating value={user.rating} precision={0.1} readOnly />
+                  <Rating
+                    value={user.rating}
+                    precision={0.1}
+                    readOnly
+                    sx={{
+                      "& .MuiRating-iconFilled": {
+                        color: colors.semantic.warning,
+                      },
+                      "& .MuiRating-iconEmpty": {
+                        color: colors.border.secondary,
+                      },
+                    }}
+                  />
                   <Chip
                     label={`${user.rating} (${
                       user.reviewCount || reviews.length
                     } reviews)`}
-                    color="secondary"
                     sx={{
-                      backgroundColor: "#F06292",
-                      color: "#fff",
+                      backgroundColor: colors.brand.primary,
+                      color: colors.text.inverted,
                       "& .MuiChip-label": { px: 2 },
                     }}
                   />
@@ -460,15 +522,15 @@ const ProfilePage = () => {
             {canEdit && (
               <Button
                 variant="outlined"
-                startIcon={<Edit />}
+                startIcon={<Edit sx={{ color: colors.brand.primary }} />}
                 onClick={() => setEditProfileOpen(true)}
                 sx={{
                   borderRadius: "20px",
-                  borderColor: "#5C69FF",
-                  color: "#5C69FF",
+                  borderColor: colors.brand.primary,
+                  color: colors.brand.primary,
                   "&:hover": {
-                    borderColor: "#4A56E2",
-                    backgroundColor: "rgba(92, 105, 255, 0.04)",
+                    borderColor: colors.brand.secondary,
+                    backgroundColor: `${colors.brand.primary}0A`,
                   },
                   px: 3,
                   py: 1,
@@ -487,23 +549,28 @@ const ProfilePage = () => {
               p: 2,
               mb: 4,
               borderRadius: 2,
-              border: "1px solid #f0f0f0",
-              bgcolor: "#fcfcfc",
+              border: `1px solid ${colors.border.primary}`,
+              backgroundColor: colors.background.secondary,
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-              <EmojiEvents sx={{ color: "#FFD700", mr: 1 }} />
+              <EmojiEvents sx={{ color: colors.semantic.warning, mr: 1 }} />
               <Typography
                 variant="h6"
                 component="h2"
-                sx={{ fontWeight: "bold" }}
+                sx={{ fontWeight: "bold", color: colors.text.primary }}
               >
                 Badges
               </Typography>
               <MuiBadge
                 badgeContent={earnedBadges.length}
-                color="primary"
-                sx={{ ml: 4 }}
+                sx={{
+                  ml: 4,
+                  "& .MuiBadge-badge": {
+                    backgroundColor: colors.brand.primary,
+                    color: colors.text.inverted,
+                  },
+                }}
               />
             </Box>
 
@@ -511,7 +578,7 @@ const ProfilePage = () => {
             <Box>
               <Typography
                 variant="subtitle2"
-                sx={{ mb: 1, color: "text.secondary" }}
+                sx={{ mb: 1, color: colors.text.secondary }}
               >
                 Earned Achievements
               </Typography>
@@ -521,7 +588,10 @@ const ProfilePage = () => {
                     <Badge key={badge.id} badge={badge} />
                   ))
                 ) : (
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography
+                    variant="body2"
+                    sx={{ color: colors.text.secondary }}
+                  >
                     No badges earned yet. Complete tasks to earn badges!
                   </Typography>
                 )}
@@ -529,14 +599,16 @@ const ProfilePage = () => {
             </Box>
 
             {/* Divider if there are in-progress badges */}
-            {inProgressBadges.length > 0 && <Divider sx={{ my: 2 }} />}
+            {inProgressBadges.length > 0 && (
+              <Divider sx={{ my: 2, borderColor: colors.border.secondary }} />
+            )}
 
             {/* In-progress badges */}
             {inProgressBadges.length > 0 && (
               <Box>
                 <Typography
                   variant="subtitle2"
-                  sx={{ mb: 1, color: "text.secondary" }}
+                  sx={{ mb: 1, color: colors.text.secondary }}
                 >
                   In Progress
                 </Typography>
@@ -572,20 +644,44 @@ const ProfilePage = () => {
                   label="Volunteer"
                   sx={{
                     borderRadius: "4px",
-                    backgroundColor: roleTab === 0 ? "#5C69FF" : "transparent",
-                    color: roleTab === 0 ? "white" : "inherit",
+                    backgroundColor:
+                      roleTab === 0 ? colors.brand.primary : "transparent",
+                    color: roleTab === 0 ? "#FFFFFF" : colors.text.primary,
                     width: "50%",
-                    "&.Mui-selected": { color: "white" },
+                    "&.Mui-selected": {
+                      color: "#FFFFFF",
+                    },
+                    "&:focus": {
+                      color: "#FFFFFF",
+                    },
+                    "&:hover": {
+                      backgroundColor:
+                        roleTab === 0
+                          ? colors.brand.secondary
+                          : colors.background.tertiary,
+                    },
                   }}
                 />
                 <Tab
                   label="Requester"
                   sx={{
                     borderRadius: "4px",
-                    backgroundColor: roleTab === 1 ? "#5C69FF" : "transparent",
-                    color: roleTab === 1 ? "white" : "inherit",
+                    backgroundColor:
+                      roleTab === 1 ? colors.brand.primary : "transparent",
+                    color: roleTab === 1 ? "#FFFFFF" : colors.text.primary,
                     width: "50%",
-                    "&.Mui-selected": { color: "white" },
+                    "&.Mui-selected": {
+                      color: "#FFFFFF",
+                    },
+                    "&:focus": {
+                      color: "#FFFFFF",
+                    },
+                    "&:hover": {
+                      backgroundColor:
+                        roleTab === 1
+                          ? colors.brand.secondary
+                          : colors.background.tertiary,
+                    },
                   }}
                 />
               </Tabs>
@@ -609,6 +705,13 @@ const ProfilePage = () => {
                   cursor: "pointer",
                   fontWeight: requestsTab === 0 ? "bold" : "normal",
                   mr: 4,
+                  color:
+                    requestsTab === 0
+                      ? colors.text.primary
+                      : colors.text.secondary,
+                  "&:hover": {
+                    color: colors.text.primary,
+                  },
                 }}
               >
                 {roleTab === 0 ? "Active Volunteering" : "Active Requests"}
@@ -620,6 +723,13 @@ const ProfilePage = () => {
                 sx={{
                   cursor: "pointer",
                   fontWeight: requestsTab === 1 ? "bold" : "normal",
+                  color:
+                    requestsTab === 1
+                      ? colors.text.primary
+                      : colors.text.secondary,
+                  "&:hover": {
+                    color: colors.text.primary,
+                  },
                 }}
               >
                 {roleTab === 0 ? "Past Volunteering" : "Past Requests"}
@@ -627,15 +737,29 @@ const ProfilePage = () => {
             </Box>
             {/* Requester-specific instructions when no requests */}
             {roleTab === 1 &&
-              activeRequests.length === 0 &&
+              currentRequests.length === 0 &&
               requestsTab === 0 && (
                 <Box sx={{ textAlign: "center", py: 4, mb: 2 }}>
-                  <Typography variant="h6" color="text.secondary" gutterBottom>
+                  <Typography
+                    variant="h6"
+                    gutterBottom
+                    sx={{ color: colors.text.secondary }}
+                  >
                     You haven't made any requests yet
                   </Typography>
                   <Button
                     variant="contained"
-                    sx={{ mt: 2, borderRadius: "20px", px: 3, py: 1 }}
+                    sx={{
+                      mt: 2,
+                      borderRadius: "20px",
+                      px: 3,
+                      py: 1,
+                      backgroundColor: colors.brand.primary,
+                      color: colors.text.inverted,
+                      "&:hover": {
+                        backgroundColor: colors.brand.secondary,
+                      },
+                    }}
                     href="/create-request"
                   >
                     Create New Request
@@ -644,72 +768,65 @@ const ProfilePage = () => {
               )}
             {/* Volunteer-specific instructions when no volunteering */}
             {roleTab === 0 &&
-              activeRequests.length === 0 &&
+              currentRequests.length === 0 &&
               requestsTab === 0 && (
                 <Box sx={{ textAlign: "center", py: 4, mb: 2 }}>
-                  <Typography variant="h6" color="text.secondary" gutterBottom>
+                  <Typography
+                    variant="h6"
+                    gutterBottom
+                    sx={{ color: colors.text.secondary }}
+                  >
                     You're not volunteering for any tasks yet
                   </Typography>
                   <Button
                     variant="contained"
-                    sx={{ mt: 2, borderRadius: "20px", px: 3, py: 1 }}
+                    sx={{
+                      mt: 2,
+                      borderRadius: "20px",
+                      px: 3,
+                      py: 1,
+                      backgroundColor: colors.brand.primary,
+                      color: colors.text.inverted,
+                      "&:hover": {
+                        backgroundColor: colors.brand.secondary,
+                      },
+                    }}
                     href="/requests"
                   >
                     Find Tasks to Help With
                   </Button>
                 </Box>
               )}
-            {/* Active/Past Requests Grid Layout */}
+            {/* Current Requests Grid Layout */}
             <Box sx={{ mb: 4 }}>
-              {requestsTab === 0 ? (
-                <Grid container spacing={2} sx={{ justifyContent: "center" }}>
-                  {activeRequests.length > 0 ? (
-                    activeRequests.map((request) => (
-                      <Grid
-                        sx={{ gridColumn: { xs: "span 12", sm: "span 6" } }}
-                        key={request.id}
-                      >
-                        <RequestCard
-                          request={request}
-                          userRole={roleTab === 0 ? "volunteer" : "requester"}
-                          onUpdate={() => setRefreshData(true)}
-                        />
-                      </Grid>
-                    ))
-                  ) : (
-                    <Grid item xs={12}>
-                      {/* Empty state content is above */}
+              <Grid container spacing={2} sx={{ justifyContent: "center" }}>
+                {currentRequests.length > 0 ? (
+                  currentRequests.map((request) => (
+                    <Grid
+                      sx={{ gridColumn: { xs: "span 12", sm: "span 6" } }}
+                      key={request.id}
+                    >
+                      <RequestCard
+                        request={request}
+                        userRole={roleTab === 0 ? "volunteer" : "requester"}
+                        onUpdate={() => setRefreshData(true)}
+                        onClick={() => navigate(`/requests/${request.id}`)}
+                      />
                     </Grid>
-                  )}
-                </Grid>
-              ) : (
-                <Grid container spacing={2}>
-                  {pastRequests.length > 0 ? (
-                    pastRequests.map((request) => (
-                      <Grid
-                        sx={{ gridColumn: { xs: "span 12", sm: "span 6" } }}
-                        key={request.id}
-                      >
-                        <RequestCard
-                          request={request}
-                          userRole={roleTab === 0 ? "volunteer" : "requester"}
-                          onUpdate={() => setRefreshData(true)}
-                        />
-                      </Grid>
-                    ))
-                  ) : (
-                    <Grid item xs={12}>
+                  ))
+                ) : (
+                  <Grid item xs={12}>
+                    {requestsTab === 1 && (
                       <Typography
                         align="center"
-                        color="text.secondary"
-                        sx={{ mb: 4, mt: 2 }}
+                        sx={{ mb: 4, mt: 2, color: colors.text.secondary }}
                       >
                         No past {roleTab === 0 ? "volunteering" : "requests"}.
                       </Typography>
-                    </Grid>
-                  )}
-                </Grid>
-              )}
+                    )}
+                  </Grid>
+                )}
+              </Grid>
             </Box>
           </Box>{" "}
           {/* Reviews section */}
@@ -718,7 +835,7 @@ const ProfilePage = () => {
               <Typography
                 variant="h6"
                 component="h2"
-                sx={{ fontWeight: "bold", mr: 2 }}
+                sx={{ fontWeight: "bold", mr: 2, color: colors.text.primary }}
               >
                 Reviews
               </Typography>
@@ -726,11 +843,10 @@ const ProfilePage = () => {
                 label={`${user.rating || 0} (${
                   reviews?.reviews?.length || 0
                 } reviews)`}
-                color="primary"
                 size="small"
                 sx={{
-                  backgroundColor: "#FFB6C1",
-                  color: "#333",
+                  backgroundColor: colors.brand.primary,
+                  color: colors.text.inverted,
                   "& .MuiChip-label": { px: 1 },
                 }}
               />
@@ -752,13 +868,30 @@ const ProfilePage = () => {
                         count={reviews.pagination.total_pages}
                         page={reviewPage}
                         onChange={handleReviewPageChange}
-                        color="primary"
+                        sx={{
+                          "& .MuiPaginationItem-root": {
+                            color: colors.text.primary,
+                            borderColor: colors.border.primary,
+                            "&:hover": {
+                              backgroundColor: colors.background.tertiary,
+                            },
+                          },
+                          "& .Mui-selected": {
+                            backgroundColor: `${colors.brand.primary} !important`,
+                            color: `${colors.text.inverted} !important`,
+                            "&:hover": {
+                              backgroundColor: `${colors.brand.secondary} !important`,
+                            },
+                          },
+                        }}
                       />
                     </Box>
                   )}
                 </>
               ) : (
-                <Typography>No reviews yet.</Typography>
+                <Typography sx={{ color: colors.text.secondary }}>
+                  No reviews yet.
+                </Typography>
               )}
             </Box>
           </Box>

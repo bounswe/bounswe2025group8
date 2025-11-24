@@ -10,10 +10,12 @@ import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import CreateIcon from "@mui/icons-material/Create";
 import { urgencyLevels } from "../constants/urgency_level";
+import { useTheme } from "../hooks/useTheme";
 
 const GeneralInformationStep = (props, ref) => {
   const dispatch = useDispatch();
   const { formData, categories } = useSelector((state) => state.createRequest);
+  const { colors } = useTheme();
 
   const {
     control,
@@ -61,7 +63,12 @@ const GeneralInformationStep = (props, ref) => {
           <div className="flex-1">
             {/* Title */}
             <div className="mb-6">
-              <h3 className="text-sm font-bold mb-2">Title</h3>
+              <h3
+                className="text-sm font-bold mb-2"
+                style={{ color: colors.text.primary }}
+              >
+                Title
+              </h3>
               <Controller
                 name="title"
                 control={control}
@@ -76,25 +83,41 @@ const GeneralInformationStep = (props, ref) => {
                   <>
                     <div className="relative mb-1">
                       <div className="absolute left-0 top-1/2 -translate-y-1/2 pl-3 flex items-center pointer-events-none">
-                        <CreateIcon sx={{ color: "#5C69FF" }} />
+                        <CreateIcon sx={{ color: colors.brand.primary }} />
                       </div>
                       <input
                         {...field}
                         type="text"
-                        className={`w-full pl-12 pr-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        className={`w-full pl-12 pr-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:border-transparent ${
                           errors.title ? "border-red-500" : "border-gray-300"
                         }`}
+                        style={{
+                          backgroundColor: colors.background.secondary,
+                          color: colors.text.primary,
+                          borderColor: errors.title
+                            ? colors.semantic.error
+                            : colors.border.primary,
+                        }}
                         placeholder="Help me to see a doctor"
                         onChange={(e) => {
                           field.onChange(e);
                           handleFieldChange("title", e.target.value);
                           trigger("title");
                         }}
-                        onBlur={() => trigger("title")}
+                        onFocus={(e) =>
+                          (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                        }
+                        onBlur={(e) => {
+                          trigger("title");
+                          e.target.style.boxShadow = "none";
+                        }}
                       />
                     </div>
                     {errors.title && (
-                      <p className="mt-1 text-sm text-red-600">
+                      <p
+                        className="mt-1 text-sm"
+                        style={{ color: colors.semantic.error }}
+                      >
                         {errors.title.message}
                       </p>
                     )}
@@ -104,18 +127,32 @@ const GeneralInformationStep = (props, ref) => {
             </div>
             {/* Category */}
             <div className="mb-6">
-              <h3 className="text-sm font-bold mb-2">Category</h3>
+              <h3
+                className="text-sm font-bold mb-2"
+                style={{ color: colors.text.primary }}
+              >
+                Category
+              </h3>
               <Controller
                 name="category"
                 control={control}
                 render={({ field }) => (
                   <select
                     {...field}
-                    className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                    className="w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:border-transparent"
+                    style={{
+                      backgroundColor: colors.background.secondary,
+                      color: colors.text.primary,
+                      borderColor: colors.border.primary,
+                    }}
                     onChange={(e) => {
                       field.onChange(e);
                       handleFieldChange("category", e.target.value);
                     }}
+                    onFocus={(e) =>
+                      (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                    }
+                    onBlur={(e) => (e.target.style.boxShadow = "none")}
                   >
                     {/* Add "Other" as a fallback option even if API doesn't return it */}
                     <option value="OTHER">Other Services</option>
@@ -134,7 +171,12 @@ const GeneralInformationStep = (props, ref) => {
           <div className="flex-1">
             {/* Description */}
             <div className="mb-6">
-              <h3 className="text-sm font-bold mb-2">Description</h3>
+              <h3
+                className="text-sm font-bold mb-2"
+                style={{ color: colors.text.primary }}
+              >
+                Description
+              </h3>
               <Controller
                 name="description"
                 control={control}
@@ -150,21 +192,37 @@ const GeneralInformationStep = (props, ref) => {
                     <textarea
                       {...field}
                       rows={1}
-                      className={`w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical ${
+                      className={`w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:border-transparent resize-vertical ${
                         errors.description
                           ? "border-red-500"
                           : "border-gray-300"
                       }`}
+                      style={{
+                        backgroundColor: colors.background.secondary,
+                        color: colors.text.primary,
+                        borderColor: errors.description
+                          ? colors.semantic.error
+                          : colors.border.primary,
+                      }}
                       placeholder="Input text"
                       onChange={(e) => {
                         field.onChange(e);
                         handleFieldChange("description", e.target.value);
                         trigger("description");
                       }}
-                      onBlur={() => trigger("description")}
+                      onFocus={(e) =>
+                        (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                      }
+                      onBlur={(e) => {
+                        trigger("description");
+                        e.target.style.boxShadow = "none";
+                      }}
                     />
                     {errors.description && (
-                      <p className="mt-1 text-sm text-red-600">
+                      <p
+                        className="mt-1 text-sm"
+                        style={{ color: colors.semantic.error }}
+                      >
                         {errors.description.message}
                       </p>
                     )}
@@ -175,18 +233,32 @@ const GeneralInformationStep = (props, ref) => {
 
             {/* Urgency */}
             <div className="mb-6">
-              <h3 className="text-sm font-bold mb-2">Urgency</h3>
+              <h3
+                className="text-sm font-bold mb-2"
+                style={{ color: colors.text.primary }}
+              >
+                Urgency
+              </h3>
               <Controller
                 name="urgency"
                 control={control}
                 render={({ field }) => (
                   <select
                     {...field}
-                    className="w-full px-3 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                    className="w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:border-transparent"
+                    style={{
+                      backgroundColor: colors.background.secondary,
+                      color: colors.text.primary,
+                      borderColor: colors.border.primary,
+                    }}
                     onChange={(e) => {
                       field.onChange(e);
                       handleFieldChange("urgency", e.target.value);
                     }}
+                    onFocus={(e) =>
+                      (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+                    }
+                    onBlur={(e) => (e.target.style.boxShadow = "none")}
                   >
                     {Object.entries(urgencyLevels).map(([key, value]) => (
                       <option key={key} value={key}>
@@ -202,7 +274,10 @@ const GeneralInformationStep = (props, ref) => {
 
         {/* Required number of people - Full width */}
         <div className="mb-6">
-          <h3 className="text-sm font-bold mb-2 text-left">
+          <h3
+            className="text-sm font-bold mb-2 text-left"
+            style={{ color: colors.text.primary }}
+          >
             Required number of people
           </h3>
           <div className="flex items-center">
@@ -210,19 +285,49 @@ const GeneralInformationStep = (props, ref) => {
               type="button"
               onClick={() => dispatch(decrementRequiredPeople())}
               disabled={formData.requiredPeople <= 1}
-              className="bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed rounded p-2 transition-colors"
+              className="hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed rounded p-2 transition-colors"
+              style={{
+                backgroundColor:
+                  formData.requiredPeople <= 1
+                    ? colors.interactive.disabled
+                    : colors.background.secondary,
+              }}
+              onMouseOver={(e) =>
+                formData.requiredPeople > 1 &&
+                (e.currentTarget.style.backgroundColor =
+                  colors.interactive.hover)
+              }
+              onMouseOut={(e) =>
+                formData.requiredPeople > 1 &&
+                (e.currentTarget.style.backgroundColor =
+                  colors.background.secondary)
+              }
             >
-              <RemoveIcon />
+              <RemoveIcon sx={{ color: colors.text.primary }} />
             </button>
 
-            <span className="mx-4 w-8 text-center font-bold">
+            <span
+              className="mx-4 w-8 text-center font-bold"
+              style={{ color: colors.text.primary }}
+            >
               {formData.requiredPeople}
             </span>
 
             <button
               type="button"
               onClick={() => dispatch(incrementRequiredPeople())}
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded p-2 transition-colors"
+              className="rounded p-2 transition-colors"
+              style={{
+                backgroundColor: colors.brand.primary,
+                color: "#FFFFFF",
+              }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor =
+                  colors.brand.primaryHover)
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = colors.brand.primary)
+              }
             >
               <AddIcon />
             </button>

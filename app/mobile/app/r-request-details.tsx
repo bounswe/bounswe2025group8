@@ -15,10 +15,11 @@ import {
   Dimensions,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useTheme, useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { getTaskDetails, getTaskApplicants, completeTask, cancelTask, createReview, getTaskReviews, getTaskPhotos, BACKEND_BASE_URL, updateTask, type Task, type Volunteer, type Review, type Photo, type UpdateTaskPayload } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import { useAppTheme } from '../theme/ThemeProvider';
 import type { ThemeTokens } from '../constants/Colors';
 import { CategoryPicker } from '../components/forms/CategoryPicker';
 import { DeadlinePicker } from '../components/forms/DeadlinePicker';
@@ -27,8 +28,7 @@ import { AddressFieldsValue, emptyAddress, parseAddressString, formatAddress } f
 
 export default function RequestDetails() {
   const params = useLocalSearchParams();
-  const { colors } = useTheme();
-  const themeColors = colors as ThemeTokens;
+  const { tokens: themeColors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
 
@@ -507,7 +507,7 @@ export default function RequestDetails() {
   const canAssignMore = numAssigned < request.volunteer_number;
   const taskStatus = request?.status?.toUpperCase() || '';
   const isCompleted = taskStatus === 'COMPLETED';
-  const canMarkComplete = isCreator && !isCompleted && (taskStatus === 'ASSIGNED' || taskStatus === 'IN_PROGRESS');
+  const canMarkComplete = isCreator && !isCompleted && numAssigned >= 1;
 
   const currentStatusKey = statusDisplayToKey(statusDisplay);
   const statusLabelBackgroundColor =
