@@ -16,7 +16,7 @@ import {
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { getTasks, getPopularTasks, getUserProfile, type Task, type UserProfile, type Category as ApiCategory } from '../lib/api';
+import { getTasks, getPopularTasks, getUserProfile, getTaskPhotos, BACKEND_BASE_URL, type Task, type UserProfile, type Category as ApiCategory, type Photo } from '../lib/api';
 import type { ThemeTokens } from '@/constants/Colors';
 import { useAuth } from '../lib/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -30,6 +30,7 @@ export default function Feed() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [taskDerivedCategories, setTaskDerivedCategories] = useState<ApiCategory[]>([]);
+  const [taskPhotos, setTaskPhotos] = useState<Map<number, Photo[]>>(new Map());
   const scrollRef = useRef<ScrollView>(null);
   const themeColors = colors as ThemeTokens;
 
@@ -72,6 +73,23 @@ export default function Feed() {
       const activePopularTasks = filterActiveTasks(popular);
       
       setPopularTasks(activePopularTasks);
+
+      // Fetch photos for popular tasks
+      const photosMap = new Map<number, Photo[]>();
+      await Promise.all(
+        activePopularTasks.map(async (task) => {
+          try {
+            const photosResponse = await getTaskPhotos(task.id);
+            if (photosResponse.status === 'success' && photosResponse.data.photos.length > 0) {
+              photosMap.set(task.id, photosResponse.data.photos);
+            }
+          } catch (error) {
+            // Silently fail for individual photo fetches
+            console.warn(`Failed to fetch photos for task ${task.id}`);
+          }
+        })
+      );
+      setTaskPhotos(photosMap);
 
       if (activeTasks.length > 0) {
         const uniqueCategoriesMap = new Map<string, ApiCategory>();
@@ -238,28 +256,38 @@ export default function Feed() {
         <Text style={[styles.sectionTitle, { color: colors.text }]}>
           Popular Requests
         </Text>
-        {popularTasks.map((task) => (
-          <TouchableOpacity
-            key={task.id}
-            style={[styles.requestRow, { backgroundColor: colors.card }]}
-            onPress={() =>
-              router.push({
-                pathname: (task.creator && task.creator.id === user?.id) ? '/r-request-details' : '/v-request-details',
-                params: { id: task.id }
-              })
-            }
-            accessible
+        {popularTasks.map((task) => {
+          const photos = taskPhotos.get(task.id) || [];
+          const primaryPhoto = photos.length > 0 ? photos[0] : null;
+          const photoUrl = primaryPhoto ? (primaryPhoto.photo_url || primaryPhoto.url || primaryPhoto.image) : null;
+          const absolutePhotoUrl = photoUrl && photoUrl.startsWith('http') 
+            ? photoUrl 
+            : photoUrl 
+              ? `${BACKEND_BASE_URL}${photoUrl}` 
+              : null;
 
-            accessibilityRole="button"
-            accessibilityLabel={`View details for ${task.title}`}
-          >
-            <Image
-              source={require('../assets/images/help.png')}
-              style={styles.requestImage}
-              accessibilityRole="image"
-              accessibilityLabel={`Illustration for ${task.title}`}
-            />
-            <View style={styles.requestInfo}>
+          return (
+            <TouchableOpacity
+              key={task.id}
+              style={[styles.requestRow, { backgroundColor: colors.card }]}
+              onPress={() =>
+                router.push({
+                  pathname: (task.creator && task.creator.id === user?.id) ? '/r-request-details' : '/v-request-details',
+                  params: { id: task.id }
+                })
+              }
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel={`View details for ${task.title}`}
+            >
+              <Image
+                source={absolutePhotoUrl ? { uri: absolutePhotoUrl } : require('../assets/images/help.png')}
+                style={styles.requestImage}
+                accessibilityRole="image"
+                accessibilityLabel={absolutePhotoUrl ? `Photo for ${task.title}` : `Default illustration for ${task.title}`}
+              />
+              <View style={styles.requestInfo}>
               <Text style={[styles.requestTitle, { color: colors.text }]}>
                 {task.title}
               </Text>
@@ -298,7 +326,8 @@ export default function Feed() {
               importantForAccessibility="no"
             />
           </TouchableOpacity>
-        ))}
+          );
+        })}
         <TouchableOpacity
           onPress={() => router.push('/requests')}
           style={styles.seeAllLink}
