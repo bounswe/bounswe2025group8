@@ -1,36 +1,14 @@
 import { useState } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-
-// Eye icons for password visibility
-const EyeIcon = () => (
-  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-    <path
-      fillRule="evenodd"
-      d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-      clipRule="evenodd"
-    />
-  </svg>
-);
-
-const EyeOffIcon = () => (
-  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-    <path
-      fillRule="evenodd"
-      d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z"
-      clipRule="evenodd"
-    />
-    <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
-  </svg>
-);
 import useAuth from "../features/authentication/hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
-
 import logoImage from "../assets/logo.png";
-import userIcon from "../assets/user.svg";
-import keyIcon from "../assets/key_for_register.svg";
-import phoneIcon from "../assets/phone.svg";
-import mailIcon from "../assets/mail.svg";
+import PersonIcon from "@mui/icons-material/Person";
+import EmailIcon from "@mui/icons-material/Email";
+import LockIcon from "@mui/icons-material/Lock";
+import PhoneIcon from "@mui/icons-material/Phone";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 const RegisterPage = () => {
   const { colors, theme, setTheme } = useTheme();
@@ -223,7 +201,7 @@ const RegisterPage = () => {
                   className="px-8 py-2 no-underline transition-colors"
                   style={{
                     backgroundColor: colors.brand.primary,
-                    color: colors.text.inverted,
+                    color: colors.text.inverse,
                   }}
                   onMouseOver={(e) =>
                     (e.currentTarget.style.backgroundColor =
@@ -270,17 +248,9 @@ const RegisterPage = () => {
                   <div className="flex-1 min-w-0">
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <img
-                          src={userIcon}
-                          alt=""
-                          aria-hidden="true"
-                          width="16"
-                          height="16"
+                        <PersonIcon
                           style={{
-                            filter:
-                              theme === "light"
-                                ? "brightness(0) saturate(100%) invert(0.3) sepia(100%) hue-rotate(0deg)"
-                                : "brightness(0) invert(1)",
+                            fontSize: 16,
                           }}
                         />
                       </div>
@@ -328,17 +298,9 @@ const RegisterPage = () => {
                   <div className="w-32">
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <img
-                          src={userIcon}
-                          alt=""
-                          aria-hidden="true"
-                          width="16"
-                          height="16"
+                        <PersonIcon
                           style={{
-                            filter:
-                              theme === "light"
-                                ? "brightness(0) saturate(100%) invert(0.3) sepia(100%) hue-rotate(0deg)"
-                                : "brightness(0) invert(1)",
+                            fontSize: 16,
                           }}
                         />
                       </div>
@@ -388,17 +350,9 @@ const RegisterPage = () => {
                 <div className="mb-4">
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <img
-                        src={userIcon}
-                        alt=""
-                        aria-hidden="true"
-                        width="16"
-                        height="16"
+                      <PersonIcon
                         style={{
-                          filter:
-                            theme === "light"
-                              ? "brightness(0) saturate(100%) invert(0.3) sepia(100%) hue-rotate(0deg)"
-                              : "brightness(0) invert(1)",
+                          fontSize: 16,
                         }}
                       />
                     </div>
@@ -445,17 +399,9 @@ const RegisterPage = () => {
                 <div className="mb-4">
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <img
-                        src={phoneIcon}
-                        alt=""
-                        aria-hidden="true"
-                        width="16"
-                        height="16"
+                      <PhoneIcon
                         style={{
-                          filter:
-                            theme === "light"
-                              ? "brightness(0) saturate(100%) invert(0.3) sepia(100%) hue-rotate(0deg)"
-                              : "brightness(0) invert(1)",
+                          fontSize: 16,
                         }}
                       />
                     </div>
@@ -502,17 +448,9 @@ const RegisterPage = () => {
                 <div className="mb-4">
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <img
-                        src={mailIcon}
-                        alt=""
-                        aria-hidden="true"
-                        width="16"
-                        height="16"
+                      <EmailIcon
                         style={{
-                          filter:
-                            theme === "light"
-                              ? "brightness(0) saturate(100%) invert(0.3) sepia(100%) hue-rotate(0deg)"
-                              : "brightness(0) invert(1)",
+                          fontSize: 16,
                         }}
                       />
                     </div>
@@ -560,17 +498,9 @@ const RegisterPage = () => {
                 <div className="mb-4">
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <img
-                        src={keyIcon}
-                        alt=""
-                        aria-hidden="true"
-                        width="16"
-                        height="16"
+                      <LockIcon
                         style={{
-                          filter:
-                            theme === "light"
-                              ? "brightness(0) saturate(100%) invert(0.3) sepia(100%) hue-rotate(0deg)"
-                              : "brightness(0) invert(1)",
+                          fontSize: 16,
                         }}
                       />
                     </div>
@@ -627,7 +557,11 @@ const RegisterPage = () => {
                           (e.currentTarget.style.color = colors.text.tertiary)
                         }
                       >
-                        {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                        {showPassword ? (
+                          <VisibilityOffIcon style={{ fontSize: 16 }} />
+                        ) : (
+                          <VisibilityIcon style={{ fontSize: 16 }} />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -637,17 +571,9 @@ const RegisterPage = () => {
                 <div className="mb-4">
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <img
-                        src={keyIcon}
-                        alt=""
-                        aria-hidden="true"
-                        width="16"
-                        height="16"
+                      <LockIcon
                         style={{
-                          filter:
-                            theme === "light"
-                              ? "brightness(0) saturate(100%) invert(0.3) sepia(100%) hue-rotate(0deg)"
-                              : "brightness(0) invert(1)",
+                          fontSize: 16,
                         }}
                       />
                     </div>
@@ -708,7 +634,11 @@ const RegisterPage = () => {
                           (e.currentTarget.style.color = colors.text.tertiary)
                         }
                       >
-                        {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
+                        {showConfirmPassword ? (
+                          <VisibilityOffIcon style={{ fontSize: 16 }} />
+                        ) : (
+                          <VisibilityIcon style={{ fontSize: 16 }} />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -759,7 +689,7 @@ const RegisterPage = () => {
                     backgroundColor: loading
                       ? colors.interactive.disabled
                       : colors.brand.primary,
-                    color: colors.text.inverted,
+                    color: colors.text.inverse,
                   }}
                   onMouseOver={(e) =>
                     !loading &&

@@ -354,7 +354,7 @@ const ResetPassword = () => {
                     backgroundColor: loading
                       ? colors.interactive.disabled
                       : colors.brand.primary,
-                    color: colors.text.inverted,
+                    color: colors.text.inverse,
                   }}
                   onMouseOver={(e) =>
                     !loading &&

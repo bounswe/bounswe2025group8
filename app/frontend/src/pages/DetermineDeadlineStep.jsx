@@ -268,7 +268,7 @@ const DetermineDeadlineStep = () => {
                       if (isSelected)
                         return {
                           backgroundColor: colors.brand.primary,
-                          color: colors.text.inverted,
+                          color: colors.text.inverse,
                           fontWeight: "bold",
                         };
                       return {};

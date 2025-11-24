@@ -49,6 +49,7 @@ import RequestCard from "../components/RequestCard";
 import ReviewCard from "../components/ReviewCard";
 import Badge from "../components/Badge";
 import EditProfileDialog from "../components/EditProfileDialog";
+import RatingCategoriesModal from "../components/RatingCategoriesModal";
 import { useTheme } from "../hooks/useTheme";
 import { toAbsoluteUrl } from "../utils/url";
 // No need for CSS module import as we're using Material UI's sx prop
@@ -127,7 +128,8 @@ const ProfilePage = () => {
   const [reviewPage, setReviewPage] = useState(1);
   const [reviewsPerPage] = useState(5);
   const [refreshData, setRefreshData] = useState(false);
-  const [editProfileOpen, setEditProfileOpen] = useState(false); // Empty array for badges since we'll use API data
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [ratingCategoriesOpen, setRatingCategoriesOpen] = useState(false); // Empty array for badges since we'll use API data
   const [mockBadges] = useState([]);
 
   const loadProfileData = useCallback(async () => {
@@ -484,7 +486,7 @@ const ProfilePage = () => {
           sx={{
             mt: 2,
             backgroundColor: colors.brand.primary,
-            color: colors.text.inverted,
+            color: colors.text.inverse,
             "&:hover": {
               backgroundColor: colors.brand.secondary,
             },
@@ -624,10 +626,15 @@ const ProfilePage = () => {
                     label={`${user.rating} (${
                       user.reviewCount || reviews.length
                     } reviews)`}
+                    onClick={() => setRatingCategoriesOpen(true)}
                     sx={{
                       backgroundColor: colors.brand.primary,
-                      color: colors.text.inverted,
+                      color: colors.text.inverse,
                       "& .MuiChip-label": { px: 2 },
+                      cursor: "pointer",
+                      "&:hover": {
+                        backgroundColor: colors.brand.secondary,
+                      },
                     }}
                   />
                 </Box>
@@ -684,7 +691,7 @@ const ProfilePage = () => {
                   ml: 4,
                   "& .MuiBadge-badge": {
                     backgroundColor: colors.brand.primary,
-                    color: colors.text.inverted,
+                    color: colors.text.inverse,
                   },
                 }}
                 aria-label={`Earned badges: ${earnedBadges.length}`}
@@ -875,7 +882,7 @@ const ProfilePage = () => {
                       px: 3,
                       py: 1,
                       backgroundColor: colors.brand.primary,
-                      color: colors.text.inverted,
+                      color: colors.text.inverse,
                       "&:hover": {
                         backgroundColor: colors.brand.secondary,
                       },
@@ -906,7 +913,7 @@ const ProfilePage = () => {
                       px: 3,
                       py: 1,
                       backgroundColor: colors.brand.primary,
-                      color: colors.text.inverted,
+                      color: colors.text.inverse,
                       "&:hover": {
                         backgroundColor: colors.brand.secondary,
                       },
@@ -966,7 +973,7 @@ const ProfilePage = () => {
                 size="small"
                 sx={{
                   backgroundColor: colors.brand.primary,
-                  color: colors.text.inverted,
+                  color: colors.text.inverse,
                   "& .MuiChip-label": { px: 1 },
                 }}
               />
@@ -998,7 +1005,7 @@ const ProfilePage = () => {
                           },
                           "& .Mui-selected": {
                             backgroundColor: `${colors.brand.primary} !important`,
-                            color: `${colors.text.inverted} !important`,
+                            color: `${colors.text.inverse} !important`,
                             "&:hover": {
                               backgroundColor: `${colors.brand.secondary} !important`,
                             },
@@ -1027,6 +1034,14 @@ const ProfilePage = () => {
           setRefreshData(true);
         }}
         user={user}
+      />
+
+      {/* Rating Categories Modal */}
+      <RatingCategoriesModal
+        open={ratingCategoriesOpen}
+        onClose={() => setRatingCategoriesOpen(false)}
+        user={user}
+        role={roleTab === 0 ? "volunteer" : "requester"}
       />
     </Box>
   );

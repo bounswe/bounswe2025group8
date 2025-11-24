@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import useAuth from "../features/authentication/hooks/useAuth";
 import logoImage from "../assets/logo.png";
-import mailIcon from "../assets/mail.svg";
 import { useTheme } from "../hooks/useTheme";
+import EmailIcon from "@mui/icons-material/Email";
 
 const ForgotPassword = () => {
   const { colors, theme, setTheme } = useTheme();
@@ -148,19 +148,7 @@ const ForgotPassword = () => {
               <form onSubmit={handleSubmit} noValidate className="w-full">
                 <div className="relative mt-2 mb-2">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <img
-                      src={mailIcon}
-                      alt=""
-                      aria-hidden="true"
-                      width="16"
-                      height="16"
-                      style={{
-                        filter:
-                          theme === "light"
-                            ? "brightness(0) saturate(100%) invert(0.3) sepia(100%) hue-rotate(0deg)"
-                            : "brightness(0) invert(1)",
-                      }}
-                    />
+                    <EmailIcon style={{ fontSize: 16 }} />
                   </div>
                   <label
                     htmlFor="email"
@@ -210,7 +198,7 @@ const ForgotPassword = () => {
                     backgroundColor: loading
                       ? colors.interactive.disabled
                       : colors.brand.primary,
-                    color: colors.text.inverted,
+                    color: colors.text.inverse,
                   }}
                   onMouseOver={(e) =>
                     !loading &&
