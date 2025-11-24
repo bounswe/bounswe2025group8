@@ -105,7 +105,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         task = serializer.save()
         
         # Return response with the created task
-        response_serializer = TaskSerializer(task)
+        response_serializer = TaskSerializer(task, context={'request': request})
         return Response(format_response(
             status='success',
             message='Task created successfully.',
@@ -121,7 +121,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         task = serializer.save()
         
         # Return response with the updated task
-        response_serializer = TaskSerializer(task)
+        response_serializer = TaskSerializer(task, context={'request': request})
         return Response(format_response(
             status='success',
             message='Task updated successfully.',
@@ -165,7 +165,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         task = serializer.save()
         
         # Return response with the updated task
-        response_serializer = TaskSerializer(task)
+        response_serializer = TaskSerializer(task, context={'request': request})
         return Response(format_response(
             status='success',
             message=f"Task status updated to '{dict(TaskStatus.choices)[task.status]}'.",
@@ -225,7 +225,7 @@ class TaskViewSet(viewsets.ModelViewSet):
             status=TaskStatus.POSTED  # Only show open tasks
         ).order_by('-urgency_level', '-created_at')[:limit]
         
-        serializer = TaskSerializer(popular_tasks, many=True)
+        serializer = TaskSerializer(popular_tasks, many=True, context={'request': request})
         
         return Response(format_response(
             status='success',
@@ -264,7 +264,7 @@ class UserTasksView(views.APIView):
         paginated = paginate_results(tasks, page=page, items_per_page=limit)
         
         # Serialize tasks
-        serializer = TaskSerializer(paginated['data'], many=True)
+        serializer = TaskSerializer(paginated['data'], many=True, context={'request': request})
         
         return Response(format_response(
             status='success',
