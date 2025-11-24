@@ -79,6 +79,11 @@ const Badge = ({ badge }) => {
             opacity: 1,
           },
         }}
+        tabIndex={0}
+        role="img"
+        aria-label={`${title}${earned ? ", earned" : ", not yet earned"}${
+          !earned && progress !== undefined ? `, ${progress}% complete` : ""
+        }`}
       >
         <Box
           sx={{
@@ -106,6 +111,10 @@ const Badge = ({ badge }) => {
                 color: color,
                 opacity: 0.8,
               }}
+              role="progressbar"
+              aria-valuenow={progress}
+              aria-valuemin={0}
+              aria-valuemax={100}
             />
           )}
 
@@ -123,7 +132,9 @@ const Badge = ({ badge }) => {
               }}
             />
           ) : (
-            <Icon sx={{ color: "white", fontSize: 30 }}>{icon}</Icon>
+            <Icon sx={{ color: "white", fontSize: 30 }} aria-hidden>
+              {icon}
+            </Icon>
           )}
         </Box>
         <Typography

@@ -14,13 +14,16 @@ import Categories from "./pages/Categories.jsx";
 import RequestDetail from "./pages/RequestDetail.jsx";
 import SelectVolunteer from "./pages/SelectVolunteer.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
+import Notifications from './pages/Notifications.tsx';
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './contexts/ThemeContext'
+import RouteFocusHandler from './components/RouteFocusHandler'
 
 function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
+        <RouteFocusHandler />
         <Routes>
           {/* Public/auth routes (outside main layout) */}
           <Route path="/login" element={<LoginPage />} />
@@ -34,6 +37,7 @@ function App() {
             <Route path="/home" element={<Home />} />
             <Route path="/test" element={<Test />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/notifications" element={<Notifications />} />
             <Route path="/create-request" element={<CreateRequestPage />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/search" element={<SearchResults />} />

@@ -7,7 +7,7 @@ import React, {
 import { useSelector, useDispatch } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
 import { updateFormData } from "../features/request/store/createRequestSlice";
-import * as createRequestService from "../features/request/services/createRequestService";
+import { Country, State, City } from "country-state-city";
 import { useTheme } from "../hooks/useTheme";
 
 const SetupAddressStep = (props, ref) => {
@@ -16,14 +16,9 @@ const SetupAddressStep = (props, ref) => {
   const { formData } = useSelector((state) => state.createRequest);
 
   // State for location data
-  const [countries, setCountries] = useState([]);
+  const [countries] = useState(() => Country.getAllCountries());
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
-  const [loading, setLoading] = useState({
-    countries: false,
-    states: false,
-    cities: false,
-  });
   const [error, setError] = useState(null);
   const {
     control,
@@ -50,87 +45,41 @@ const SetupAddressStep = (props, ref) => {
   const watchState = watch("state");
   const watchCity = watch("city");
 
-  // Fetch countries when component mounts
-  useEffect(() => {
-    const fetchCountryData = async () => {
-      try {
-        setLoading((prev) => ({ ...prev, countries: true }));
-        setError(null);
-        const countriesData = await createRequestService.fetchCountries();
-        setCountries(countriesData);
-      } catch (err) {
-        console.error("Error fetching countries:", err);
-        setError("Failed to load countries. Please try again later.");
-      } finally {
-        setLoading((prev) => ({ ...prev, countries: false }));
-      }
-    };
-
-    fetchCountryData();
-  }, []);
-
-  // Fetch states when country changes
+  // Update states when country changes
   useEffect(() => {
     if (!watchCountry) {
       setStates([]);
       return;
     }
 
-    const fetchStateData = async () => {
-      try {
-        setLoading((prev) => ({ ...prev, states: true }));
-        setError(null);
+    try {
+      setError(null);
+      const statesData = State.getStatesOfCountry(watchCountry);
+      setStates(statesData);
+    } catch (err) {
+      console.error("Error loading states/provinces:", err);
+      setError("Failed to load states/provinces. Please try again later.");
+      setStates([]);
+    }
+  }, [watchCountry]);
 
-        // Get the country code from the selected country value
-        const selectedCountry = countries.find((c) => c.code === watchCountry);
-        if (!selectedCountry) return;
-
-        const statesData = await createRequestService.fetchStates(
-          selectedCountry.name
-        );
-        setStates(statesData);
-      } catch (err) {
-        console.error("Error fetching states/provinces:", err);
-        setError("Failed to load states/provinces. Please try again later.");
-      } finally {
-        setLoading((prev) => ({ ...prev, states: false }));
-      }
-    };
-
-    fetchStateData();
-  }, [watchCountry, countries]);
-
-  // Fetch cities when state changes
+  // Update cities when state changes
   useEffect(() => {
     if (!watchCountry || !watchState) {
       setCities([]);
       return;
     }
 
-    const fetchCityData = async () => {
-      try {
-        setLoading((prev) => ({ ...prev, cities: true }));
-        setError(null);
-
-        // Get the country name from the selected country code
-        const selectedCountry = countries.find((c) => c.code === watchCountry);
-        if (!selectedCountry) return;
-
-        const citiesData = await createRequestService.fetchCities(
-          selectedCountry.name,
-          watchState
-        );
-        setCities(citiesData);
-      } catch (err) {
-        console.error("Error fetching cities:", err);
-        setError("Failed to load cities. Please try again later.");
-      } finally {
-        setLoading((prev) => ({ ...prev, cities: false }));
-      }
-    };
-
-    fetchCityData();
-  }, [watchCountry, watchState, countries]);
+    try {
+      setError(null);
+      const citiesData = City.getCitiesOfState(watchCountry, watchState);
+      setCities(citiesData);
+    } catch (err) {
+      console.error("Error loading cities:", err);
+      setError("Failed to load cities. Please try again later.");
+      setCities([]);
+    }
+  }, [watchCountry, watchState]);
   // Auto-save form data happens when fields change (handled by handleFieldChange)
   // Auto-save form data when fields change
   const handleFieldChange = (field, value) => {
@@ -156,6 +105,8 @@ const SetupAddressStep = (props, ref) => {
             borderColor: colors.semantic.error,
             color: colors.semantic.error,
           }}
+          role="alert"
+          aria-live="assertive"
         >
           {error}
         </div>
@@ -166,12 +117,13 @@ const SetupAddressStep = (props, ref) => {
         <div className="flex flex-col md:flex-row gap-6 mb-6">
           {/* Country */}
           <div className="flex-1">
-            <h3
-              className="text-sm font-bold mb-2"
+            <label
+              htmlFor="country-select"
+              className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
               Country
-            </h3>
+            </label>
             <Controller
               name="country"
               control={control}
@@ -179,19 +131,10 @@ const SetupAddressStep = (props, ref) => {
               render={({ field }) => (
                 <div>
                   <div className="relative">
-                    {loading.countries && (
-                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                        <div
-                          className="animate-spin rounded-full h-5 w-5 border-b-2"
-                          style={{ borderColor: colors.brand.primary }}
-                        ></div>
-                      </div>
-                    )}
                     <select
                       {...field}
-                      className={`w-full px-3 py-3 border rounded-md focus:outline-none ${
-                        loading.countries ? "pl-12" : ""
-                      }`}
+                      id="country-select"
+                      className="w-full px-3 py-3 border rounded-md focus:outline-none"
                       style={{
                         backgroundColor: colors.background.secondary,
                         color: colors.text.primary,
@@ -199,6 +142,11 @@ const SetupAddressStep = (props, ref) => {
                           ? colors.semantic.error
                           : colors.border.primary,
                       }}
+                      aria-required="true"
+                      aria-invalid={errors.country ? "true" : "false"}
+                      aria-describedby={
+                        errors.country ? "country-error" : undefined
+                      }
                       onFocus={(e) =>
                         (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
                       }
@@ -206,7 +154,6 @@ const SetupAddressStep = (props, ref) => {
                         field.onBlur();
                         e.target.style.boxShadow = "none";
                       }}
-                      disabled={loading.countries}
                       onChange={(e) => {
                         field.onChange(e);
                         handleFieldChange("country", e.target.value);
@@ -219,7 +166,7 @@ const SetupAddressStep = (props, ref) => {
                     >
                       <option value="">Select Country</option>
                       {countries.map((country) => (
-                        <option key={country.code} value={country.code}>
+                        <option key={country.isoCode} value={country.isoCode}>
                           {country.name}
                         </option>
                       ))}
@@ -229,6 +176,7 @@ const SetupAddressStep = (props, ref) => {
                     <p
                       className="mt-1 text-sm"
                       style={{ color: colors.semantic.error }}
+                      id="country-error"
                     >
                       {errors.country.message}
                     </p>
@@ -240,12 +188,13 @@ const SetupAddressStep = (props, ref) => {
 
           {/* State/Province */}
           <div className="flex-1">
-            <h3
-              className="text-sm font-bold mb-2"
+            <label
+              htmlFor="state-select"
+              className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
               State/Province
-            </h3>
+            </label>
             <Controller
               name="state"
               control={control}
@@ -253,19 +202,10 @@ const SetupAddressStep = (props, ref) => {
               render={({ field }) => (
                 <div>
                   <div className="relative">
-                    {loading.states && (
-                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                        <div
-                          className="animate-spin rounded-full h-5 w-5 border-b-2"
-                          style={{ borderColor: colors.brand.primary }}
-                        ></div>
-                      </div>
-                    )}
                     <select
                       {...field}
-                      className={`w-full px-3 py-3 border rounded-md focus:outline-none ${
-                        loading.states ? "pl-12" : ""
-                      }`}
+                      id="state-select"
+                      className="w-full px-3 py-3 border rounded-md focus:outline-none"
                       style={{
                         backgroundColor: colors.background.secondary,
                         color: colors.text.primary,
@@ -273,6 +213,11 @@ const SetupAddressStep = (props, ref) => {
                           ? colors.semantic.error
                           : colors.border.primary,
                       }}
+                      aria-required="true"
+                      aria-invalid={errors.state ? "true" : "false"}
+                      aria-describedby={
+                        errors.state ? "state-error" : undefined
+                      }
                       onFocus={(e) =>
                         (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
                       }
@@ -280,7 +225,7 @@ const SetupAddressStep = (props, ref) => {
                         field.onBlur();
                         e.target.style.boxShadow = "none";
                       }}
-                      disabled={!watchCountry || loading.states}
+                      disabled={!watchCountry}
                       onChange={(e) => {
                         field.onChange(e);
                         handleFieldChange("state", e.target.value);
@@ -292,8 +237,8 @@ const SetupAddressStep = (props, ref) => {
                       <option value="">Select State/Province</option>
                       {states.map((state) => (
                         <option
-                          key={state.code || state.name}
-                          value={state.name}
+                          key={state.isoCode}
+                          value={state.isoCode}
                         >
                           {state.name}
                         </option>
@@ -304,6 +249,7 @@ const SetupAddressStep = (props, ref) => {
                     <p
                       className="mt-1 text-sm"
                       style={{ color: colors.semantic.error }}
+                      id="state-error"
                     >
                       {errors.state.message}
                     </p>
@@ -316,12 +262,13 @@ const SetupAddressStep = (props, ref) => {
         {/* City */}
         <div className="flex flex-col md:flex-row gap-6 mb-6">
           <div className="flex-1">
-            <h3
-              className="text-sm font-bold mb-2"
+            <label
+              htmlFor="city-select"
+              className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
               City/District
-            </h3>
+            </label>
             <Controller
               name="city"
               control={control}
@@ -329,19 +276,10 @@ const SetupAddressStep = (props, ref) => {
               render={({ field }) => (
                 <div>
                   <div className="relative">
-                    {loading.cities && (
-                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                        <div
-                          className="animate-spin rounded-full h-5 w-5 border-b-2"
-                          style={{ borderColor: colors.brand.primary }}
-                        ></div>
-                      </div>
-                    )}
                     <select
                       {...field}
-                      className={`w-full px-3 py-3 border rounded-md focus:outline-none ${
-                        loading.cities ? "pl-12" : ""
-                      }`}
+                      id="city-select"
+                      className="w-full px-3 py-3 border rounded-md focus:outline-none"
                       style={{
                         backgroundColor: colors.background.secondary,
                         color: colors.text.primary,
@@ -349,6 +287,9 @@ const SetupAddressStep = (props, ref) => {
                           ? colors.semantic.error
                           : colors.border.primary,
                       }}
+                      aria-required="true"
+                      aria-invalid={errors.city ? "true" : "false"}
+                      aria-describedby={errors.city ? "city-error" : undefined}
                       onFocus={(e) =>
                         (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
                       }
@@ -356,7 +297,7 @@ const SetupAddressStep = (props, ref) => {
                         field.onBlur();
                         e.target.style.boxShadow = "none";
                       }}
-                      disabled={!watchState || loading.cities}
+                      disabled={!watchState}
                       onChange={(e) => {
                         field.onChange(e);
                         handleFieldChange("city", e.target.value);
@@ -374,6 +315,7 @@ const SetupAddressStep = (props, ref) => {
                     <p
                       className="mt-1 text-sm"
                       style={{ color: colors.semantic.error }}
+                      id="city-error"
                     >
                       {errors.city.message}
                     </p>
@@ -387,12 +329,13 @@ const SetupAddressStep = (props, ref) => {
         <div className="flex flex-col md:flex-row gap-6 mb-6">
           {/* Neighborhood */}
           <div className="flex-1">
-            <h3
-              className="text-sm font-bold mb-2"
+            <label
+              htmlFor="neighborhood-input"
+              className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
               Neighborhood
-            </h3>
+            </label>
             <Controller
               name="neighborhood"
               control={control}
@@ -400,6 +343,7 @@ const SetupAddressStep = (props, ref) => {
                 <input
                   {...field}
                   type="text"
+                  id="neighborhood-input"
                   className="w-full px-3 py-3 border rounded-md focus:outline-none disabled:cursor-not-allowed"
                   style={{
                     backgroundColor: !watchCity
@@ -425,12 +369,13 @@ const SetupAddressStep = (props, ref) => {
 
           {/* Street */}
           <div className="flex-1">
-            <h3
-              className="text-sm font-bold mb-2"
+            <label
+              htmlFor="street-input"
+              className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
               Street
-            </h3>
+            </label>
             <Controller
               name="street"
               control={control}
@@ -438,6 +383,7 @@ const SetupAddressStep = (props, ref) => {
                 <input
                   {...field}
                   type="text"
+                  id="street-input"
                   className="w-full px-3 py-3 border rounded-md focus:outline-none disabled:cursor-not-allowed"
                   style={{
                     backgroundColor: !watchCity
@@ -465,12 +411,13 @@ const SetupAddressStep = (props, ref) => {
         <div className="flex flex-col md:flex-row gap-6 mb-6">
           {/* Building No */}
           <div className="flex-1">
-            <h3
-              className="text-sm font-bold mb-2"
+            <label
+              htmlFor="building-input"
+              className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
               Building Number
-            </h3>
+            </label>
             <Controller
               name="buildingNo"
               control={control}
@@ -478,6 +425,7 @@ const SetupAddressStep = (props, ref) => {
                 <input
                   {...field}
                   type="text"
+                  id="building-input"
                   className="w-full px-3 py-3 border rounded-md focus:outline-none"
                   style={{
                     backgroundColor: colors.background.secondary,
@@ -500,12 +448,13 @@ const SetupAddressStep = (props, ref) => {
 
           {/* Door No */}
           <div className="flex-1">
-            <h3
-              className="text-sm font-bold mb-2"
+            <label
+              htmlFor="door-input"
+              className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
               Door / Apartment Number
-            </h3>
+            </label>
             <Controller
               name="doorNo"
               control={control}
@@ -513,6 +462,7 @@ const SetupAddressStep = (props, ref) => {
                 <input
                   {...field}
                   type="text"
+                  id="door-input"
                   className="w-full px-3 py-3 border rounded-md focus:outline-none"
                   style={{
                     backgroundColor: colors.background.secondary,
@@ -535,18 +485,20 @@ const SetupAddressStep = (props, ref) => {
         </div>
         {/* Additional Address Details */}
         <div className="mb-6">
-          <h3
-            className="text-sm font-bold mb-2"
+          <label
+            htmlFor="address-description"
+            className="text-sm font-bold mb-2 block"
             style={{ color: colors.text.primary }}
           >
             Additional Address Details
-          </h3>
+          </label>
           <Controller
             name="addressDescription"
             control={control}
             render={({ field }) => (
               <textarea
                 {...field}
+                id="address-description"
                 rows={4}
                 className="w-full px-3 py-3 border rounded-md focus:outline-none resize-vertical"
                 style={{

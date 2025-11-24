@@ -45,9 +45,11 @@ const Categories = () => {
   };
 
   return (
-    <>
+    <main role="main" aria-labelledby="categories-title">
       <div className="">
-        <h1 className="text-4xl font-normal mb-4">Categories</h1>
+        <h1 className="text-4xl font-normal mb-4" id="categories-title">
+          Categories
+        </h1>
         <p className="text-base text-gray-600 mb-4">
           Browse available service categories and find help with your tasks
         </p>
@@ -56,11 +58,18 @@ const Categories = () => {
       <hr className="my-8 border-gray-200" />
 
       {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div
+          className="flex justify-center py-12"
+          role="status"
+          aria-busy="true"
+        >
+          <div
+            className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+            aria-hidden="true"
+          ></div>
         </div>
       ) : error ? (
-        <div className="mt-8">
+        <div className="mt-8" role="alert" aria-live="assertive">
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
             {error}
           </div>
@@ -87,7 +96,7 @@ const Categories = () => {
           )}
         </div>
       )}
-    </>
+    </main>
   );
 };
 
