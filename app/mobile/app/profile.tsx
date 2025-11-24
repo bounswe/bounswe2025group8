@@ -10,6 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import RequestCard from '../components/ui/RequestCard';
 import { Ionicons } from '@expo/vector-icons';
 import type { ThemeTokens } from '../constants/Colors';
+import { ReportModal } from '../components/ui/ReportModal';
 
 export default function ProfileScreen() {
   const { colors } = useTheme();
@@ -33,8 +34,24 @@ export default function ProfileScreen() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewsError, setReviewsError] = useState<string | null>(null);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const [selectedTab, setSelectedTab] = useState<'volunteer' | 'requester'>(initialTab);
+
+  // Check admin status from AsyncStorage
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      try {
+        const adminStatus = await AsyncStorage.getItem('isAdmin');
+        setIsAdmin(adminStatus === 'true');
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        setIsAdmin(false);
+      }
+    };
+    checkAdminStatus();
+  }, []);
 
   useEffect(() => {
     if (!targetUserId) {
@@ -73,22 +90,22 @@ export default function ProfileScreen() {
             const parsedProfile: UserProfile = JSON.parse(profileDataFromStorage);
             console.log('[ProfileScreen] Parsed AsyncStorage profile:', JSON.stringify(parsedProfile));
             if (parsedProfile.id === user.id) {
-                console.log('[ProfileScreen] Using profile from AsyncStorage.');
-                setProfile(parsedProfile);
+              console.log('[ProfileScreen] Using profile from AsyncStorage.');
+              setProfile(parsedProfile);
             } else {
-                console.log('[ProfileScreen] AsyncStorage profile ID mismatch. Fetching from API.');
-                const fetchedProfile = await getUserProfile(user.id);
-                console.log('[ProfileScreen] API response for own user (after mismatch, direct):', JSON.stringify(fetchedProfile));
-                if (fetchedProfile?.id) {
-                    setProfile(fetchedProfile);
-                    await AsyncStorage.setItem('userProfile', JSON.stringify(fetchedProfile));
-                    console.log('[ProfileScreen] Set profile from API (after mismatch) and updated AsyncStorage.');
-                } else {
-                    setProfile(null);
-                    await AsyncStorage.removeItem('userProfile');
-                    setError('Failed to load your profile.');
-                    console.log('[ProfileScreen] Failed to load own profile from API (after mismatch).');
-                }
+              console.log('[ProfileScreen] AsyncStorage profile ID mismatch. Fetching from API.');
+              const fetchedProfile = await getUserProfile(user.id);
+              console.log('[ProfileScreen] API response for own user (after mismatch, direct):', JSON.stringify(fetchedProfile));
+              if (fetchedProfile?.id) {
+                setProfile(fetchedProfile);
+                await AsyncStorage.setItem('userProfile', JSON.stringify(fetchedProfile));
+                console.log('[ProfileScreen] Set profile from API (after mismatch) and updated AsyncStorage.');
+              } else {
+                setProfile(null);
+                await AsyncStorage.removeItem('userProfile');
+                setError('Failed to load your profile.');
+                console.log('[ProfileScreen] Failed to load own profile from API (after mismatch).');
+              }
             }
           } else {
             console.log('[ProfileScreen] No profile in AsyncStorage. Fetching from API for own user.');
@@ -106,9 +123,9 @@ export default function ProfileScreen() {
             }
           }
         } else {
-            setError('Cannot determine which profile to load.');
-            console.log('[ProfileScreen] Cannot determine target user ID.');
-            setProfile(null);
+          setError('Cannot determine which profile to load.');
+          console.log('[ProfileScreen] Cannot determine target user ID.');
+          setProfile(null);
         }
       } catch (err: any) {
         console.error('[ProfileScreen] CATCH BLOCK ERROR in loadProfileForTargetUser:', err);
@@ -129,7 +146,7 @@ export default function ProfileScreen() {
       setUserVolunteers([]);
       return;
     }
-    
+
     // Fetch tasks
     getTasks()
       .then((res) => {
@@ -139,7 +156,7 @@ export default function ProfileScreen() {
         Alert.alert('Error', 'Could not load task lists.');
         setAllTasks([]);
       });
-    
+
     // Fetch user's volunteer records if viewing own profile or if user is logged in
     if (user && (targetUserId === user.id || !viewedUserId)) {
       listVolunteers()
@@ -172,12 +189,12 @@ export default function ProfileScreen() {
   // Helper function to check if a task is assigned to the target user
   const isTaskAssignedToUser = (task: Task): boolean => {
     if (!targetUserId) return false;
-    
+
     // Check single assignee field
     if (task.assignee && task.assignee.id === targetUserId) {
       return true;
     }
-    
+
     // Check if user has an ACCEPTED volunteer record for this task
     if (user && targetUserId === user.id) {
       const volunteerRecord = userVolunteers.find(v => {
@@ -186,7 +203,7 @@ export default function ProfileScreen() {
       });
       return volunteerRecord !== undefined;
     }
-    
+
     return false;
   };
 
@@ -251,14 +268,17 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     if (!profile?.id) {
-        setReviews([]);
-        return;
+      setReviews([]);
+      return;
     }
     setReviewsLoading(true);
     setReviewsError(null);
     getUserReviews(profile.id)
       .then(res => setReviews(res.data.reviews || []))
-      .catch(() => setReviewsError('Failed to load reviews'))
+      .catch((error) => {
+        console.error('Error fetching reviews:', error);
+        setReviewsError('Failed to load reviews');
+      })
       .finally(() => setReviewsLoading(false));
   }, [profile?.id]);
 
@@ -278,38 +298,38 @@ export default function ProfileScreen() {
   }
 
   if (loading) {
-    return <ActivityIndicator size="large" color={colors.primary} style={{flex:1, justifyContent: 'center', alignItems: 'center'}} />;
+    return <ActivityIndicator size="large" color={colors.primary} style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />;
   }
 
   if (error && !profile) {
     return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-          <Text style={{ color: 'red', fontSize: 18, marginBottom: 16, textAlign: 'center' }}>{error}</Text>
-          <TouchableOpacity
-            style={{ backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 10, borderRadius: 20 }}
-            onPress={() => {
-                const targetUserIdForRetry = viewedUserId || user?.id;
-                if (targetUserIdForRetry) {
-                    setLoading(true);
-                    setError(null);
-                    getUserProfile(targetUserIdForRetry)
-                        .then(fetchedProfile => {
-                            setProfile(fetchedProfile);
-                            if (!viewedUserId && fetchedProfile?.id) {
-                                AsyncStorage.setItem('userProfile', JSON.stringify(fetchedProfile));
-                            }
-                        })
-                        .catch(() => setError(viewedUserId? 'Failed to load user profile.' : 'Failed to load your profile.'))
-                        .finally(() => setLoading(false));
-                } else {
-                    Alert.alert("Error", "Cannot retry: User ID is not available.");
-                }
-            }}
-          >
-            <Text style={{ color: colors.background, fontWeight: 'bold' }}>Retry</Text>
-          </TouchableOpacity>
-        </View>
-      );
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+        <Text style={{ color: 'red', fontSize: 18, marginBottom: 16, textAlign: 'center' }}>{error}</Text>
+        <TouchableOpacity
+          style={{ backgroundColor: colors.primary, paddingHorizontal: 24, paddingVertical: 10, borderRadius: 20 }}
+          onPress={() => {
+            const targetUserIdForRetry = viewedUserId || user?.id;
+            if (targetUserIdForRetry) {
+              setLoading(true);
+              setError(null);
+              getUserProfile(targetUserIdForRetry)
+                .then(fetchedProfile => {
+                  setProfile(fetchedProfile);
+                  if (!viewedUserId && fetchedProfile?.id) {
+                    AsyncStorage.setItem('userProfile', JSON.stringify(fetchedProfile));
+                  }
+                })
+                .catch(() => setError(viewedUserId ? 'Failed to load user profile.' : 'Failed to load your profile.'))
+                .finally(() => setLoading(false));
+            } else {
+              Alert.alert("Error", "Cannot retry: User ID is not available.");
+            }
+          }}
+        >
+          <Text style={{ color: colors.background, fontWeight: 'bold' }}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
   }
 
   if (!profile) {
@@ -346,7 +366,7 @@ export default function ProfileScreen() {
             <Ionicons name="arrow-back" size={28} color={themeColors.text} />
           </TouchableOpacity>
           <Image
-            source={ profile.photo ? {uri: profile.photo } : require('../assets/images/empty_profile_photo.png')}
+            source={profile.photo ? { uri: profile.photo } : require('../assets/images/empty_profile_photo.png')}
             style={[styles.profileAvatar, { backgroundColor: themeColors.card }]}
           />
           <View style={{ flex: 1, marginLeft: 16, justifyContent: 'center' }}>
@@ -370,21 +390,30 @@ export default function ProfileScreen() {
               />
             </View>
           </View>
-          {isOwnProfile && (
-              <>
-                  <TouchableOpacity onPress={() => router.push('/notifications')} style={{ marginLeft: 12 }}>
-                      <Ionicons name="notifications-outline" size={28} color={themeColors.text} />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => router.push('/settings')} style={{ marginLeft: 12 }}>
-                      <Ionicons name="settings-outline" size={28} color={themeColors.text} />
-                  </TouchableOpacity>
-              </>
+          {isOwnProfile ? (
+            <>
+              {isAdmin && (
+                <TouchableOpacity onPress={() => router.push('/admin/dashboard')} style={{ marginLeft: 12 }}>
+                  <Ionicons name="shield-checkmark-outline" size={28} color={themeColors.primary} />
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity onPress={() => router.push('/notifications')} style={{ marginLeft: 12 }}>
+                <Ionicons name="notifications-outline" size={28} color={themeColors.text} />
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/settings')} style={{ marginLeft: 12 }}>
+                <Ionicons name="settings-outline" size={28} color={themeColors.text} />
+              </TouchableOpacity>
+            </>
+          ) : (
+            <TouchableOpacity onPress={() => setReportModalVisible(true)} style={{ marginLeft: 12 }}>
+              <Ionicons name="flag-outline" size={28} color={themeColors.error} />
+            </TouchableOpacity>
           )}
         </View>
 
         <View style={[styles.tabSelectorContainer, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
           <TouchableOpacity
-            style={[styles.tabButton, { backgroundColor: selectedTab === 'volunteer' ? themeColors.primary : 'transparent' } ]}
+            style={[styles.tabButton, { backgroundColor: selectedTab === 'volunteer' ? themeColors.primary : 'transparent' }]}
             onPress={() => setSelectedTab('volunteer')}
           >
             <Text style={[styles.tabButtonText, { color: selectedTab === 'volunteer' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'volunteer' ? 'bold' : 'normal' }]}>
@@ -392,7 +421,7 @@ export default function ProfileScreen() {
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.tabButton, { backgroundColor: selectedTab === 'requester' ? themeColors.primary : 'transparent' } ]}
+            style={[styles.tabButton, { backgroundColor: selectedTab === 'requester' ? themeColors.primary : 'transparent' }]}
             onPress={() => setSelectedTab('requester')}
           >
             <Text style={[styles.tabButtonText, { color: selectedTab === 'requester' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'requester' ? 'bold' : 'normal' }]}>
@@ -435,29 +464,40 @@ export default function ProfileScreen() {
           </>
         )}
 
-        <View style={[styles.reviewsSectionContainer, {borderColor: themeColors.border}]}>
-            <View style={styles.reviewsHeaderRow}>
-              <Ionicons name="star-outline" size={20} color={themeColors.pink} />
-              <Text style={[styles.reviewsHeaderText, {color: themeColors.text}]}>Reviews for {profile ? profile.name : 'User'}</Text>
-            </View>
-            {reviewsLoading && <ActivityIndicator color={themeColors.primary} style={{marginVertical: 16}} />}
-            {reviewsError && <Text style={[styles.errorText, {color: themeColors.error}]}>{reviewsError}</Text>}
-            {!reviewsLoading && !reviewsError && reviews.length === 0 && (
-              <Text style={[styles.emptyListText, { color: themeColors.textMuted, marginTop: 8, marginBottom: 16 }]}>No reviews yet for this user.</Text>
-            )}
-            {!reviewsLoading && !reviewsError && reviews.map((review) => (
-              <ReviewCard
-                key={review.id}
-                reviewerName={`${review.reviewer.name} ${review.reviewer.surname}`}
-                rating={review.score}
-                comment={review.comment}
-                timestamp={new Date(review.timestamp).toLocaleDateString()}
-                avatarUrl={review.reviewer.photo}
-              />
-            ))}
+        <View style={[styles.reviewsSectionContainer, { borderColor: themeColors.border }]}>
+          <View style={styles.reviewsHeaderRow}>
+            <Ionicons name="star-outline" size={20} color={themeColors.pink} />
+            <Text style={[styles.reviewsHeaderText, { color: themeColors.text }]}>Reviews for {profile ? profile.name : 'User'}</Text>
+          </View>
+          {reviewsLoading && <ActivityIndicator color={themeColors.primary} style={{ marginVertical: 16 }} />}
+          {reviewsError && <Text style={[styles.errorText, { color: themeColors.error }]}>{reviewsError}</Text>}
+          {!reviewsLoading && !reviewsError && reviews.length === 0 && (
+            <Text style={[styles.emptyListText, { color: themeColors.textMuted, marginTop: 8, marginBottom: 16 }]}>No reviews yet for this user.</Text>
+          )}
+          {!reviewsLoading && !reviewsError && reviews.map((review) => (
+            <ReviewCard
+              key={review.id}
+              reviewerName={`${review.reviewer.name} ${review.reviewer.surname}`}
+              rating={review.score}
+              comment={review.comment}
+              timestamp={new Date(review.timestamp).toLocaleDateString()}
+              avatarUrl={review.reviewer.photo}
+            />
+          ))}
         </View>
 
       </ScrollView>
+
+      {profile && (
+        <ReportModal
+          visible={reportModalVisible}
+          onClose={() => setReportModalVisible(false)}
+          targetId={profile.id}
+          targetType="user"
+          targetName={displayName}
+        />
+      )}
+
     </SafeAreaView>
   );
 }
@@ -543,4 +583,4 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginVertical: 16,
   }
-}); 
+});

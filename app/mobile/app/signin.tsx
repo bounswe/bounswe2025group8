@@ -17,7 +17,7 @@ import {
   ScrollView,
   Platform
 } from 'react-native';
-import { login } from '../lib/api';
+import { login, checkIsAdmin } from '../lib/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../lib/auth';
 
@@ -42,13 +42,19 @@ export default function SignIn() {
       console.log('Attempting login with:', { email });
       const response = await login(email, password);
       console.log('Login successful:', response);
-      
+
       // The login function already fetches and stores the user profile
       // Just set the user in auth context and navigate
       if (response.data?.user_id) {
         await setUser({ id: response.data.user_id, email });
+
+        // Check if user is admin
+        console.log('Checking admin status...');
+        const isAdmin = await checkIsAdmin();
+        console.log('Admin status:', isAdmin);
+        await AsyncStorage.setItem('isAdmin', JSON.stringify(isAdmin));
       }
-      
+
       // Navigate to feed
       router.replace('/feed');
     } catch (error: any) {
@@ -79,9 +85,10 @@ export default function SignIn() {
             if (router.canGoBack()) {
               router.back();
             } else {
-              router.replace('/');}
+              router.replace('/');
             }
-            }>
+          }
+          }>
             <Ionicons name="arrow-back" size={24} color={colors.primary} />
             <Text style={[styles.backText, { color: colors.primary }]}>Back</Text>
           </TouchableOpacity>
@@ -186,7 +193,7 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 20, textAlign: 'auto'
   },
-    title: {
+  title: {
     fontSize: 32,
     fontWeight: '700',
   },
@@ -203,12 +210,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingBottom: 4,
   },
-    input: {
+  input: {
     flex: 1,
     marginLeft: 8,
     height: 40,
   },
-    rememberWrapper: {
+  rememberWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 24,
@@ -226,19 +233,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-    forgotText: {
+  forgotText: {
     textAlign: 'center',
     fontSize: 14,
     marginBottom: 144,
   },
-    signupPrompt: {
+  signupPrompt: {
     flexDirection: 'row',
     justifyContent: 'center',
   },
-    promptText: {
+  promptText: {
     fontSize: 14,
   },
-    promptLink: {
+  promptLink: {
     fontSize: 14,
     fontWeight: '500',
   },
