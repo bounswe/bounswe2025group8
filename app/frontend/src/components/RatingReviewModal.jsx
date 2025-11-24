@@ -40,6 +40,10 @@ const RatingReviewModal = ({
   const [selectedUser, setSelectedUser] = useState(null);
   const [rating, setRating] = useState(3.0);
   const [comment, setComment] = useState("");
+  // Per-dimension ratings (frontend-only). Keys populated depending on reviewer role.
+  const [dimensionRatings, setDimensionRatings] = useState({});
+  // Private feedback (frontend-only) stored in localStorage — not sent to backend
+  const [privateFeedback, setPrivateFeedback] = useState("");
 
   // State for UI
   const [loading, setLoading] = useState(false);
@@ -132,6 +136,8 @@ const RatingReviewModal = ({
       setSelectedUser(null);
       setRating(3.0);
       setComment("");
+      setDimensionRatings({});
+      setPrivateFeedback("");
       setError(null);
       setSuccess(false);
       setLoading(false);
@@ -147,31 +153,57 @@ const RatingReviewModal = ({
       return;
     }
 
-    if (rating < 1 || rating > 5) {
-      setError("Rating must be between 1 and 5 stars");
+    // Validate that comment is not empty
+    const publicComment = comment?.trim() ?? "";
+    if (!publicComment) {
+      setError("Please write a review comment. Your feedback is valuable!");
       return;
     }
 
-    if (!comment.trim()) {
-      setError("Please provide a comment for your review");
-      return;
+    // Build score: if per-dimension ratings provided, average them; otherwise fall back to single rating
+    let finalScore = null;
+    const dims = Object.values(dimensionRatings || {});
+    if (dims.length > 0) {
+      const sum = dims.reduce((s, v) => s + Number(v || 0), 0);
+      finalScore = Math.max(1, Math.min(5, sum / dims.length));
+    } else {
+      finalScore = Math.max(1, Math.min(5, Number(rating || 3)));
     }
 
     try {
       setLoading(true);
       setError(null);
 
-      console.log("Submitting review:", {
+      console.log("Submitting review (frontend-aggregated):", {
         taskId: task.id,
         selectedUserId: selectedUser.id,
         selectedUserName: getUserFullName(selectedUser),
-        rating,
-        comment: comment.trim(),
-        currentUser: currentUser?.id,
-        reviewableUsers: reviewableUsers,
+        finalScore,
+        publicComment,
+        dimensionRatings,
+        privateFeedbackNote: !!privateFeedback,
       });
 
-      await submitReview(task.id, selectedUser.id, rating, comment.trim());
+      // Submit aggregated score and public comment to backend
+      await submitReview(task.id, selectedUser.id, finalScore, publicComment);
+
+      // Save private feedback locally (frontend-only) keyed by task and users
+      if (privateFeedback && privateFeedback.trim()) {
+        try {
+          const key = `privateFeedback:task:${task.id}:reviewer:${currentUser.id}:reviewee:${selectedUser.id}`;
+          const payload = {
+            taskId: task.id,
+            reviewerId: currentUser.id,
+            revieweeId: selectedUser.id,
+            feedback: privateFeedback.trim(),
+            timestamp: new Date().toISOString(),
+          };
+          localStorage.setItem(key, JSON.stringify(payload));
+          console.log("Saved private feedback to localStorage", key);
+        } catch (lsErr) {
+          console.warn("Could not save private feedback locally:", lsErr);
+        }
+      }
 
       setSuccess(true);
 
@@ -187,40 +219,32 @@ const RatingReviewModal = ({
         prevUsers.filter((user) => user.id !== selectedUser.id)
       );
 
-      // Clear selected user
+      // Clear selected user and form fields
+      const reviewed = selectedUser;
       setSelectedUser(null);
+      setRating(3.0);
+      setComment("");
+      setDimensionRatings({});
+      setPrivateFeedback("");
 
       // Call success callback if provided
       if (onSubmitSuccess) {
-        onSubmitSuccess(selectedUser, rating, comment);
+        onSubmitSuccess(reviewed, finalScore, publicComment);
       }
 
-      // Don't auto-close modal so user can review more people if available
-      // Just show success message and reset form for next review
+      // Show success briefly then reset
       setTimeout(() => {
         setSuccess(false);
-        setRating(3.0);
-        setComment("");
 
-        // If no more users to review, close modal
         const remainingUsers = allUsersWithStatus.filter(
-          (user) => user.id !== selectedUser.id && !user.reviewed
+          (user) => user.id !== reviewed.id && !user.reviewed
         );
         if (remainingUsers.length === 0) {
           setTimeout(() => onClose(), 500);
         }
-      }, 2000);
+      }, 1500);
     } catch (err) {
-      console.error("Error submitting review:", err);
-      console.error("Review submission details:", {
-        taskId: task.id,
-        selectedUserId: selectedUser.id,
-        rating,
-        comment: comment.trim(),
-        errorResponse: err.response?.data,
-        errorStatus: err.response?.status,
-      });
-
+      console.error("Error submitting review (aggregated):", err);
       const errorMessage =
         err.response?.data?.message ||
         err.response?.data?.error ||
@@ -450,59 +474,155 @@ const RatingReviewModal = ({
           </Box>
         )}
 
-        {/* Rating */}
+        {/* Rating / Per-dimension Ratings */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 500 }}>
             Rating
           </Typography>
-          <Box sx={{ display: "flex", justifyContent: "center", mb: 1 }}>
-            <Rating
-              name="user-rating"
-              value={rating}
-              precision={0.5}
-              onChange={(event, newValue) => {
-                if (newValue !== null) {
-                  setRating(newValue);
-                }
-              }}
-              icon={<StarIcon fontSize="large" />}
-              emptyIcon={<StarIcon fontSize="large" />}
-              sx={{
-                fontSize: "2.5rem",
-                "& .MuiRating-iconFilled": {
-                  color: "#E15B97",
-                },
-                "& .MuiRating-iconEmpty": {
-                  color: "#E0E0E0",
-                },
-              }}
-            />
-          </Box>
-          <Typography
-            variant="caption"
-            sx={{
-              display: "block",
-              textAlign: "center",
-              color: "text.secondary",
-            }}
-          >
-            {rating} out of 5 stars
-          </Typography>
+
+          {selectedUser ? (
+            (() => {
+              // Define dimensions depending on role
+              const dims =
+                selectedUser.role === "volunteer"
+                  ? [
+                      {
+                        key: "reliability",
+                        label: "Reliability",
+                        hint: "Did the volunteer arrive at the agreed-upon time?",
+                      },
+                      {
+                        key: "task_completion",
+                        label: "Task Completion",
+                        hint: "Did the volunteer complete the task?",
+                      },
+                      {
+                        key: "communication",
+                        label: "Communication",
+                        hint: "How clear and polite was the volunteer's communication?",
+                      },
+                      {
+                        key: "safety",
+                        label: "Safety & Respect",
+                        hint: "Did you feel safe and respected during the interaction?",
+                      },
+                    ]
+                  : [
+                      {
+                        key: "accuracy",
+                        label: "Accuracy of Request",
+                        hint: "Was the task as described in the post?",
+                      },
+                      {
+                        key: "communication",
+                        label: "Communication",
+                        hint: "Was the requester easy to communicate with?",
+                      },
+                      {
+                        key: "safety",
+                        label: "Safety & Preparedness",
+                        hint: "Did you feel safe at the location? Was the requester prepared for your arrival?",
+                      },
+                    ];
+
+              return (
+                <Box>
+                  {dims.map((d) => (
+                    <Box key={d.key} sx={{ mb: 2 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {d.label}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          display: "block",
+                          color: "text.secondary",
+                          mb: 1,
+                        }}
+                      >
+                        {d.hint}
+                      </Typography>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                      >
+                        <Rating
+                          name={`dim-${d.key}`}
+                          value={Number(dimensionRatings[d.key] ?? 3)}
+                          precision={1}
+                          onChange={(e, v) => {
+                            setDimensionRatings((prev) => ({
+                              ...prev,
+                              [d.key]: v,
+                            }));
+                          }}
+                        />
+                        <Typography variant="body2">
+                          {Number(dimensionRatings[d.key] ?? 3)} / 5
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ))}
+                  <Box sx={{ mt: 1 }}>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "text.secondary" }}
+                    >
+                      The final score will be the average of the selected
+                      categories.
+                    </Typography>
+                  </Box>
+                </Box>
+              );
+            })()
+          ) : (
+            <Box sx={{ display: "flex", justifyContent: "center", mb: 1 }}>
+              <Rating
+                name="user-rating"
+                value={rating}
+                precision={0.5}
+                onChange={(event, newValue) => {
+                  if (newValue !== null) {
+                    setRating(newValue);
+                  }
+                }}
+                icon={<StarIcon fontSize="large" />}
+                emptyIcon={<StarIcon fontSize="large" />}
+                sx={{
+                  fontSize: "2.5rem",
+                  "& .MuiRating-iconFilled": {
+                    color: "#E15B97",
+                  },
+                  "& .MuiRating-iconEmpty": {
+                    color: "#E0E0E0",
+                  },
+                }}
+              />
+            </Box>
+          )}
         </Box>
 
         {/* Comment */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 500 }}>
-            Review Comment
+            Review Comment <span style={{ color: "#E15B97" }}>*</span>
           </Typography>
           <TextField
             multiline
             rows={4}
             fullWidth
+            required
             placeholder="Share your experience working with this person..."
             value={comment}
-            onChange={(e) => setComment(e.target.value)}
+            onChange={(e) => {
+              setComment(e.target.value);
+              // Clear error when user starts typing
+              if (error && error.includes("review comment")) {
+                setError(null);
+              }
+            }}
             variant="outlined"
+            error={error && error.includes("review comment")}
+            helperText={error && error.includes("review comment") ? error : ""}
             sx={{
               "& .MuiOutlinedInput-root": {
                 borderRadius: "8px",
