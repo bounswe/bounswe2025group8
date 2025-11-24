@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, Text, TouchableOpacity, ScrollView, StyleSheet, Image, ImageSourcePropType } from 'react-native';
 import { useTheme } from '@react-navigation/native';
+import { locationMatches } from '../../utils/address';
 
 export type Category = { id: string; title: string; count: number; image: ImageSourcePropType };
 export type Request = { id: string; title: string; urgency: string; meta?: string; category?: string; color?: string; image?: ImageSourcePropType };
@@ -62,7 +63,7 @@ export default function SearchBarWithResults({
     );
   } else if (tab === 'Locations') {
     filtered = sortByName(
-      locations.filter((loc) => loc.title.toLowerCase().includes(lowerSearch))
+      locations.filter((loc) => locationMatches(loc.title, lowerSearch))
     );
   }
 

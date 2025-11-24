@@ -32,16 +32,21 @@ export const parseAddressString = (location?: string | null): AddressFieldsValue
   const state = parts.pop() ?? '';
   const city = parts.pop() ?? '';
   const neighborhood = parts.pop() ?? '';
-  const remaining = parts.join(', ');
+
+  const remaining = parts.pop() ?? '';
+  const buildingNo = remaining?.split('/')[0]?.trim() ?? '';
+  const doorNo = remaining?.split('/')[1]?.trim() ?? '';
+  
+  const street = parts.pop() ?? '';
 
   return {
     country,
     state,
     city,
     neighborhood,
-    street: remaining,
-    buildingNo: '',
-    doorNo: '',
+    street,
+    buildingNo,
+    doorNo,
   };
 };
 
@@ -68,4 +73,46 @@ export const formatAddress = (value: AddressFieldsValue): string => {
     segments.push(value.country.trim());
   }
   return segments.join(', ');
+};
+
+export const parseLocationParts = (location?: string | null): { city: string; state: string; country: string } => {
+  const parsed = parseAddressString(location);
+  return {
+    city: parsed.city.trim(),
+    state: parsed.state.trim(),
+    country: parsed.country.trim(),
+  };
+};
+
+export const normalizedLocationLabel = (location?: string | null): string => {
+  const { city, state, country } = parseLocationParts(location);
+  const label = [city, state, country]
+    .filter(Boolean)
+    .join(', ');
+  return label || (location?.trim() ?? '');
+};
+
+export const locationMatches = (location: string, filter: string): boolean => {
+  const trimmedFilter = filter.trim();
+  if (!trimmedFilter) {
+    return true;
+  }
+
+  const { city, state, country } = parseLocationParts(location);
+  const haystack = [city, state, country, location].join(' ').toLowerCase();
+
+  const filterTokens = trimmedFilter
+    .toLowerCase()
+    .split(/[\s,]+/) // allow both comma-separated and space-separated filters
+    .map((token) => token.trim())
+    .filter(Boolean);
+
+  if (filterTokens.length === 0) {
+    return haystack.includes(trimmedFilter.toLowerCase());
+  }
+
+  console.log("Filter Tokens:", filterTokens);
+  console.log("Haystack:", haystack);
+
+  return filterTokens.every((token) => haystack.includes(token));
 };
