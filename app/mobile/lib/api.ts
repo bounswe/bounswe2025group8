@@ -31,7 +31,7 @@ const port = Constants.expoConfig?.extra?.apiPort ?? '8000';
 // Find your LAN IP with: ipconfig getifaddr en0
 // use the first one returned by the command
 // do not forget to also change the export const API_BASE_URL constant below.
-const LOCAL_LAN_IP = '172.20.10.2'; // Change this to your LAN IP if needed
+const LOCAL_LAN_IP = '192.168.5.84'; // Change this to your LAN IP if needed
 
 const API_HOST = Platform.select({
   web: 'localhost',           // Web uses localhost

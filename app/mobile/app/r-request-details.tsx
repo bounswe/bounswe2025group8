@@ -475,7 +475,14 @@ export default function RequestDetails() {
         <Text style={{ color: themeColors.error, textAlign: 'center', fontSize: 18 }}>
           {error || 'Request details could not be loaded.'}
         </Text>
-        <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 10, padding: 10 }}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{ marginTop: 10, padding: 10 }}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
           <Text style={{ color: themeColors.primary }}>Go Back</Text>
         </TouchableOpacity>
       </View>
@@ -535,8 +542,12 @@ export default function RequestDetails() {
               }
             }}
             style={styles.backButton}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
           >
-            <Ionicons name="arrow-back" size={24} color={themeColors.text} />
+            <Ionicons name="arrow-back" size={24} color={themeColors.text}  accessible={false} importantForAccessibility="no"/>
           </TouchableOpacity>
           <Text style={[styles.title, { color: themeColors.text }]} numberOfLines={1} ellipsizeMode="tail">
             {title}
@@ -609,7 +620,12 @@ export default function RequestDetails() {
                       : `${BACKEND_BASE_URL}${photoUrl}`;
                     
                     return (
-                      <TouchableOpacity key={photo.id} style={[styles.smallThumbnail, { borderColor: themeColors.card }]}>
+                      <TouchableOpacity
+                        key={photo.id}
+                        style={[styles.smallThumbnail, { borderColor: themeColors.card }]}
+                        accessible={false}
+                        importantForAccessibility="no"
+                      >
                         <Image 
                           source={{ uri: absoluteUrl }} 
                           style={styles.smallThumbnailImage}
@@ -676,6 +692,10 @@ export default function RequestDetails() {
           <TouchableOpacity
             style={[styles.primaryButton, { backgroundColor: themeColors.primary }]}
             onPress={() => router.push({ pathname: '/select-volunteer', params: { id, requiredVolunteers: String(request.volunteer_number) } })}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Select volunteers"
           >
             <Text style={[styles.buttonText, { color: themeColors.card }]}>
               {requiredPerson === 1 ? 'Select Volunteer' : 'Select Volunteers'}
@@ -688,6 +708,11 @@ export default function RequestDetails() {
             style={[styles.primaryButton, { backgroundColor: themeColors.primary }]}
             onPress={handleMarkAsComplete}
             disabled={completingTask}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Mark request as complete"
+            accessibilityState={{ disabled: completingTask }}
           >
             {completingTask ? (
               <ActivityIndicator size="small" color={themeColors.card} />
@@ -702,6 +727,10 @@ export default function RequestDetails() {
             <TouchableOpacity
               style={[styles.halfButton, { borderColor: themeColors.secondary }]}
               onPress={openEditModal}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Edit request"
             >
               <View style={styles.buttonContent}>
                 <Ionicons name="pencil" size={18} color={themeColors.secondary} style={{ marginRight: 6 }} />
@@ -712,6 +741,11 @@ export default function RequestDetails() {
               style={[styles.halfButton, { borderColor: themeColors.error, marginLeft: 12 }]}
               onPress={handleDeleteRequest}
               disabled={cancellingTask}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Delete request"
+              accessibilityState={{ disabled: cancellingTask }}
             >
               {cancellingTask ? (
                 <ActivityIndicator size="small" color={themeColors.error} />
@@ -734,6 +768,10 @@ export default function RequestDetails() {
                 params: { id },
               })
             }
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Volunteer for this request"
           >
             <Text style={[styles.buttonText, { color: themeColors.card }]}>Volunteer for this Request</Text>
           </TouchableOpacity>
@@ -754,6 +792,10 @@ export default function RequestDetails() {
             <TouchableOpacity
               style={[styles.primaryButton, { backgroundColor: themeColors.pink }]}
               onPress={handleOpenReviewModal}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Rate and review volunteers"
             >
               <Text style={[styles.buttonText, { color: themeColors.card }]}>
                 {hasReviewedAllVolunteers() 
@@ -767,8 +809,12 @@ export default function RequestDetails() {
       </ScrollView>
 
       <Modal visible={modalVisible} animationType="slide" transparent>
-        <View style={[styles.modalOverlay, { backgroundColor: themeColors.overlay }]}>
-          <View style={[styles.modalContent, { backgroundColor: themeColors.card }]}>
+        <View
+          style={[styles.modalOverlay, { backgroundColor: themeColors.overlay }]}
+          accessibilityViewIsModal
+          importantForAccessibility="yes"
+        >
+          <View style={[styles.modalContent, { backgroundColor: themeColors.card }]} accessible>
             <Text style={[styles.modalTitle, { color: themeColors.text }]}>
               {isEdit 
                 ? 'Edit Request' 
@@ -796,6 +842,7 @@ export default function RequestDetails() {
                     placeholderTextColor={themeColors.textMuted}
                     value={editForm.title ?? ''}
                     onChangeText={(text) => handleEditInputChange('title', text)}
+                    accessibilityLabel="Edit title"
                   />
                 </View>
                 <View style={styles.editField}>
@@ -810,6 +857,7 @@ export default function RequestDetails() {
                     multiline
                     value={editForm.description ?? ''}
                     onChangeText={(text) => handleEditInputChange('description', text)}
+                    accessibilityLabel="Edit description"
                   />
                 </View>
                 <CategoryPicker value={editForm.category} onChange={(val) => handleEditInputChange('category', val)} />
@@ -827,6 +875,7 @@ export default function RequestDetails() {
                     multiline
                     value={editForm.requirements ?? ''}
                     onChangeText={(text) => handleEditInputChange('requirements', text)}
+                    accessibilityLabel="Address description"
                   />
                 </View>
                 <View style={styles.editField}>
@@ -849,6 +898,7 @@ export default function RequestDetails() {
                       const parsed = Number(cleaned);
                       handleEditInputChange('urgency_level', Number.isNaN(parsed) ? undefined : parsed);
                     }}
+                    accessibilityLabel="Urgency level"
                   />
                 </View>
                 <View style={styles.editField}>
@@ -871,6 +921,7 @@ export default function RequestDetails() {
                       const parsed = Number(cleaned);
                       handleEditInputChange('volunteer_number', Number.isNaN(parsed) ? undefined : parsed);
                     }}
+                    accessibilityLabel="Volunteer count"
                   />
                 </View>
                 <View style={[styles.editField, styles.editSwitchRow]}>
@@ -900,10 +951,19 @@ export default function RequestDetails() {
                   multiline
                   value={reviewText}
                   onChangeText={setReviewText}
+                  accessibilityLabel="Review input"
                 />
                 <View style={styles.starRow}>
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <TouchableOpacity key={star} onPress={() => handleStarPress(star)}>
+                    <TouchableOpacity
+                      key={star}
+                      onPress={() => handleStarPress(star)}
+                      accessible
+
+                      accessibilityRole="button"
+                      accessibilityLabel={`Rate ${star} ${star === 1 ? 'star' : 'stars'}`}
+                      accessibilityState={{ selected: rating >= star }}
+                    >
                       <Ionicons
                         name={star <= rating ? 'star' : 'star-outline'}
                         size={28}
@@ -919,6 +979,11 @@ export default function RequestDetails() {
                 style={[styles.modalButton, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}
                 onPress={handleCloseModal}
                 disabled={isEdit ? updatingRequest : submittingReview}
+                accessible
+
+                accessibilityRole="button"
+                accessibilityLabel="Cancel"
+                accessibilityState={{ disabled: isEdit ? updatingRequest : submittingReview }}
               >
                 <Text style={{ color: themeColors.text }}>Cancel</Text>
               </TouchableOpacity>
@@ -926,6 +991,11 @@ export default function RequestDetails() {
                 style={[styles.modalButton, { backgroundColor: isEdit ? themeColors.primary : themeColors.pink }]}
                 onPress={isEdit ? handleUpdateRequest : handleSubmitReview}
                 disabled={isEdit ? updatingRequest : submittingReview}
+                accessible
+
+                accessibilityRole="button"
+                accessibilityLabel={isEdit ? 'Save request' : 'Submit review'}
+                accessibilityState={{ disabled: isEdit ? updatingRequest : submittingReview }}
               >
                 {isEdit ? (
                   updatingRequest ? (
