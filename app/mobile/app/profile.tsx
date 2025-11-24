@@ -298,7 +298,10 @@ export default function ProfileScreen() {
     setReviewsLoading(true);
     setReviewsError(null);
     getUserReviews(profile.id)
-      .then(res => setReviews(res.data.reviews || []))
+      .then(res => {
+        console.log('[ProfileScreen] Reviews response:', JSON.stringify(res.data.reviews));
+        setReviews(res.data.reviews || []);
+      })
       .catch(() => setReviewsError('Failed to load reviews'))
       .finally(() => setReviewsLoading(false));
   }, [profile?.id]);
@@ -554,7 +557,7 @@ export default function ProfileScreen() {
                 rating={review.score}
                 comment={review.comment}
                 timestamp={new Date(review.timestamp).toLocaleDateString()}
-                avatarUrl={review.reviewer.photo}
+                avatarUrl={review.reviewer.profile_photo || review.reviewer.photo}
               />
             ))}
         </View>

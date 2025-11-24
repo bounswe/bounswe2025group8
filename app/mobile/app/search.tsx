@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import SearchBarWithResults, { Category, Request, Profile, Location } from '../components/ui/SearchBarWithResults';
-import { getTasks, searchUsers, type Task, type UserProfile } from '../lib/api';
+import { getTasks, searchUsers, BACKEND_BASE_URL, type Task, type UserProfile } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { normalizedLocationLabel, locationMatches } from '../utils/address';
 
@@ -100,11 +100,18 @@ export default function SearchPage() {
         if (user) {
           const usersResponse = await searchUsers();
           setProfiles(
-            usersResponse.results.map((prof: UserProfile) => ({
-              id: String(prof.id),
-              name: `${prof.name} ${prof.surname}`,
-              image: prof.photo ? { uri: prof.photo } : require('../assets/images/empty_profile_photo.png'),
-            }))
+            usersResponse.results.map((prof: UserProfile) => {
+              const photoUrl = prof.profile_photo || prof.photo;
+              const absolutePhotoUrl = photoUrl 
+                ? (photoUrl.startsWith('http') ? photoUrl : `${BACKEND_BASE_URL}${photoUrl}`)
+                : null;
+              
+              return {
+                id: String(prof.id),
+                name: `${prof.name} ${prof.surname}`,
+                image: absolutePhotoUrl ? { uri: absolutePhotoUrl } : require('../assets/images/empty_profile_photo.png'),
+              };
+            })
           );
         } else {
           setProfiles([]);
