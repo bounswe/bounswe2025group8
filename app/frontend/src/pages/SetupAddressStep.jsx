@@ -7,7 +7,7 @@ import React, {
 import { useSelector, useDispatch } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
 import { updateFormData } from "../features/request/store/createRequestSlice";
-import * as createRequestService from "../features/request/services/createRequestService";
+import { Country, State, City } from "country-state-city";
 import { useTheme } from "../hooks/useTheme";
 
 const SetupAddressStep = (props, ref) => {
@@ -16,14 +16,9 @@ const SetupAddressStep = (props, ref) => {
   const { formData } = useSelector((state) => state.createRequest);
 
   // State for location data
-  const [countries, setCountries] = useState([]);
+  const [countries] = useState(() => Country.getAllCountries());
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
-  const [loading, setLoading] = useState({
-    countries: false,
-    states: false,
-    cities: false,
-  });
   const [error, setError] = useState(null);
   const {
     control,
@@ -50,87 +45,41 @@ const SetupAddressStep = (props, ref) => {
   const watchState = watch("state");
   const watchCity = watch("city");
 
-  // Fetch countries when component mounts
-  useEffect(() => {
-    const fetchCountryData = async () => {
-      try {
-        setLoading((prev) => ({ ...prev, countries: true }));
-        setError(null);
-        const countriesData = await createRequestService.fetchCountries();
-        setCountries(countriesData);
-      } catch (err) {
-        console.error("Error fetching countries:", err);
-        setError("Failed to load countries. Please try again later.");
-      } finally {
-        setLoading((prev) => ({ ...prev, countries: false }));
-      }
-    };
-
-    fetchCountryData();
-  }, []);
-
-  // Fetch states when country changes
+  // Update states when country changes
   useEffect(() => {
     if (!watchCountry) {
       setStates([]);
       return;
     }
 
-    const fetchStateData = async () => {
-      try {
-        setLoading((prev) => ({ ...prev, states: true }));
-        setError(null);
+    try {
+      setError(null);
+      const statesData = State.getStatesOfCountry(watchCountry);
+      setStates(statesData);
+    } catch (err) {
+      console.error("Error loading states/provinces:", err);
+      setError("Failed to load states/provinces. Please try again later.");
+      setStates([]);
+    }
+  }, [watchCountry]);
 
-        // Get the country code from the selected country value
-        const selectedCountry = countries.find((c) => c.code === watchCountry);
-        if (!selectedCountry) return;
-
-        const statesData = await createRequestService.fetchStates(
-          selectedCountry.name
-        );
-        setStates(statesData);
-      } catch (err) {
-        console.error("Error fetching states/provinces:", err);
-        setError("Failed to load states/provinces. Please try again later.");
-      } finally {
-        setLoading((prev) => ({ ...prev, states: false }));
-      }
-    };
-
-    fetchStateData();
-  }, [watchCountry, countries]);
-
-  // Fetch cities when state changes
+  // Update cities when state changes
   useEffect(() => {
     if (!watchCountry || !watchState) {
       setCities([]);
       return;
     }
 
-    const fetchCityData = async () => {
-      try {
-        setLoading((prev) => ({ ...prev, cities: true }));
-        setError(null);
-
-        // Get the country name from the selected country code
-        const selectedCountry = countries.find((c) => c.code === watchCountry);
-        if (!selectedCountry) return;
-
-        const citiesData = await createRequestService.fetchCities(
-          selectedCountry.name,
-          watchState
-        );
-        setCities(citiesData);
-      } catch (err) {
-        console.error("Error fetching cities:", err);
-        setError("Failed to load cities. Please try again later.");
-      } finally {
-        setLoading((prev) => ({ ...prev, cities: false }));
-      }
-    };
-
-    fetchCityData();
-  }, [watchCountry, watchState, countries]);
+    try {
+      setError(null);
+      const citiesData = City.getCitiesOfState(watchCountry, watchState);
+      setCities(citiesData);
+    } catch (err) {
+      console.error("Error loading cities:", err);
+      setError("Failed to load cities. Please try again later.");
+      setCities([]);
+    }
+  }, [watchCountry, watchState]);
   // Auto-save form data happens when fields change (handled by handleFieldChange)
   // Auto-save form data when fields change
   const handleFieldChange = (field, value) => {
@@ -182,20 +131,10 @@ const SetupAddressStep = (props, ref) => {
               render={({ field }) => (
                 <div>
                   <div className="relative">
-                    {loading.countries && (
-                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                        <div
-                          className="animate-spin rounded-full h-5 w-5 border-b-2"
-                          style={{ borderColor: colors.brand.primary }}
-                        ></div>
-                      </div>
-                    )}
                     <select
                       {...field}
                       id="country-select"
-                      className={`w-full px-3 py-3 border rounded-md focus:outline-none ${
-                        loading.countries ? "pl-12" : ""
-                      }`}
+                      className="w-full px-3 py-3 border rounded-md focus:outline-none"
                       style={{
                         backgroundColor: colors.background.secondary,
                         color: colors.text.primary,
@@ -215,7 +154,6 @@ const SetupAddressStep = (props, ref) => {
                         field.onBlur();
                         e.target.style.boxShadow = "none";
                       }}
-                      disabled={loading.countries}
                       onChange={(e) => {
                         field.onChange(e);
                         handleFieldChange("country", e.target.value);
@@ -228,7 +166,7 @@ const SetupAddressStep = (props, ref) => {
                     >
                       <option value="">Select Country</option>
                       {countries.map((country) => (
-                        <option key={country.code} value={country.code}>
+                        <option key={country.isoCode} value={country.isoCode}>
                           {country.name}
                         </option>
                       ))}
@@ -264,20 +202,10 @@ const SetupAddressStep = (props, ref) => {
               render={({ field }) => (
                 <div>
                   <div className="relative">
-                    {loading.states && (
-                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                        <div
-                          className="animate-spin rounded-full h-5 w-5 border-b-2"
-                          style={{ borderColor: colors.brand.primary }}
-                        ></div>
-                      </div>
-                    )}
                     <select
                       {...field}
                       id="state-select"
-                      className={`w-full px-3 py-3 border rounded-md focus:outline-none ${
-                        loading.states ? "pl-12" : ""
-                      }`}
+                      className="w-full px-3 py-3 border rounded-md focus:outline-none"
                       style={{
                         backgroundColor: colors.background.secondary,
                         color: colors.text.primary,
@@ -297,7 +225,7 @@ const SetupAddressStep = (props, ref) => {
                         field.onBlur();
                         e.target.style.boxShadow = "none";
                       }}
-                      disabled={!watchCountry || loading.states}
+                      disabled={!watchCountry}
                       onChange={(e) => {
                         field.onChange(e);
                         handleFieldChange("state", e.target.value);
@@ -309,8 +237,8 @@ const SetupAddressStep = (props, ref) => {
                       <option value="">Select State/Province</option>
                       {states.map((state) => (
                         <option
-                          key={state.code || state.name}
-                          value={state.name}
+                          key={state.isoCode}
+                          value={state.isoCode}
                         >
                           {state.name}
                         </option>
@@ -348,20 +276,10 @@ const SetupAddressStep = (props, ref) => {
               render={({ field }) => (
                 <div>
                   <div className="relative">
-                    {loading.cities && (
-                      <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                        <div
-                          className="animate-spin rounded-full h-5 w-5 border-b-2"
-                          style={{ borderColor: colors.brand.primary }}
-                        ></div>
-                      </div>
-                    )}
                     <select
                       {...field}
                       id="city-select"
-                      className={`w-full px-3 py-3 border rounded-md focus:outline-none ${
-                        loading.cities ? "pl-12" : ""
-                      }`}
+                      className="w-full px-3 py-3 border rounded-md focus:outline-none"
                       style={{
                         backgroundColor: colors.background.secondary,
                         color: colors.text.primary,
@@ -379,7 +297,7 @@ const SetupAddressStep = (props, ref) => {
                         field.onBlur();
                         e.target.style.boxShadow = "none";
                       }}
-                      disabled={!watchState || loading.cities}
+                      disabled={!watchState}
                       onChange={(e) => {
                         field.onChange(e);
                         handleFieldChange("city", e.target.value);
