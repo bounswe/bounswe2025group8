@@ -9,6 +9,7 @@ from .photo import Photo
 from .feed import Feed
 from .comment import Comment
 from .search import Search
+from .report import TaskReport, UserReport, ReportType, ReportStatus
 
 __all__ = [
     'RegisteredUser',
@@ -29,4 +30,8 @@ __all__ = [
     'Feed',
     'Comment',
     'Search',
+    'TaskReport',
+    'UserReport',
+    'ReportType',
+    'ReportStatus',
 ]

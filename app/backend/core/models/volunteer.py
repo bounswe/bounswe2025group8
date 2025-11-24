@@ -165,7 +165,15 @@ class Volunteer(models.Model):
             status=VolunteerStatus.ACCEPTED
         ).count()
         
-        if current_accepted >= task.volunteer_number:
+        # Also check if there are assignees not represented as volunteers
+        # (for backward compatibility with older tasks)
+        assignee_count = task.assignees.count()
+        if task.assignee and task.assignee not in task.assignees.all():
+            assignee_count += 1
+            
+        total_assigned = max(current_accepted, assignee_count)
+        
+        if total_assigned >= task.volunteer_number:
             return None
 
         # Check if user is already volunteering for this task
@@ -232,6 +240,20 @@ class Volunteer(models.Model):
         task = self.task
         task.add_assignee(self.user)
         # Task status will be updated automatically by add_assignee method
+        
+        # If task is now at capacity, reject remaining pending volunteers
+        if not skip_capacity_check:
+            current_accepted = Volunteer.objects.filter(
+                task=task, 
+                status=VolunteerStatus.ACCEPTED
+            ).count()
+            
+            if current_accepted >= task.volunteer_number:
+                # Reject all other pending volunteers
+                Volunteer.objects.filter(
+                    task=task,
+                    status=VolunteerStatus.PENDING
+                ).exclude(id=self.id).update(status=VolunteerStatus.REJECTED)
         
         return True
     

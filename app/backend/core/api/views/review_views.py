@@ -123,24 +123,45 @@ class TaskReviewsView(views.APIView):
                 message='Cannot review a task that is not completed.'
             ), status=status.HTTP_400_BAD_REQUEST)
         
-        # Check if user is the task creator or assignee
-        if request.user != task.creator and request.user != task.assignee:
+        # Get all task participants (creator + all assignees + volunteers)
+        participant_ids = set()
+        participant_ids.add(task.creator_id)
+        participant_ids.update(task.get_assignees().values_list('id', flat=True))
+        if task.assignee_id:
+            participant_ids.add(task.assignee_id)
+        
+        # Add accepted volunteers
+        accepted_volunteers = task.get_assigned_volunteers()
+        for volunteer in accepted_volunteers:
+            participant_ids.add(volunteer.user.id)
+        
+        # Check if user is a task participant
+        if request.user.id not in participant_ids:
             return Response(format_response(
                 status='error',
                 message='Only task participants can submit reviews.'
             ), status=status.HTTP_403_FORBIDDEN)
         
-        # Determine reviewee (the other participant)
-        if request.user == task.creator:
-            reviewee = task.assignee
-        else:
-            reviewee = task.creator
+        # Get reviewee_id from request data
+        reviewee_id = request.data.get('reviewee_id')
+        if not reviewee_id:
+            return Response(format_response(
+                status='error',
+                message='reviewee_id is required.'
+            ), status=status.HTTP_400_BAD_REQUEST)
+        
+        # Validate that reviewee is also a participant
+        if int(reviewee_id) not in participant_ids:
+            return Response(format_response(
+                status='error',
+                message='Can only review task participants.'
+            ), status=status.HTTP_400_BAD_REQUEST)
         
         # Create serializer with data
         data = {
             'score': request.data.get('score'),
             'comment': request.data.get('comment'),
-            'reviewee_id': reviewee.id,
+            'reviewee_id': reviewee_id,
             'task_id': task.id
         }
         
