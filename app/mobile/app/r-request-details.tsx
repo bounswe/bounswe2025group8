@@ -495,7 +495,7 @@ export default function RequestDetails() {
   const statusDisplay = request.status_display || request.status;
   const imageUrl = request.photo || 'https://placehold.co/400x280';
   const requesterName = request.creator?.name || 'Unknown User';
-  const requesterAvatar = request.creator?.photo || 'https://placehold.co/70x70';
+  const requesterPhotoUrl = request.creator?.profile_photo || request.creator?.photo;
   const description = request.description || 'No description provided.';
   const datetime = request.deadline ? new Date(request.deadline).toLocaleString() : 'Not specified';
   const locationDisplay = request.location || 'Not specified';
@@ -645,7 +645,14 @@ export default function RequestDetails() {
         <View style={[styles.section, { backgroundColor: themeColors.card }]}>
           <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Requester</Text>
           <View style={styles.requesterRow}>
-            <Image source={{ uri: requesterAvatar }} style={[styles.requesterAvatar, { backgroundColor: themeColors.border }]} />
+            <Image 
+              source={
+                requesterPhotoUrl
+                  ? { uri: requesterPhotoUrl }
+                  : require('../assets/images/empty_profile_photo.png')
+              } 
+              style={[styles.requesterAvatar, { backgroundColor: themeColors.border }]} 
+            />
             <View style={{ flex: 1 }}>
               <Text style={[styles.requesterName, { color: themeColors.text }]}>{requesterName}</Text>
               <Text style={{ color: themeColors.textMuted }}>{phoneNumber}</Text>
@@ -670,20 +677,38 @@ export default function RequestDetails() {
             <Text style={[styles.sectionText, { color: themeColors.textMuted }]}>No volunteers assigned yet.</Text>
           ) : (
             assignedVolunteers.map((volunteer) => (
-              <View key={volunteer.id} style={styles.volunteerRow}>
-                <Image
-                  source={
-                    volunteer.user.photo ? { uri: volunteer.user.photo } : require('../assets/images/empty_profile_photo.png')
-                  }
-                  style={[styles.volunteerAvatar, { backgroundColor: themeColors.border }]}
-                />
+                <TouchableOpacity
+                  key={volunteer.id}
+                  style={styles.volunteerRow}
+                  onPress={() => {
+                    if (volunteer.user?.id) {
+                      router.push({ pathname: '/profile', params: { userId: String(volunteer.user.id) } });
+                    }
+                  }}
+                  disabled={!volunteer.user?.id}
+                  activeOpacity={volunteer.user?.id ? 0.8 : 1}
+                  accessible
+                  accessibilityRole="button"
+                  accessibilityLabel={`View ${volunteer.user.name} ${volunteer.user.surname}'s profile`}
+                  accessibilityState={{ disabled: !volunteer.user?.id }}
+                >
+                  <Image
+                    source={
+                      (volunteer.user.profile_photo || volunteer.user.photo)
+                        ? { uri: volunteer.user.profile_photo || volunteer.user.photo } 
+                        : require('../assets/images/empty_profile_photo.png')
+                    }
+                    style={[styles.volunteerAvatar, { backgroundColor: themeColors.border }]}
+                    accessibilityRole="image"
+                    accessibilityLabel={`Profile photo of ${volunteer.user.name} ${volunteer.user.surname}`}
+                  />
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: themeColors.text, fontWeight: '600' }}>
                     {volunteer.user.name} {volunteer.user.surname}
                   </Text>
                   <Text style={{ color: themeColors.textMuted }}>{volunteer.user.phone_number}</Text>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))
           )}
         </View>
