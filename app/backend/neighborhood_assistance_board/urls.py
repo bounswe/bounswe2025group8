@@ -25,6 +25,6 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
 ]
 
-# Add media URL configuration for development
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Add media URL configuration for both development and production
+# In production, Caddy will handle /media/* but Django needs to serve the files
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
