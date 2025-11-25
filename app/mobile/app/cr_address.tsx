@@ -143,17 +143,37 @@ export default function CRAddress() {
             <Image source={require('../assets/images/logo.png')} style={{ width: 28, height: 28, resizeMode: 'contain' }} />
           </View>
           <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => router.push('/notifications')} style={{ marginRight: 16 }}>
-              <Ionicons name="notifications-outline" size={24} color={colors.text} />
+            <TouchableOpacity
+              onPress={() => router.push('/notifications')}
+              style={{ marginRight: 16 }}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Open notifications"
+            >
+              <Ionicons name="notifications-outline" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/settings')}>
-              <Ionicons name="settings-outline" size={24} color={colors.text} />
+            <TouchableOpacity
+              onPress={() => router.push('/settings')}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Open settings"
+            >
+              <Ionicons name="settings-outline" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
             </TouchableOpacity>
           </View>
         </View>
         <View style={styles.titleRow}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => router.back()}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <Ionicons name="arrow-back" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
           </TouchableOpacity>
           <Text style={[styles.pageTitle, { color: colors.text }]}>Create Request</Text>
         </View>
@@ -175,12 +195,18 @@ export default function CRAddress() {
           value={description}
           onChangeText={setDescription}
           multiline
+          accessibilityLabel="Address description"
         />
 
         <TouchableOpacity 
           style={[styles.nextBtn, { backgroundColor: colors.primary, opacity: uploading ? 0.6 : 1 }]} 
           onPress={handleCreateRequest}
           disabled={uploading}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Create request"
+          accessibilityState={{ disabled: uploading }}
         >
           {uploading ? (
             <ActivityIndicator color={colors.onPrimary} />
@@ -194,7 +220,13 @@ export default function CRAddress() {
             <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
               <View style={styles.modalHeader}>
                 <Text style={[styles.modalTitle, { color: colors.text }]}>Select</Text>
-                <TouchableOpacity onPress={closeModal}>
+                <TouchableOpacity
+                  onPress={closeModal}
+                  accessible
+
+                  accessibilityRole="button"
+                  accessibilityLabel="Close selection modal"
+                >
                   <Ionicons name="close" size={24} color={colors.primary} />
                 </TouchableOpacity>
               </View>
@@ -216,6 +248,11 @@ export default function CRAddress() {
                       modal.onSelect(option);
                       closeModal();
                     }}
+                    accessible
+
+                    accessibilityRole="button"
+                    accessibilityLabel={`Select ${option}`}
+                    accessibilityState={{ selected: isSelected }}
                   >
                     <Text
                       style={[
