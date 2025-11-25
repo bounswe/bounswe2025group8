@@ -30,8 +30,8 @@ const port = Constants.expoConfig?.extra?.apiPort ?? '8000';
 // Replace '172.20.10.3' with your actual LAN IP if different
 // Find your LAN IP with: ipconfig getifaddr en0
 // use the first one returned by the command
-// do not forget to also change the export const API_BASE_URL constant below.
-const LOCAL_LAN_IP = '192.168.4.121'; // Change this to your LAN IP if needed
+// Can be set via Constants.expoConfig?.extra?.localLanIp from .env file
+const LOCAL_LAN_IP = Constants.expoConfig?.extra?.localLanIp ?? '192.168.4.23'; // Default fallback if not set
 
 const API_HOST = Platform.select({
   web: 'localhost',           // Web uses localhost
@@ -40,10 +40,10 @@ const API_HOST = Platform.select({
   default: LOCAL_LAN_IP,      // Physical devices: use LAN IP
 });
 
-// For local development, use dynamic host detection
-// For production, comment out the line below and uncomment the hardcoded Production URL
-//export const BACKEND_BASE_URL = `http://35.222.191.20:${port}`; // Production URL
-export const BACKEND_BASE_URL = `http://${API_HOST}:${port}`;
+// Use environment variable if present (from .env via Constants.expoConfig?.extra?.backendBaseUrl), otherwise fallback to dynamic host
+const ENV_BACKEND_URL = Constants.expoConfig?.extra?.backendBaseUrl;
+
+export const BACKEND_BASE_URL = ENV_BACKEND_URL ? ENV_BACKEND_URL : `http://${API_HOST}:${port}`;
 
 export const API_BASE_URL = `${BACKEND_BASE_URL}/api`;
 

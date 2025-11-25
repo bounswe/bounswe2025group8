@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ScrollView, StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Image, Alert, SafeAreaView } from 'react-native';
 import { useTheme } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import RatingPill from '../components/ui/RatingPill';
 import ReviewCard from '../components/ui/ReviewCard';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -199,6 +200,38 @@ export default function ProfileScreen() {
       setUserVolunteers([]);
     }
   }, [targetUserId, user?.id, viewedUserId]);
+
+  // Refresh task data when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (!targetUserId) return;
+
+      console.log('[ProfileScreen] Screen focused - refreshing task data');
+
+      // Refresh tasks
+      getTasks()
+        .then((res) => {
+          setAllTasks(res.results || []);
+        })
+        .catch((err) => {
+          console.error('Error refreshing tasks on focus:', err);
+        });
+
+      // Refresh volunteer records if needed
+      if (user && (targetUserId === user.id || !viewedUserId)) {
+        listVolunteers()
+          .then((volunteers) => {
+            setUserVolunteers(volunteers.filter(v => {
+              const status = v.status?.toUpperCase() || '';
+              return status === 'ACCEPTED';
+            }));
+          })
+          .catch((err) => {
+            console.error('Error refreshing volunteers on focus:', err);
+          });
+      }
+    }, [targetUserId, user?.id, viewedUserId])
+  );
 
   const normalizeStatus = (status?: string) => (status || '').toLowerCase();
   const isActiveStatus = (status?: string) => {
@@ -556,24 +589,24 @@ export default function ProfileScreen() {
               ? (reviewerPhotoUrl.startsWith('http') ? reviewerPhotoUrl : `${BACKEND_BASE_URL}${reviewerPhotoUrl}`)
               : null;
             return (
-            <ReviewCard
-              key={review.id}
-              reviewerName={`${review.reviewer.name} ${review.reviewer.surname}`}
-              rating={review.score}
-              comment={review.comment}
-              timestamp={new Date(review.timestamp).toLocaleDateString()}
-              avatarUrl={avatarUrl}
-              is_volunteer_to_requester={review.is_volunteer_to_requester}
-              is_requester_to_volunteer={review.is_requester_to_volunteer}
-              accuracy_of_request={review.accuracy_of_request}
-              communication_volunteer_to_requester={review.communication_volunteer_to_requester}
-              safety_and_preparedness={review.safety_and_preparedness}
-              reliability={review.reliability}
-              task_completion={review.task_completion}
-              communication_requester_to_volunteer={review.communication_requester_to_volunteer}
-              safety_and_respect={review.safety_and_respect}
-            />
-          );
+              <ReviewCard
+                key={review.id}
+                reviewerName={`${review.reviewer.name} ${review.reviewer.surname}`}
+                rating={review.score}
+                comment={review.comment}
+                timestamp={new Date(review.timestamp).toLocaleDateString()}
+                avatarUrl={avatarUrl}
+                is_volunteer_to_requester={review.is_volunteer_to_requester}
+                is_requester_to_volunteer={review.is_requester_to_volunteer}
+                accuracy_of_request={review.accuracy_of_request}
+                communication_volunteer_to_requester={review.communication_volunteer_to_requester}
+                safety_and_preparedness={review.safety_and_preparedness}
+                reliability={review.reliability}
+                task_completion={review.task_completion}
+                communication_requester_to_volunteer={review.communication_requester_to_volunteer}
+                safety_and_respect={review.safety_and_respect}
+              />
+            );
           })}
         </View>
 
