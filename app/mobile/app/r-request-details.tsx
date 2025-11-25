@@ -550,7 +550,9 @@ export default function RequestDetails() {
   const canAssignMore = numAssigned < request.volunteer_number;
   const taskStatus = request?.status?.toUpperCase() || '';
   const isCompleted = taskStatus === 'COMPLETED';
-  const canMarkComplete = isCreator && !isCompleted && numAssigned >= 1;
+  const isCancelled = taskStatus === 'CANCELLED';
+  const isTaskActive = !isCompleted && !isCancelled;
+  const canMarkComplete = isCreator && isTaskActive && numAssigned >= 1;
 
   const currentStatusKey = statusDisplayToKey(statusDisplay);
   const statusLabelBackgroundColor =
@@ -688,13 +690,13 @@ export default function RequestDetails() {
         <View style={[styles.section, { backgroundColor: themeColors.card }]}>
           <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Requester</Text>
           <View style={styles.requesterRow}>
-            <Image 
+            <Image
               source={
                 requesterPhotoUrl
                   ? { uri: requesterPhotoUrl }
                   : require('../assets/images/empty_profile_photo.png')
-              } 
-              style={[styles.requesterAvatar, { backgroundColor: themeColors.border }]} 
+              }
+              style={[styles.requesterAvatar, { backgroundColor: themeColors.border }]}
             />
             <View style={{ flex: 1 }}>
               <Text style={[styles.requesterName, { color: themeColors.text }]}>{requesterName}</Text>
@@ -720,33 +722,35 @@ export default function RequestDetails() {
             <Text style={[styles.sectionText, { color: themeColors.textMuted }]}>No volunteers assigned yet.</Text>
           ) : (
             assignedVolunteers.map((volunteer) => (
-                <TouchableOpacity
-                  key={volunteer.id}
-                  style={styles.volunteerRow}
-                  onPress={() => {
-                    if (volunteer.user?.id) {
-                      router.push({ pathname: '/profile', params: { userId: String(volunteer.user.id) } });
-                    }
-                  }}
-                  disabled={!volunteer.user?.id}
-                  activeOpacity={volunteer.user?.id ? 0.8 : 1}
-                  accessible
-                  accessibilityRole="button"
-                  accessibilityLabel={`View ${volunteer.user.name} ${volunteer.user.surname}'s profile`}
-                  accessibilityState={{ disabled: !volunteer.user?.id }}
-                >
-                  <Image
-                    source={
-                      (volunteer.user.profile_photo || volunteer.user.photo)
-                        ? { uri: (volunteer.user.profile_photo || volunteer.user.photo).startsWith('http')
-                            ? volunteer.user.profile_photo || volunteer.user.photo
-                            : `${BACKEND_BASE_URL}${volunteer.user.profile_photo || volunteer.user.photo}` } 
-                        : require('../assets/images/empty_profile_photo.png')
-                    }
-                    style={[styles.volunteerAvatar, { backgroundColor: themeColors.border }]}
-                    accessibilityRole="image"
-                    accessibilityLabel={`Profile photo of ${volunteer.user.name} ${volunteer.user.surname}`}
-                  />
+              <TouchableOpacity
+                key={volunteer.id}
+                style={styles.volunteerRow}
+                onPress={() => {
+                  if (volunteer.user?.id) {
+                    router.push({ pathname: '/profile', params: { userId: String(volunteer.user.id) } });
+                  }
+                }}
+                disabled={!volunteer.user?.id}
+                activeOpacity={volunteer.user?.id ? 0.8 : 1}
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel={`View ${volunteer.user.name} ${volunteer.user.surname}'s profile`}
+                accessibilityState={{ disabled: !volunteer.user?.id }}
+              >
+                <Image
+                  source={
+                    (volunteer.user.profile_photo || volunteer.user.photo)
+                      ? {
+                        uri: (volunteer.user.profile_photo || volunteer.user.photo)?.startsWith('http')
+                          ? volunteer.user.profile_photo || volunteer.user.photo
+                          : `${BACKEND_BASE_URL}${volunteer.user.profile_photo || volunteer.user.photo}`
+                      }
+                      : require('../assets/images/empty_profile_photo.png')
+                  }
+                  style={[styles.volunteerAvatar, { backgroundColor: themeColors.border }]}
+                  accessibilityRole="image"
+                  accessibilityLabel={`Profile photo of ${volunteer.user.name} ${volunteer.user.surname}`}
+                />
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: themeColors.text, fontWeight: '600' }}>
                     {volunteer.user.name} {volunteer.user.surname}
@@ -758,7 +762,7 @@ export default function RequestDetails() {
           )}
         </View>
 
-        {isCreator && !isCompleted && (
+        {isCreator && isTaskActive && (
           <TouchableOpacity
             style={[styles.primaryButton, { backgroundColor: themeColors.primary }]}
             onPress={() => router.push({ pathname: '/select-volunteer', params: { id, requiredVolunteers: String(request.volunteer_number) } })}
@@ -792,7 +796,7 @@ export default function RequestDetails() {
           </TouchableOpacity>
         )}
 
-        {isCreator && !isCompleted && (
+        {isCreator && isTaskActive && (
           <View style={styles.buttonRow}>
             <TouchableOpacity
               style={[styles.halfButton, { borderColor: themeColors.secondary }]}

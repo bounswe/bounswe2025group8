@@ -68,6 +68,11 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
     if (is_volunteer_to_requester) {
       return (
         <View style={styles.detailedRatingsContainer}>
+          {/* Overall rating - always first and bold */}
+          <View style={styles.ratingRow}>
+            <Text style={[styles.ratingLabel, { color: themeColors.text, fontWeight: 'bold' }]}>Overall:</Text>
+            {renderStars(rating)}
+          </View>
           {accuracy_of_request && (
             <View style={styles.ratingRow}>
               <Text style={[styles.ratingLabel, { color: themeColors.textMuted }]}>Accuracy of Request:</Text>
@@ -91,6 +96,11 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
     } else if (is_requester_to_volunteer) {
       return (
         <View style={styles.detailedRatingsContainer}>
+          {/* Overall rating - always first and bold */}
+          <View style={styles.ratingRow}>
+            <Text style={[styles.ratingLabel, { color: themeColors.text, fontWeight: 'bold' }]}>Overall:</Text>
+            {renderStars(rating)}
+          </View>
           {reliability && (
             <View style={styles.ratingRow}>
               <Text style={[styles.ratingLabel, { color: themeColors.textMuted }]}>Reliability:</Text>
@@ -133,10 +143,6 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
           <View style={styles.nameRow}>
             <Text style={[styles.reviewerName, { color: themeColors.text }]}>{reviewerName}</Text>
             <Text style={[styles.timestamp, { color: themeColors.textMuted }]}>{timestamp}</Text>
-          </View>
-          <View style={styles.overallRatingRow}>
-            <Text style={[styles.overallLabel, { color: themeColors.textMuted }]}>Overall:</Text>
-            {renderStars(rating)}
           </View>
         </View>
       </View>
