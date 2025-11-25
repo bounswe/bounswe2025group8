@@ -54,7 +54,11 @@ RUN if [ -f .env.example ]; then cp .env.example .env; fi
 # Conditional steps: Only run prebuild and APK build if BUILD_MODE=build
 # For dev mode, we skip these steps to speed up startup
 RUN if [ "$BUILD_MODE" = "build" ]; then \
-        npx expo prebuild --platform android --no-install && \
+        set -e && \
+        echo "Starting Android build process..." && \
+        echo "Step 1: Running expo prebuild..." && \
+        npx expo prebuild --platform android --no-install || (echo "ERROR: expo prebuild failed" && exit 1) && \
+        echo "Step 2: Generating keystore..." && \
         keytool -genkey -v \
             -keystore my-release-key.keystore \
             -alias my-key-alias \
@@ -63,16 +67,21 @@ RUN if [ "$BUILD_MODE" = "build" ]; then \
             -validity 10000 \
             -dname "CN=Android Release,O=Android,C=US" \
             -storepass password \
-            -keypass password && \
+            -keypass password || (echo "ERROR: keytool failed" && exit 1) && \
+        echo "Step 3: Configuring Gradle properties..." && \
         echo "" >> android/gradle.properties && \
         echo "MYAPP_UPLOAD_STORE_FILE=../../my-release-key.keystore" >> android/gradle.properties && \
         echo "MYAPP_UPLOAD_KEY_ALIAS=my-key-alias" >> android/gradle.properties && \
         echo "MYAPP_UPLOAD_STORE_PASSWORD=password" >> android/gradle.properties && \
         echo "MYAPP_UPLOAD_KEY_PASSWORD=password" >> android/gradle.properties && \
+        echo "Step 4: Building APK with Gradle..." && \
         cd android && \
         chmod +x ./gradlew && \
-        ./gradlew assembleRelease -x lint -x lintVitalRelease && \
-        cd ..; \
+        ./gradlew assembleRelease -x lint -x lintVitalRelease || (echo "ERROR: Gradle build failed" && exit 1) && \
+        cd .. && \
+        echo "Build completed successfully!"; \
+    else \
+        echo "Skipping Android build (BUILD_MODE=dev)"; \
     fi
 
 # Expose Expo dev server port
