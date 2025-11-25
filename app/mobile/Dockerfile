@@ -82,6 +82,6 @@ EXPOSE 8081
 WORKDIR /app
 
 # Conditional CMD based on BUILD_MODE
-# For dev mode: run Expo dev server (accessible from host machine)
+# For dev mode: run Expo dev server (accessible from host machine via LAN)
 # For build mode: copy APK to output directory
-CMD ["sh", "-c", "if [ \"$BUILD_MODE\" = \"build\" ]; then cp android/app/build/outputs/apk/release/app-release.apk /output/app-release.apk || echo 'Build failed or file not found'; else npx expo start --host 0.0.0.0; fi"]
+CMD ["sh", "-c", "if [ \"$BUILD_MODE\" = \"build\" ]; then cp android/app/build/outputs/apk/release/app-release.apk /output/app-release.apk || echo 'Build failed or file not found'; else npx expo start --host lan; fi"]

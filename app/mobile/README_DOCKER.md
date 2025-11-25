@@ -22,7 +22,7 @@ docker build --build-arg BUILD_MODE=dev -t mobile-app-dev .
 
 ### Run the Expo dev server:
 ```bash
-docker run --rm -p 8081:8081 mobile-app-dev
+docker run --rm --name mobile-dev -p 8081:8081 mobile-app-dev
 ```
 
 The Expo dev server will be accessible at `http://localhost:8081`. You can scan the QR code with the Expo Go app on your mobile device.
