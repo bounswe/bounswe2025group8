@@ -2,18 +2,27 @@ from rest_framework import serializers
 from core.models import TaskReport, UserReport, ReportType, ReportStatus, Task, RegisteredUser
 
 
+class TaskNestedSerializer(serializers.ModelSerializer):
+    """Nested serializer for Task in reports"""
+    class Meta:
+        model = Task
+        fields = ['id', 'title', 'description', 'created_at']
+        read_only_fields = ['id', 'title', 'description', 'created_at']
+
+
 class TaskReportSerializer(serializers.ModelSerializer):
     """Serializer for TaskReport model"""
     reporter = serializers.StringRelatedField(read_only=True)
+    task = TaskNestedSerializer(read_only=True)
     task_title = serializers.CharField(source='task.title', read_only=True)
     report_type_display = serializers.CharField(source='get_report_type_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     reviewed_by_username = serializers.CharField(source='reviewed_by.user.username', read_only=True, allow_null=True)
-    
+
     class Meta:
         model = TaskReport
         fields = [
-            'id', 'task', 'task_title', 'reporter', 'report_type', 
+            'id', 'task', 'task_title', 'reporter', 'report_type',
             'report_type_display', 'description', 'status', 'status_display',
             'created_at', 'updated_at', 'reviewed_by_username', 'admin_notes'
         ]
@@ -51,15 +60,24 @@ class TaskReportCreateSerializer(serializers.ModelSerializer):
         return report
 
 
+class UserNestedSerializer(serializers.ModelSerializer):
+    """Nested serializer for User in reports"""
+    class Meta:
+        model = RegisteredUser
+        fields = ['id', 'username', 'name', 'surname', 'email']
+        read_only_fields = ['id', 'username', 'name', 'surname', 'email']
+
+
 class UserReportSerializer(serializers.ModelSerializer):
     """Serializer for UserReport model"""
     reporter = serializers.StringRelatedField(read_only=True)
+    reported_user = UserNestedSerializer(read_only=True)
     reported_user_username = serializers.CharField(source='reported_user.username', read_only=True)
     related_task_title = serializers.CharField(source='related_task.title', read_only=True, allow_null=True)
     report_type_display = serializers.CharField(source='get_report_type_display', read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     reviewed_by_username = serializers.CharField(source='reviewed_by.user.username', read_only=True, allow_null=True)
-    
+
     class Meta:
         model = UserReport
         fields = [

@@ -164,11 +164,29 @@ class TaskVolunteersView(views.APIView):
         # Get task
         task = get_object_or_404(Task, id=task_id)
         
-        # Check if user is the creator
-        if request.user != task.creator:
+        # Check if user is the creator OR if task is completed and user is a participant
+        is_creator = request.user == task.creator
+        is_participant = False
+        
+        # If task is completed, allow participants to view volunteers (for review purposes)
+        if task.status == 'COMPLETED':
+            participant_ids = set()
+            participant_ids.add(task.creator_id)
+            participant_ids.update(task.get_assignees().values_list('id', flat=True))
+            if task.assignee_id:
+                participant_ids.add(task.assignee_id)
+            
+            # Add accepted volunteers
+            accepted_volunteers = task.get_assigned_volunteers()
+            for volunteer in accepted_volunteers:
+                participant_ids.add(volunteer.user.id)
+            
+            is_participant = request.user.id in participant_ids
+        
+        if not is_creator and not is_participant:
             return Response(format_response(
                 status='error',
-                message='Only the task creator can view volunteers.'
+                message='Only the task creator or participants of completed tasks can view volunteers.'
             ), status=status.HTTP_403_FORBIDDEN)
         
         # Get volunteers

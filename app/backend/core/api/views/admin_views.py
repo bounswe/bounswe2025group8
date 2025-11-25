@@ -88,9 +88,10 @@ class ReportedUsersView(views.APIView):
     
     def get(self, request):
         """Handle GET requests to retrieve reported users"""
-        # Get users with reports
+        # Get users with pending reports only
+        from django.db.models import Q
         reported_users = RegisteredUser.objects.annotate(
-            report_count=Count('reports_received')
+            report_count=Count('reports_received', filter=Q(reports_received__status='PENDING'))
         ).filter(report_count__gt=0).order_by('-report_count')
         
         # Get page and limit parameters
@@ -103,7 +104,7 @@ class ReportedUsersView(views.APIView):
         # Create response data
         response_data = []
         for user in paginated['data']:
-            latest_report = user.reports_received.order_by('-created_at').first()
+            latest_report = user.reports_received.filter(status='PENDING').order_by('-created_at').first()
             response_data.append({
                 'user_id': user.id,
                 'username': user.username,
@@ -191,7 +192,7 @@ class BanUserView(views.APIView):
                 status='error',
                 message='Reason for banning is required.'
             ), status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Get user
         try:
             user = RegisteredUser.objects.get(id=user_id)
@@ -200,7 +201,7 @@ class BanUserView(views.APIView):
                 status='error',
                 message='User not found.'
             ), status=status.HTTP_404_NOT_FOUND)
-        
+
         # Get admin
         try:
             admin = Administrator.objects.get(user=request.user)
@@ -209,7 +210,7 @@ class BanUserView(views.APIView):
                 status='error',
                 message='Admin not found.'
             ), status=status.HTTP_403_FORBIDDEN)
-        
+
         # Ban user
         success = admin.ban_user(user)
         if not success:
@@ -217,7 +218,18 @@ class BanUserView(views.APIView):
                 status='error',
                 message='Could not ban user.'
             ), status=status.HTTP_400_BAD_REQUEST)
-        
+
+        # Mark all pending reports against this user as resolved
+        user_reports = UserReport.objects.filter(reported_user=user, status='PENDING')
+        resolved_count = 0
+        for report in user_reports:
+            report.update_status(
+                status='RESOLVED',
+                admin=admin,
+                notes=f'Resolved by banning user. Reason: {reason}'
+            )
+            resolved_count += 1
+
         # Send notification to user
         from core.models import Notification, NotificationType
         from django.utils import timezone
@@ -226,7 +238,7 @@ class BanUserView(views.APIView):
             content=f"Your account has been banned for violating community guidelines: {reason}. You may appeal by emailing support@example.com.",
             notification_type=NotificationType.SYSTEM_NOTIFICATION
         )
-        
+
         # Create response data
         return Response(format_response(
             status='success',
@@ -236,8 +248,60 @@ class BanUserView(views.APIView):
                 'username': user.username,
                 'new_status': 'banned',
                 'banned_at': timezone.now().isoformat(),
-                'reason': reason
+                'reason': reason,
+                'reports_resolved': resolved_count
             }
+        ))
+
+
+class DismissUserReportsView(views.APIView):
+    """View for dismissing all reports against a user (admin only)"""
+    permission_classes = [permissions.IsAuthenticated, IsAdministrator]
+
+    def post(self, request, user_id):
+        """Handle POST requests to dismiss all reports against a user"""
+        # Get user
+        try:
+            user = RegisteredUser.objects.get(id=user_id)
+        except RegisteredUser.DoesNotExist:
+            return Response(format_response(
+                status='error',
+                message='User not found.'
+            ), status=status.HTTP_404_NOT_FOUND)
+
+        # Get admin
+        try:
+            admin = Administrator.objects.get(user=request.user)
+        except Administrator.DoesNotExist:
+            return Response(format_response(
+                status='error',
+                message='Admin not found.'
+            ), status=status.HTTP_403_FORBIDDEN)
+
+        # Get all pending reports against this user
+        reports = UserReport.objects.filter(reported_user=user, status='PENDING')
+
+        if not reports.exists():
+            return Response(format_response(
+                status='success',
+                message='No pending reports to dismiss.',
+                data={'dismissed_count': 0}
+            ))
+
+        # Mark all reports as dismissed
+        dismissed_count = 0
+        for report in reports:
+            report.update_status(
+                status='DISMISSED',
+                admin=admin,
+                notes='Dismissed by admin for user dismissal action'
+            )
+            dismissed_count += 1
+
+        return Response(format_response(
+            status='success',
+            message=f'Successfully dismissed {dismissed_count} reports against {user.username}.',
+            data={'dismissed_count': dismissed_count}
         ))
 
 

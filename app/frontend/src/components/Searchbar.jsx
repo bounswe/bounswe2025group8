@@ -78,6 +78,7 @@ const Searchbar = ({
       </button>
 
       <input
+        type="search"
         className="ml-2 flex-1 bg-transparent py-3 px-4 w-full outline-none text-sm"
         placeholder={placeholder}
         aria-label="Search input"

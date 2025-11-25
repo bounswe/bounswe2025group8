@@ -11,15 +11,38 @@ import api from './api';
  * @param {number} revieweeId - ID of the user being reviewed
  * @param {number} score - Rating score (1-5)
  * @param {string} comment - Review comment
+ * @param {Object} dimensionRatings - Dimensional ratings object with specific keys
+ * @param {boolean} isVolunteerToRequester - True if volunteer is reviewing requester
+ * @param {boolean} isRequesterToVolunteer - True if requester is reviewing volunteer
  * @returns {Promise} API response
  */
-export const submitReview = async (taskId, revieweeId, score, comment) => {
+export const submitReview = async (
+  taskId, 
+  revieweeId, 
+  score, 
+  comment, 
+  dimensionRatings = {},
+  isVolunteerToRequester = false,
+  isRequesterToVolunteer = false
+) => {
   try {
-    const response = await api.post(`/tasks/${taskId}/reviews/`, {
+    // Filter out null/undefined values from dimensionRatings
+    const cleanedDimensionRatings = Object.entries(dimensionRatings)
+      .filter(([key, value]) => value !== null && value !== undefined)
+      .reduce((acc, [key, value]) => {
+        acc[key] = value;
+        return acc;
+      }, {});
+
+    const payload = {
       reviewee_id: revieweeId,
+      task_id: taskId,
       score,
       comment,
-    });
+      ...cleanedDimensionRatings,
+    };
+
+    const response = await api.post('/reviews/', payload);
     return response.data;
   } catch (error) {
     console.error('Error submitting review:', error);
@@ -105,6 +128,15 @@ export const getAllPotentialReviewees = (task, currentUser) => {
     return [];
   }
 
+  console.log('getAllPotentialReviewees - Debug:', {
+    taskId: task.id,
+    currentUserId: currentUser.id,
+    taskCreatorId: task.creator?.id,
+    volunteers: task.volunteers,
+    assignees: task.assignees,
+    assignee: task.assignee,
+  });
+
   const reviewableUsers = [];
   
   // If current user is the task creator, they can review volunteers
@@ -139,10 +171,20 @@ export const getAllPotentialReviewees = (task, currentUser) => {
     isVolunteer = task.volunteers.some(v => {
       const volunteerId = v.user?.id || v.volunteer?.id || v.id;
       const volunteerStatus = v.status;
+      console.log('Checking volunteer:', {
+        volunteerId,
+        volunteerStatus,
+        currentUserId: currentUser.id,
+        matches: volunteerId === currentUser.id,
+        statusCheck: volunteerStatus === 'ACCEPTED' || task.status === 'COMPLETED',
+        volunteerObject: v
+      });
       return volunteerId === currentUser.id && 
              (volunteerStatus === 'ACCEPTED' || task.status === 'COMPLETED');
     });
   }
+  
+  console.log('isVolunteer result:', isVolunteer);
   
   // Check if user is in assignees array
   if (!isVolunteer && task.assignees && task.assignees.length > 0) {
@@ -155,6 +197,7 @@ export const getAllPotentialReviewees = (task, currentUser) => {
   }
   
   if (isVolunteer && task.creator) {
+    console.log('Adding requester to reviewable users:', task.creator);
     reviewableUsers.push({
       id: task.creator.id,
       name: task.creator.name,
@@ -168,6 +211,7 @@ export const getAllPotentialReviewees = (task, currentUser) => {
     index === self.findIndex(u => u.id === user.id)
   );
 
+  console.log('getAllPotentialReviewees - Final result:', uniqueUsers);
   return uniqueUsers;
 };
 
