@@ -290,6 +290,7 @@ export default function SignUp() {
 
             accessibilityRole="button"
             accessibilityLabel="Sign up"
+            testID="signup-button"
             accessibilityState={{ disabled: !agree || isLoading }}
             testID="signup-button"
           >
