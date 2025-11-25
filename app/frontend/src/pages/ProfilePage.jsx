@@ -50,6 +50,7 @@ import RequestCard from "../components/RequestCard";
 import ReviewCard from "../components/ReviewCard";
 import Badge from "../components/Badge";
 import EditProfileDialog from "../components/EditProfileDialog";
+import RatingCategoriesModal from "../components/RatingCategoriesModal";
 import UserReportModal from "../components/UserReportModal";
 import { useTheme } from "../hooks/useTheme";
 import { toAbsoluteUrl } from "../utils/url";
@@ -129,7 +130,8 @@ const ProfilePage = () => {
   const [reviewPage, setReviewPage] = useState(1);
   const [reviewsPerPage] = useState(5);
   const [refreshData, setRefreshData] = useState(false);
-  const [editProfileOpen, setEditProfileOpen] = useState(false); // Empty array for badges since we'll use API data
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [ratingCategoriesOpen, setRatingCategoriesOpen] = useState(false); // Empty array for badges since we'll use API data
   const [userReportDialogOpen, setUserReportDialogOpen] = useState(false);
   const [mockBadges] = useState([]);
 
@@ -613,40 +615,46 @@ const ProfilePage = () => {
                   ) : null;
                 })()}
               </Box>
-              <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
-                <Box>
-                  <Typography
-                    variant="h5"
-                    component="h1"
-                    sx={{ textAlign: "left", color: colors.text.primary }}
-                  >
-                    {user.name} {user.surname}
-                  </Typography>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Rating
-                      value={user.rating}
-                      precision={0.1}
-                      readOnly
-                      sx={{
-                        "& .MuiRating-iconFilled": {
-                          color: colors.semantic.warning,
-                        },
-                        "& .MuiRating-iconEmpty": {
-                          color: colors.border.secondary,
-                        },
-                      }}
-                    />
-                    <Chip
-                      label={`${(user.rating || 0).toFixed(1)} (${
-                        user.reviewCount || reviews.length
-                      } reviews)`}
-                      sx={{
-                        backgroundColor: colors.brand.primary,
-                        color: colors.text.inverted,
-                        "& .MuiChip-label": { px: 2 },
-                      }}
-                    />
-                  </Box>
+              <Box>
+                <Typography
+                  variant="h5"
+                  component="h1"
+                  sx={{ textAlign: "left", color: colors.text.primary }}
+                  id="profile-page-title"
+                >
+                  {user.name} {user.surname}
+                </Typography>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Rating
+                    value={user.rating}
+                    precision={0.1}
+                    readOnly
+                    sx={{
+                      "& .MuiRating-iconFilled": {
+                        color: colors.semantic.warning,
+                      },
+                      "& .MuiRating-iconEmpty": {
+                        color: colors.border.secondary,
+                      },
+                    }}
+                  />
+                  <Chip
+                    label={`${(
+                      Math.round((user.rating || 0) * 10) / 10
+                    ).toFixed(1)} (${
+                      user.reviewCount || reviews?.reviews?.length || 0
+                    } reviews)`}
+                    onClick={() => setRatingCategoriesOpen(true)}
+                    sx={{
+                      backgroundColor: colors.brand.primary,
+                      color: colors.text.inverted,
+                      "& .MuiChip-label": { px: 2 },
+                      cursor: "pointer",
+                      "&:hover": {
+                        backgroundColor: colors.brand.secondary,
+                      },
+                    }}
+                  />
                 </Box>
                 {/* Report button - only show for other users, not own profile */}
                 {!canEdit && (
@@ -997,9 +1005,9 @@ const ProfilePage = () => {
                 Reviews
               </Typography>
               <Chip
-                label={`${(user.rating || 0).toFixed(1)} (${
-                  reviews?.reviews?.length || 0
-                } reviews)`}
+                label={`${(Math.round((user.rating || 0) * 10) / 10).toFixed(
+                  1
+                )} (${reviews?.reviews?.length || 0} reviews)`}
                 size="small"
                 sx={{
                   backgroundColor: colors.brand.primary,
@@ -1066,6 +1074,13 @@ const ProfilePage = () => {
         user={user}
       />
 
+      {/* Rating Categories Modal */}
+      <RatingCategoriesModal
+        open={ratingCategoriesOpen}
+        onClose={() => setRatingCategoriesOpen(false)}
+        user={user}
+        role={roleTab === 0 ? "volunteer" : "requester"}
+      />
       {/* User Report Dialog */}
       <UserReportModal
         open={userReportDialogOpen}
