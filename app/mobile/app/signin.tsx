@@ -44,13 +44,13 @@ export default function SignIn() {
       console.log('Attempting login with:', { email });
       const response = await login(email, password);
       console.log('Login successful:', response);
-      
+
       // The login function already fetches and stores the user profile
       // Just set the user in auth context and navigate
       if (response.data?.user_id) {
         await setUser({ id: response.data.user_id, email });
       }
-      
+
       // Navigate to feed
       router.replace('/feed');
     } catch (error: any) {
@@ -83,10 +83,11 @@ export default function SignIn() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
             onPress={() => {
-            if (router.canGoBack()) {
-              router.back();
-            } else {
-              router.replace('/');}
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace('/');
+              }
             }
             }>
             <Ionicons
@@ -143,6 +144,7 @@ export default function SignIn() {
                   accessibilityValue={{ text: email || '' }}
                   onFocus={() => setEmailFocused(true)}
                   onBlur={() => setEmailFocused(false)}
+                  testID="signin-email-input"
                 />
               </View>
             </View>
@@ -183,6 +185,7 @@ export default function SignIn() {
                   }}
                   onFocus={() => setPasswordFocused(true)}
                   onBlur={() => setPasswordFocused(false)}
+                  testID="signin-password-input"
                 />
               </View>
               <TouchableOpacity
@@ -226,6 +229,7 @@ export default function SignIn() {
             accessibilityRole="button"
             accessibilityLabel="Sign in"
             accessibilityState={{ disabled: isLoading }}
+            testID="signin-button"
           >
             <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
               {isLoading ? 'Signing in...' : 'Sign In'}
@@ -277,7 +281,7 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 20, textAlign: 'auto'
   },
-    title: {
+  title: {
     fontSize: 32,
     fontWeight: '700',
   },
@@ -310,7 +314,7 @@ const styles = StyleSheet.create({
     right: 0,
     fontSize: 14,
   },
-    rememberWrapper: {
+  rememberWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 24,
@@ -328,19 +332,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-    forgotText: {
+  forgotText: {
     textAlign: 'center',
     fontSize: 14,
     marginBottom: 144,
   },
-    signupPrompt: {
+  signupPrompt: {
     flexDirection: 'row',
     justifyContent: 'center',
   },
-    promptText: {
+  promptText: {
     fontSize: 14,
   },
-    promptLink: {
+  promptLink: {
     fontSize: 14,
     fontWeight: '500',
   },

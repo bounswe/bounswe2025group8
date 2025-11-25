@@ -36,7 +36,7 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
     title: '',
     options: [],
     selected: '',
-    onSelect: () => {},
+    onSelect: () => { },
   });
 
   const openPicker = (title: string, options: string[], selected: string, onSelect: (val: string) => void) => {
@@ -53,56 +53,56 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
 
   // 1. Get States
   const [statesList, stateNameToCode] = useMemo(() => {
-      const countryCode = countryNameToCode[value.country];
-      if (!countryCode) return [[], {}];
-      
-      const states = State.getStatesOfCountry(countryCode);
-      const names = states.map(s => s.name).sort();
-      
-      const nameToCode: Record<string, string> = {};
-      states.forEach(s => {
-        nameToCode[s.name] = s.isoCode;
-      });
+    const countryCode = countryNameToCode[value.country];
+    if (!countryCode) return [[], {}];
 
-      return [names, nameToCode];
-    }, [value.country]);
+    const states = State.getStatesOfCountry(countryCode);
+    const names = states.map(s => s.name).sort();
+
+    const nameToCode: Record<string, string> = {};
+    states.forEach(s => {
+      nameToCode[s.name] = s.isoCode;
+    });
+
+    return [names, nameToCode];
+  }, [value.country]);
 
   // 2. Get Cities (Simplified return value)
   const citiesList = useMemo(() => {
-      const countryCode = countryNameToCode[value.country];
+    const countryCode = countryNameToCode[value.country];
 
-      const stateMap = stateNameToCode as Record<string, string>; 
-      
-      const stateCode = stateMap[value.state]; // Use the asserted type
-      
-      if (!countryCode || !stateCode) return [];
-      
-      const cities = City.getCitiesOfState(countryCode, stateCode);
-      const names = cities.map(c => c.name).sort();
+    const stateMap = stateNameToCode as Record<string, string>;
 
-      return names; 
-    }, [value.country, value.state, stateNameToCode]);
+    const stateCode = stateMap[value.state]; // Use the asserted type
+
+    if (!countryCode || !stateCode) return [];
+
+    const cities = City.getCitiesOfState(countryCode, stateCode);
+    const names = cities.map(c => c.name).sort();
+
+    return names;
+  }, [value.country, value.state, stateNameToCode]);
 
   // 3. Update Logic (Clear dependents only when parent selector changes)
   const updateField = (field: keyof AddressFieldsValue, fieldValue: string) => {
-      const next: AddressFieldsValue = { ...value, [field]: fieldValue };
-      
-      if (field === 'country') {
-        // Clear all dependent selection fields AND all free-text locality fields
-        next.state = ''; 
-        next.city = '';
-        next.neighborhood = '';
-        next.street = '';
-      } else if (field === 'state') {
-        // Clear city selection field
-        next.city = '';
-        // Do NOT clear free-text fields
-      } else if (field === 'city') {
-        // No fields cleared below city
-      }
-      
-      onChange(next);
-    };
+    const next: AddressFieldsValue = { ...value, [field]: fieldValue };
+
+    if (field === 'country') {
+      // Clear all dependent selection fields AND all free-text locality fields
+      next.state = '';
+      next.city = '';
+      next.neighborhood = '';
+      next.street = '';
+    } else if (field === 'state') {
+      // Clear city selection field
+      next.city = '';
+      // Do NOT clear free-text fields
+    } else if (field === 'city') {
+      // No fields cleared below city
+    }
+
+    onChange(next);
+  };
 
   return (
     <View>
@@ -111,6 +111,7 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
       <TouchableOpacity
         style={[styles.selectorButton, { borderColor: colors.border, backgroundColor: colors.card }]}
         onPress={() => openPicker('Select Country', COUNTRY_LIST, value.country, (val) => updateField('country', val))}
+        testID="address-country-selector"
       >
         <Text style={[styles.selectorText, { color: colors.text }]}>{value.country || 'Select country'}</Text>
         <Ionicons name="chevron-down" size={20} color={colors.border} />
@@ -125,13 +126,14 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
         ]}
         disabled={!value.country || statesList.length === 0}
         onPress={() => openPicker('Select State/Region', statesList, value.state, (val) => updateField('state', val))}
+        testID="address-state-selector"
       >
         <Text style={[styles.selectorText, { color: colors.text }]}>
           {value.state || (statesList.length > 0 ? 'Select state/region' : 'Select Country first')}
         </Text>
         <Ionicons name="chevron-down" size={20} color={colors.border} />
       </TouchableOpacity>
-      
+
       {/* Fallback Input for State/Region if data is missing 
       {value.country && statesList.length === 0 && (
           <TextInput
@@ -154,13 +156,14 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
         ]}
         disabled={!value.state || citiesList.length === 0}
         onPress={() => openPicker('Select City', citiesList, value.city, (val) => updateField('city', val))}
+        testID="address-city-selector"
       >
         <Text style={[styles.selectorText, { color: colors.text }]}>
           {value.city || (citiesList.length > 0 ? 'Select city' : 'Select Country/State first')}
         </Text>
         <Ionicons name="chevron-down" size={20} color={colors.border} />
       </TouchableOpacity>
-      
+
       {/* Fallback Input for City if data is missing
       {value.state && citiesList.length === 0 && (
           <TextInput
@@ -172,7 +175,7 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
           />
         )}
       */}
-        
+
 
 
       {/* 5. Neighborhood (Free Text) */}
@@ -183,6 +186,7 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
         placeholderTextColor={colors.border}
         value={value.neighborhood}
         onChangeText={(text) => updateField('neighborhood', text)}
+        testID="address-neighborhood-input"
       />
 
       {/* 6. Street Line 2 (Free Text) */}
@@ -193,6 +197,7 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
         placeholderTextColor={colors.border}
         value={value.street}
         onChangeText={(text) => updateField('street', text)}
+        testID="address-street-input"
       />
 
       {/* Building and Door Numbers */}
@@ -205,6 +210,7 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
             placeholderTextColor={colors.border}
             value={value.buildingNo}
             onChangeText={(text) => updateField('buildingNo', text)}
+            testID="address-building-input"
           />
         </View>
         <View style={{ flex: 1, marginLeft: 8 }}>
@@ -215,6 +221,7 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
             placeholderTextColor={colors.border}
             value={value.doorNo}
             onChangeText={(text) => updateField('doorNo', text)}
+            testID="address-door-input"
           />
         </View>
       </View>

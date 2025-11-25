@@ -787,6 +787,7 @@ export default function RequestDetails() {
             accessibilityRole="button"
             accessibilityLabel="Mark request as complete"
             accessibilityState={{ disabled: completingTask }}
+            testID="request-details-complete-button"
           >
             {completingTask ? (
               <ActivityIndicator size="small" color={themeColors.card} />
@@ -805,6 +806,7 @@ export default function RequestDetails() {
 
               accessibilityRole="button"
               accessibilityLabel="Edit request"
+              testID="request-details-edit-button"
             >
               <View style={styles.buttonContent}>
                 <Ionicons name="pencil" size={18} color={themeColors.secondary} style={{ marginRight: 6 }} />
@@ -820,6 +822,7 @@ export default function RequestDetails() {
               accessibilityRole="button"
               accessibilityLabel="Delete request"
               accessibilityState={{ disabled: cancellingTask }}
+              testID="request-details-delete-button"
             >
               {cancellingTask ? (
                 <ActivityIndicator size="small" color={themeColors.error} />
@@ -846,6 +849,7 @@ export default function RequestDetails() {
 
             accessibilityRole="button"
             accessibilityLabel="Volunteer for this request"
+            testID="request-details-volunteer-button"
           >
             <Text style={[styles.buttonText, { color: themeColors.card }]}>Volunteer for this Request</Text>
           </TouchableOpacity>
@@ -870,6 +874,7 @@ export default function RequestDetails() {
 
               accessibilityRole="button"
               accessibilityLabel="Rate and review volunteers"
+              testID="request-details-review-button"
             >
               <Text style={[styles.buttonText, { color: themeColors.card }]}>
                 {hasReviewedAllVolunteers()

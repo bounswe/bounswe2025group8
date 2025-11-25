@@ -10,6 +10,7 @@ const urgencies = ['Low', 'Medium', 'High'];
 
 export default function CreateRequest() {
   const { colors } = useTheme();
+  const themeColors = colors as any;
   const router = useRouter();
   const { user } = useAuth();
   const [title, setTitle] = useState('');
@@ -19,7 +20,7 @@ export default function CreateRequest() {
   const [showUrgencyModal, setShowUrgencyModal] = useState(false);
   const [category, setCategory] = useState('GROCERY_SHOPPING');
 
-  
+
   useEffect(() => {
     if (!user) {
       Alert.alert('Authentication Required', 'You need to be logged in to create a request.', [
@@ -50,7 +51,11 @@ export default function CreateRequest() {
   ) => {
     return (
       <Modal animationType="slide" transparent visible={visible} onRequestClose={() => setVisible(false)}>
-        <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
+        <View
+          style={[styles.modalOverlay, { backgroundColor: themeColors.overlay }]}
+          accessibilityViewIsModal
+          importantForAccessibility="yes"
+        >
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.text }]}>Select an option</Text>
@@ -61,14 +66,14 @@ export default function CreateRequest() {
                 accessibilityRole="button"
                 accessibilityLabel="Close selection"
               >
-              <Ionicons
-                name="close"
-                size={24}
-                color={colors.primary}
-                accessible={false}
-                importantForAccessibility="no"
-              />
-            </TouchableOpacity>
+                <Ionicons
+                  name="close"
+                  size={24}
+                  color={colors.primary}
+                  accessible={false}
+                  importantForAccessibility="no"
+                />
+              </TouchableOpacity>
             </View>
             {options.map((option) => {
               const value = typeof option === 'string' ? option : option.value;
@@ -109,7 +114,7 @@ export default function CreateRequest() {
             })}
           </View>
         </View>
-      </Modal>
+      </Modal >
     );
   };
 
@@ -129,7 +134,7 @@ export default function CreateRequest() {
               accessibilityRole="button"
               accessibilityLabel="Open notifications"
             >
-              <Ionicons name="notifications-outline" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
+              <Ionicons name="notifications-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push('/settings')}
@@ -138,7 +143,7 @@ export default function CreateRequest() {
               accessibilityRole="button"
               accessibilityLabel="Open settings"
             >
-              <Ionicons name="settings-outline" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
+              <Ionicons name="settings-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
             </TouchableOpacity>
           </View>
         </View>
@@ -152,7 +157,7 @@ export default function CreateRequest() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Ionicons name="arrow-back" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
+            <Ionicons name="arrow-back" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
           </TouchableOpacity>
           <Text style={[styles.pageTitle, { color: colors.text }]}>Create Request</Text>
         </View>
@@ -160,7 +165,7 @@ export default function CreateRequest() {
         <View style={styles.tabBar}>
           <View style={[styles.activeTab, { backgroundColor: colors.primary }]} />
           <View style={styles.inactiveTab} />
-            <View style={styles.inactiveTab} />
+          <View style={styles.inactiveTab} />
           <View style={styles.inactiveTab} />
         </View>
 
@@ -181,6 +186,7 @@ export default function CreateRequest() {
             value={title}
             onChangeText={setTitle}
             accessibilityLabel="Request title"
+            testID="create-request-title-input"
           />
         </View>
 
@@ -193,6 +199,7 @@ export default function CreateRequest() {
           onChangeText={setDescription}
           multiline
           accessibilityLabel="Request description"
+          testID="create-request-description-input"
         />
 
         <CategoryPicker value={category} onChange={setCategory} />
@@ -205,6 +212,7 @@ export default function CreateRequest() {
 
           accessibilityRole="button"
           accessibilityLabel="Select urgency"
+          testID="create-request-urgency-selector"
         >
           <Text style={[styles.selectorText, { color: colors.text }]}>{urgency}</Text>
           <Ionicons
@@ -225,6 +233,7 @@ export default function CreateRequest() {
 
             accessibilityRole="button"
             accessibilityLabel="Decrease volunteer count"
+            testID="create-request-people-decrease"
           >
             <Ionicons
               name="remove"
@@ -234,7 +243,7 @@ export default function CreateRequest() {
               importantForAccessibility="no"
             />
           </TouchableOpacity>
-          <Text style={[styles.peopleCount, { color: colors.text }]}>{people}</Text>
+          <Text style={[styles.peopleCount, { color: colors.text }]} testID="create-request-people-count">{people}</Text>
           <TouchableOpacity
             style={[styles.peopleBtn, { backgroundColor: colors.card }]}
             onPress={() => setPeople((p) => p + 1)}
@@ -242,6 +251,7 @@ export default function CreateRequest() {
 
             accessibilityRole="button"
             accessibilityLabel="Increase volunteer count"
+            testID="create-request-people-increase"
           >
             <Ionicons
               name="add"
@@ -279,8 +289,9 @@ export default function CreateRequest() {
 
           accessibilityRole="button"
           accessibilityLabel="Next step upload photos"
+          testID="create-request-next-button"
         >
-          <Text style={[styles.nextBtnText, { color: colors.onPrimary }]}>Next</Text>
+          <Text style={[styles.nextBtnText, { color: themeColors.onPrimary }]}>Next</Text>
         </TouchableOpacity>
 
         {renderPickerModal(showUrgencyModal, setShowUrgencyModal, urgencies, urgency, setUrgency)}

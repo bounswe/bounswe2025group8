@@ -787,6 +787,7 @@ export default function RequestDetailsVolunteer() {
 
               accessibilityRole="button"
               accessibilityLabel="Rate and review participants"
+              testID="volunteer-review-button"
             >
               <Text style={[styles.buttonText, { color: themeColors.card }]}>
                 {hasReviewedAllParticipants()
@@ -805,6 +806,7 @@ export default function RequestDetailsVolunteer() {
               accessibilityRole="button"
               accessibilityLabel="Volunteer for this request"
               accessibilityState={{ disabled: actionLoading }}
+              testID="volunteer-button"
             >
               <Text style={[styles.buttonText, { color: themeColors.card }]}>Be a Volunteer</Text>
             </TouchableOpacity>
@@ -822,6 +824,7 @@ export default function RequestDetailsVolunteer() {
             accessibilityRole="button"
             accessibilityLabel="Withdraw volunteer request"
             accessibilityState={{ disabled: actionLoading }}
+            testID="volunteer-withdraw-button"
           >
             <Text style={[styles.buttonText, { color: themeColors.error }]}>Withdraw Volunteer Request</Text>
           </TouchableOpacity>

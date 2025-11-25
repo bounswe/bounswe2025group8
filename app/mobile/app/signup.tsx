@@ -43,13 +43,13 @@ const validatePassword = (password: string) => {
 export default function SignUp() {
   const router = useRouter();
   const { colors } = useTheme();
-  const [fullName, setFullName]   = useState('');
-  const [username, setUsername]   = useState('');
-  const [phone, setPhone]         = useState('');
-  const [email, setEmail]         = useState('');
-  const [password, setPassword]   = useState('');
-  const [agree, setAgree]         = useState(false);
-  const [showPwd, setShowPwd]     = useState(false);
+  const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [agree, setAgree] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
 
@@ -132,7 +132,7 @@ export default function SignUp() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Ionicons name="arrow-back" size={24} color={colors.primary}  accessible={false} importantForAccessibility="no"/>
+            <Ionicons name="arrow-back" size={24} color={colors.primary} accessible={false} importantForAccessibility="no" />
             <Text style={[styles.backText, { color: colors.primary }]}>Back</Text>
           </TouchableOpacity>
 
@@ -155,6 +155,7 @@ export default function SignUp() {
               editable={!isLoading}
               returnKeyType="next"
               accessibilityLabel="Full name"
+              testID="signup-fullname-input"
             />
           </View>
 
@@ -171,6 +172,7 @@ export default function SignUp() {
               editable={!isLoading}
               returnKeyType="next"
               accessibilityLabel="Username"
+              testID="signup-username-input"
             />
           </View>
 
@@ -187,6 +189,7 @@ export default function SignUp() {
               editable={!isLoading}
               returnKeyType="next"
               accessibilityLabel="Phone number"
+              testID="signup-phone-input"
             />
           </View>
 
@@ -204,6 +207,7 @@ export default function SignUp() {
               editable={!isLoading}
               returnKeyType="next"
               accessibilityLabel="Email address"
+              testID="signup-email-input"
             />
           </View>
 
@@ -221,6 +225,7 @@ export default function SignUp() {
               returnKeyType="done"
               onSubmitEditing={Keyboard.dismiss}
               accessibilityLabel="Password"
+              testID="signup-password-input"
             />
             <Pressable
               onPress={() => setShowPwd(v => !v)}
@@ -238,12 +243,13 @@ export default function SignUp() {
           </View>
 
           <View style={styles.rememberWrapper}>
-            <Pressable 
-              onPress={() => setAgree(a => !a)} 
+            <Pressable
+              onPress={() => setAgree(a => !a)}
               hitSlop={8}
               disabled={isLoading}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: agree, disabled: isLoading }}
+              testID="signup-terms-checkbox"
             >
               <Ionicons
                 name={agree ? 'checkbox' : 'square-outline'}
@@ -256,7 +262,7 @@ export default function SignUp() {
               I agree with{' '}
             </Text>
 
-            <Pressable 
+            <Pressable
               onPress={() => router.push({ pathname: '/terms' })}
               hitSlop={8}
               disabled={isLoading}
@@ -274,7 +280,7 @@ export default function SignUp() {
           {/* Sign Up Button */}
           <TouchableOpacity
             style={[
-              styles.button, 
+              styles.button,
               { backgroundColor: colors.primary },
               (!agree || isLoading) && { opacity: 0.5 }
             ]}
@@ -285,6 +291,7 @@ export default function SignUp() {
             accessibilityRole="button"
             accessibilityLabel="Sign up"
             accessibilityState={{ disabled: !agree || isLoading }}
+            testID="signup-button"
           >
             <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
               {isLoading ? 'Signing up...' : 'Sign Up'}
