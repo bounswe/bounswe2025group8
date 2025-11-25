@@ -25,6 +25,14 @@ from core.tests.test_feed_class import FeedClassTests
 from core.tests.test_search_class import SearchClassTests
 from core.tests.test_integration import TaskWorkflowIntegrationTests
 
+# Import new test modules
+from core.tests.test_report_models import (
+    TaskReportModelTests, UserReportModelTests, ReportEnumTests
+)
+from core.tests.test_enhanced_review_models import EnhancedReviewModelTests
+from core.tests.test_report_integration import ReportWorkflowIntegrationTests
+from core.tests.test_admin_functionality import AdminFunctionalityTests
+
 
 def create_test_suite():
     """Create and return a test suite with all tests."""
@@ -49,6 +57,7 @@ def create_test_suite():
     
     # Review model tests
     test_suite.addTest(unittest.makeSuite(ReviewModelTests))
+    test_suite.addTest(unittest.makeSuite(EnhancedReviewModelTests))  # NEW
     
     # Bookmark model tests
     test_suite.addTest(unittest.makeSuite(BookmarkModelTests))
@@ -63,12 +72,21 @@ def create_test_suite():
     # Comment model tests
     test_suite.addTest(unittest.makeSuite(CommentModelTests))
     
+    # Report model tests - NEW
+    test_suite.addTest(unittest.makeSuite(TaskReportModelTests))
+    test_suite.addTest(unittest.makeSuite(UserReportModelTests))
+    test_suite.addTest(unittest.makeSuite(ReportEnumTests))
+    
     # Utility class tests
     test_suite.addTest(unittest.makeSuite(FeedClassTests))
     test_suite.addTest(unittest.makeSuite(SearchClassTests))
     
     # Integration tests
     test_suite.addTest(unittest.makeSuite(TaskWorkflowIntegrationTests))
+    test_suite.addTest(unittest.makeSuite(ReportWorkflowIntegrationTests))  # NEW
+    
+    # Admin functionality tests - NEW
+    test_suite.addTest(unittest.makeSuite(AdminFunctionalityTests))
     
     return test_suite
 
@@ -91,10 +109,13 @@ def run_model_tests():
     test_suite.addTest(unittest.makeSuite(VolunteerModelTests))
     test_suite.addTest(unittest.makeSuite(NotificationModelTests))
     test_suite.addTest(unittest.makeSuite(ReviewModelTests))
+    test_suite.addTest(unittest.makeSuite(EnhancedReviewModelTests))  # NEW
     test_suite.addTest(unittest.makeSuite(BookmarkModelTests))
     test_suite.addTest(unittest.makeSuite(TagModelTests))
     test_suite.addTest(unittest.makeSuite(PhotoModelTests))
     test_suite.addTest(unittest.makeSuite(CommentModelTests))
+    test_suite.addTest(unittest.makeSuite(TaskReportModelTests))  # NEW
+    test_suite.addTest(unittest.makeSuite(UserReportModelTests))  # NEW
     
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(test_suite)
@@ -114,7 +135,47 @@ def run_utility_tests():
 
 def run_integration_tests():
     """Run only integration tests."""
-    test_suite = unittest.makeSuite(TaskWorkflowIntegrationTests)
+    test_suite = unittest.TestSuite()
+    
+    test_suite.addTest(unittest.makeSuite(TaskWorkflowIntegrationTests))
+    test_suite.addTest(unittest.makeSuite(ReportWorkflowIntegrationTests))  # NEW
+    
+    runner = unittest.TextTestRunner(verbosity=2)
+    runner.run(test_suite)
+
+
+def run_report_tests():
+    """Run only report-related tests."""
+    test_suite = unittest.TestSuite()
+    
+    test_suite.addTest(unittest.makeSuite(TaskReportModelTests))
+    test_suite.addTest(unittest.makeSuite(UserReportModelTests))
+    test_suite.addTest(unittest.makeSuite(ReportEnumTests))
+    test_suite.addTest(unittest.makeSuite(ReportWorkflowIntegrationTests))
+    test_suite.addTest(unittest.makeSuite(AdminFunctionalityTests))
+    
+    runner = unittest.TextTestRunner(verbosity=2)
+    runner.run(test_suite)
+
+
+def run_admin_tests():
+    """Run only admin-related tests."""
+    test_suite = unittest.TestSuite()
+    
+    test_suite.addTest(unittest.makeSuite(AdministratorModelTests))
+    test_suite.addTest(unittest.makeSuite(AdminFunctionalityTests))
+    
+    runner = unittest.TextTestRunner(verbosity=2)
+    runner.run(test_suite)
+
+
+def run_review_tests():
+    """Run only review-related tests."""
+    test_suite = unittest.TestSuite()
+    
+    test_suite.addTest(unittest.makeSuite(ReviewModelTests))
+    test_suite.addTest(unittest.makeSuite(EnhancedReviewModelTests))
+    
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(test_suite)
 
@@ -129,9 +190,15 @@ if __name__ == "__main__":
             run_utility_tests()
         elif arg == 'integration':
             run_integration_tests()
+        elif arg == 'reports':
+            run_report_tests()
+        elif arg == 'admin':
+            run_admin_tests()
+        elif arg == 'reviews':
+            run_review_tests()
         else:
             print(f"Unknown test category: {arg}")
-            print("Available options: models, utility, integration, or no argument for all tests")
+            print("Available options: models, utility, integration, reports, admin, reviews, or no argument for all tests")
     else:
         # Run all tests by default
         run_tests()

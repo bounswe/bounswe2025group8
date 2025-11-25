@@ -146,6 +146,36 @@ const RatingReviewModal = ({
     }
   }, [open]);
 
+  // Initialize dimension ratings when selectedUser changes
+  useEffect(() => {
+    if (selectedUser) {
+      // Initialize all dimension ratings with default value of 3
+      if (selectedUser.role === "volunteer") {
+        // Requester -> Volunteer ratings (set volunteer->requester to null)
+        setDimensionRatings({
+          reliability: 3,
+          task_completion: 3,
+          communication_requester_to_volunteer: 3,
+          safety_and_respect: 3,
+          accuracy_of_request: null,
+          communication_volunteer_to_requester: null,
+          safety_and_preparedness: null,
+        });
+      } else {
+        // Volunteer -> Requester ratings (set requester->volunteer to null)
+        setDimensionRatings({
+          accuracy_of_request: 3,
+          communication_volunteer_to_requester: 3,
+          safety_and_preparedness: 3,
+          reliability: null,
+          task_completion: null,
+          communication_requester_to_volunteer: null,
+          safety_and_respect: null,
+        });
+      }
+    }
+  }, [selectedUser]);
+
   // Handle form submission
   const handleSubmit = async () => {
     if (!selectedUser || !task) {
@@ -174,6 +204,10 @@ const RatingReviewModal = ({
       setLoading(true);
       setError(null);
 
+      // Determine review direction based on selected user's role
+      const isVolunteerToRequester = selectedUser.role === "requester";
+      const isRequesterToVolunteer = selectedUser.role === "volunteer";
+
       console.log("Submitting review (frontend-aggregated):", {
         taskId: task.id,
         selectedUserId: selectedUser.id,
@@ -181,11 +215,21 @@ const RatingReviewModal = ({
         finalScore,
         publicComment,
         dimensionRatings,
+        isVolunteerToRequester,
+        isRequesterToVolunteer,
         privateFeedbackNote: !!privateFeedback,
       });
 
-      // Submit aggregated score and public comment to backend
-      await submitReview(task.id, selectedUser.id, finalScore, publicComment);
+      // Submit score, comment, dimension ratings, and review direction to backend
+      await submitReview(
+        task.id,
+        selectedUser.id,
+        finalScore,
+        publicComment,
+        dimensionRatings,
+        isVolunteerToRequester,
+        isRequesterToVolunteer
+      );
 
       // Save private feedback locally (frontend-only) keyed by task and users
       if (privateFeedback && privateFeedback.trim()) {
@@ -492,6 +536,7 @@ const RatingReviewModal = ({
               const dims =
                 selectedUser.role === "volunteer"
                   ? [
+                      // Requester -> Volunteer ratings
                       {
                         key: "reliability",
                         label: "Reliability",
@@ -503,29 +548,30 @@ const RatingReviewModal = ({
                         hint: "Did the volunteer complete the task?",
                       },
                       {
-                        key: "communication",
+                        key: "communication_requester_to_volunteer",
                         label: "Communication",
                         hint: "How clear and polite was the volunteer's communication?",
                       },
                       {
-                        key: "safety",
+                        key: "safety_and_respect",
                         label: "Safety & Respect",
                         hint: "Did you feel safe and respected during the interaction?",
                       },
                     ]
                   : [
+                      // Volunteer -> Requester ratings
                       {
-                        key: "accuracy",
+                        key: "accuracy_of_request",
                         label: "Accuracy of Request",
                         hint: "Was the task as described in the post?",
                       },
                       {
-                        key: "communication",
+                        key: "communication_volunteer_to_requester",
                         label: "Communication",
                         hint: "Was the requester easy to communicate with?",
                       },
                       {
-                        key: "safety",
+                        key: "safety_and_preparedness",
                         label: "Safety & Preparedness",
                         hint: "Did you feel safe at the location? Was the requester prepared for your arrival?",
                       },

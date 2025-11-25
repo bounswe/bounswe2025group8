@@ -16,6 +16,14 @@ export default function CategoryPage() {
   const [categoryName, setCategoryName] = useState('');
   const { user } = useAuth();
 
+  // Filter out completed and cancelled tasks
+  const filterActiveTasks = (tasksList: Task[]): Task[] => {
+    return tasksList.filter(task => {
+      const status = task.status?.toUpperCase() || '';
+      return status !== 'COMPLETED' && status !== 'CANCELLED';
+    });
+  };
+
   useEffect(() => {
     fetchTasks();
   }, [categoryId]);
@@ -23,8 +31,9 @@ export default function CategoryPage() {
   const fetchTasks = async () => {
     try {
       const response = await getTasks();
-      const categoryTasks =
-        response.results?.filter((task: Task) => task.category === categoryId) || [];
+      const fetchedTasks = response.results || [];
+      const activeTasks = filterActiveTasks(fetchedTasks);
+      const categoryTasks = activeTasks.filter((task: Task) => task.category === categoryId);
 
       setTasks(categoryTasks);
       if (categoryTasks.length > 0) {

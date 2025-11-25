@@ -38,29 +38,30 @@ const ReviewCard = ({ review }) => {
     }
   };
 
-  // Define categories based on reviewee role
+  // Define categories based on review direction (using helper booleans)
   const getCategories = () => {
-    const role = review.reviewee_role || review.role || "volunteer";
-
-    if (role === "volunteer") {
+    // Use helper booleans to determine review direction
+    if (review.is_volunteer_to_requester) {
+      // Volunteer -> Requester ratings
+      return [
+        { key: "accuracy_of_request", label: "Accuracy" },
+        { key: "communication_volunteer_to_requester", label: "Communication" },
+        { key: "safety_and_preparedness", label: "Safety & Preparedness" },
+      ];
+    } else {
+      // Requester -> Volunteer ratings (default)
       return [
         { key: "reliability", label: "Reliability" },
         { key: "task_completion", label: "Task Completion" },
-        { key: "communication", label: "Communication" },
-        { key: "safety", label: "Safety & Respect" },
-      ];
-    } else {
-      return [
-        { key: "accuracy", label: "Accuracy" },
-        { key: "communication", label: "Communication" },
-        { key: "safety", label: "Safety & Preparedness" },
+        { key: "communication_requester_to_volunteer", label: "Communication" },
+        { key: "safety_and_respect", label: "Safety & Respect" },
       ];
     }
   };
 
   // Get rating for a category with proper rounding to 1 decimal
   const getCategoryRating = (categoryKey) => {
-    const rating = review.rating_breakdown?.[categoryKey] || review.score || 0;
+    const rating = review[categoryKey] || review.score || 0;
     return Math.round(rating * 10) / 10;
   };
 

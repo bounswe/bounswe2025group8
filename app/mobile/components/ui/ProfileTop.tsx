@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Image, useColorScheme } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import { useTheme } from '@react-navigation/native';
-import { Colors } from '../../constants/Colors';
 import RatingPill from './RatingPill';
 import { UserProfile } from '../../lib/api';
 import { useRouter } from 'expo-router';
+import type { ThemeTokens } from '../../constants/Colors';
 
 type ProfileTopProps = {
   user: UserProfile & { profileImageUrl?: string };
@@ -13,8 +13,7 @@ type ProfileTopProps = {
 
 export default function ProfileTop({ user }: ProfileTopProps) {
   const { colors } = useTheme();
-  const colorScheme = useColorScheme();
-  const themeColors = Colors[colorScheme || 'light'];
+  const themeColors = colors as ThemeTokens;
   const router = useRouter();
 
   return (
@@ -22,15 +21,15 @@ export default function ProfileTop({ user }: ProfileTopProps) {
       <View style={styles.topRow}>
         <Image
           source={require('../../assets/images/logo.png')}
-          style={[styles.logoImage, { borderColor: colors.primary }]}
+          style={[styles.logoImage, { borderColor: themeColors.primary }]}
         />
 
         <View style={{ flexDirection: 'row' }}>
           <TouchableOpacity onPress={() => router.push('/notifications')}>
-            <Ionicons name="notifications-outline" size={25} color={colors.text} style={styles.icon} />
+            <Ionicons name="notifications-outline" size={25} color={themeColors.text} style={styles.icon} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push('/settings')}>
-            <Ionicons name="settings-outline" size={25} color={colors.text} style={styles.icon} />
+            <Ionicons name="settings-outline" size={25} color={themeColors.text} style={styles.icon} />
           </TouchableOpacity>
         </View>
       </View>
@@ -42,11 +41,11 @@ export default function ProfileTop({ user }: ProfileTopProps) {
               ? { uri: user.profileImageUrl }
               : require('../../assets/images/empty_profile_photo.png')
           }
-          style={styles.avatar}
+          style={[styles.avatar, { backgroundColor: themeColors.card }]}
         />
 
         <View style={styles.infoColumn}>
-          <Text style={[styles.name, { color: colors.text }]}>
+          <Text style={[styles.name, { color: themeColors.text }]}>
             {user.name} {user.surname}
           </Text>
 
@@ -54,6 +53,9 @@ export default function ProfileTop({ user }: ProfileTopProps) {
             <RatingPill
               rating={user.rating}
               label={`${user.completed_task_count} tasks`}
+              backgroundColor={themeColors.pink}
+              textColor={themeColors.onAccent}
+              iconColor={themeColors.onAccent}
             />
           </View>
         </View>
@@ -93,7 +95,6 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     marginRight: 16,
-    backgroundColor: '#f2f2fd',
   },
   infoColumn: {
     flex: 1,

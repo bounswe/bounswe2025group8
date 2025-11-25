@@ -19,74 +19,72 @@ import { useTheme } from "../hooks/useTheme";
 const RatingCategoriesModal = ({ open, onClose, user, role = "volunteer" }) => {
   const { colors } = useTheme();
 
-  // Define categories for volunteers
-  const volunteerCategories = [
+  // Define all 7 rating dimensions from Review interface
+  const allCategories = [
+    // Requester -> Volunteer ratings (when user is volunteer)
     {
       key: "reliability",
       label: "Reliability",
       description: "Arrives at agreed-upon time",
+      section: "As Volunteer",
     },
     {
       key: "task_completion",
       label: "Task Completion",
       description: "Completes assigned tasks",
+      section: "As Volunteer",
     },
     {
-      key: "communication",
-      label: "Communication",
+      key: "communication_requester_to_volunteer",
+      label: "Communication (from Requesters)",
       description: "Clear and polite communication",
+      section: "As Volunteer",
     },
     {
-      key: "safety",
+      key: "safety_and_respect",
       label: "Safety & Respect",
       description: "Respectful and safe interactions",
+      section: "As Volunteer",
     },
-  ];
-
-  // Define categories for requesters
-  const requesterCategories = [
+    // Volunteer -> Requester ratings (when user is requester)
     {
-      key: "accuracy",
+      key: "accuracy_of_request",
       label: "Accuracy of Request",
       description: "Task matches description",
+      section: "As Requester",
     },
     {
-      key: "communication",
-      label: "Communication",
+      key: "communication_volunteer_to_requester",
+      label: "Communication (from Volunteers)",
       description: "Easy to communicate with",
+      section: "As Requester",
     },
     {
-      key: "safety",
+      key: "safety_and_preparedness",
       label: "Safety & Preparedness",
       description: "Safe location and prepared",
+      section: "As Requester",
     },
   ];
 
-  // Choose categories based on role
-  const categories =
-    role === "volunteer" ? volunteerCategories : requesterCategories;
-
-  // Get rating value for a category (with fallback to overall rating)
+  // Get rating value for a category
   const getCategoryRating = (categoryKey) => {
     // Try to get from user's rating breakdown if available
     let rating = 0;
-    if (user?.rating_breakdown && user.rating_breakdown[categoryKey]) {
+    if (user?.rating_breakdown && user.rating_breakdown[categoryKey] != null) {
       rating = user.rating_breakdown[categoryKey];
-    } else {
-      // Fallback to overall rating
-      rating = user?.rating || 0;
     }
     // Round to 1 decimal place
     return Math.round(rating * 10) / 10;
   };
 
-  // Calculate overall average from categories
+  // Calculate overall rating from all available dimensions
   const calculateOverallRating = () => {
     let rating = 0;
     if (user?.rating_breakdown) {
-      const values = categories
+      const values = allCategories
         .map((cat) => user.rating_breakdown[cat.key])
-        .filter((val) => val != null);
+        .filter((val) => val != null && val > 0);
       if (values.length > 0) {
         rating = values.reduce((sum, val) => sum + val, 0) / values.length;
       }
@@ -98,6 +96,10 @@ const RatingCategoriesModal = ({ open, onClose, user, role = "volunteer" }) => {
   };
 
   const overallRating = calculateOverallRating();
+
+  // Group categories by section (As Volunteer / As Requester)
+  const volunteerCategories = allCategories.filter(cat => cat.section === "As Volunteer");
+  const requesterCategories = allCategories.filter(cat => cat.section === "As Requester");
 
   return (
     <Dialog
@@ -186,73 +188,153 @@ const RatingCategoriesModal = ({ open, onClose, user, role = "volunteer" }) => {
 
         <Divider sx={{ mb: 3, borderColor: colors.border.secondary }} />
 
-        {/* Category Ratings */}
-        <Typography
-          variant="subtitle2"
-          sx={{ mb: 2, fontWeight: 600, color: colors.text.primary }}
-        >
-          {role === "volunteer" ? "Volunteer" : "Requester"} Performance
-        </Typography>
+        {/* All 7 Rating Dimensions */}
+        
+        {/* As Volunteer Section */}
+        {volunteerCategories.some(cat => getCategoryRating(cat.key) > 0) && (
+          <>
+            <Typography
+              variant="subtitle2"
+              sx={{ mb: 2, fontWeight: 600, color: colors.text.primary }}
+            >
+              Performance as Volunteer
+            </Typography>
 
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
-          {categories.map((category) => {
-            const categoryRating = getCategoryRating(category.key);
-            return (
-              <Box key={category.key}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    mb: 0.5,
-                  }}
-                >
-                  <Box sx={{ flex: 1 }}>
-                    <Typography
-                      variant="body2"
-                      sx={{ fontWeight: 600, color: colors.text.primary }}
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5, mb: 3 }}>
+              {volunteerCategories.map((category) => {
+                const categoryRating = getCategoryRating(category.key);
+                if (categoryRating === 0) return null; // Skip if no rating
+                return (
+                  <Box key={category.key}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        mb: 0.5,
+                      }}
                     >
-                      {category.label}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{ color: colors.text.secondary }}
-                    >
-                      {category.description}
-                    </Typography>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: 600, color: colors.text.primary }}
+                        >
+                          {category.label}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{ color: colors.text.secondary }}
+                        >
+                          {category.description}
+                        </Typography>
+                      </Box>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontWeight: 700,
+                          color: colors.brand.primary,
+                          minWidth: "40px",
+                          textAlign: "right",
+                        }}
+                      >
+                        {categoryRating.toFixed(1)}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Rating
+                        value={categoryRating}
+                        precision={0.1}
+                        readOnly
+                        size="small"
+                        sx={{
+                          "& .MuiRating-iconFilled": {
+                            color: colors.semantic.warning,
+                          },
+                          "& .MuiRating-iconEmpty": {
+                            color: colors.border.secondary,
+                          },
+                        }}
+                      />
+                    </Box>
                   </Box>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      fontWeight: 700,
-                      color: colors.brand.primary,
-                      minWidth: "40px",
-                      textAlign: "right",
-                    }}
-                  >
-                    {categoryRating.toFixed(1)}
-                  </Typography>
-                </Box>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Rating
-                    value={categoryRating}
-                    precision={0.1}
-                    readOnly
-                    size="small"
-                    sx={{
-                      "& .MuiRating-iconFilled": {
-                        color: colors.semantic.warning,
-                      },
-                      "& .MuiRating-iconEmpty": {
-                        color: colors.border.secondary,
-                      },
-                    }}
-                  />
-                </Box>
-              </Box>
-            );
-          })}
-        </Box>
+                );
+              })}
+            </Box>
+          </>
+        )}
+
+        {/* As Requester Section */}
+        {requesterCategories.some(cat => getCategoryRating(cat.key) > 0) && (
+          <>
+            <Typography
+              variant="subtitle2"
+              sx={{ mb: 2, fontWeight: 600, color: colors.text.primary }}
+            >
+              Performance as Requester
+            </Typography>
+
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+              {requesterCategories.map((category) => {
+                const categoryRating = getCategoryRating(category.key);
+                if (categoryRating === 0) return null; // Skip if no rating
+                return (
+                  <Box key={category.key}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        mb: 0.5,
+                      }}
+                    >
+                      <Box sx={{ flex: 1 }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: 600, color: colors.text.primary }}
+                        >
+                          {category.label}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{ color: colors.text.secondary }}
+                        >
+                          {category.description}
+                        </Typography>
+                      </Box>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontWeight: 700,
+                          color: colors.brand.primary,
+                          minWidth: "40px",
+                          textAlign: "right",
+                        }}
+                      >
+                        {categoryRating.toFixed(1)}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Rating
+                        value={categoryRating}
+                        precision={0.1}
+                        readOnly
+                        size="small"
+                        sx={{
+                          "& .MuiRating-iconFilled": {
+                            color: colors.semantic.warning,
+                          },
+                          "& .MuiRating-iconEmpty": {
+                            color: colors.border.secondary,
+                          },
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                );
+              })}
+            </Box>
+          </>
+        )}
 
         {/* Info Text */}
         <Typography
