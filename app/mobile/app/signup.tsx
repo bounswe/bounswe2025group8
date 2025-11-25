@@ -155,6 +155,7 @@ export default function SignUp() {
               editable={!isLoading}
               returnKeyType="next"
               accessibilityLabel="Full name"
+              testID="signup-fullname-input"
             />
           </View>
 
@@ -171,6 +172,7 @@ export default function SignUp() {
               editable={!isLoading}
               returnKeyType="next"
               accessibilityLabel="Username"
+              testID="signup-username-input"
             />
           </View>
 
@@ -187,6 +189,7 @@ export default function SignUp() {
               editable={!isLoading}
               returnKeyType="next"
               accessibilityLabel="Phone number"
+              testID="signup-phone-input"
             />
           </View>
 
@@ -204,6 +207,7 @@ export default function SignUp() {
               editable={!isLoading}
               returnKeyType="next"
               accessibilityLabel="Email address"
+              testID="signup-email-input"
             />
           </View>
 
@@ -221,6 +225,7 @@ export default function SignUp() {
               returnKeyType="done"
               onSubmitEditing={Keyboard.dismiss}
               accessibilityLabel="Password"
+              testID="signup-password-input"
             />
             <Pressable
               onPress={() => setShowPwd(v => !v)}
@@ -244,6 +249,7 @@ export default function SignUp() {
               disabled={isLoading}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: agree, disabled: isLoading }}
+              testID="signup-terms-checkbox"
             >
               <Ionicons
                 name={agree ? 'checkbox' : 'square-outline'}
@@ -286,6 +292,7 @@ export default function SignUp() {
             accessibilityLabel="Sign up"
             testID="signup-button"
             accessibilityState={{ disabled: !agree || isLoading }}
+            testID="signup-button"
           >
             <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
               {isLoading ? 'Signing up...' : 'Sign Up'}

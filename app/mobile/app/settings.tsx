@@ -148,6 +148,7 @@ export default function Settings() {
 
           accessibilityRole="button"
           accessibilityLabel="Logout"
+          testID="settings-logout-button"
         >
           <Ionicons
             name="log-out-outline"

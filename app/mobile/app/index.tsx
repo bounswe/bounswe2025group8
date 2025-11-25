@@ -34,6 +34,7 @@ export default function Index() {
 
           accessibilityRole="button"
           accessibilityLabel="Go to login"
+          testID="landing-login-button"
         >
           <Text style={[styles.primaryText, { color: colors.onPrimary }]}>Login</Text>
         </TouchableOpacity>
@@ -49,6 +50,7 @@ export default function Index() {
 
           accessibilityRole="button"
           accessibilityLabel="Register a new account"
+          testID="landing-register-button"
         >
           <Text style={[styles.secondaryText, { color: colors.primary }]}>
             Register
@@ -137,8 +139,8 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
   guestLink: {
-      marginTop: 16,
-      fontSize: 14,
-      textAlign: 'center',
-    },
+    marginTop: 16,
+    fontSize: 14,
+    textAlign: 'center',
+  },
 });

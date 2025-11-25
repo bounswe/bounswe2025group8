@@ -77,6 +77,7 @@ export default function SearchBarWithResults({
           value={search}
           onChangeText={setSearch}
           onFocus={onFocus}
+          testID="search-input"
         />
         <TouchableOpacity onPress={() => setSortAsc((v) => !v)}>
           <Text style={[styles.sortBtn, { color: colors.primary }]}>{sortAsc ? 'A-Z' : 'Z-A'}</Text>
@@ -88,6 +89,7 @@ export default function SearchBarWithResults({
             key={t}
             style={[styles.tab, tab === t && { borderBottomColor: colors.primary }]}
             onPress={() => setTab(t)}
+            testID={`search-tab-${t}`}
           >
             <Text style={[styles.tabText, { color: colors.text }, tab === t && { color: colors.primary }]}>{t}</Text>
           </TouchableOpacity>
@@ -130,6 +132,7 @@ export default function SearchBarWithResults({
               { borderBottomColor: colors.border, backgroundColor: colors.card, flexDirection: 'row', alignItems: 'center' },
             ]}
             onPress={() => onSelect && onSelect(item, tab)}
+            testID={`search-result-${item.id}`}
           >
             {(tab === 'Category' || tab === 'Profile' || tab === 'Location') && (
               <Image

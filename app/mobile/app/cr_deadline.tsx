@@ -8,6 +8,7 @@ import { useAppTheme } from '@/theme/ThemeProvider';
 
 export default function CRDeadline() {
   const { colors } = useTheme();
+  const themeColors = colors as any;
   const { resolvedTheme } = useAppTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -51,7 +52,7 @@ export default function CRDeadline() {
               accessibilityRole="button"
               accessibilityLabel="Open notifications"
             >
-              <Ionicons name="notifications-outline" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
+              <Ionicons name="notifications-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push('/settings')}
@@ -60,7 +61,7 @@ export default function CRDeadline() {
               accessibilityRole="button"
               accessibilityLabel="Open settings"
             >
-              <Ionicons name="settings-outline" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
+              <Ionicons name="settings-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
             </TouchableOpacity>
           </View>
         </View>
@@ -73,7 +74,7 @@ export default function CRDeadline() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Ionicons name="arrow-back" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
+            <Ionicons name="arrow-back" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
           </TouchableOpacity>
           <Text style={[styles.pageTitle, { color: colors.text }]}>Create Request</Text>
         </View>
@@ -93,6 +94,7 @@ export default function CRDeadline() {
 
           accessibilityRole="button"
           accessibilityLabel={`Select date. Currently ${formattedDate}`}
+          testID="create-request-date-selector"
         >
           <Text style={[styles.dateText, { color: colors.text }]}>{formattedDate}</Text>
           <Ionicons name="calendar-outline" size={20} color={colors.primary} />
@@ -117,6 +119,7 @@ export default function CRDeadline() {
 
           accessibilityRole="button"
           accessibilityLabel={`Select time. Currently ${formattedTime}`}
+          testID="create-request-time-selector"
         >
           <Text style={[styles.timeText, { color: colors.text }]}>{formattedTime}</Text>
           <Ionicons name="time-outline" size={20} color={colors.primary} />
@@ -144,8 +147,9 @@ export default function CRDeadline() {
 
           accessibilityRole="button"
           accessibilityLabel="Next step set address"
+          testID="create-request-deadline-next-button"
         >
-          <Text style={[styles.nextBtnText, { color: colors.onPrimary }]}>Next</Text>
+          <Text style={[styles.nextBtnText, { color: themeColors.onPrimary }]}>Next</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

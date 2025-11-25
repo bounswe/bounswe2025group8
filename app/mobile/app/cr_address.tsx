@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Scro
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
-import { createTask, uploadTaskPhoto} from '../lib/api';
+import { createTask, uploadTaskPhoto } from '../lib/api';
 import { AddressFields } from '../components/forms/AddressFields';
 import { AddressFieldsValue, emptyAddress, formatAddress } from '../utils/address';
 
@@ -18,6 +18,7 @@ interface TaskParams {
 
 export default function CRAddress() {
   const { colors } = useTheme();
+  const themeColors = colors as any;
   const router = useRouter();
   const params = useLocalSearchParams();
   const [address, setAddress] = useState<AddressFieldsValue>(emptyAddress);
@@ -28,7 +29,7 @@ export default function CRAddress() {
     options: string[];
     selected: string;
     onSelect: (v: string) => void;
-  }>({ visible: false, options: [], selected: '', onSelect: () => {} });
+  }>({ visible: false, options: [], selected: '', onSelect: () => { } });
 
   const openModal = (options: string[], selected: string, onSelect: (v: string) => void) => {
     setModal({ visible: true, options, selected, onSelect });
@@ -39,7 +40,7 @@ export default function CRAddress() {
   const handleCreateRequest = async () => {
     try {
       setUploading(true);
-      
+
       const title = params.title as string;
       const taskDescription = params.description as string;
       const category = params.category as string;
@@ -90,21 +91,21 @@ export default function CRAddress() {
       // If photos were selected, upload them
       const photosParam = params.photos as string;
       console.log('Photos param received:', photosParam);
-      
+
       if (photosParam && createdTask.id) {
         try {
           const photosData = JSON.parse(photosParam);
           console.log('Parsed photos data:', photosData);
-          
+
           if (Array.isArray(photosData) && photosData.length > 0) {
             console.log(`Uploading ${photosData.length} photos for task ${createdTask.id}`);
-            
+
             // Upload each photo
             const uploadPromises = photosData.map((photo: { uri: string; name: string }) => {
               console.log(`Preparing to upload photo: ${photo.name} from ${photo.uri}`);
               return uploadTaskPhoto(createdTask.id, photo.uri, photo.name);
             });
-            
+
             const results = await Promise.all(uploadPromises);
             console.log('All photos uploaded successfully:', results);
           } else {
@@ -114,7 +115,7 @@ export default function CRAddress() {
           console.error('Error uploading photos:', photoError);
           // Don't fail the entire task creation if photos fail
           Alert.alert(
-            'Warning', 
+            'Warning',
             'Task created but some photos could not be uploaded.',
             [{ text: 'OK', onPress: () => router.replace('/requests') }]
           );
@@ -151,7 +152,7 @@ export default function CRAddress() {
               accessibilityRole="button"
               accessibilityLabel="Open notifications"
             >
-              <Ionicons name="notifications-outline" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
+              <Ionicons name="notifications-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push('/settings')}
@@ -160,7 +161,7 @@ export default function CRAddress() {
               accessibilityRole="button"
               accessibilityLabel="Open settings"
             >
-              <Ionicons name="settings-outline" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
+              <Ionicons name="settings-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
             </TouchableOpacity>
           </View>
         </View>
@@ -173,7 +174,7 @@ export default function CRAddress() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Ionicons name="arrow-back" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
+            <Ionicons name="arrow-back" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
           </TouchableOpacity>
           <Text style={[styles.pageTitle, { color: colors.text }]}>Create Request</Text>
         </View>
@@ -196,10 +197,11 @@ export default function CRAddress() {
           onChangeText={setDescription}
           multiline
           accessibilityLabel="Address description"
+          testID="create-request-address-description"
         />
 
-        <TouchableOpacity 
-          style={[styles.nextBtn, { backgroundColor: colors.primary, opacity: uploading ? 0.6 : 1 }]} 
+        <TouchableOpacity
+          style={[styles.nextBtn, { backgroundColor: colors.primary, opacity: uploading ? 0.6 : 1 }]}
           onPress={handleCreateRequest}
           disabled={uploading}
           accessible
@@ -207,16 +209,23 @@ export default function CRAddress() {
           accessibilityRole="button"
           accessibilityLabel="Create request"
           accessibilityState={{ disabled: uploading }}
+          testID="create-request-submit-button"
         >
           {uploading ? (
-            <ActivityIndicator color={colors.onPrimary} />
+            <ActivityIndicator color={themeColors.onPrimary} />
           ) : (
-            <Text style={[styles.nextBtnText, { color: colors.onPrimary }]}>Create Request</Text>
+            <Text style={[styles.nextBtnText, { color: themeColors.onPrimary }]}>
+              {uploading ? 'Creating...' : 'Create Request'}
+            </Text>
           )}
         </TouchableOpacity>
 
         <Modal animationType="slide" transparent visible={modal.visible} onRequestClose={closeModal}>
-          <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
+          <View
+            style={[styles.modalOverlay, { backgroundColor: themeColors.overlay }]}
+            accessibilityViewIsModal
+            importantForAccessibility="yes"
+          >
             <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
               <View style={styles.modalHeader}>
                 <Text style={[styles.modalTitle, { color: colors.text }]}>Select</Text>
@@ -370,7 +379,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
-    marginTop: 8,
   },
   nextBtnText: {
     fontWeight: 'bold',

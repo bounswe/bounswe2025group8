@@ -20,6 +20,7 @@ import { useAuth } from '../lib/auth';
 
 export default function Categories() {
   const { colors } = useTheme();
+  const themeColors = colors as any; // Cast to any to access custom theme properties
   const router = useRouter();
   const { user } = useAuth();
   const [derivedCategories, setDerivedCategories] = useState<ApiCategory[]>([]);
@@ -91,7 +92,7 @@ export default function Categories() {
             accessibilityRole="button"
             accessibilityLabel="Open notifications"
           >
-            <Ionicons name="notifications-outline" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
+            <Ionicons name="notifications-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => router.push('/settings')}
@@ -100,7 +101,7 @@ export default function Categories() {
             accessibilityRole="button"
             accessibilityLabel="Open settings"
           >
-            <Ionicons name="settings-outline" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
+            <Ionicons name="settings-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
           </TouchableOpacity>
         </View>
       </View>
@@ -113,8 +114,9 @@ export default function Categories() {
 
         accessibilityRole="button"
         accessibilityLabel="Search categories"
+        testID="categories-search-bar"
       >
-        <Ionicons name="search-outline" size={20} color={colors.icon} />
+        <Ionicons name="search-outline" size={20} color={themeColors.icon} />
         <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>Search a Category</Text>
       </TouchableOpacity>
 
@@ -132,12 +134,13 @@ export default function Categories() {
         {derivedCategories.map((cat) => (
           <TouchableOpacity
             key={cat.id}
-            style={[styles.catRow, { backgroundColor: colors.card, shadowColor: colors.overlay }]}
+            style={[styles.catRow, { backgroundColor: colors.card, shadowColor: themeColors.overlay }]}
             onPress={() => router.push(('/category/' + cat.id) as any)}
             accessible
 
             accessibilityRole="button"
             accessibilityLabel={`Open category ${cat.name}`}
+            testID={`category-item-${cat.id}`}
           >
             <Image source={require('../assets/images/help.png')} style={styles.catImage} />
             <View>
@@ -156,6 +159,7 @@ export default function Categories() {
 
           accessibilityRole="button"
           accessibilityLabel="Go to home feed"
+          testID="tab-home"
         >
           <Ionicons name="home" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Home</Text>
@@ -167,6 +171,7 @@ export default function Categories() {
           accessibilityRole="button"
           accessibilityLabel="Current tab categories"
           accessibilityState={{ selected: true }}
+          testID="tab-categories"
         >
           <Ionicons name="pricetag-outline" size={24} color={colors.primary} />
           <Text style={[styles.tabLabel, { color: colors.primary }]}>Categories</Text>
@@ -179,6 +184,7 @@ export default function Categories() {
 
             accessibilityRole="button"
             accessibilityLabel="Create a new request"
+            testID="tab-create"
           >
             <Ionicons name="add-circle-outline" size={24} color={colors.text} />
             <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
@@ -192,6 +198,7 @@ export default function Categories() {
             accessibilityRole="button"
             accessibilityLabel="Create a new request (disabled when signed out)"
             accessibilityState={{ disabled: true }}
+            testID="tab-create-disabled"
           >
             <Ionicons name="add-circle-outline" size={24} color={colors.text} />
             <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
@@ -204,6 +211,7 @@ export default function Categories() {
 
           accessibilityRole="button"
           accessibilityLabel="View all requests"
+          testID="tab-requests"
         >
           <Ionicons name="list-outline" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Requests</Text>
@@ -215,6 +223,7 @@ export default function Categories() {
 
           accessibilityRole="button"
           accessibilityLabel="Go to profile"
+          testID="tab-profile"
         >
           <Ionicons name="person-outline" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Profile</Text>

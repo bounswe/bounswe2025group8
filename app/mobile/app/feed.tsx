@@ -32,7 +32,7 @@ export default function Feed() {
   const [taskDerivedCategories, setTaskDerivedCategories] = useState<ApiCategory[]>([]);
   const [taskPhotos, setTaskPhotos] = useState<Map<number, Photo[]>>(new Map());
   const scrollRef = useRef<ScrollView>(null);
-  const themeColors = colors as ThemeTokens;
+  const themeColors = colors as unknown as ThemeTokens;
 
   const formatUrgency = (level?: number) => {
     if (level === 3) return 'High';
@@ -62,16 +62,16 @@ export default function Feed() {
   const fetchTasks = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch all tasks for categories
       const response = await getTasks();
       const fetchedTasks = response.results || [];
       const activeTasks = filterActiveTasks(fetchedTasks);
-      
+
       // Fetch popular tasks separately
       const popular = await getPopularTasks(6);
       const activePopularTasks = filterActiveTasks(popular);
-      
+
       setPopularTasks(activePopularTasks);
 
       // Fetch photos for popular tasks
@@ -185,6 +185,7 @@ export default function Feed() {
 
               accessibilityRole="button"
               accessibilityLabel="Open settings"
+              testID="feed-settings-button"
             >
               <Ionicons
                 name="settings-outline"
@@ -205,11 +206,12 @@ export default function Feed() {
 
           accessibilityRole="button"
           accessibilityLabel="Search requests and volunteers"
+          testID="feed-search-bar"
         >
           <Ionicons
             name="search-outline"
             size={20}
-            color={colors.icon}
+            color={themeColors.icon}
             accessible={false}
             importantForAccessibility="no"
           />
@@ -230,6 +232,7 @@ export default function Feed() {
 
               accessibilityRole="button"
               accessibilityLabel={`View ${cat.name} category`}
+              testID={`category-item-${cat.id}`}
             >
               <Image
                 source={require('../assets/images/help.png')}
@@ -260,10 +263,10 @@ export default function Feed() {
           const photos = taskPhotos.get(task.id) || [];
           const primaryPhoto = photos.length > 0 ? photos[0] : null;
           const photoUrl = primaryPhoto ? (primaryPhoto.photo_url || primaryPhoto.url || primaryPhoto.image) : null;
-          const absolutePhotoUrl = photoUrl && photoUrl.startsWith('http') 
-            ? photoUrl 
-            : photoUrl 
-              ? `${BACKEND_BASE_URL}${photoUrl}` 
+          const absolutePhotoUrl = photoUrl && photoUrl.startsWith('http')
+            ? photoUrl
+            : photoUrl
+              ? `${BACKEND_BASE_URL}${photoUrl}`
               : null;
 
           return (
@@ -280,6 +283,7 @@ export default function Feed() {
 
               accessibilityRole="button"
               accessibilityLabel={`View details for ${task.title}`}
+              testID={`request-item-${task.id}`}
             >
               <Image
                 source={absolutePhotoUrl ? { uri: absolutePhotoUrl } : require('../assets/images/help.png')}
@@ -288,44 +292,44 @@ export default function Feed() {
                 accessibilityLabel={absolutePhotoUrl ? `Photo for ${task.title}` : `Default illustration for ${task.title}`}
               />
               <View style={styles.requestInfo}>
-              <Text style={[styles.requestTitle, { color: colors.text }]}>
-                {task.title}
-              </Text>
-              <Text style={[styles.requestMeta, { color: colors.text }]}>
-                {task.location} • {new Date(task.created_at).toLocaleDateString()}
-              </Text>
-              <View style={styles.requestCategoryRow}>
-                {(() => {
-                  const urgencyLabel = formatUrgency(task.urgency_level);
-                  const urgencyPalette = getUrgencyColors(task.urgency_level);
-                  return (
-                    <View
-                      style={[
-                        styles.urgencyBadge,
-                        { backgroundColor: urgencyPalette.background, borderColor: colors.border },
-                      ]}
-                    >
-                      <Text style={[styles.urgencyText, { color: urgencyPalette.text }]} numberOfLines={1} ellipsizeMode="tail">
-                        {`${urgencyLabel} Urgency`}
-                      </Text>
-                    </View>
-                  );
-                })()}
-                <View style={[styles.requestCategory, { borderColor: colors.border }]}>
-                  <Text style={[styles.requestCategoryText, { color: colors.text }]} numberOfLines={1} ellipsizeMode="tail">
-                    {task.category}
-                  </Text>
+                <Text style={[styles.requestTitle, { color: colors.text }]}>
+                  {task.title}
+                </Text>
+                <Text style={[styles.requestMeta, { color: colors.text }]}>
+                  {task.location} • {new Date(task.created_at).toLocaleDateString()}
+                </Text>
+                <View style={styles.requestCategoryRow}>
+                  {(() => {
+                    const urgencyLabel = formatUrgency(task.urgency_level);
+                    const urgencyPalette = getUrgencyColors(task.urgency_level);
+                    return (
+                      <View
+                        style={[
+                          styles.urgencyBadge,
+                          { backgroundColor: urgencyPalette.background, borderColor: colors.border },
+                        ]}
+                      >
+                        <Text style={[styles.urgencyText, { color: urgencyPalette.text }]} numberOfLines={1} ellipsizeMode="tail">
+                          {`${urgencyLabel} Urgency`}
+                        </Text>
+                      </View>
+                    );
+                  })()}
+                  <View style={[styles.requestCategory, { borderColor: colors.border }]}>
+                    <Text style={[styles.requestCategoryText, { color: colors.text }]} numberOfLines={1} ellipsizeMode="tail">
+                      {task.category}
+                    </Text>
+                  </View>
                 </View>
               </View>
-            </View>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={colors.text}
-              accessible={false}
-              importantForAccessibility="no"
-            />
-          </TouchableOpacity>
+              <Ionicons
+                name="chevron-forward"
+                size={20}
+                color={colors.text}
+                accessible={false}
+                importantForAccessibility="no"
+              />
+            </TouchableOpacity>
           );
         })}
         <TouchableOpacity
@@ -351,6 +355,7 @@ export default function Feed() {
 
           accessibilityRole="button"
           accessibilityLabel="Go to top of feed"
+          testID="tab-home"
         >
           <Ionicons
             name="home"
@@ -369,6 +374,7 @@ export default function Feed() {
 
           accessibilityRole="button"
           accessibilityLabel="Open categories"
+          testID="tab-categories"
         >
           <Ionicons
             name="pricetag-outline"
@@ -390,6 +396,7 @@ export default function Feed() {
 
             accessibilityRole="button"
             accessibilityLabel="Create a new request"
+            testID="tab-create"
           >
             <Ionicons
               name="add-circle-outline"
@@ -428,6 +435,7 @@ export default function Feed() {
 
           accessibilityRole="button"
           accessibilityLabel="Open all requests"
+          testID="tab-requests"
         >
           <Ionicons
             name="list-outline"
@@ -446,6 +454,7 @@ export default function Feed() {
 
           accessibilityRole="button"
           accessibilityLabel="Go to profile"
+          testID="tab-profile"
         >
           <Ionicons
             name="person-outline"

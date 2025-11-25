@@ -7,6 +7,7 @@ import { useTheme } from '@react-navigation/native';
 
 export default function CRUploadPhoto() {
   const { colors } = useTheme();
+  const themeColors = colors as any;
   const router = useRouter();
   const params = useLocalSearchParams();
   const [photos, setPhotos] = useState<{ uri: string; name: string }[]>([]);
@@ -55,7 +56,7 @@ export default function CRUploadPhoto() {
               accessibilityRole="button"
               accessibilityLabel="Open notifications"
             >
-              <Ionicons name="notifications-outline" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
+              <Ionicons name="notifications-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push('/settings')}
@@ -64,7 +65,7 @@ export default function CRUploadPhoto() {
               accessibilityRole="button"
               accessibilityLabel="Open settings"
             >
-              <Ionicons name="settings-outline" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
+              <Ionicons name="settings-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
             </TouchableOpacity>
           </View>
         </View>
@@ -78,7 +79,7 @@ export default function CRUploadPhoto() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Ionicons name="arrow-back" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
+            <Ionicons name="arrow-back" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
           </TouchableOpacity>
           <Text style={[styles.pageTitle, { color: colors.text }]}>Create Request</Text>
         </View>
@@ -103,6 +104,7 @@ export default function CRUploadPhoto() {
           accessibilityRole="button"
           accessibilityLabel="Browse photos"
           accessibilityState={{ disabled: photos.length >= MAX_PHOTOS }}
+          testID="create-request-browse-photos"
         >
           <Text style={[styles.browseBtnText, { color: colors.primary }]}>+ Browse photos</Text>
         </TouchableOpacity>
@@ -142,8 +144,9 @@ export default function CRUploadPhoto() {
 
           accessibilityRole="button"
           accessibilityLabel="Next step set deadline"
+          testID="create-request-upload-next-button"
         >
-          <Text style={[styles.nextBtnText, { color: colors.onPrimary }]}>Next</Text>
+          <Text style={[styles.nextBtnText, { color: themeColors.onPrimary }]}>Next</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

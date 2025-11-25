@@ -5,10 +5,10 @@ const path = require('path');
 function loadEnvFile() {
   const envPath = path.join(__dirname, '.env');
   const envExamplePath = path.join(__dirname, '.env.example');
-  
+
   let envVars = {};
   let source = 'none';
-  
+
   // Try to load .env file first
   if (fs.existsSync(envPath)) {
     const envContent = fs.readFileSync(envPath, 'utf8');
@@ -20,7 +20,7 @@ function loadEnvFile() {
     envVars = parseEnvFile(envContent);
     source = '.env.example';
   }
-  
+
   // Log which file was used (only in development)
   if (process.env.NODE_ENV !== 'production') {
     console.log(`[app.config.js] Loaded environment variables from: ${source}`);
@@ -28,7 +28,7 @@ function loadEnvFile() {
       console.log(`[app.config.js] Found variables: ${Object.keys(envVars).join(', ')}`);
     }
   }
-  
+
   return envVars;
 }
 
@@ -36,20 +36,20 @@ function loadEnvFile() {
 function parseEnvFile(content) {
   const vars = {};
   const lines = content.split('\n');
-  
+
   for (const line of lines) {
     const trimmed = line.trim();
     // Skip empty lines and full-line comments
     if (!trimmed || trimmed.startsWith('#')) {
       continue;
     }
-    
+
     // Parse KEY=VALUE format
     const match = trimmed.match(/^([^=]+)=(.*)$/);
     if (match) {
       const key = match[1].trim();
       let value = match[2].trim();
-      
+
       // Handle inline comments: split on # but preserve # in URLs (like https://)
       // Look for # followed by space (which indicates a comment, not part of URL)
       const commentMatch = value.match(/^(.+?)\s+#\s+/);
@@ -69,20 +69,20 @@ function parseEnvFile(content) {
           // Otherwise keep it (it's part of the value, like URL fragment)
         }
       }
-      
+
       // Remove quotes if present
-      if ((value.startsWith('"') && value.endsWith('"')) || 
-          (value.startsWith("'") && value.endsWith("'"))) {
+      if ((value.startsWith('"') && value.endsWith('"')) ||
+        (value.startsWith("'") && value.endsWith("'"))) {
         value = value.slice(1, -1);
       }
-      
+
       // Only add non-empty values
       if (value) {
         vars[key] = value;
       }
     }
   }
-  
+
   return vars;
 }
 
@@ -99,7 +99,8 @@ module.exports = {
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     ios: {
-      supportsTablet: true
+      supportsTablet: true,
+      bundleIdentifier: "com.bounswe2025group8.mobile"
     },
     android: {
       package: "com.bounswe2025group8.mobile",
