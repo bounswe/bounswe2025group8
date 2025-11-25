@@ -128,17 +128,21 @@ const AdminAllRequests = () => {
   }
 
   return (
-    <Box sx={{ backgroundColor: colors.background, minHeight: '100vh', py: 4 }}>
+    <Box sx={{ backgroundColor: colors.background.primary, minHeight: '100vh', py: 4 }}>
       <Container maxWidth="lg">
         {/* Header */}
         <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h1 style={{ color: colors.text, marginBottom: '8px' }}>All Requests</h1>
-            <p style={{ color: colors.textSecondary, fontSize: '14px' }}>
+            <h1 style={{ color: colors.text.primary, marginBottom: '8px' }}>All Requests</h1>
+            <p style={{ color: colors.text.secondary, fontSize: '14px' }}>
               Total requests: {pagination.totalItems}
             </p>
           </div>
-          <Button variant="outlined" onClick={() => navigate('/admin')}>
+          <Button
+            variant="outlined"
+            onClick={() => navigate('/admin')}
+            sx={{ color: colors.brand.primary, borderColor: colors.brand.primary }}
+          >
             Back to Dashboard
           </Button>
         </Box>
@@ -164,22 +168,35 @@ const AdminAllRequests = () => {
 
         {/* Table */}
         {!loading && (
-          <TableContainer component={Paper} sx={{ backgroundColor: colors.card }}>
+          <TableContainer
+            component={Paper}
+            sx={{
+              backgroundColor: colors.background.elevated,
+              color: colors.text.primary,
+              '& .MuiTable-root': {
+                backgroundColor: colors.background.elevated,
+              },
+              '& .MuiTableCell-root': {
+                backgroundColor: colors.background.elevated,
+                color: colors.text.primary,
+              },
+            }}
+          >
             <Table>
               <TableHead>
-                <TableRow sx={{ backgroundColor: colors.primary }}>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>ID</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Title</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Creator</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Status</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Created</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Actions</TableCell>
+                <TableRow sx={{ backgroundColor: colors.brand.primary }}>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>ID</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Title</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Creator</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Status</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Created</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {allRequests.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 3, color: colors.textSecondary }}>
+                    <TableCell colSpan={6} align="center" sx={{ py: 3, color: colors.text.secondary }}>
                       No requests found
                     </TableCell>
                   </TableRow>
@@ -189,17 +206,17 @@ const AdminAllRequests = () => {
                       key={task.id}
                       hover
                       sx={{
-                        '&:hover': { backgroundColor: colors.hover },
-                        borderBottom: `1px solid ${colors.border}`,
+                        '&:hover': { backgroundColor: colors.interactive.hover },
+                        borderBottom: `1px solid ${colors.border.secondary}`,
                       }}
                     >
-                      <TableCell sx={{ color: colors.text }}>{task.id}</TableCell>
-                      <TableCell sx={{ color: colors.text, maxWidth: 200 }}>
+                      <TableCell sx={{ color: colors.text.primary }}>{task.id}</TableCell>
+                      <TableCell sx={{ color: colors.text.primary, maxWidth: 200 }}>
                         <div style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
                           {task.title}
                         </div>
                       </TableCell>
-                      <TableCell sx={{ color: colors.text }}>
+                      <TableCell sx={{ color: colors.text.primary }}>
                         {task.creator?.name} {task.creator?.surname}
                       </TableCell>
                       <TableCell>
@@ -209,7 +226,7 @@ const AdminAllRequests = () => {
                           size="small"
                         />
                       </TableCell>
-                      <TableCell sx={{ color: colors.text }}>
+                      <TableCell sx={{ color: colors.text.primary }}>
                         {formatDate(task.created_at)}
                       </TableCell>
                       <TableCell>
@@ -254,13 +271,13 @@ const AdminAllRequests = () => {
 
       {/* Delete Dialog */}
       <Dialog open={deleteDialogOpen} onClose={handleDeleteCancel} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ color: colors.text }}>Delete Request</DialogTitle>
+        <DialogTitle sx={{ color: colors.text.primary }}>Delete Request</DialogTitle>
         <DialogContent>
-          <DialogContentText sx={{ color: colors.textSecondary, mb: 2 }}>
+          <DialogContentText sx={{ color: colors.text.secondary, mb: 2 }}>
             Are you sure you want to delete this request? This action cannot be undone.
           </DialogContentText>
           {selectedTask && (
-            <div style={{ marginBottom: '16px', color: colors.text }}>
+            <div style={{ marginBottom: '16px', color: colors.text.primary }}>
               <strong>{selectedTask.title}</strong>
             </div>
           )}
@@ -274,10 +291,10 @@ const AdminAllRequests = () => {
             placeholder="Explain why this request is being deleted..."
             sx={{
               '& .MuiOutlinedInput-root': {
-                color: colors.text,
+                color: colors.text.primary,
               },
               '& .MuiInputBase-input::placeholder': {
-                color: colors.textSecondary,
+                color: colors.text.secondary,
                 opacity: 0.7,
               },
             }}

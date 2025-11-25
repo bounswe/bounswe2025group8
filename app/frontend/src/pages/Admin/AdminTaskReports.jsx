@@ -29,6 +29,7 @@ import {
   MenuItem,
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import {
   fetchTaskReports,
   updateReportStatusThunk,
@@ -53,6 +54,7 @@ const AdminTaskReports = () => {
 
   const [dismissDialogOpen, setDismissDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [reportDetailsDialogOpen, setReportDetailsDialogOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
 
   // Check admin access
@@ -84,6 +86,11 @@ const AdminTaskReports = () => {
 
   const handleStatusFilterChange = (status) => {
     setSearchParams({ page: '1', ...(status && { status }) });
+  };
+
+  const handleViewReportDetails = (report) => {
+    setSelectedReport(report);
+    setReportDetailsDialogOpen(true);
   };
 
   const handleDismissClick = (report) => {
@@ -130,6 +137,7 @@ const AdminTaskReports = () => {
   const handleDialogCancel = () => {
     setDismissDialogOpen(false);
     setDeleteDialogOpen(false);
+    setReportDetailsDialogOpen(false);
     setSelectedReport(null);
   };
 
@@ -158,30 +166,54 @@ const AdminTaskReports = () => {
   }
 
   return (
-    <Box sx={{ backgroundColor: colors.background, minHeight: '100vh', py: 4 }}>
+    <Box sx={{ backgroundColor: colors.background.primary, minHeight: '100vh', py: 4 }}>
       <Container maxWidth="lg">
         {/* Header */}
         <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h1 style={{ color: colors.text, marginBottom: '8px' }}>Task Reports</h1>
-            <p style={{ color: colors.textSecondary, fontSize: '14px' }}>
+            <h1 style={{ color: colors.text.primary, marginBottom: '8px' }}>Task Reports</h1>
+            <p style={{ color: colors.text.secondary, fontSize: '14px' }}>
               Total reports: {pagination.totalItems}
             </p>
           </div>
-          <Button variant="outlined" onClick={() => navigate('/admin')}>
+          <Button
+            variant="outlined"
+            onClick={() => navigate('/admin')}
+            sx={{ color: colors.brand.primary, borderColor: colors.brand.primary }}
+          >
             Back to Dashboard
           </Button>
         </Box>
 
         {/* Filters */}
         <Box sx={{ mb: 3 }}>
-          <FormControl sx={{ minWidth: 200 }}>
-            <InputLabel>Filter by Status</InputLabel>
+          <FormControl sx={{ minWidth: 200 }} variant="outlined">
+            <InputLabel
+              sx={{
+                color: colors.brand.primary,
+                '&.Mui-focused': {
+                  color: colors.brand.primary,
+                }
+              }}
+            >
+              Filter by Status
+            </InputLabel>
             <Select
               value={statusFilter || ''}
               label="Filter by Status"
               onChange={(e) => handleStatusFilterChange(e.target.value || null)}
-              sx={{ backgroundColor: colors.card, color: colors.text }}
+              sx={{
+                color: colors.text.primary,
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: colors.brand.primary,
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: colors.brand.primary,
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: colors.brand.primary,
+                },
+              }}
             >
               <MenuItem value="">All Statuses</MenuItem>
               <MenuItem value="PENDING">Pending</MenuItem>
@@ -213,17 +245,30 @@ const AdminTaskReports = () => {
 
         {/* Table */}
         {!loading && (
-          <TableContainer component={Paper} sx={{ backgroundColor: colors.card }}>
+          <TableContainer
+            component={Paper}
+            sx={{
+              backgroundColor: colors.background.elevated,
+              color: colors.text.primary,
+              '& .MuiTable-root': {
+                backgroundColor: colors.background.elevated,
+              },
+              '& .MuiTableCell-root': {
+                backgroundColor: colors.background.elevated,
+                color: colors.text.primary,
+              },
+            }}
+          >
             <Table>
               <TableHead>
-                <TableRow sx={{ backgroundColor: colors.primary }}>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>ID</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Request</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Report Type</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Reported By</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Status</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Created</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Actions</TableCell>
+                <TableRow sx={{ backgroundColor: colors.brand.primary }}>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>ID</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Request</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Report Type</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Reported By</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Status</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Created</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -232,7 +277,7 @@ const AdminTaskReports = () => {
                     <TableCell
                       colSpan={7}
                       align="center"
-                      sx={{ py: 3, color: colors.textSecondary }}
+                      sx={{ py: 3, color: colors.text.secondary }}
                     >
                       No reports found
                     </TableCell>
@@ -243,21 +288,42 @@ const AdminTaskReports = () => {
                       key={report.id}
                       hover
                       sx={{
-                        '&:hover': { backgroundColor: colors.hover },
-                        borderBottom: `1px solid ${colors.border}`,
+                        '&:hover': { backgroundColor: colors.interactive.hover },
+                        borderBottom: `1px solid ${colors.border.secondary}`,
                       }}
                     >
-                      <TableCell sx={{ color: colors.text }}>{report.id}</TableCell>
-                      <TableCell sx={{ color: colors.text, maxWidth: 200 }}>
-                        <div style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
-                          {report.task?.title || 'Task Deleted'}
-                        </div>
+                      <TableCell sx={{ color: colors.text.primary }}>{report.id}</TableCell>
+                      <TableCell sx={{ maxWidth: 200 }}>
+                        {report.task ? (
+                          <Button
+                            sx={{
+                              color: colors.brand.primary,
+                              textTransform: 'none',
+                              padding: 0,
+                              justifyContent: 'flex-start',
+                              whiteSpace: 'normal',
+                              wordBreak: 'break-word',
+                              '&:hover': {
+                                textDecoration: 'underline',
+                              },
+                            }}
+                            onClick={() => navigate(`/requests/${report.task.id}`)}
+                          >
+                            {report.task.title}
+                          </Button>
+                        ) : (
+                          <span style={{ color: colors.text.primary }}>Task Deleted</span>
+                        )}
                       </TableCell>
-                      <TableCell sx={{ color: colors.text }}>
+                      <TableCell sx={{ color: colors.text.primary }}>
                         {report.report_type || 'N/A'}
                       </TableCell>
-                      <TableCell sx={{ color: colors.text }}>
-                        {report.reporter?.name} {report.reporter?.surname}
+                      <TableCell sx={{ color: colors.text.primary }}>
+                        {typeof report.reporter === 'string'
+                          ? report.reporter
+                          : report.reporter?.name && report.reporter?.surname
+                          ? `${report.reporter.name} ${report.reporter.surname}`
+                          : report.reporter?.username || report.reporter?.email || 'Unknown'}
                       </TableCell>
                       <TableCell>
                         <Chip
@@ -266,21 +332,19 @@ const AdminTaskReports = () => {
                           size="small"
                         />
                       </TableCell>
-                      <TableCell sx={{ color: colors.text }}>
+                      <TableCell sx={{ color: colors.text.primary }}>
                         {formatDate(report.created_at)}
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                          {report.task && (
-                            <Button
-                              size="small"
-                              startIcon={<VisibilityIcon />}
-                              variant="outlined"
-                              onClick={() => navigate(`/requests/${report.task.id}`)}
-                            >
-                              View
-                            </Button>
-                          )}
+                          <Button
+                            size="small"
+                            startIcon={<VisibilityIcon />}
+                            variant="outlined"
+                            onClick={() => handleViewReportDetails(report)}
+                          >
+                            View
+                          </Button>
                           {report.task && (
                             <Button
                               size="small"
@@ -324,11 +388,11 @@ const AdminTaskReports = () => {
 
       {/* Dismiss Dialog */}
       <Dialog open={dismissDialogOpen} onClose={handleDialogCancel} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ color: colors.text }}>Dismiss Report</DialogTitle>
+        <DialogTitle sx={{ color: colors.text.primary }}>Dismiss Report</DialogTitle>
         <DialogContent>
           {selectedReport && (
             <Box sx={{ mb: 2 }}>
-              <div style={{ marginBottom: '16px', color: colors.text }}>
+              <div style={{ marginBottom: '16px', color: colors.text.primary }}>
                 <p>
                   <strong>Request:</strong> {selectedReport.task?.title || 'Task Deleted'}
                 </p>
@@ -340,7 +404,7 @@ const AdminTaskReports = () => {
                     <strong>Description:</strong> {selectedReport.description}
                   </p>
                 )}
-                <p style={{ marginTop: '16px', fontStyle: 'italic', color: colors.textSecondary }}>
+                <p style={{ marginTop: '16px', fontStyle: 'italic', color: colors.text.secondary }}>
                   This report will be marked as dismissed.
                 </p>
               </div>
@@ -362,15 +426,15 @@ const AdminTaskReports = () => {
 
       {/* Delete Dialog */}
       <Dialog open={deleteDialogOpen} onClose={handleDialogCancel} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ color: colors.text }}>Delete Task</DialogTitle>
+        <DialogTitle sx={{ color: colors.text.primary }}>Delete Task</DialogTitle>
         <DialogContent>
           {selectedReport && (
             <Box sx={{ mb: 2 }}>
-              <div style={{ marginBottom: '16px', color: colors.text }}>
+              <div style={{ marginBottom: '16px', color: colors.text.primary }}>
                 <p>
                   <strong>Request:</strong> {selectedReport.task?.title || 'Task Deleted'}
                 </p>
-                <p style={{ marginTop: '16px', color: colors.error }}>
+                <p style={{ marginTop: '16px', color: colors.semantic.error }}>
                   Are you sure you want to delete this task? This action cannot be undone.
                 </p>
               </div>
@@ -387,6 +451,75 @@ const AdminTaskReports = () => {
           >
             {actionLoading ? <CircularProgress size={24} /> : 'Delete Task'}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Report Details Dialog */}
+      <Dialog open={reportDetailsDialogOpen} onClose={handleDialogCancel} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ color: colors.text.primary }}>Report Details</DialogTitle>
+        <DialogContent sx={{ backgroundColor: colors.background.primary, py: 0, px: 0 }}>
+          {selectedReport && (
+            <Box
+              sx={{
+                p: 2,
+                backgroundColor: colors.background.secondary,
+                borderRadius: 1,
+                borderLeft: `4px solid ${colors.brand.primary}`,
+              }}
+            >
+              <div style={{ color: colors.text.primary }}>
+                <p style={{ margin: '0 0 8px 0' }}>
+                  <strong>Report ID:</strong> {selectedReport.id}
+                </p>
+                <p style={{ margin: '0 0 8px 0' }}>
+                  <strong>Request:</strong> {selectedReport.task?.title || 'Task Deleted'}
+                </p>
+                <p style={{ margin: '0 0 8px 0' }}>
+                  <strong>Report Type:</strong> {selectedReport.report_type_display || selectedReport.report_type}
+                </p>
+                <p style={{ margin: '0 0 8px 0' }}>
+                  <strong>Status:</strong> <Chip label={selectedReport.status} size="small" color={getStatusColor(selectedReport.status)} />
+                </p>
+                <p style={{ margin: '0 0 8px 0' }}>
+                  <strong>Reported By:</strong>{' '}
+                  {typeof selectedReport.reporter === 'string'
+                    ? selectedReport.reporter
+                    : selectedReport.reporter?.name && selectedReport.reporter?.surname
+                    ? `${selectedReport.reporter.name} ${selectedReport.reporter.surname}`
+                    : selectedReport.reporter?.username || selectedReport.reporter?.email || 'Unknown'}
+                </p>
+                <p style={{ margin: '0 0 16px 0' }}>
+                  <strong>Created:</strong> {formatDate(selectedReport.created_at)}
+                </p>
+                {selectedReport.description && (
+                  <Box sx={{ p: 1.5, backgroundColor: colors.background.primary, borderRadius: 1 }}>
+                    <p style={{ margin: '0 0 8px 0', color: colors.text.primary }}>
+                      <strong>Description:</strong>
+                    </p>
+                    <p style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: colors.text.secondary }}>
+                      {selectedReport.description}
+                    </p>
+                  </Box>
+                )}
+              </div>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDialogCancel}>Close</Button>
+          {selectedReport?.task && (
+            <Button
+              onClick={() => {
+                navigate(`/requests/${selectedReport.task.id}`);
+                handleDialogCancel();
+              }}
+              color="primary"
+              variant="contained"
+              endIcon={<OpenInNewIcon />}
+            >
+              View Request
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
     </Box>

@@ -47,5 +47,6 @@ urlpatterns = [
     path('admin/reported-users/', admin_views.ReportedUsersView.as_view(), name='reported-users'),
     path('admin/users/<int:user_id>/', admin_views.AdminUserDetailView.as_view(), name='admin-user-detail'),
     path('admin/users/<int:user_id>/ban/', admin_views.BanUserView.as_view(), name='ban-user'),
+    path('admin/users/<int:user_id>/dismiss-reports/', admin_views.DismissUserReportsView.as_view(), name='dismiss-user-reports'),
     path('admin/tasks/<int:task_id>/delete/', admin_views.DeleteTaskView.as_view(), name='admin-delete-task'),
 ]

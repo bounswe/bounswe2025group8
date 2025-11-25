@@ -22,6 +22,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Chip,
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import BlockIcon from '@mui/icons-material/Block';
@@ -50,8 +51,11 @@ const AdminReportedUsers = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [dismissDialogOpen, setDismissDialogOpen] = useState(false);
   const [banDialogOpen, setBanDialogOpen] = useState(false);
+  const [reportsDialogOpen, setReportsDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedUserReports, setSelectedUserReports] = useState([]);
   const [banReason, setBanReason] = useState('');
+  const [reportsLoading, setReportsLoading] = useState(false);
 
   // Check admin access
   useEffect(() => {
@@ -93,6 +97,25 @@ const AdminReportedUsers = () => {
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
+  };
+
+  const handleViewClick = async (user) => {
+    setSelectedUser(user);
+    setReportsLoading(true);
+    try {
+      // Fetch user reports to show descriptions
+      const response = await adminService.getUserReports(null, 1);
+      // Filter reports for this specific user
+      const userReports = response.reports.filter(
+        (report) => report.reported_user?.id === user.user_id
+      );
+      setSelectedUserReports(userReports);
+      setReportsDialogOpen(true);
+    } catch (err) {
+      setError('Failed to fetch reports');
+    } finally {
+      setReportsLoading(false);
+    }
   };
 
   const handleDismissClick = (user) => {
@@ -176,8 +199,10 @@ const AdminReportedUsers = () => {
   const handleDialogCancel = () => {
     setDismissDialogOpen(false);
     setBanDialogOpen(false);
+    setReportsDialogOpen(false);
     setSelectedUser(null);
     setBanReason('');
+    setSelectedUserReports([]);
   };
 
   const formatDate = (dateString) => {
@@ -195,17 +220,21 @@ const AdminReportedUsers = () => {
   }
 
   return (
-    <Box sx={{ backgroundColor: colors.background, minHeight: '100vh', py: 4 }}>
+    <Box sx={{ backgroundColor: colors.background.primary, minHeight: '100vh', py: 4 }}>
       <Container maxWidth="lg">
         {/* Header */}
         <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h1 style={{ color: colors.text, marginBottom: '8px' }}>Reported Users</h1>
-            <p style={{ color: colors.textSecondary, fontSize: '14px' }}>
+            <h1 style={{ color: colors.text.primary, marginBottom: '8px' }}>Reported Users</h1>
+            <p style={{ color: colors.text.secondary, fontSize: '14px' }}>
               Total reported users: {pagination.totalItems}
             </p>
           </div>
-          <Button variant="outlined" onClick={() => navigate('/admin')}>
+          <Button
+            variant="outlined"
+            onClick={() => navigate('/admin')}
+            sx={{ color: colors.brand.primary, borderColor: colors.brand.primary }}
+          >
             Back to Dashboard
           </Button>
         </Box>
@@ -231,16 +260,29 @@ const AdminReportedUsers = () => {
 
         {/* Table */}
         {!loading && (
-          <TableContainer component={Paper} sx={{ backgroundColor: colors.card }}>
+          <TableContainer
+            component={Paper}
+            sx={{
+              backgroundColor: colors.background.elevated,
+              color: colors.text.primary,
+              '& .MuiTable-root': {
+                backgroundColor: colors.background.elevated,
+              },
+              '& .MuiTableCell-root': {
+                backgroundColor: colors.background.elevated,
+                color: colors.text.primary,
+              },
+            }}
+          >
             <Table>
               <TableHead>
-                <TableRow sx={{ backgroundColor: colors.primary }}>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>ID</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Username</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Email</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Report Count</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Last Report</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Actions</TableCell>
+                <TableRow sx={{ backgroundColor: colors.brand.primary }}>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>ID</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Username</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Email</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Report Count</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Last Report</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -249,7 +291,7 @@ const AdminReportedUsers = () => {
                     <TableCell
                       colSpan={6}
                       align="center"
-                      sx={{ py: 3, color: colors.textSecondary }}
+                      sx={{ py: 3, color: colors.text.secondary }}
                     >
                       No reported users found
                     </TableCell>
@@ -260,15 +302,30 @@ const AdminReportedUsers = () => {
                       key={user.user_id}
                       hover
                       sx={{
-                        '&:hover': { backgroundColor: colors.hover },
-                        borderBottom: `1px solid ${colors.border}`,
+                        '&:hover': { backgroundColor: colors.interactive.hover },
+                        borderBottom: `1px solid ${colors.border.secondary}`,
                       }}
                     >
-                      <TableCell sx={{ color: colors.text }}>{user.user_id}</TableCell>
-                      <TableCell sx={{ color: colors.text }}>{user.username}</TableCell>
-                      <TableCell sx={{ color: colors.text }}>{user.email}</TableCell>
-                      <TableCell sx={{ color: colors.text }}>{user.report_count || 0}</TableCell>
-                      <TableCell sx={{ color: colors.text }}>
+                      <TableCell sx={{ color: colors.text.primary }}>{user.user_id}</TableCell>
+                      <TableCell>
+                        <Button
+                          sx={{
+                            color: colors.brand.primary,
+                            textTransform: 'none',
+                            padding: 0,
+                            justifyContent: 'flex-start',
+                            '&:hover': {
+                              textDecoration: 'underline',
+                            },
+                          }}
+                          onClick={() => navigate(`/profile/${user.user_id}`)}
+                        >
+                          {user.username}
+                        </Button>
+                      </TableCell>
+                      <TableCell sx={{ color: colors.text.primary }}>{user.email}</TableCell>
+                      <TableCell sx={{ color: colors.text.primary }}>{user.report_count || 0}</TableCell>
+                      <TableCell sx={{ color: colors.text.primary }}>
                         {user.last_reported_at ? formatDate(user.last_reported_at) : 'N/A'}
                       </TableCell>
                       <TableCell>
@@ -277,7 +334,7 @@ const AdminReportedUsers = () => {
                             size="small"
                             startIcon={<VisibilityIcon />}
                             variant="outlined"
-                            onClick={() => navigate(`/profile/${user.user_id}`)}
+                            onClick={() => handleViewClick(user)}
                           >
                             View
                           </Button>
@@ -323,11 +380,11 @@ const AdminReportedUsers = () => {
 
       {/* Dismiss Dialog */}
       <Dialog open={dismissDialogOpen} onClose={handleDialogCancel} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ color: colors.text }}>Dismiss Reports</DialogTitle>
+        <DialogTitle sx={{ color: colors.text.primary }}>Dismiss Reports</DialogTitle>
         <DialogContent>
           {selectedUser && (
             <Box sx={{ mb: 2 }}>
-              <div style={{ marginBottom: '16px', color: colors.text }}>
+              <div style={{ marginBottom: '16px', color: colors.text.primary }}>
                 <p>
                   <strong>User:</strong> {selectedUser.username}
                 </p>
@@ -337,7 +394,7 @@ const AdminReportedUsers = () => {
                 <p>
                   <strong>Reports:</strong> {selectedUser.report_count}
                 </p>
-                <p style={{ marginTop: '16px', fontStyle: 'italic', color: colors.textSecondary }}>
+                <p style={{ marginTop: '16px', fontStyle: 'italic', color: colors.text.secondary }}>
                   All reports against this user will be marked as dismissed.
                 </p>
               </div>
@@ -359,7 +416,7 @@ const AdminReportedUsers = () => {
 
       {/* Ban Dialog */}
       <Dialog open={banDialogOpen} onClose={handleDialogCancel} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ color: colors.text }}>Ban User</DialogTitle>
+        <DialogTitle sx={{ color: colors.text.primary }}>Ban User</DialogTitle>
         <DialogContent>
           {selectedUser && (
             <Box sx={{ mb: 2 }}>
@@ -367,7 +424,7 @@ const AdminReportedUsers = () => {
                 You are about to ban {selectedUser.username}. This user will no longer be able to
                 access their account.
               </Alert>
-              <div style={{ marginBottom: '16px', color: colors.text }}>
+              <div style={{ marginBottom: '16px', color: colors.text.primary }}>
                 <p>
                   <strong>User:</strong> {selectedUser.username}
                 </p>
@@ -389,10 +446,10 @@ const AdminReportedUsers = () => {
             required
             sx={{
               '& .MuiOutlinedInput-root': {
-                color: colors.text,
+                color: colors.text.primary,
               },
               '& .MuiInputBase-input::placeholder': {
-                color: colors.textSecondary,
+                color: colors.text.secondary,
                 opacity: 0.7,
               },
             }}
@@ -408,6 +465,76 @@ const AdminReportedUsers = () => {
           >
             {actionLoading ? <CircularProgress size={24} /> : 'Ban User'}
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Reports Dialog */}
+      <Dialog open={reportsDialogOpen} onClose={handleDialogCancel} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ color: colors.text.primary }}>
+          Reports Against {selectedUser?.username}
+        </DialogTitle>
+        <DialogContent sx={{ backgroundColor: colors.background.primary, py: 0, px: 0 }}>
+          {reportsLoading && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+              <CircularProgress />
+            </Box>
+          )}
+          {!reportsLoading && selectedUserReports.length === 0 && (
+            <Alert severity="info">No reports found for this user.</Alert>
+          )}
+          {!reportsLoading && selectedUserReports.length > 0 && (
+            <Box sx={{ maxHeight: '400px', overflowY: 'auto', p: 2 }}>
+              {selectedUserReports.map((report, index) => (
+                <Paper
+                  key={report.id}
+                  sx={{
+                    p: 2,
+                    mb: 2,
+                    backgroundColor: colors.background.secondary,
+                    borderLeft: `4px solid ${colors.brand.primary}`,
+                  }}
+                >
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 1 }}>
+                    <div>
+                      <p style={{ color: colors.text.primary, margin: '0 0 8px 0', fontWeight: 'bold' }}>
+                        Report #{report.id}
+                      </p>
+                      <Chip
+                        label={report.status}
+                        size="small"
+                        color={
+                          report.status === 'PENDING'
+                            ? 'warning'
+                            : report.status === 'UNDER_REVIEW'
+                            ? 'info'
+                            : report.status === 'RESOLVED'
+                            ? 'success'
+                            : 'error'
+                        }
+                      />
+                    </div>
+                    <p style={{ color: colors.text.secondary, fontSize: '12px', margin: 0 }}>
+                      {formatDate(report.created_at)}
+                    </p>
+                  </Box>
+                  <p style={{ color: colors.text.primary, margin: '8px 0', fontSize: '14px' }}>
+                    <strong>Type:</strong> {report.report_type_display || report.report_type}
+                  </p>
+                  {report.description && (
+                    <p style={{ color: colors.text.primary, margin: '8px 0', fontSize: '14px' }}>
+                      <strong>Description:</strong> {report.description}
+                    </p>
+                  )}
+                  <p style={{ color: colors.text.secondary, fontSize: '12px', margin: '8px 0' }}>
+                    <strong>Reported by:</strong> {report.reporter}
+                  </p>
+                </Paper>
+              ))}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDialogCancel}>Close</Button>
         </DialogActions>
       </Dialog>
     </Box>

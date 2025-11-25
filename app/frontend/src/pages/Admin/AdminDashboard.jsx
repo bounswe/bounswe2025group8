@@ -40,33 +40,33 @@ const AdminDashboard = () => {
     {
       title: 'All Requests',
       description: 'View and manage all requests/tasks in the system',
-      icon: <AssignmentIcon sx={{ fontSize: 48, color: colors.primary }} />,
+      icon: <AssignmentIcon sx={{ fontSize: 48, color: colors.brand.primary }} />,
       path: '/admin/requests',
       color: '#4CAF50',
     },
     {
       title: 'Task Reports',
       description: 'View and manage reports filed against tasks/requests',
-      icon: <FlagIcon sx={{ fontSize: 48, color: colors.primary }} />,
+      icon: <FlagIcon sx={{ fontSize: 48, color: colors.brand.primary }} />,
       path: '/admin/task-reports',
       color: '#2196F3',
     },
     {
       title: 'Reported Users',
       description: 'View users who have been reported and need review',
-      icon: <PeopleIcon sx={{ fontSize: 48, color: colors.primary }} />,
+      icon: <PeopleIcon sx={{ fontSize: 48, color: colors.brand.primary }} />,
       path: '/admin/reported-users',
       color: '#F44336',
     },
   ];
 
   return (
-    <Box sx={{ backgroundColor: colors.background, minHeight: '100vh', py: 4 }}>
+    <Box sx={{ backgroundColor: colors.background.primary, minHeight: '100vh', py: 4 }}>
       <Container maxWidth="xl">
         {/* Header */}
         <Box sx={{ mb: 4 }}>
-          <h1 style={{ color: colors.text, marginBottom: '8px' }}>Admin Dashboard</h1>
-          <p style={{ color: colors.textSecondary, fontSize: '16px' }}>
+          <h1 style={{ color: colors.text.primary, marginBottom: '8px' }}>Admin Dashboard</h1>
+          <p style={{ color: colors.text.secondary, fontSize: '16px' }}>
             Welcome back, {currentUser?.name || 'Admin'}. Manage reports and content here.
           </p>
         </Box>
@@ -92,7 +92,7 @@ const AdminDashboard = () => {
                     transform: 'translateY(-4px)',
                     boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
                   },
-                  backgroundColor: colors.card,
+                  backgroundColor: colors.background.elevated,
                   borderLeft: `4px solid ${item.color}`,
                 }}
               >
@@ -101,14 +101,14 @@ const AdminDashboard = () => {
                   title={item.title}
                   titleTypographyProps={{
                     variant: 'subtitle1',
-                    sx: { color: colors.text, fontWeight: 'bold', fontSize: '16px' },
+                    sx: { color: colors.text.primary, fontWeight: 'bold', fontSize: '16px' },
                   }}
                   sx={{ pb: 1, pt: 1.5, px: 2 }}
                 />
                 <CardContent sx={{ flexGrow: 1, py: 0.5, px: 2 }}>
                   <p
                     style={{
-                      color: colors.textSecondary,
+                      color: colors.text.secondary,
                       fontSize: '12px',
                       marginBottom: '8px',
                       margin: 0,
@@ -144,14 +144,14 @@ const AdminDashboard = () => {
 
         {/* Quick Stats */}
         <Box sx={{ mt: 6 }}>
-          <h2 style={{ color: colors.text, marginBottom: '16px' }}>Quick Stats</h2>
+          <h2 style={{ color: colors.text.primary, marginBottom: '16px' }}>Quick Stats</h2>
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6} md={3}>
               <Paper
                 sx={{
                   p: 3,
                   textAlign: 'center',
-                  backgroundColor: colors.card,
+                  backgroundColor: colors.background.elevated,
                   borderTop: `4px solid #4CAF50`,
                 }}
               >
@@ -167,7 +167,7 @@ const AdminDashboard = () => {
                 </p>
                 <p
                   style={{
-                    color: colors.textSecondary,
+                    color: colors.text.secondary,
                     fontSize: '14px',
                     margin: 0,
                   }}
@@ -181,7 +181,7 @@ const AdminDashboard = () => {
                 sx={{
                   p: 3,
                   textAlign: 'center',
-                  backgroundColor: colors.card,
+                  backgroundColor: colors.background.elevated,
                   borderTop: `4px solid #2196F3`,
                 }}
               >
@@ -197,7 +197,7 @@ const AdminDashboard = () => {
                 </p>
                 <p
                   style={{
-                    color: colors.textSecondary,
+                    color: colors.text.secondary,
                     fontSize: '14px',
                     margin: 0,
                   }}
@@ -211,7 +211,7 @@ const AdminDashboard = () => {
                 sx={{
                   p: 3,
                   textAlign: 'center',
-                  backgroundColor: colors.card,
+                  backgroundColor: colors.background.elevated,
                   borderTop: `4px solid #FF9800`,
                 }}
               >
@@ -227,7 +227,7 @@ const AdminDashboard = () => {
                 </p>
                 <p
                   style={{
-                    color: colors.textSecondary,
+                    color: colors.text.secondary,
                     fontSize: '14px',
                     margin: 0,
                   }}
@@ -241,7 +241,7 @@ const AdminDashboard = () => {
                 sx={{
                   p: 3,
                   textAlign: 'center',
-                  backgroundColor: colors.card,
+                  backgroundColor: colors.background.elevated,
                   borderTop: `4px solid #F44336`,
                 }}
               >
@@ -257,7 +257,7 @@ const AdminDashboard = () => {
                 </p>
                 <p
                   style={{
-                    color: colors.textSecondary,
+                    color: colors.text.secondary,
                     fontSize: '14px',
                     margin: 0,
                   }}

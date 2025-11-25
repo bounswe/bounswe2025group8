@@ -169,30 +169,54 @@ const AdminUserReports = () => {
   }
 
   return (
-    <Box sx={{ backgroundColor: colors.background, minHeight: '100vh', py: 4 }}>
+    <Box sx={{ backgroundColor: colors.background.primary, minHeight: '100vh', py: 4 }}>
       <Container maxWidth="lg">
         {/* Header */}
         <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h1 style={{ color: colors.text, marginBottom: '8px' }}>User Reports</h1>
-            <p style={{ color: colors.textSecondary, fontSize: '14px' }}>
+            <h1 style={{ color: colors.text.primary, marginBottom: '8px' }}>User Reports</h1>
+            <p style={{ color: colors.text.secondary, fontSize: '14px' }}>
               Total reports: {pagination.totalItems}
             </p>
           </div>
-          <Button variant="outlined" onClick={() => navigate('/admin')}>
+          <Button
+            variant="outlined"
+            onClick={() => navigate('/admin')}
+            sx={{ color: colors.brand.primary, borderColor: colors.brand.primary }}
+          >
             Back to Dashboard
           </Button>
         </Box>
 
         {/* Filters */}
         <Box sx={{ mb: 3 }}>
-          <FormControl sx={{ minWidth: 200 }}>
-            <InputLabel>Filter by Status</InputLabel>
+          <FormControl sx={{ minWidth: 200 }} variant="outlined">
+            <InputLabel
+              sx={{
+                color: colors.brand.primary,
+                '&.Mui-focused': {
+                  color: colors.brand.primary,
+                }
+              }}
+            >
+              Filter by Status
+            </InputLabel>
             <Select
               value={statusFilter || ''}
               label="Filter by Status"
               onChange={(e) => handleStatusFilterChange(e.target.value || null)}
-              sx={{ backgroundColor: colors.card, color: colors.text }}
+              sx={{
+                color: colors.text.primary,
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: colors.brand.primary,
+                },
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  borderColor: colors.brand.primary,
+                },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  borderColor: colors.brand.primary,
+                },
+              }}
             >
               <MenuItem value="">All Statuses</MenuItem>
               <MenuItem value="PENDING">Pending</MenuItem>
@@ -224,17 +248,30 @@ const AdminUserReports = () => {
 
         {/* Table */}
         {!loading && (
-          <TableContainer component={Paper} sx={{ backgroundColor: colors.card }}>
+          <TableContainer
+            component={Paper}
+            sx={{
+              backgroundColor: colors.background.elevated,
+              color: colors.text.primary,
+              '& .MuiTable-root': {
+                backgroundColor: colors.background.elevated,
+              },
+              '& .MuiTableCell-root': {
+                backgroundColor: colors.background.elevated,
+                color: colors.text.primary,
+              },
+            }}
+          >
             <Table>
               <TableHead>
-                <TableRow sx={{ backgroundColor: colors.primary }}>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>ID</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Reported User</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Report Type</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Reported By</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Status</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Created</TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Actions</TableCell>
+                <TableRow sx={{ backgroundColor: colors.brand.primary }}>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>ID</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Reported User</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Report Type</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Reported By</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Status</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Created</TableCell>
+                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -243,7 +280,7 @@ const AdminUserReports = () => {
                     <TableCell
                       colSpan={7}
                       align="center"
-                      sx={{ py: 3, color: colors.textSecondary }}
+                      sx={{ py: 3, color: colors.text.secondary }}
                     >
                       No reports found
                     </TableCell>
@@ -254,12 +291,12 @@ const AdminUserReports = () => {
                       key={report.id}
                       hover
                       sx={{
-                        '&:hover': { backgroundColor: colors.hover },
-                        borderBottom: `1px solid ${colors.border}`,
+                        '&:hover': { backgroundColor: colors.interactive.hover },
+                        borderBottom: `1px solid ${colors.border.secondary}`,
                       }}
                     >
-                      <TableCell sx={{ color: colors.text }}>{report.id}</TableCell>
-                      <TableCell sx={{ color: colors.text }}>
+                      <TableCell sx={{ color: colors.text.primary }}>{report.id}</TableCell>
+                      <TableCell sx={{ color: colors.text.primary }}>
                         {report.user ? (
                           <div>
                             {report.user.name} {report.user.surname}
@@ -268,10 +305,10 @@ const AdminUserReports = () => {
                           'User Deleted'
                         )}
                       </TableCell>
-                      <TableCell sx={{ color: colors.text }}>
+                      <TableCell sx={{ color: colors.text.primary }}>
                         {report.report_type || 'N/A'}
                       </TableCell>
-                      <TableCell sx={{ color: colors.text }}>
+                      <TableCell sx={{ color: colors.text.primary }}>
                         {report.reporter?.name} {report.reporter?.surname}
                       </TableCell>
                       <TableCell>
@@ -281,7 +318,7 @@ const AdminUserReports = () => {
                           size="small"
                         />
                       </TableCell>
-                      <TableCell sx={{ color: colors.text }}>
+                      <TableCell sx={{ color: colors.text.primary }}>
                         {formatDate(report.created_at)}
                       </TableCell>
                       <TableCell>
@@ -340,11 +377,11 @@ const AdminUserReports = () => {
 
       {/* Dismiss Dialog */}
       <Dialog open={dismissDialogOpen} onClose={handleDialogCancel} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ color: colors.text }}>Dismiss Report</DialogTitle>
+        <DialogTitle sx={{ color: colors.text.primary }}>Dismiss Report</DialogTitle>
         <DialogContent>
           {selectedReport && (
             <Box sx={{ mb: 2 }}>
-              <div style={{ marginBottom: '16px', color: colors.text }}>
+              <div style={{ marginBottom: '16px', color: colors.text.primary }}>
                 <p>
                   <strong>Reported User:</strong>{' '}
                   {selectedReport.user
@@ -359,7 +396,7 @@ const AdminUserReports = () => {
                     <strong>Description:</strong> {selectedReport.description}
                   </p>
                 )}
-                <p style={{ marginTop: '16px', fontStyle: 'italic', color: colors.textSecondary }}>
+                <p style={{ marginTop: '16px', fontStyle: 'italic', color: colors.text.secondary }}>
                   This report will be marked as dismissed.
                 </p>
               </div>
@@ -381,7 +418,7 @@ const AdminUserReports = () => {
 
       {/* Ban Dialog */}
       <Dialog open={banDialogOpen} onClose={handleDialogCancel} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ color: colors.text }}>Ban User</DialogTitle>
+        <DialogTitle sx={{ color: colors.text.primary }}>Ban User</DialogTitle>
         <DialogContent>
           {selectedReport && selectedReport.user && (
             <Box sx={{ mb: 2 }}>
@@ -389,7 +426,7 @@ const AdminUserReports = () => {
                 You are about to ban {selectedReport.user.name} {selectedReport.user.surname}.
                 This user will no longer be able to access their account.
               </Alert>
-              <div style={{ marginBottom: '16px', color: colors.text }}>
+              <div style={{ marginBottom: '16px', color: colors.text.primary }}>
                 <p>
                   <strong>User:</strong> {selectedReport.user.name} {selectedReport.user.surname}
                 </p>
@@ -411,10 +448,10 @@ const AdminUserReports = () => {
             required
             sx={{
               '& .MuiOutlinedInput-root': {
-                color: colors.text,
+                color: colors.text.primary,
               },
               '& .MuiInputBase-input::placeholder': {
-                color: colors.textSecondary,
+                color: colors.text.secondary,
                 opacity: 0.7,
               },
             }}
