@@ -140,3 +140,91 @@ class CommentModelTests(TestCase):
         # Verify comments can be ordered by timestamp
         comments = self.task.comments.order_by('timestamp')
         self.assertEqual(comments.first(), self.comment)  # First comment is the one from setUp
+
+    def test_comment_with_empty_content(self):
+        """Test creating comment with empty content"""
+        # Create comment with empty string
+        empty_comment = Comment.add_comment(
+            user=self.commenter,
+            task=self.task,
+            content=''
+        )
+        
+        # Verify comment was created (no validation in model)
+        self.assertIsNotNone(empty_comment)
+        self.assertEqual(empty_comment.content, '')
+        
+        # Verify it's stored in database
+        retrieved = Comment.objects.get(id=empty_comment.id)
+        self.assertEqual(retrieved.content, '')
+
+    def test_comment_with_very_long_content(self):
+        """Test creating comment with very long content"""
+        # Create a very long content string
+        long_content = 'x' * 5000  # 5000 characters
+        
+        # Create comment with long content
+        long_comment = Comment.add_comment(
+            user=self.commenter,
+            task=self.task,
+            content=long_content
+        )
+        
+        # Verify comment was created
+        self.assertIsNotNone(long_comment)
+        self.assertEqual(len(long_comment.content), 5000)
+        self.assertEqual(long_comment.content, long_content)
+
+    def test_comment_timestamp_auto_generation(self):
+        """Test that comment timestamp is automatically set"""
+        import time
+        
+        # Record time before creating comment
+        before = timezone.now()
+        time.sleep(0.01)  # Small delay
+        
+        # Create comment
+        comment = Comment.add_comment(
+            user=self.commenter,
+            task=self.task,
+            content='Timestamp test'
+        )
+        
+        time.sleep(0.01)  # Small delay
+        after = timezone.now()
+        
+        # Verify timestamp is between before and after
+        self.assertGreater(comment.timestamp, before)
+        self.assertLess(comment.timestamp, after)
+
+    def test_comment_without_user(self):
+        """Test that comment requires a user"""
+        # Attempting to create comment without user should fail
+        from django.db import IntegrityError
+        with self.assertRaises(IntegrityError):
+            Comment.objects.create(
+                content='Comment without user',
+                task=self.task,
+                user=None
+            )
+
+    def test_comment_without_task(self):
+        """Test that comment requires a task"""
+        # Attempting to create comment without task should fail
+        from django.db import IntegrityError
+        with self.assertRaises(IntegrityError):
+            Comment.objects.create(
+                content='Comment without task',
+                user=self.commenter,
+                task=None
+            )
+
+    def test_delete_nonexistent_comment(self):
+        """Test deleting a comment that's already been deleted"""
+        # Delete comment first time
+        comment_id = self.comment.id
+        self.comment.delete_comment()
+        
+        # Verify it's gone
+        with self.assertRaises(Comment.DoesNotExist):
+            Comment.objects.get(id=comment_id)

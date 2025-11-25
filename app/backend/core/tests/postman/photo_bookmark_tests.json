@@ -84,6 +84,59 @@
           "response": []
         },
         {
+          "name": "Attach Second Photo to Task",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.photo_id) {",
+                  "    pm.environment.set(\"plumbing_second_photo_id\", jsonData.data.photo_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Token {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "photo",
+                  "type": "file",
+                  "src": "/path/to/second-test-image.jpg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/tasks/{{plumbing_task_id}}/photo/",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "tasks",
+                "{{plumbing_task_id}}",
+                "photo",
+                ""
+              ]
+            },
+            "description": "Attach an additional photo to the same task (stores photo_id)"
+          },
+          "response": []
+        },
+        {
           "name": "View Task Photos",
           "request": {
             "method": "GET",
@@ -101,6 +154,41 @@
               "path": ["api", "tasks", "{{plumbing_task_id}}", "photo", ""]
             },
             "description": "Get all photos for a task"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Second Photo by ID",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Token {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8000/api/tasks/{{plumbing_task_id}}/photo/?photo_id={{plumbing_second_photo_id}}",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "tasks",
+                "{{plumbing_task_id}}",
+                "photo",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "photo_id",
+                  "value": "{{plumbing_second_photo_id}}"
+                }
+              ]
+            },
+            "description": "Delete the second photo using the saved photo id"
           },
           "response": []
         },
@@ -180,6 +268,55 @@
           "response": []
         },
         {
+          "name": "Create Bookmark Without Tags",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.data && jsonData.data.id) {",
+                  "    pm.environment.set(\"bookmark_without_tags_id\", jsonData.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Token {{volunteer_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"task_id\": {{plumbing_task_id}}\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/bookmarks/",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "bookmarks",
+                ""
+              ]
+            },
+            "description": "Create a bookmark without optional tag names"
+          },
+          "response": []
+        },
+        {
           "name": "List User's Bookmarks",
           "request": {
             "method": "GET",
@@ -197,6 +334,43 @@
               "path": ["api", "bookmarks", ""]
             },
             "description": "List all bookmarks for a user"
+          },
+          "response": []
+        },
+        {
+          "name": "List Bookmarks Paginated",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Token {{volunteer_token}}"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8000/api/bookmarks/?page=1&limit=1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "bookmarks",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "List bookmarks with explicit pagination parameters"
           },
           "response": []
         },

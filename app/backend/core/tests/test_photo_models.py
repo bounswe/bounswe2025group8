@@ -157,3 +157,26 @@ class PhotoModelTests(TestCase):
         # Verify photos can be accessed from task
         photos = self.task.get_photos()
         self.assertEqual(photos.count(), 4)
+    
+    def test_delete_photo_when_file_missing(self):
+        """Deleting photo should succeed even if underlying file is gone"""
+        file_path = self.photo.url.path
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+
+        result = self.photo.delete_photo()
+        self.assertTrue(result)
+        self.assertFalse(Photo.objects.filter(id=self.photo.id).exists())
+
+    def test_uploaded_photo_keeps_file_extension(self):
+        """Uploaded photo should preserve original file extension"""
+        image_content = b'GIF87a\x01\x00\x01\x00\x80\x01\x00\x00\x00\x00ccc,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;'
+        test_image = SimpleUploadedFile(
+            name='another.gif',
+            content=image_content,
+            content_type='image/gif'
+        )
+
+        new_photo = Photo.upload_photo(task=self.task, image_file=test_image)
+        _, ext = os.path.splitext(new_photo.url.name)
+        self.assertEqual(ext, '.gif')
