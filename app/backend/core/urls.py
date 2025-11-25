@@ -43,7 +43,9 @@ urlpatterns = [
     path('users/<int:user_id>/reviews/', review_views.UserReviewsView.as_view(), name='user-reviews'),
     
     # Admin endpoints
+    path('admin/reports/', admin_views.AdminReportsView.as_view(), name='admin-reports'),
     path('admin/reported-users/', admin_views.ReportedUsersView.as_view(), name='reported-users'),
     path('admin/users/<int:user_id>/', admin_views.AdminUserDetailView.as_view(), name='admin-user-detail'),
     path('admin/users/<int:user_id>/ban/', admin_views.BanUserView.as_view(), name='ban-user'),
+    path('admin/tasks/<int:task_id>/delete/', admin_views.DeleteTaskView.as_view(), name='admin-delete-task'),
 ]

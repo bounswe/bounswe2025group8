@@ -16,8 +16,6 @@ import {
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import FlagIcon from '@mui/icons-material/Flag';
 import PeopleIcon from '@mui/icons-material/People';
-import WarningIcon from '@mui/icons-material/Warning';
-import DescriptionIcon from '@mui/icons-material/Description';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -54,13 +52,6 @@ const AdminDashboard = () => {
       color: '#2196F3',
     },
     {
-      title: 'User Reports',
-      description: 'View and manage reports filed against users',
-      icon: <WarningIcon sx={{ fontSize: 48, color: colors.primary }} />,
-      path: '/admin/user-reports',
-      color: '#FF9800',
-    },
-    {
       title: 'Reported Users',
       description: 'View users who have been reported and need review',
       icon: <PeopleIcon sx={{ fontSize: 48, color: colors.primary }} />,
@@ -71,7 +62,7 @@ const AdminDashboard = () => {
 
   return (
     <Box sx={{ backgroundColor: colors.background, minHeight: '100vh', py: 4 }}>
-      <Container maxWidth="lg">
+      <Container maxWidth="xl">
         {/* Header */}
         <Box sx={{ mb: 4 }}>
           <h1 style={{ color: colors.text, marginBottom: '8px' }}>Admin Dashboard</h1>
@@ -87,9 +78,9 @@ const AdminDashboard = () => {
         </Alert>
 
         {/* Dashboard Grid */}
-        <Grid container spacing={3}>
+        <Grid container spacing={1}>
           {dashboardItems.map((item, index) => (
-            <Grid item xs={12} sm={6} md={6} lg={6} key={index}>
+            <Grid item xs={12} sm={12} md={4} key={index}>
               <Card
                 sx={{
                   height: '100%',
@@ -106,31 +97,36 @@ const AdminDashboard = () => {
                 }}
               >
                 <CardHeader
-                  avatar={item.icon}
+                  avatar={<div style={{ transform: 'scale(0.6)', transformOrigin: 'left' }}>{item.icon}</div>}
                   title={item.title}
                   titleTypographyProps={{
-                    variant: 'h6',
-                    sx: { color: colors.text, fontWeight: 'bold' },
+                    variant: 'subtitle1',
+                    sx: { color: colors.text, fontWeight: 'bold', fontSize: '16px' },
                   }}
+                  sx={{ pb: 1, pt: 1.5, px: 2 }}
                 />
-                <CardContent sx={{ flexGrow: 1 }}>
+                <CardContent sx={{ flexGrow: 1, py: 0.5, px: 2 }}>
                   <p
                     style={{
                       color: colors.textSecondary,
-                      fontSize: '14px',
-                      marginBottom: '16px',
+                      fontSize: '12px',
+                      marginBottom: '8px',
+                      margin: 0,
                     }}
                   >
                     {item.description}
                   </p>
                 </CardContent>
-                <Box sx={{ p: 2 }}>
+                <Box sx={{ p: 1.5, pt: 1 }}>
                   <Button
                     variant="contained"
+                    size="small"
                     sx={{
                       backgroundColor: item.color,
                       color: 'white',
                       width: '100%',
+                      fontSize: '12px',
+                      textTransform: 'uppercase',
                       '&:hover': {
                         backgroundColor: item.color,
                         opacity: 0.9,

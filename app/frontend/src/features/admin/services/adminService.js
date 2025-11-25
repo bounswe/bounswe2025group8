@@ -18,16 +18,30 @@ export const getReports = async (reportType = 'all', status = null, page = 1) =>
     }
 
     const response = await api.get('/admin/reports/', { params });
+    const data = response.data.data || {};
+
+    // Extract reports based on report type
+    let reports = [];
+    let pagination = { page, totalPages: 1, totalItems: 0, hasNextPage: false, hasPreviousPage: false };
+
+    if (reportType === 'all') {
+      // For 'all', combine both task and user reports
+      const taskReports = data.task_reports?.reports || [];
+      const userReports = data.user_reports?.reports || [];
+      reports = [...taskReports, ...userReports];
+      pagination = data.task_reports?.pagination || pagination;
+    } else if (reportType === 'task') {
+      reports = data.task_reports?.reports || [];
+      pagination = data.task_reports?.pagination || pagination;
+    } else if (reportType === 'user') {
+      reports = data.user_reports?.reports || [];
+      pagination = data.user_reports?.pagination || pagination;
+    }
+
     return {
-      reports: response.data.results || [],
-      pagination: {
-        page,
-        totalPages: Math.ceil((response.data.count || 0) / (response.data.results?.length || 10)),
-        totalItems: response.data.count || 0,
-        hasNextPage: !!response.data.next,
-        hasPreviousPage: !!response.data.previous,
-      },
-      stats: response.data.stats || {},
+      reports,
+      pagination,
+      stats: data.statistics || {},
     };
   } catch (error) {
     console.error('Error fetching reports:', error);
@@ -95,14 +109,15 @@ export const getReportedUsers = async (page = 1) => {
     const response = await api.get('/admin/reported-users/', {
       params: { page },
     });
+    const data = response.data.data || {};
     return {
-      users: response.data.results || [],
-      pagination: {
+      users: data.users || [],
+      pagination: data.pagination || {
         page,
-        totalPages: Math.ceil((response.data.count || 0) / (response.data.results?.length || 10)),
-        totalItems: response.data.count || 0,
-        hasNextPage: !!response.data.next,
-        hasPreviousPage: !!response.data.previous,
+        totalPages: 1,
+        totalItems: 0,
+        hasNextPage: false,
+        hasPreviousPage: false,
       },
     };
   } catch (error) {
@@ -184,6 +199,21 @@ export const getAdminUserDetail = async (userId) => {
   }
 };
 
+/**
+ * Dismiss all reports against a user
+ * @param {number} userId - ID of the user
+ * @returns {Promise} Promise that resolves to dismiss result
+ */
+export const dismissUserReports = async (userId) => {
+  try {
+    const response = await api.post(`/admin/users/${userId}/dismiss-reports/`, {});
+    return response.data;
+  } catch (error) {
+    console.error(`Error dismissing user reports for user ${userId}:`, error);
+    throw error;
+  }
+};
+
 export default {
   getReports,
   getTaskReports,
@@ -194,4 +224,5 @@ export default {
   banUser,
   deleteTask,
   getAdminUserDetail,
+  dismissUserReports,
 };

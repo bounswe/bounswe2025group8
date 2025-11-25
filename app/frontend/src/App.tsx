@@ -18,6 +18,7 @@ import AdminDashboard from "./pages/Admin/AdminDashboard.jsx";
 import AdminAllRequests from "./pages/Admin/AdminAllRequests.jsx";
 import AdminTaskReports from "./pages/Admin/AdminTaskReports.jsx";
 import AdminUserReports from "./pages/Admin/AdminUserReports.jsx";
+import AdminReportedUsers from "./pages/Admin/AdminReportedUsers.jsx";
 import Notifications from './pages/Notifications.tsx';
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './contexts/ThemeContext'
@@ -56,6 +57,7 @@ function App() {
             <Route path="/admin/requests" element={<AdminAllRequests />} />
             <Route path="/admin/task-reports" element={<AdminTaskReports />} />
             <Route path="/admin/user-reports" element={<AdminUserReports />} />
+            <Route path="/admin/reported-users" element={<AdminReportedUsers />} />
           </Route>
         </Routes>
       </BrowserRouter>

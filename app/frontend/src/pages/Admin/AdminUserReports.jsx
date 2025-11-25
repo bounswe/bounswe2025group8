@@ -29,7 +29,6 @@ import {
   MenuItem,
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import EditIcon from '@mui/icons-material/Edit';
 import BlockIcon from '@mui/icons-material/Block';
 import {
   fetchUserReports,
@@ -38,6 +37,7 @@ import {
   clearError,
   clearSuccess,
 } from '../../features/admin/store/adminSlice';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const AdminUserReports = () => {
   const dispatch = useDispatch();
@@ -53,11 +53,9 @@ const AdminUserReports = () => {
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
   const statusFilter = searchParams.get('status') || null;
 
-  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [dismissDialogOpen, setDismissDialogOpen] = useState(false);
   const [banDialogOpen, setBanDialogOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
-  const [newStatus, setNewStatus] = useState('UNDER_REVIEW');
-  const [adminNotes, setAdminNotes] = useState('');
   const [banReason, setBanReason] = useState('');
 
   // Check admin access
@@ -91,11 +89,9 @@ const AdminUserReports = () => {
     setSearchParams({ page: '1', ...(status && { status }) });
   };
 
-  const handleUpdateClick = (report) => {
+  const handleDismissClick = (report) => {
     setSelectedReport(report);
-    setNewStatus(report.status);
-    setAdminNotes('');
-    setUpdateDialogOpen(true);
+    setDismissDialogOpen(true);
   };
 
   const handleBanClick = (report) => {
@@ -104,21 +100,19 @@ const AdminUserReports = () => {
     setBanDialogOpen(true);
   };
 
-  const handleUpdateConfirm = async () => {
+  const handleDismissConfirm = () => {
     if (selectedReport) {
       dispatch(
         updateReportStatusThunk({
           reportType: 'user',
           reportId: selectedReport.id,
-          status: newStatus,
-          notes: adminNotes,
+          status: 'DISMISSED',
+          notes: 'Report dismissed by admin',
         })
       );
-      setUpdateDialogOpen(false);
+      setDismissDialogOpen(false);
       setSelectedReport(null);
-      setNewStatus('UNDER_REVIEW');
-      setAdminNotes('');
-      // Refetch reports after update
+      // Refetch reports after dismiss
       setTimeout(() => {
         dispatch(fetchUserReports({ status: statusFilter, page: currentPage }));
       }, 500);
@@ -143,14 +137,8 @@ const AdminUserReports = () => {
     }
   };
 
-  const handleUpdateCancel = () => {
-    setUpdateDialogOpen(false);
-    setSelectedReport(null);
-    setNewStatus('UNDER_REVIEW');
-    setAdminNotes('');
-  };
-
-  const handleBanCancel = () => {
+  const handleDialogCancel = () => {
+    setDismissDialogOpen(false);
     setBanDialogOpen(false);
     setSelectedReport(null);
     setBanReason('');
@@ -302,23 +290,25 @@ const AdminUserReports = () => {
                             <Button
                               size="small"
                               startIcon={<VisibilityIcon />}
+                              variant="outlined"
                               onClick={() => navigate(`/profile/${report.user.id}`)}
                             >
-                              View Profile
+                              View
                             </Button>
                           )}
                           <Button
                             size="small"
-                            color="primary"
-                            startIcon={<EditIcon />}
-                            onClick={() => handleUpdateClick(report)}
+                            color="warning"
+                            variant="outlined"
+                            onClick={() => handleDismissClick(report)}
                           >
-                            Update
+                            Dismiss
                           </Button>
                           {report.user && (
                             <Button
                               size="small"
                               color="error"
+                              variant="outlined"
                               startIcon={<BlockIcon />}
                               onClick={() => handleBanClick(report)}
                             >
@@ -348,9 +338,9 @@ const AdminUserReports = () => {
         )}
       </Container>
 
-      {/* Update Dialog */}
-      <Dialog open={updateDialogOpen} onClose={handleUpdateCancel} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ color: colors.text }}>Update Report Status</DialogTitle>
+      {/* Dismiss Dialog */}
+      <Dialog open={dismissDialogOpen} onClose={handleDialogCancel} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ color: colors.text }}>Dismiss Report</DialogTitle>
         <DialogContent>
           {selectedReport && (
             <Box sx={{ mb: 2 }}>
@@ -362,9 +352,6 @@ const AdminUserReports = () => {
                     : 'User Deleted'}
                 </p>
                 <p>
-                  <strong>Current Status:</strong> {selectedReport.status}
-                </p>
-                <p>
                   <strong>Report Type:</strong> {selectedReport.report_type}
                 </p>
                 {selectedReport.description && (
@@ -372,58 +359,28 @@ const AdminUserReports = () => {
                     <strong>Description:</strong> {selectedReport.description}
                   </p>
                 )}
+                <p style={{ marginTop: '16px', fontStyle: 'italic', color: colors.textSecondary }}>
+                  This report will be marked as dismissed.
+                </p>
               </div>
             </Box>
           )}
-
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>New Status</InputLabel>
-            <Select
-              value={newStatus}
-              label="New Status"
-              onChange={(e) => setNewStatus(e.target.value)}
-              sx={{ backgroundColor: colors.card, color: colors.text }}
-            >
-              <MenuItem value="UNDER_REVIEW">Under Review</MenuItem>
-              <MenuItem value="RESOLVED">Resolved</MenuItem>
-              <MenuItem value="DISMISSED">Dismissed</MenuItem>
-            </Select>
-          </FormControl>
-
-          <TextField
-            fullWidth
-            multiline
-            rows={3}
-            label="Admin Notes"
-            value={adminNotes}
-            onChange={(e) => setAdminNotes(e.target.value)}
-            placeholder="Add your notes about this report..."
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                color: colors.text,
-              },
-              '& .MuiInputBase-input::placeholder': {
-                color: colors.textSecondary,
-                opacity: 0.7,
-              },
-            }}
-          />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleUpdateCancel}>Cancel</Button>
+          <Button onClick={handleDialogCancel}>Cancel</Button>
           <Button
-            onClick={handleUpdateConfirm}
-            color="primary"
+            onClick={handleDismissConfirm}
+            color="warning"
             variant="contained"
             disabled={actionLoading}
           >
-            {actionLoading ? <CircularProgress size={24} /> : 'Update'}
+            {actionLoading ? <CircularProgress size={24} /> : 'Dismiss Report'}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Ban Dialog */}
-      <Dialog open={banDialogOpen} onClose={handleBanCancel} maxWidth="sm" fullWidth>
+      <Dialog open={banDialogOpen} onClose={handleDialogCancel} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ color: colors.text }}>Ban User</DialogTitle>
         <DialogContent>
           {selectedReport && selectedReport.user && (
@@ -464,7 +421,7 @@ const AdminUserReports = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleBanCancel}>Cancel</Button>
+          <Button onClick={handleDialogCancel}>Cancel</Button>
           <Button
             onClick={handleBanConfirm}
             color="error"
