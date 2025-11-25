@@ -17,7 +17,7 @@ interface Props {
   onFocus?: () => void;
 }
 
-const TABS = ['Categories', 'Requests', 'Profiles', 'Locations'] as const;
+const TABS = ['Category', 'Request', 'Profile', 'Location'] as const;
 const URGENCY_LEVELS = ['All', 'High', 'Medium', 'Low'] as const;
 
 export default function SearchBarWithResults({
@@ -28,7 +28,7 @@ export default function SearchBarWithResults({
   onSelect,
   onFocus,
 }: Props) {
-  const [tab, setTab] = useState<typeof TABS[number]>('Categories');
+  const [tab, setTab] = useState<typeof TABS[number]>('Category');
   const [search, setSearch] = useState('');
   const [urgency, setUrgency] = useState<typeof URGENCY_LEVELS[number]>('All');
   const [sortAsc, setSortAsc] = useState(true);
@@ -45,11 +45,11 @@ export default function SearchBarWithResults({
   }
 
   let filtered: (Category | Request | Profile | Location)[] = [];
-  if (tab === 'Categories') {
+  if (tab === 'Category') {
     filtered = sortByName(
       categories.filter((cat) => cat.title.toLowerCase().includes(lowerSearch))
     );
-  } else if (tab === 'Requests') {
+  } else if (tab === 'Request') {
     filtered = sortByName(
       requests.filter((req) => {
         const matches = req.title.toLowerCase().includes(lowerSearch);
@@ -57,11 +57,11 @@ export default function SearchBarWithResults({
         return matches && urgencyMatch;
       })
     );
-  } else if (tab === 'Profiles') {
+  } else if (tab === 'Profile') {
     filtered = sortByName(
       profiles.filter((profile) => profile.name.toLowerCase().includes(lowerSearch))
     );
-  } else if (tab === 'Locations') {
+  } else if (tab === 'Location') {
     filtered = sortByName(
       locations.filter((loc) => locationMatches(loc.title, lowerSearch))
     );
@@ -93,7 +93,7 @@ export default function SearchBarWithResults({
           </TouchableOpacity>
         ))}
       </View>
-      {tab === 'Requests' && (
+      {tab === 'Request' && (
         <View style={styles.urgencyRow}>
           {URGENCY_LEVELS.map((level) => (
             <TouchableOpacity
@@ -131,16 +131,16 @@ export default function SearchBarWithResults({
             ]}
             onPress={() => onSelect && onSelect(item, tab)}
           >
-            {(tab === 'Categories' || tab === 'Profiles' || tab === 'Locations') && (
+            {(tab === 'Category' || tab === 'Profile' || tab === 'Location') && (
               <Image
                 source={
-                  tab === 'Profiles'
+                  tab === 'Profile'
                     ? ((item as Profile).image || require('../../assets/images/empty_profile_photo.png'))
-                    : tab === 'Categories'
-                    ? ((item as Category).image || require('../../assets/images/help.png'))
-                    : ((item as Location).image || require('../../assets/images/help.png'))
+                    : tab === 'Category'
+                      ? ((item as Category).image || require('../../assets/images/help.png'))
+                      : ((item as Location).image || require('../../assets/images/help.png'))
                 }
-                style={{ width: 36, height: 36, borderRadius: tab === 'Profiles' ? 18 : 8, marginRight: 12, backgroundColor: colors.border }}
+                style={{ width: 36, height: 36, borderRadius: tab === 'Profile' ? 18 : 8, marginRight: 12, backgroundColor: colors.border }}
               />
             )}
             <View style={{ flex: 1 }}>
@@ -151,7 +151,7 @@ export default function SearchBarWithResults({
                 <Text style={[styles.resultMeta, { color: colors.text }]}>{item.urgency} urgency</Text>
               )}
               {'count' in item && (
-                <Text style={[styles.resultMeta, { color: colors.text }]}>{item.count} {tab === 'Locations' ? 'requests' : 'requests'}</Text>
+                <Text style={[styles.resultMeta, { color: colors.text }]}>{item.count} {tab === 'Location' ? 'requests' : 'requests'}</Text>
               )}
               {'meta' in item && item.meta && (
                 <Text style={[styles.resultMeta, { color: colors.text }]}>{item.meta}</Text>
