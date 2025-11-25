@@ -3,6 +3,11 @@
 # On Apple Silicon, this runs in emulation. On Windows/Linux x64, this runs natively.
 FROM --platform=linux/amd64 node:20-bookworm
 
+# Build argument to control mode: "dev" for Expo dev server, "build" for APK build
+ARG BUILD_MODE=dev
+# Convert ARG to ENV so it's available at runtime
+ENV BUILD_MODE=${BUILD_MODE}
+
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ANDROID_HOME=/opt/android-sdk
@@ -46,36 +51,37 @@ COPY . .
 # Create .env file from example if it doesn't exist
 RUN if [ -f .env.example ]; then cp .env.example .env; fi
 
-# Run prebuild to generate Android native code
-RUN npx expo prebuild --platform android --no-install
+# Conditional steps: Only run prebuild and APK build if BUILD_MODE=build
+# For dev mode, we skip these steps to speed up startup
+RUN if [ "$BUILD_MODE" = "build" ]; then \
+        npx expo prebuild --platform android --no-install && \
+        keytool -genkey -v \
+            -keystore my-release-key.keystore \
+            -alias my-key-alias \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -dname "CN=Android Release,O=Android,C=US" \
+            -storepass password \
+            -keypass password && \
+        echo "" >> android/gradle.properties && \
+        echo "MYAPP_UPLOAD_STORE_FILE=../../my-release-key.keystore" >> android/gradle.properties && \
+        echo "MYAPP_UPLOAD_KEY_ALIAS=my-key-alias" >> android/gradle.properties && \
+        echo "MYAPP_UPLOAD_STORE_PASSWORD=password" >> android/gradle.properties && \
+        echo "MYAPP_UPLOAD_KEY_PASSWORD=password" >> android/gradle.properties && \
+        cd android && \
+        chmod +x ./gradlew && \
+        ./gradlew assembleRelease -x lint -x lintVitalRelease && \
+        cd ..; \
+    fi
 
-# Generate a release keystore for signing
-RUN keytool -genkey -v \
-    -keystore my-release-key.keystore \
-    -alias my-key-alias \
-    -keyalg RSA \
-    -keysize 2048 \
-    -validity 10000 \
-    -dname "CN=Android Release,O=Android,C=US" \
-    -storepass password \
-    -keypass password
+# Expose Expo dev server port
+EXPOSE 8081
 
-# Configure Gradle to use the generated keystore for signing
-RUN echo "" >> android/gradle.properties && \
-    echo "MYAPP_UPLOAD_STORE_FILE=../../my-release-key.keystore" >> android/gradle.properties && \
-    echo "MYAPP_UPLOAD_KEY_ALIAS=my-key-alias" >> android/gradle.properties && \
-    echo "MYAPP_UPLOAD_STORE_PASSWORD=password" >> android/gradle.properties && \
-    echo "MYAPP_UPLOAD_KEY_PASSWORD=password" >> android/gradle.properties
-
-# Build the APK using Gradle
-WORKDIR /app/android
-# Use chmod to ensure gradlew is executable
-RUN chmod +x ./gradlew
-# Skip linting tasks to prevent build failures on minor warnings (common in release builds)
-RUN ./gradlew assembleRelease -x lint -x lintVitalRelease
-
-# Reset workdir
+# Set working directory
 WORKDIR /app
 
-# Command to copy the APK
-CMD ["sh", "-c", "cp android/app/build/outputs/apk/release/app-release.apk /output/app-release.apk || echo 'Build failed or file not found'"]
+# Conditional CMD based on BUILD_MODE
+# For dev mode: run Expo dev server (accessible from host machine)
+# For build mode: copy APK to output directory
+CMD ["sh", "-c", "if [ \"$BUILD_MODE\" = \"build\" ]; then cp android/app/build/outputs/apk/release/app-release.apk /output/app-release.apk || echo 'Build failed or file not found'; else npx expo start --host 0.0.0.0; fi"]
