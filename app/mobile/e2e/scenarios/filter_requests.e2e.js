@@ -131,7 +131,7 @@ describe('Filter Requests by Category', () => {
         await waitFor(element(by.text(`Grocery Shopping Request ${timestamp}`)))
             .toBeVisible()
             .whileElement(by.id('category-requests-scrollview'))
-            .scroll(800, 'down');
+            .scroll(500, 'down');
 
         // 6. Tap Request
         await element(by.text(`Grocery Shopping Request ${timestamp}`)).tap();

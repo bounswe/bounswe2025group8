@@ -39,31 +39,87 @@ describe('Location Display', () => {
         // Verify Feed
         await expect(element(by.id('feed-search-bar'))).toBeVisible();
 
-        // 2. Create a Request with specific location
-        await element(by.text('Create')).tap();
-        await element(by.id('create-request-title-input')).typeText('Location Test Request');
-        await element(by.id('create-request-description-input')).typeText('Testing location display.');
+        // 2. Navigate to Create Request
+        // The "Create" tab is the 3rd tab (index 2) or we can find by text "Create"
+        await element(by.id('tab-create')).tap();
+
+        // 3. Fill General Info
+        await expect(element(by.id('create-request-title-input'))).toBeVisible();
+        await element(by.id('create-request-title-input')).typeText(`Volunteer Test Request ${timestamp}`);
+        await element(by.id('create-request-description-input')).typeText('This is a test request description.');
+
+        // Select Category (optional, let's keep default)
+        // Select Urgency (optional, let's keep default)
+
+        await element(by.text('General Information')).tap();
         await element(by.id('create-request-next-button')).tap();
+
+        // 4. Upload Photo Screen
+        await expect(element(by.id('upload-photo-next-button'))).toBeVisible();
         await element(by.id('upload-photo-next-button')).tap();
+
+        // 5. Deadline Screen
+        await expect(element(by.text('Determine Deadline'))).toBeVisible();
+
+        // Select Date/Time: Next Day (Test Helper)
+        await element(by.id('set-next-day-button')).tap();
+
         await element(by.id('deadline-next-button')).tap();
 
-        // Address
+        // 6. Address Screen
+        await expect(element(by.id('address-city-selector'))).toBeVisible();
+
+        // Select City
+        // Select City
         await element(by.id('address-city-selector')).tap();
-        try { await element(by.text('İstanbul')).tap(); } catch (e) { }
+        await waitFor(element(by.text('Adana')))
+            .toBeVisible()
+            .whileElement(by.id('address-picker-scrollview'))
+            .scroll(500, 'down');
+        await element(by.text('Adana')).tap();
+
+        // Select District
         await element(by.id('address-district-selector')).tap();
-        try { await element(by.text('Kadıköy')).tap(); } catch (e) { }
+        await waitFor(element(by.text('Kozan')))
+            .toBeVisible()
+            .whileElement(by.id('address-picker-scrollview'))
+            .scroll(500, 'down');
+        await element(by.text('Kozan')).tap();
+
+        // Select Neighborhood
         await element(by.id('address-neighborhood-selector')).tap();
-        try { await element(by.text('Caferağa Mh.')).tap(); } catch (e) { }
-        await element(by.id('address-street-input')).typeText('Loc St.');
-        await element(by.id('address-building-input')).typeText('5');
-        await element(by.id('address-door-input')).typeText('2');
+        await waitFor(element(by.text('Gazi Mah')))
+            .toBeVisible()
+            .whileElement(by.id('address-picker-scrollview'))
+            .scroll(500, 'down');
+        await element(by.text('Gazi Mah')).tap();
+
+        // Fill details
+        await element(by.id('address-street-input')).typeText('Moda Cd.');
+        await element(by.text('Setup Address')).tap();
+        await element(by.id('address-building-input')).typeText('10');
+        await element(by.text('Setup Address')).tap();
+        await element(by.id('address-door-input')).typeText('5');
+        await element(by.text('Setup Address')).tap();
+        await element(by.id('address-description-input')).typeText('Near the park');
+
+        // 7. Submit
+        await element(by.text('Setup Address')).tap();
         await element(by.id('create-request-submit-button')).tap();
+
+        // 8. Verify Success
+        await expect(element(by.text('Success'))).toBeVisible();
         await element(by.text('OK')).tap();
+
 
         // 3. Find the request in Feed/Requests
         // It should be the top one in Requests tab
         await element(by.id('tab-requests')).tap();
-        await element(by.text('Location Test Request')).tap();
+        await waitFor(element(by.text(`Volunteer Test Request ${timestamp}`)))
+            .toBeVisible()
+            .whileElement(by.id('requests-list'))
+            .scroll(500, 'down');
+        await element(by.text(`Volunteer Test Request ${timestamp}`)).tap();
 
         // 4. Verify Location Display
         await expect(element(by.id('location-display'))).toBeVisible();
@@ -82,6 +138,7 @@ describe('Location Display', () => {
         // But we don't know the exact format without checking backend response.
         // Let's just check if `location-display` is visible, which confirms the row is there.
         // And maybe check if "İstanbul" is visible on screen.
-        await expect(element(by.text('İstanbul')).atIndex(0)).toBeVisible();
+        const expectedAddress = 'Moda Cd., 10 5, Gazi Mah, Kozan, Adana';
+        await expect(element(by.text(expectedAddress))).toBeVisible();
     });
 });

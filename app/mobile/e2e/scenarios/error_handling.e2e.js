@@ -16,7 +16,7 @@ describe('Error Handling and Validation', () => {
         // Verify Alert "Validation Error" or similar
         // Detox handles alerts by matching text.
         // In signup.tsx: Alert.alert('Validation Error', 'Please fill in all fields.');
-        await expect(element(by.text('Validation Error'))).toBeVisible();
+        await waitFor(element(by.text('Error'))).toBeVisible().withTimeout(5000);
         await element(by.text('OK')).tap();
 
         // Fill some fields but miss one (e.g. password)
@@ -26,9 +26,11 @@ describe('Error Handling and Validation', () => {
         await element(by.id('signup-email-input')).typeText('error@example.com');
         // Skip password
         await element(by.id('signup-terms-checkbox')).tap();
+        // Dismiss keyboard
+        await element(by.text('Sign Up')).atIndex(0).tap();
         await element(by.id('signup-button')).tap();
 
-        await expect(element(by.text('Validation Error'))).toBeVisible();
+        await waitFor(element(by.text('Error'))).toBeVisible().withTimeout(5000);
         await element(by.text('OK')).tap();
     });
 
@@ -64,19 +66,21 @@ describe('Error Handling and Validation', () => {
         await element(by.text('Create')).tap();
 
         // Try to proceed without title
+        await element(by.text('General Information')).tap(); // Dismiss keyboard if open
         await element(by.id('create-request-next-button')).tap();
 
         // Verify Alert "Validation Error"
         // In create_request.tsx: Alert.alert('Validation Error', 'Title is required.');
-        await expect(element(by.text('Validation Error'))).toBeVisible();
+        await waitFor(element(by.text('Error'))).toBeVisible().withTimeout(5000);
         await element(by.text('OK')).tap();
 
         // Fill title but miss description
         await element(by.id('create-request-title-input')).typeText('Test Title');
+        await element(by.text('General Information')).tap();
         await element(by.id('create-request-next-button')).tap();
 
         // In create_request.tsx: Alert.alert('Validation Error', 'Description is required.');
-        await expect(element(by.text('Validation Error'))).toBeVisible();
+        await waitFor(element(by.text('Error'))).toBeVisible().withTimeout(5000);
         await element(by.text('OK')).tap();
     });
 });

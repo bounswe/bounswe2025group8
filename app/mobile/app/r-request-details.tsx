@@ -576,7 +576,7 @@ export default function RequestDetails() {
           </Text>
         </View>
       </View>
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 40 }} testID="request-details-scroll-view">
         {/* Show first photo as hero image if available, otherwise show default */}
         {photos.length > 0 && !photosLoading ? (
           <>
@@ -645,7 +645,7 @@ export default function RequestDetails() {
         <View style={[styles.section, { backgroundColor: themeColors.card }]}>
           <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Details</Text>
           <DetailRow label="Date & Time" value={datetime} themeColors={themeColors} />
-          <DetailRow label="Location" value={locationDisplay} themeColors={themeColors} />
+          <DetailRow label="Location" value={locationDisplay} themeColors={themeColors} testID="location-display" />
           <DetailRow label="People Needed" value={`${requiredPerson} volunteer(s)`} themeColors={themeColors} />
         </View>
         <View style={[styles.section, { backgroundColor: themeColors.card }]}>

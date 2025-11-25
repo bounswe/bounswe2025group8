@@ -140,7 +140,7 @@ describe('Volunteer for a Request', () => {
         await waitFor(element(by.text(`Volunteer Test Request ${timestamp}`)))
             .toBeVisible()
             .whileElement(by.id('requests-list'))
-            .scroll(800, 'down');
+            .scroll(500, 'down');
 
         await element(by.text(`Volunteer Test Request ${timestamp}`)).tap();
 
