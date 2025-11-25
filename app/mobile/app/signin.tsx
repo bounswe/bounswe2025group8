@@ -30,6 +30,8 @@ export default function SignIn() {
   const [remember, setRemember] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { setUser } = useAuth();
+  const [emailFocused, setEmailFocused] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -42,13 +44,13 @@ export default function SignIn() {
       console.log('Attempting login with:', { email });
       const response = await login(email, password);
       console.log('Login successful:', response);
-      
+
       // The login function already fetches and stores the user profile
       // Just set the user in auth context and navigate
       if (response.data?.user_id) {
         await setUser({ id: response.data.user_id, email });
       }
-      
+
       // Navigate to feed
       router.replace('/feed');
     } catch (error: any) {
@@ -75,18 +77,35 @@ export default function SignIn() {
         style={styles.keyboardAvoidingView}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <TouchableOpacity style={styles.backButton} onPress={() => {
-            if (router.canGoBack()) {
-              router.back();
-            } else {
-              router.replace('/');}
+          <TouchableOpacity
+            style={styles.backButton}
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace('/');
+              }
             }
             }>
-            <Ionicons name="arrow-back" size={24} color={colors.primary} />
+            <Ionicons
+              name="arrow-back"
+              size={24}
+              color={colors.primary}
+              accessible={false}
+              importantForAccessibility="no"
+            />
             <Text style={[styles.backText, { color: colors.primary }]}>Back</Text>
           </TouchableOpacity>
 
-          <Image source={require('../assets/images/logo.png')} style={styles.logo} />
+          <Image
+            source={require('../assets/images/logo.png')}
+            style={styles.logo}
+            accessibilityRole="image"
+            accessibilityLabel="AccessEase logo"
+          />
 
           <Text style={[styles.title, { color: colors.primary }]}>Welcome Back!</Text>
           <Text style={[styles.subtitle, { color: colors.text }]}>
@@ -95,42 +114,106 @@ export default function SignIn() {
 
           <View style={styles.inputContainer}>
             <View style={[styles.inputWrapper, { borderColor: colors.border }]}>
-              <Ionicons name="mail-outline" size={20} color={colors.text} style={styles.inputIcon} />
-              <TextInput
-                style={[styles.input, { color: colors.text }]}
-                placeholder="Email"
-                placeholderTextColor={colors.text + '80'}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                editable={!isLoading}
+              <Ionicons
+                name="mail-outline"
+                size={20}
+                color={colors.text}
+                style={styles.inputIcon}
+                accessible={false}
+                importantForAccessibility="no"
               />
+              <View style={styles.inputField}>
+                {!email && !emailFocused && (
+                  <Text
+                    style={[styles.customPlaceholder, { color: colors.text + '80' }]}
+                    accessible={false}
+                    importantForAccessibility="no"
+                    pointerEvents="none"
+                  >
+                    Email
+                  </Text>
+                )}
+                <TextInput
+                  style={[styles.input, { color: colors.text }]}
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  editable={!isLoading}
+                  accessibilityLabel="Email address input"
+                  accessibilityValue={{ text: email || '' }}
+                  onFocus={() => setEmailFocused(true)}
+                  onBlur={() => setEmailFocused(false)}
+                  testID="signin-email-input"
+                />
+              </View>
             </View>
 
             <View style={[styles.inputWrapper, { borderColor: colors.border }]}>
-              <Ionicons name="lock-closed-outline" size={20} color={colors.text} style={styles.inputIcon} />
-              <TextInput
-                style={[styles.input, { color: colors.text }]}
-                placeholder="Password"
-                placeholderTextColor={colors.text + '80'}
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={!showPwd}
-                editable={!isLoading}
+              <Ionicons
+                name="lock-closed-outline"
+                size={20}
+                color={colors.text}
+                style={styles.inputIcon}
+                accessible={false}
+                importantForAccessibility="no"
               />
-              <TouchableOpacity onPress={() => setShowPwd(!showPwd)}>
+              <View style={styles.inputField}>
+                {!password && !passwordFocused && (
+                  <Text
+                    style={[styles.customPlaceholder, { color: colors.text + '80' }]}
+                    accessible={false}
+                    importantForAccessibility="no"
+                    pointerEvents="none"
+                  >
+                    Password
+                  </Text>
+                )}
+                <TextInput
+                  style={[styles.input, { color: colors.text }]}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPwd}
+                  editable={!isLoading}
+                  accessibilityLabel="Password input"
+                  accessibilityValue={{
+                    text: password
+                      ? showPwd
+                        ? password
+                        : 'Password entered'
+                      : '',
+                  }}
+                  onFocus={() => setPasswordFocused(true)}
+                  onBlur={() => setPasswordFocused(false)}
+                  testID="signin-password-input"
+                />
+              </View>
+              <TouchableOpacity
+                onPress={() => setShowPwd(!showPwd)}
+                accessible
+
+                accessibilityRole="button"
+                accessibilityLabel={showPwd ? 'Hide password' : 'Show password'}
+              >
                 <Ionicons
                   name={showPwd ? 'eye-off-outline' : 'eye-outline'}
                   size={20}
                   color={colors.text}
+                  accessible={false}
+                  importantForAccessibility="no"
                 />
               </TouchableOpacity>
             </View>
           </View>
 
           <View style={styles.forgotPasswordContainer}>
-            <TouchableOpacity onPress={() => router.push('/forgot-password')}>
+            <TouchableOpacity
+              onPress={() => router.push('/forgot-password')}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Forgot Password"
+            >
               <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>
                 Forgot Password?
               </Text>
@@ -141,6 +224,12 @@ export default function SignIn() {
             style={[styles.button, { backgroundColor: colors.primary }]}
             onPress={handleLogin}
             disabled={isLoading}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Sign in"
+            accessibilityState={{ disabled: isLoading }}
+            testID="signin-button"
           >
             <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
               {isLoading ? 'Signing in...' : 'Sign In'}
@@ -149,7 +238,13 @@ export default function SignIn() {
 
           <View style={styles.signupContainer}>
             <Text style={[styles.signupText, { color: colors.text }]}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => router.replace('/signup')}>
+            <TouchableOpacity
+              onPress={() => router.replace('/signup')}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Go to Sign Up"
+            >
               <Text style={[styles.signupLink, { color: colors.primary }]}>Sign Up</Text>
             </TouchableOpacity>
           </View>
@@ -186,7 +281,7 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 20, textAlign: 'auto'
   },
-    title: {
+  title: {
     fontSize: 32,
     fontWeight: '700',
   },
@@ -203,12 +298,23 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingBottom: 4,
   },
-    input: {
+  input: {
     flex: 1,
     marginLeft: 8,
     height: 40,
   },
-    rememberWrapper: {
+  inputField: {
+    flex: 1,
+    position: 'relative',
+    justifyContent: 'center',
+  },
+  customPlaceholder: {
+    position: 'absolute',
+    left: 8,
+    right: 0,
+    fontSize: 14,
+  },
+  rememberWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 24,
@@ -226,19 +332,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-    forgotText: {
+  forgotText: {
     textAlign: 'center',
     fontSize: 14,
     marginBottom: 144,
   },
-    signupPrompt: {
+  signupPrompt: {
     flexDirection: 'row',
     justifyContent: 'center',
   },
-    promptText: {
+  promptText: {
     fontSize: 14,
   },
-    promptLink: {
+  promptLink: {
     fontSize: 14,
     fontWeight: '500',
   },

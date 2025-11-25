@@ -30,6 +30,11 @@ export default function Index() {
             { backgroundColor: colors.primary },
           ]}
           onPress={() => router.push('/signin')}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Go to login"
+          testID="landing-login-button"
         >
           <Text style={[styles.primaryText, { color: colors.onPrimary }]}>Login</Text>
         </TouchableOpacity>
@@ -41,6 +46,11 @@ export default function Index() {
             { borderColor: colors.primary },
           ]}
           onPress={() => router.push('/signup')}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Register a new account"
+          testID="landing-register-button"
         >
           <Text style={[styles.secondaryText, { color: colors.primary }]}>
             Register
@@ -52,7 +62,13 @@ export default function Index() {
       <Text style={[styles.orText, { color: colors.text }]}>OR</Text>
 
       {/* Continue as guest */}
-      <TouchableOpacity onPress={() => router.push('/feed')}>
+      <TouchableOpacity
+        onPress={() => router.push('/feed')}
+        accessible
+
+        accessibilityRole="button"
+        accessibilityLabel="Continue as guest"
+      >
         <Text style={[styles.guestLink, { color: colors.primary }]}>
           Continue as a guest
         </Text>
@@ -123,8 +139,8 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
   guestLink: {
-      marginTop: 16,
-      fontSize: 14,
-      textAlign: 'center',
-    },
+    marginTop: 16,
+    fontSize: 14,
+    textAlign: 'center',
+  },
 });

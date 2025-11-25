@@ -7,6 +7,7 @@ import { useTheme } from '@react-navigation/native';
 
 export default function CRUploadPhoto() {
   const { colors } = useTheme();
+  const themeColors = colors as any;
   const router = useRouter();
   const params = useLocalSearchParams();
   const [photos, setPhotos] = useState<{ uri: string; name: string }[]>([]);
@@ -47,18 +48,38 @@ export default function CRUploadPhoto() {
             <Image source={require('../assets/images/logo.png')} style={{ width: 28, height: 28, resizeMode: 'contain' }} />
           </View>
           <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => router.push('/notifications')} style={{ marginRight: 16 }}>
-              <Ionicons name="notifications-outline" size={24} color={colors.text} />
+            <TouchableOpacity
+              onPress={() => router.push('/notifications')}
+              style={{ marginRight: 16 }}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Open notifications"
+            >
+              <Ionicons name="notifications-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/settings')}>
-              <Ionicons name="settings-outline" size={24} color={colors.text} />
+            <TouchableOpacity
+              onPress={() => router.push('/settings')}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Open settings"
+            >
+              <Ionicons name="settings-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={styles.titleRow}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => router.back()}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <Ionicons name="arrow-back" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
           </TouchableOpacity>
           <Text style={[styles.pageTitle, { color: colors.text }]}>Create Request</Text>
         </View>
@@ -78,6 +99,12 @@ export default function CRUploadPhoto() {
           ]}
           onPress={pickImage}
           disabled={photos.length >= MAX_PHOTOS}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Browse photos"
+          accessibilityState={{ disabled: photos.length >= MAX_PHOTOS }}
+          testID="create-request-browse-photos"
         >
           <Text style={[styles.browseBtnText, { color: colors.primary }]}>+ Browse photos</Text>
         </TouchableOpacity>
@@ -90,6 +117,10 @@ export default function CRUploadPhoto() {
             <TouchableOpacity
               style={[styles.removeBtn, { borderColor: `${colors.primary}66` }]}
               onPress={() => removePhoto(photo.name)}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel={`Remove photo ${photo.name}`}
             >
               <Text style={[styles.removeBtnText, { color: colors.primary }]}>× {photo.name}</Text>
             </TouchableOpacity>
@@ -109,8 +140,13 @@ export default function CRUploadPhoto() {
               },
             });
           }}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Next step set deadline"
+          testID="create-request-upload-next-button"
         >
-          <Text style={[styles.nextBtnText, { color: colors.onPrimary }]}>Next</Text>
+          <Text style={[styles.nextBtnText, { color: themeColors.onPrimary }]}>Next</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

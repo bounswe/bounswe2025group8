@@ -77,8 +77,21 @@ export default function Settings() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
       <View style={[styles.headerBar, { borderBottomColor: themeColors.border }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={themeColors.text} />
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <Ionicons
+            name="arrow-back"
+            size={24}
+            color={themeColors.text}
+            accessible={false}
+            importantForAccessibility="no"
+          />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: themeColors.text }]}>Settings</Text>
         <View style={{ width: 24 }} />
@@ -107,7 +120,6 @@ export default function Settings() {
                   accessibilityRole="radio"
                   accessibilityState={{ checked: isActive }}
                   accessibilityLabel={option.label}
-                  accessibilityHint={option.description}
                   activeOpacity={0.9}
                 >
                   <View style={styles.themeOptionText}>
@@ -120,6 +132,8 @@ export default function Settings() {
                     name={isActive ? 'checkmark-circle' : 'ellipse-outline'}
                     size={22}
                     color={isActive ? themeColors.primary : themeColors.icon}
+                    accessible={false}
+                    importantForAccessibility="no"
                   />
                 </TouchableOpacity>
               );
@@ -130,8 +144,19 @@ export default function Settings() {
         <TouchableOpacity
           style={[styles.logoutButton, { backgroundColor: themeColors.error, borderColor: themeColors.error }]}
           onPress={handleLogout}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Logout"
+          testID="settings-logout-button"
         >
-          <Ionicons name="log-out-outline" size={22} color={themeColors.card} />
+          <Ionicons
+            name="log-out-outline"
+            size={22}
+            color={themeColors.card}
+            accessible={false}
+            importantForAccessibility="no"
+          />
           <Text style={[styles.logoutText, { color: themeColors.card }]}>Logout</Text>
         </TouchableOpacity>
       </View>

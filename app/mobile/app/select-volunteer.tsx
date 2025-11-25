@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, FlatList, 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
-import { getTaskApplicants, Volunteer, batchAssignVolunteers } from '../lib/api';
+import { getTaskApplicants, Volunteer, batchAssignVolunteers, BACKEND_BASE_URL } from '../lib/api';
 import type { ThemeTokens } from '../constants/Colors';
 
 export default function SelectVolunteer() {
@@ -143,9 +143,21 @@ export default function SelectVolunteer() {
                     onPress={() => {
                         router.push({ pathname: '/profile', params: { userId: String(item.user.id) } });
                     }}
+                    accessible
+
+                    accessibilityRole="button"
+                    accessibilityLabel={`View profile for ${item.user.name} ${item.user.surname}`}
                 >
                     <Image
-                        source={item.user.photo ? { uri: item.user.photo } : require('../assets/images/avatar.png')}
+                        source={
+                            item.user.profile_photo || item.user.photo
+                                ? {
+                                    uri: (item.user.profile_photo || item.user.photo).startsWith('http')
+                                        ? item.user.profile_photo || item.user.photo
+                                        : `${BACKEND_BASE_URL}${item.user.profile_photo || item.user.photo}`,
+                                }
+                                : require('../assets/images/avatar.png')
+                        }
                         style={[styles.avatar, { backgroundColor: themeColors.border }]}
                     />
                     <View style={styles.volunteerTextContainer}>
@@ -177,6 +189,11 @@ export default function SelectVolunteer() {
                     ]}
                     onPress={() => toggleSelectApplicant(item)}
                     disabled={!isSelected && !canSelectMore}
+                    accessible
+
+                    accessibilityRole="button"
+                    accessibilityLabel={`${isSelected ? 'Deselect' : 'Select'} ${item.user.name}`}
+                    accessibilityState={{ selected: isSelected, disabled: !isSelected && !canSelectMore }}
                 >
                     <Ionicons 
                         name={isSelected ? "checkmark-circle" : "ellipse-outline"} 
@@ -204,6 +221,10 @@ export default function SelectVolunteer() {
                 <TouchableOpacity
                     onPress={() => router.back()}
                     style={[styles.actionButton, { backgroundColor: themeColors.primary }]}
+                    accessible
+
+                    accessibilityRole="button"
+                    accessibilityLabel="Go back"
                 >
                     <Text style={[styles.buttonText, { color: themeColors.onPrimary }]}>Go Back</Text>
                 </TouchableOpacity>
@@ -214,8 +235,15 @@ export default function SelectVolunteer() {
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background }}>
             <View style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border, borderBottomWidth: 1 }]}>
-                <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/feed')} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color={themeColors.text} />
+                <TouchableOpacity
+                  onPress={() => router.canGoBack() ? router.back() : router.replace('/feed')}
+                  style={styles.backButton}
+                  accessible
+
+                  accessibilityRole="button"
+                  accessibilityLabel="Go back"
+                >
+                    <Ionicons name="arrow-back" size={24} color={themeColors.text}  accessible={false} importantForAccessibility="no"/>
                 </TouchableOpacity>
                 <Text style={[styles.title, { color: themeColors.text }]}>Select Volunteers</Text>
                 <View style={{width: 24}} />{/* Spacer */}
@@ -254,6 +282,11 @@ export default function SelectVolunteer() {
                     ]}
                     onPress={handleConfirmAssignment}
                     disabled={selectedApplicants.length === 0 || isAssigning}
+                    accessible
+
+                    accessibilityRole="button"
+                    accessibilityLabel="Confirm volunteer assignment"
+                    accessibilityState={{ disabled: selectedApplicants.length === 0 || isAssigning }}
                 >
                     {isAssigning ? (
                         <ActivityIndicator color={themeColors.onPrimary} />

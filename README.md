@@ -208,23 +208,10 @@ The mobile application is built with **React Native** and **Expo**, providing na
 
 ### Prerequisites
 
-Before you begin, ensure you have the following installed on your system:
+- **Docker**: Version 20.x or higher (for containerized deployment).
+- **Node.js** & **npm**: Optional, for local non-Docker development.
 
-- **Node.js**: Version 18.x or higher (LTS recommended)
-- **npm**: Version 10.x or higher (comes with Node.js)
-- **Expo CLI**: Installed globally via npm
-- **Expo Go App**: For testing on physical devices
-  - [iOS App Store](https://apps.apple.com/app/expo-go/id982107779)
-  - [Google Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent)
-- **iOS Simulator** (Mac only) or **Android Studio** (for Android Emulator)
-
-You can verify your installations by running:
-
-```bash
-node --version
-npm --version
-npx expo --version
-```
+*Note: The provided Docker setup forces `linux/amd64` architecture to ensure compatibility with Android SDK tools. This works natively on Windows/Linux x86 systems. On Apple Silicon Macs, it will use emulation.*
 
 ### Technology Stack
 
@@ -232,163 +219,118 @@ npx expo --version
 - **Expo SDK 54**: Development platform and tooling
 - **Expo Router 6.x**: File-based routing system
 - **TypeScript 5.9**: Type-safe development
-- **React Navigation 7.x**: Navigation library
-- **Axios**: HTTP client for API communication
-- **AsyncStorage**: Local data persistence
-- **Expo Image Picker**: Image selection functionality
-- **React Native Reanimated**: Smooth animations
 
 ### Project Structure
 
 ```
 app/mobile/
 ├── app/                       # App screens (file-based routing)
+│   ├── category/             # Category-based screens
 │   ├── _layout.tsx           # Root layout
-│   ├── index.tsx             # Landing/home screen
+│   ├── create_request.tsx    # Create assistance request flow
 │   ├── feed.tsx              # Main feed screen
+│   ├── index.tsx             # Landing/home screen
+│   ├── notifications.tsx     # Notifications screen
+│   ├── profile.tsx           # User profile screen
+│   ├── requests.tsx          # My Requests screen
+│   ├── search.tsx            # Search screen
 │   ├── signin.tsx            # Sign in screen
 │   ├── signup.tsx            # Sign up screen
-│   ├── profile.tsx           # User profile screen
-│   ├── create_request.tsx    # Create assistance request
-│   ├── v-request-details.tsx # Request details (volunteer view)
-│   ├── r-request-details.tsx # Request details (requester view)
-│   ├── notifications.tsx     # Notifications screen
-│   ├── settings.tsx          # Settings screen
-│   └── category/             # Category-based screens
+│   └── ...                   # Other screens (details, settings, etc.)
 ├── components/               # Reusable UI components
-│   └── ui/                   # Styled components
-│       ├── RequestCard.tsx   # Request display card
-│       ├── ProfileTop.tsx    # Profile header
-│       ├── ReviewCard.tsx    # Review component
-│       └── SearchBarWithResults.tsx
+│   ├── forms/                # Form components (Address, Category, etc.)
+│   ├── ui/                   # UI components (Cards, Headers, etc.)
+│   └── ...                   # Shared components
 ├── lib/                      # Core application logic
 │   ├── api.ts               # API client and endpoints
 │   └── auth.tsx             # Authentication context
-├── constants/                # App constants
-│   ├── Colors.ts            # Color definitions
-│   └── theme.ts             # Theme configuration
+├── constants/                # App constants (Colors, Theme)
 ├── hooks/                    # Custom React hooks
+├── theme/                    # Theme provider
+├── utils/                    # Utility functions
 ├── assets/                   # Static assets (images, fonts)
+├── Dockerfile                # Docker configuration
+├── README_DOCKER.md          # Docker specific instructions
 ├── app.json                  # Expo configuration
 ├── package.json              # Dependencies and scripts
 └── tsconfig.json             # TypeScript configuration
 ```
 
-### Installation & Setup
+### Installation & Deployment (Docker)
 
-#### Option 1: Local Development (Expo Go - Recommended for Quick Start)
+The mobile application includes a `Dockerfile` that supports two modes: running the Expo development server and building a release APK for Android.
 
-This is the fastest way to get started and test on your physical device:
+#### Option 1: Run Expo Dev Server (Development Mode)
+
+This mode runs the Expo development server without building the APK. Perfect for development and testing.
 
 1. **Navigate to the mobile directory**:
    ```bash
    cd app/mobile
    ```
 
-2. **Install dependencies**:
+2. **Build the image in dev mode**:
    ```bash
-   npm install
+   docker build --build-arg BUILD_MODE=dev -t mobile-app-dev .
    ```
 
-3. **Configure API Connection**:
-   
-   The mobile app needs to connect to your backend API. Update `app.json` to point to your backend:
-
-   ```json
-   {
-     "expo": {
-       "extra": {
-         "apiHost": "YOUR_BACKEND_IP",
-         "apiPort": "8000"
-       }
-     }
-   }
-   ```
-
-   **Important**: Replace `YOUR_BACKEND_IP` with:
-   - Your computer's local IP address (e.g., `192.111.1.100`) for same-network testing
-   - `localhost` won't work on physical devices - use your actual local network IP
-   - Your deployed backend URL (e.g., `35.222.191.20`) for testing with production
-
-   **To find your local IP**:
-   - **macOS/Linux**: `ifconfig | grep "inet " | grep -v 127.0.0.1`
-   - **Windows**: `ipconfig` and look for "IPv4 Address"
-
-4. **Start the Expo development server**:
+3. **Run the Expo dev server**:
    ```bash
-   npx expo start
+   docker run --rm --name mobile-dev -p 8081:8081 mobile-app-dev
    ```
-   
-   Or for a clean start (clears cache):
+
+   The Expo dev server will be accessible at `http://localhost:8081`. You can scan the QR code with the Expo Go app on your mobile device.
+
+   *Note: To use custom environment variables, mount your `.env` file:*
    ```bash
-   npx expo start -c
+   docker run --rm -p 8081:8081 -v "$(pwd)/.env:/app/.env" mobile-app-dev
    ```
 
-5. **Run on your device or emulator**:
+#### Option 2: Build Android APK (Release Mode)
 
-   After starting the development server, you'll see a QR code in your terminal. Choose your preferred method:
+This mode builds a **signed release APK** (`app-release.apk`). It automatically generates a keystore during the build process to sign the APK.
 
-   **Physical Device (Recommended)**:
-   - **iOS**: Open the Camera app and scan the QR code. Tap the notification to open in Expo Go
-   - **Android**: Open Expo Go app and tap "Scan QR code"
-   - **Important**: Ensure your phone and computer are on the **same WiFi network**
-
-   **iOS Simulator** (Mac only):
-   - Press `i` in the terminal, or
-   - ```bash
-     npx expo start --ios
-     ```
-
-   **Android Emulator**:
-   - Start Android Studio and launch an emulator first, then
-   - Press `a` in the terminal, or
-   - ```bash
-     npx expo start --android
-     ```
-
-   **Web Browser** (for testing):
-   - Press `w` in the terminal, or
-   - ```bash
-     npx expo start --web
-     ```
-
-#### Option 2: Development with Full Backend Stack
-
-For full-stack development with the backend and database running:
-
-1. **Start the backend services** (in backend directory):
-   ```bash
-   cd app/backend
-   docker compose up -d backend db
-   ```
-
-2. **Get your local IP address** and update `app/mobile/app.json` as described above
-
-3. **Start the mobile development server**:
+1. **Navigate to the mobile directory**:
    ```bash
    cd app/mobile
-   npm install  # if not already installed
-   npx expo start -c
    ```
 
-4. **Test on your device**: Scan the QR code with Expo Go app on your phone
-
-5. **View backend logs** (if needed):
+2. **Build the image in build mode**:
    ```bash
-   cd app/backend
-   docker compose logs -f backend
+   docker build --build-arg BUILD_MODE=build -t mobile-app-builder .
    ```
 
-### Development Features
+3. **Generate the APK**:
+   
+   Create an output directory and run the container:
+   
+   **macOS/Linux/Git Bash:**
+   ```bash
+   mkdir -p output
+   docker run --rm -v "$(pwd)/output:/output" mobile-app-builder
+   ```
 
-The mobile app includes several development-friendly features:
+   **Windows PowerShell:**
+   ```powershell
+   mkdir -p output
+   docker run --rm -v "${PWD}/output:/output" mobile-app-builder
+   ```
 
-- **Hot Reload**: Code changes appear instantly without rebuilding
-- **Fast Refresh**: Preserves component state during updates
-- **TypeScript**: Full type safety with IntelliSense
-- **Console Logs**: View in Expo Go app or terminal
-- **Network Inspector**: Built-in debugging tools
-- **Guest Mode**: Test features without authentication
+   After the command finishes, you will find `app-release.apk` in the `output` directory.
+
+
+### Troubleshooting
+
+#### Memory Issues (OOM)
+If the build fails with "Cannot allocate memory" or "java.lang.OutOfMemoryError":
+1. Open Docker Desktop Settings.
+2. Go to **Resources**.
+3. Increase **Memory** to at least **4GB** (6GB recommended).
+4. Apply & Restart.
+This issue is particularly common on macOS when running emulators/simulators alongside Docker.
+
+### Backend Connection
+The mobile app connects to the backend API. Ensure your backend is running and accessible. When using Docker, you may need to configure the API host in your `.env` file or `app.json` to point to your machine's local IP address (not `localhost`) so the mobile device can reach it.
 
 ### Guest Mode
 
@@ -408,121 +350,11 @@ The app supports guest mode for browsing without authentication:
 - **Volunteer Matching**: Browse and apply for requests with real-time updates
 - **Category Filtering**: Filter requests by type (grocery shopping, tutoring, etc.)
 - **Location-Based Search**: Find requests near you
-- **Push Notifications**: Get notified about request updates (coming soon)
+- **Push Notifications**: Get notified about request updates
 - **Profile Management**: View and edit user profiles with ratings
 - **Reviews & Ratings**: Rate and review completed interactions
 - **Secure Authentication**: Token-based authentication with automatic logout
 - **Offline Support**: Cached data for limited offline functionality
-
-### Available Scripts
-
-```bash
-# Start development server
-npm start
-
-# Start with cache cleared
-npx expo start -c
-
-# Open on iOS simulator (Mac only)
-npm run ios
-
-# Open on Android emulator
-npm run android
-
-# Open in web browser
-npm run web
-
-# Run linter
-npm run lint
-```
-
-### Troubleshooting
-
-#### Common Issues
-
-**Issue**: "Network Error" or "Unable to connect to backend"
-- **Solution**: 
-  1. Ensure your backend is running (`docker compose up` in `app/backend`)
-  2. Verify `apiHost` in `app.json` is your correct local IP
-  3. Ensure phone and computer are on the **same WiFi network**
-  4. Check firewall settings aren't blocking port 8000
-
-**Issue**: "Invalid token" or "401 Unauthorized" errors
-- **Solution**: 
-  1. Log out and log in again to get a fresh token
-  2. If switching between local and deployed backend, clear app data:
-     - Close Expo Go completely
-     - Reopen and rescan QR code
-
-**Issue**: Expo Go app shows "Something went wrong"
-- **Solution**: 
-  1. Stop the development server (`Ctrl+C`)
-  2. Clear cache: `npx expo start -c`
-  3. Close and reopen Expo Go app
-  4. Rescan the QR code
-
-**Issue**: Changes not reflecting in the app
-- **Solution**: 
-  1. Press `r` in the terminal to reload
-  2. Or shake your device and tap "Reload"
-  3. If still not working: `npx expo start -c`
-
-**Issue**: "Unable to resolve module" errors
-- **Solution**: 
-  ```bash
-  rm -rf node_modules
-  npm install
-  npx expo start -c
-  ```
-
-**Issue**: iOS Simulator not found
-- **Solution**: Install Xcode from Mac App Store and run:
-  ```bash
-  xcode-select --install
-  ```
-
-**Issue**: Android emulator not starting
-- **Solution**: 
-  1. Install Android Studio
-  2. Open Android Studio → Tools → AVD Manager
-  3. Create a new Virtual Device
-  4. Start the emulator before running `npx expo start --android`
-
-#### Platform-Specific Notes
-
-**iOS**:
-- Requires macOS for iOS Simulator
-- First build may take several minutes
-- Physical device testing requires Apple Developer account for production builds
-
-**Android**:
-- Emulator requires virtualization enabled in BIOS
-- Expo Go works without any setup for development
-- Physical device testing works immediately via Expo Go
-
-### Backend Connection Configuration
-
-The mobile app automatically determines the backend URL based on the environment:
-
-- **Development (Expo Go)**: Uses `apiHost` and `apiPort` from `app.json`
-- **Production**: Would use a fixed production URL (to be configured)
-
-**Current configuration in `app.json`**:
-```json
-{
-  "expo": {
-    "extra": {
-      "apiHost": "11.111.111.11",  // Update this to your IP
-      "apiPort": "8000"
-    }
-  }
-}
-```
-
-**Remember**: After changing `app.json`, restart the Expo dev server with cache cleared:
-```bash
-npx expo start -c
-```
 
 ### Authentication & Storage
 
