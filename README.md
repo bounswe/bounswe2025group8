@@ -121,6 +121,31 @@ For development with the backend and database, use Docker Compose to run all ser
    cd app/backend
    docker compose down
    ```
+### Database Management Commands
+
+When working with the backend and PostgreSQL database via Docker Compose, you may need to:
+
+- Create an admin user
+- Reset/delete all containers, volumes, and images
+
+---
+
+#### Create an Admin User
+
+Run this **after backend & database containers are up**:
+```bash
+sudo docker compose exec backend python manage.py create_admin_user
+```
+
+#### Delete the Entire Database & Images (FULL RESET)
+
+This removes **everything**, including database volumes:
+```bash
+sudo docker compose down -v --rmi all
+```
+Use carefully — this completely wipes your database and all Docker Compose–built images.
+
+
 
 #### Option 3: Docker Development (Frontend Only)
 
