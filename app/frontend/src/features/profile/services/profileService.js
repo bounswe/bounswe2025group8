@@ -1,4 +1,25 @@
 import api from '../../../services/api';
+import { toAbsoluteUrl } from '../../../utils/url';
+import { authStorage } from '../../authentication/utils';
+
+const normalizeProfileData = (data) => {
+  if (!data || typeof data !== 'object') return data;
+  const resolvedPhoto =
+    data.profile_photo ||
+    data.profilePhoto ||
+    data.profilePicture ||
+    data.photo ||
+    data.avatar ||
+    null;
+  const normalizedPhoto = toAbsoluteUrl(resolvedPhoto) || null;
+
+  return {
+    ...data,
+    profile_photo: normalizedPhoto,
+    profilePhoto: normalizedPhoto,
+    profilePicture: normalizedPhoto,
+  };
+};
 
 /**
  * Fetch user profile data
@@ -10,7 +31,8 @@ export const getUserProfile = async (userId) => {
       if (!userId) throw new Error('User not authenticated');
     }
     const res = await api.get(`/users/${userId}/`);
-    return (res.data && res.data.data) ? res.data.data : res.data;
+    const payload = (res.data && res.data.data) ? res.data.data : res.data;
+    return normalizeProfileData(payload);
   } catch (error) {
     console.error('Error fetching user profile:', error);
     throw error;
@@ -20,11 +42,13 @@ export const getUserProfile = async (userId) => {
 /**
  * Fetch reviews for a user
  */
-export const getUserReviews = async (userId, page = 1, limit = 20, sort = 'createdAt', order = 'desc') => {
+export const getUserReviews = async (userId, page = 1, limit = 20, sort = 'createdAt', order = 'desc', role = null) => {
   try {
     if (!userId) throw new Error('User ID is required');
+    const params = { page, limit, sort, order };
+    if (role) params.role = role;
     const res = await api.get(`/users/${userId}/reviews/`, {
-      params: { page, limit, sort, order },
+      params,
     });
     return (res.data && res.data.data) ? res.data.data : res.data;
   } catch (error) {
@@ -52,12 +76,22 @@ export const getUserCreatedRequests = async (userId, page = 1, limit = 10, statu
 /**
  * Fetch tasks a user has volunteered for
  */
-export const getUserVolunteeredRequests = async (userId, page = 1, limit = 10) => {
+export const getUserVolunteeredRequests = async (userId, page = 1, limit = 10, taskStatus = null) => {
   try {
     if (!userId) throw new Error('User ID is required');
-    const res = await api.get(`/volunteers/`, {
-      params: { volunteer_id: userId, page, limit },
-    });
+    const params = { 
+      volunteer_id: userId, 
+      page, 
+      limit,
+      volunteer_status: 'ACCEPTED' // Only show accepted volunteer assignments
+    };
+    
+    // Add task status filter if provided
+    if (taskStatus) {
+      params.task_status = taskStatus;
+    }
+    
+    const res = await api.get(`/volunteers/`, { params });
     return (res.data && res.data.data) ? res.data.data : res.data;
   } catch (error) {
     console.error('Error fetching volunteered tasks:', error);
@@ -106,7 +140,15 @@ export const updateUserProfile = async (userData) => {
     const currentUserId = localStorage.getItem('userId');
     if (!currentUserId) throw new Error('User ID not found. Please log in again.');
     const res = await api.patch(`/users/${currentUserId}/`, userData);
-    return (res.data && res.data.data) ? res.data.data : res.data;
+    const payload = (res.data && res.data.data) ? res.data.data : res.data;
+    const normalized = normalizeProfileData(payload);
+
+    const storedUser = authStorage.getUser();
+    if (storedUser && String(storedUser.id) === String(currentUserId)) {
+      authStorage.updateUser({ ...storedUser, ...normalized });
+    }
+
+    return normalized;
   } catch (error) {
     if (error.response && error.response.status === 400) {
       console.error('Validation error when updating profile:', error.response.data);
@@ -122,7 +164,6 @@ export const updateUserProfile = async (userData) => {
  */
 export const uploadProfilePicture = async (file) => {
   try {
-    console.warn('Profile picture upload endpoint not found in backend. Implementation may need adjustment.');
     const currentUserId = localStorage.getItem('userId');
     if (!currentUserId) throw new Error('User ID not found. Please log in again.');
 
@@ -130,10 +171,18 @@ export const uploadProfilePicture = async (file) => {
     formData.append('photo', file);
     formData.append('user_id', currentUserId);
 
-    const res = await api.post(`/users/${currentUserId}/photo/`, formData, {
+    const res = await api.post(`/users/${currentUserId}/upload-photo/`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return (res.data && res.data.data) ? res.data.data : res.data;
+    const payload = (res.data && res.data.data) ? res.data.data : res.data;
+    const normalized = normalizeProfileData(payload);
+
+    const storedUser = authStorage.getUser();
+    if (storedUser && String(storedUser.id) === String(currentUserId)) {
+      authStorage.updateUser({ ...storedUser, ...normalized });
+    }
+
+    return normalized;
   } catch (error) {
     console.error('Error uploading profile picture:', error);
     throw error;

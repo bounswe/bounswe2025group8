@@ -43,13 +43,13 @@ const validatePassword = (password: string) => {
 export default function SignUp() {
   const router = useRouter();
   const { colors } = useTheme();
-  const [fullName, setFullName]   = useState('');
-  const [username, setUsername]   = useState('');
-  const [phone, setPhone]         = useState('');
-  const [email, setEmail]         = useState('');
-  const [password, setPassword]   = useState('');
-  const [agree, setAgree]         = useState(false);
-  const [showPwd, setShowPwd]     = useState(false);
+  const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [agree, setAgree] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
 
@@ -124,8 +124,15 @@ export default function SignUp() {
         style={styles.keyboardAvoidingView}
       >
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={colors.primary} />
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <Ionicons name="arrow-back" size={24} color={colors.primary} accessible={false} importantForAccessibility="no" />
             <Text style={[styles.backText, { color: colors.primary }]}>Back</Text>
           </TouchableOpacity>
 
@@ -137,98 +144,117 @@ export default function SignUp() {
           </Text>
 
           {/* Full Name */}
-          <View style={styles.inputWrapper}>
-            <Ionicons name="person-outline" size={20} color="#666" />
+          <View style={[styles.inputWrapper, { borderColor: colors.border }]}>
+            <Ionicons name="person-outline" size={20} color={colors.icon} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
               placeholder="Full Name"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textMuted}
               value={fullName}
               onChangeText={setFullName}
               editable={!isLoading}
               returnKeyType="next"
+              accessibilityLabel="Full name"
+              testID="signup-fullname-input"
             />
           </View>
 
           {/* Username */}
-          <View style={styles.inputWrapper}>
-            <Ionicons name="at-outline" size={20} color="#666" />
+          <View style={[styles.inputWrapper, { borderColor: colors.border }]}>
+            <Ionicons name="at-outline" size={20} color={colors.icon} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
               placeholder="Username"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textMuted}
               value={username}
               onChangeText={setUsername}
               autoCapitalize="none"
               editable={!isLoading}
               returnKeyType="next"
+              accessibilityLabel="Username"
+              testID="signup-username-input"
             />
           </View>
 
           {/* Phone */}
-          <View style={styles.inputWrapper}>
-            <Ionicons name="call-outline" size={20} color="#666" />
+          <View style={[styles.inputWrapper, { borderColor: colors.border }]}>
+            <Ionicons name="call-outline" size={20} color={colors.icon} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
               placeholder="Phone"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textMuted}
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
               editable={!isLoading}
               returnKeyType="next"
+              accessibilityLabel="Phone number"
+              testID="signup-phone-input"
             />
           </View>
 
           {/* Email */}
-          <View style={styles.inputWrapper}>
-            <Ionicons name="mail-outline" size={20} color="#666" />
+          <View style={[styles.inputWrapper, { borderColor: colors.border }]}>
+            <Ionicons name="mail-outline" size={20} color={colors.icon} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
               placeholder="Email"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textMuted}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
               editable={!isLoading}
               returnKeyType="next"
+              accessibilityLabel="Email address"
+              testID="signup-email-input"
             />
           </View>
 
           {/* Password */}
-          <View style={styles.inputWrapper}>
-            <Ionicons name="key-outline" size={20} color="#666" />
+          <View style={[styles.inputWrapper, { borderColor: colors.border }]}>
+            <Ionicons name="key-outline" size={20} color={colors.icon} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
               placeholder="Password"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textMuted}
               secureTextEntry={!showPwd}
               value={password}
               onChangeText={setPassword}
               editable={!isLoading}
               returnKeyType="done"
               onSubmitEditing={Keyboard.dismiss}
+              accessibilityLabel="Password"
+              testID="signup-password-input"
             />
-            <Pressable onPress={() => setShowPwd(v => !v)}>
+            <Pressable
+              onPress={() => setShowPwd(v => !v)}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel={showPwd ? 'Hide password' : 'Show password'}
+            >
               <Ionicons
                 name={showPwd ? 'eye' : 'eye-off'}
                 size={20}
-                color="#666"
+                color={colors.icon}
               />
             </Pressable>
           </View>
 
           <View style={styles.rememberWrapper}>
-            <Pressable 
-              onPress={() => setAgree(a => !a)} 
+            <Pressable
+              onPress={() => setAgree(a => !a)}
               hitSlop={8}
               disabled={isLoading}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: agree, disabled: isLoading }}
+              testID="signup-terms-checkbox"
             >
               <Ionicons
                 name={agree ? 'checkbox' : 'square-outline'}
                 size={20}
-                color="#666"
+                color={agree ? colors.primary : colors.icon}
               />
             </Pressable>
 
@@ -236,10 +262,14 @@ export default function SignUp() {
               I agree with{' '}
             </Text>
 
-            <Pressable 
+            <Pressable
               onPress={() => router.push({ pathname: '/terms' })}
               hitSlop={8}
               disabled={isLoading}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="View terms and conditions"
             >
               <Text style={[styles.rememberText, styles.linkText, { color: colors.primary }]}>
                 Terms &amp; Conditions
@@ -250,14 +280,21 @@ export default function SignUp() {
           {/* Sign Up Button */}
           <TouchableOpacity
             style={[
-              styles.button, 
+              styles.button,
               { backgroundColor: colors.primary },
               (!agree || isLoading) && { opacity: 0.5 }
             ]}
             disabled={!agree || isLoading}
             onPress={handleSignUp}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Sign up"
+            testID="signup-button"
+            accessibilityState={{ disabled: !agree || isLoading }}
+            testID="signup-button"
           >
-            <Text style={styles.buttonText}>
+            <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
               {isLoading ? 'Signing up...' : 'Sign Up'}
             </Text>
           </TouchableOpacity>
@@ -267,7 +304,13 @@ export default function SignUp() {
             <Text style={[styles.promptText, { color: colors.text }]}>
               Have an account?
             </Text>
-            <TouchableOpacity onPress={() => router.replace('/signin')}>
+            <TouchableOpacity
+              onPress={() => router.replace('/signin')}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Go to login"
+            >
               <Text style={[styles.promptLink, { color: colors.primary }]}>
                 {' '}Login
               </Text>
@@ -292,7 +335,6 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: 16,
-    color: '#6C63FF'
   },
   logo: {
     width: 100,
@@ -308,7 +350,6 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: '#666',
     lineHeight: 20,
     marginBottom: 32,
   },
@@ -319,7 +360,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderColor: '#DDD',
     marginBottom: 16,
     paddingBottom: 4,
   },
@@ -331,17 +371,13 @@ const styles = StyleSheet.create({
   passwordRequirements: {
     marginBottom: 16,
     padding: 8,
-    backgroundColor: '#f8f8f8',
     borderRadius: 8,
   },
   requirementText: {
     fontSize: 12,
-    color: '#666',
     marginBottom: 4,
   },
-  requirementError: {
-    color: '#ff4444',
-  },
+  requirementError: {},
   rememberWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -360,7 +396,8 @@ const styles = StyleSheet.create({
     marginBottom: 75
   },
   buttonText: {
-    color: '#fff', fontWeight: 'bold', fontSize: 16
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   signupPrompt: {
     flexDirection: 'row',

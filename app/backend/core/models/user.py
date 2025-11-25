@@ -17,7 +17,7 @@ def user_profile_photo_path(instance, filename):
 class UserManager(BaseUserManager):
     """Manager for user profiles"""
     
-    def create_user(self, email, name, surname, username, phone_number, password=None):
+    def create_user(self, email, name, surname, username, phone_number, password=None, is_staff=False, **extra_fields):
         """Create a new user profile"""
         if not email:
             raise ValueError('User must have an email address')
@@ -28,7 +28,9 @@ class UserManager(BaseUserManager):
             name=name,
             surname=surname,
             username=username,
-            phone_number=phone_number
+            phone_number=phone_number,
+            is_staff=is_staff,
+            **extra_fields
         )
         
         user.set_password(password)

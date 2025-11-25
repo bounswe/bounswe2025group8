@@ -16,7 +16,8 @@ import {
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { getTasks, getUserProfile, type Task, type UserProfile, type Category as ApiCategory } from '../lib/api';
+import { getTasks, getPopularTasks, getUserProfile, getTaskPhotos, BACKEND_BASE_URL, type Task, type UserProfile, type Category as ApiCategory, type Photo } from '../lib/api';
+import type { ThemeTokens } from '@/constants/Colors';
 import { useAuth } from '../lib/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -25,21 +26,74 @@ export default function Feed() {
   const router = useRouter();
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [popularTasks, setPopularTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [taskDerivedCategories, setTaskDerivedCategories] = useState<ApiCategory[]>([]);
+  const [taskPhotos, setTaskPhotos] = useState<Map<number, Photo[]>>(new Map());
   const scrollRef = useRef<ScrollView>(null);
+  const themeColors = colors as unknown as ThemeTokens;
+
+  const formatUrgency = (level?: number) => {
+    if (level === 3) return 'High';
+    if (level === 2) return 'Medium';
+    if (level === 1) return 'Low';
+    return 'Medium';
+  };
+
+  const getUrgencyColors = (level?: number) => {
+    if (level === 3) {
+      return { background: themeColors.urgencyHighBackground, text: themeColors.urgencyHighText };
+    }
+    if (level === 1) {
+      return { background: themeColors.urgencyLowBackground, text: themeColors.urgencyLowText };
+    }
+    return { background: themeColors.urgencyMediumBackground, text: themeColors.urgencyMediumText };
+  };
+
+  // Filter out completed and cancelled tasks
+  const filterActiveTasks = (tasksList: Task[]): Task[] => {
+    return tasksList.filter(task => {
+      const status = task.status?.toUpperCase() || '';
+      return status !== 'COMPLETED' && status !== 'CANCELLED';
+    });
+  };
 
   const fetchTasks = async () => {
     try {
       setLoading(true);
+
+      // Fetch all tasks for categories
       const response = await getTasks();
       const fetchedTasks = response.results || [];
-      setTasks(fetchedTasks);
+      const activeTasks = filterActiveTasks(fetchedTasks);
 
-      if (fetchedTasks.length > 0) {
+      // Fetch popular tasks separately
+      const popular = await getPopularTasks(6);
+      const activePopularTasks = filterActiveTasks(popular);
+
+      setPopularTasks(activePopularTasks);
+
+      // Fetch photos for popular tasks
+      const photosMap = new Map<number, Photo[]>();
+      await Promise.all(
+        activePopularTasks.map(async (task) => {
+          try {
+            const photosResponse = await getTaskPhotos(task.id);
+            if (photosResponse.status === 'success' && photosResponse.data.photos.length > 0) {
+              photosMap.set(task.id, photosResponse.data.photos);
+            }
+          } catch (error) {
+            // Silently fail for individual photo fetches
+            console.warn(`Failed to fetch photos for task ${task.id}`);
+          }
+        })
+      );
+      setTaskPhotos(photosMap);
+
+      if (activeTasks.length > 0) {
         const uniqueCategoriesMap = new Map<string, ApiCategory>();
-        fetchedTasks.forEach(task => {
+        activeTasks.forEach(task => {
           if (task.category && task.category_display) {
             if (!uniqueCategoriesMap.has(task.category)) {
               uniqueCategoriesMap.set(task.category, {
@@ -60,6 +114,7 @@ export default function Feed() {
       console.error('Error fetching tasks:', error);
       Alert.alert('Error', 'Failed to load tasks. Please try again.');
       setTasks([]);
+      setPopularTasks([]);
       setTaskDerivedCategories([]);
     } finally {
       setLoading(false);
@@ -96,25 +151,70 @@ export default function Feed() {
         {/* — Header — */}
         <View style={styles.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-            <Image source={require('../assets/images/logo.png')} style={{ width: 48, height: 48, marginRight: 12 }} />
+            <Image
+              source={require('../assets/images/logo.png')}
+              style={{ width: 48, height: 48, marginRight: 12 }}
+              accessibilityRole="image"
+              accessibilityLabel="AccessEase logo"
+            />
             <View>
               <Text style={[styles.welcomeText, { color: colors.text }]}>{user ? 'Welcome back' : 'Welcome Guest'}</Text>
             </View>
           </View>
           {/* Always show notifications and settings buttons */}
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <TouchableOpacity onPress={() => router.push('/notifications')} style={{ marginRight: 12 }}>
-              <Ionicons name="notifications-outline" size={24} color={colors.text} />
+            <TouchableOpacity
+              onPress={() => router.push('/notifications')}
+              style={{ marginRight: 12 }}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Open notifications"
+            >
+              <Ionicons
+                name="notifications-outline"
+                size={24}
+                color={colors.text}
+                accessible={false}
+                importantForAccessibility="no"
+              />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/settings')}>
-              <Ionicons name="settings-outline" size={24} color={colors.text} />
+            <TouchableOpacity
+              onPress={() => router.push('/settings')}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Open settings"
+              testID="feed-settings-button"
+            >
+              <Ionicons
+                name="settings-outline"
+                size={24}
+                color={colors.text}
+                accessible={false}
+                importantForAccessibility="no"
+              />
             </TouchableOpacity>
           </View>
         </View>
 
         {/* — Search bar — */}
-        <TouchableOpacity style={[styles.searchWrapper, { borderColor: '#CCC' }]} onPress={() => router.push('/search')}>
-          <Ionicons name="search-outline" size={20} color="#888" />
+        <TouchableOpacity
+          style={[styles.searchWrapper, { borderColor: colors.border }]}
+          onPress={() => router.push('/search')}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Search requests and volunteers"
+          testID="feed-search-bar"
+        >
+          <Ionicons
+            name="search-outline"
+            size={20}
+            color={themeColors.icon}
+            accessible={false}
+            importantForAccessibility="no"
+          />
           <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>What are you looking for?</Text>
         </TouchableOpacity>
 
@@ -128,13 +228,30 @@ export default function Feed() {
               key={cat.id}
               style={[styles.card, { backgroundColor: colors.card }]}
               onPress={() => router.push('/category/' + cat.id as any)}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel={`View ${cat.name} category`}
+              testID={`category-item-${cat.id}`}
             >
-              <Image source={require('../assets/images/help.png')} style={styles.cardImage} />
+              <Image
+                source={require('../assets/images/help.png')}
+                style={styles.cardImage}
+                accessibilityRole="image"
+                accessibilityLabel={`${cat.name} category illustration`}
+              />
               <Text style={[styles.cardTitle, { color: colors.text }]}> {cat.name} </Text>
             </TouchableOpacity>
           ))}
         </View>
-        <TouchableOpacity onPress={() => router.push('/categories')} style={styles.seeAllLink}>
+        <TouchableOpacity
+          onPress={() => router.push('/categories')}
+          style={styles.seeAllLink}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="See all categories"
+        >
           <Text style={[styles.seeAllText, { color: colors.primary }]}>See all categories</Text>
         </TouchableOpacity>
 
@@ -142,63 +259,130 @@ export default function Feed() {
         <Text style={[styles.sectionTitle, { color: colors.text }]}>
           Popular Requests
         </Text>
-        {tasks.map((task) => (
-          <TouchableOpacity
-            key={task.id}
-            style={[styles.requestRow, { backgroundColor: colors.card }]}
-            onPress={() =>
-              router.push({
-                pathname: (task.creator && task.creator.id === user?.id) ? '/r-request-details' : '/v-request-details',
-                params: { id: task.id }
-              })
-            }
-          >
-            <Image source={require('../assets/images/help.png')} style={styles.requestImage} />
-            <View style={styles.requestInfo}>
-              <Text style={[styles.requestTitle, { color: colors.text }]}>
-                {task.title}
-              </Text>
-              <Text style={[styles.requestMeta, { color: colors.text }]}>
-                {task.location} • {new Date(task.created_at).toLocaleDateString()}
-              </Text>
-              <View style={styles.requestCategoryRow}>
-                <View style={[styles.urgencyBadge, { backgroundColor: task.status === 'urgent' ? '#e74c3c' : task.status === 'medium' ? '#f1c40f' : '#2ecc71' }]}> 
-                  <Text style={styles.urgencyText} numberOfLines={1} ellipsizeMode="tail">
-                    {task.status}
-                  </Text>
-                </View>
-                <View style={styles.requestCategory}>
-                  <Text style={[styles.requestCategoryText, { color: colors.text }]} numberOfLines={1} ellipsizeMode="tail">
-                    {task.category}
-                  </Text>
+        {popularTasks.map((task) => {
+          const photos = taskPhotos.get(task.id) || [];
+          const primaryPhoto = photos.length > 0 ? photos[0] : null;
+          const photoUrl = primaryPhoto ? (primaryPhoto.photo_url || primaryPhoto.url || primaryPhoto.image) : null;
+          const absolutePhotoUrl = photoUrl && photoUrl.startsWith('http')
+            ? photoUrl
+            : photoUrl
+              ? `${BACKEND_BASE_URL}${photoUrl}`
+              : null;
+
+          return (
+            <TouchableOpacity
+              key={task.id}
+              style={[styles.requestRow, { backgroundColor: colors.card }]}
+              onPress={() =>
+                router.push({
+                  pathname: (task.creator && task.creator.id === user?.id) ? '/r-request-details' : '/v-request-details',
+                  params: { id: task.id }
+                })
+              }
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel={`View details for ${task.title}`}
+              testID={`request-item-${task.id}`}
+            >
+              <Image
+                source={absolutePhotoUrl ? { uri: absolutePhotoUrl } : require('../assets/images/help.png')}
+                style={styles.requestImage}
+                accessibilityRole="image"
+                accessibilityLabel={absolutePhotoUrl ? `Photo for ${task.title}` : `Default illustration for ${task.title}`}
+              />
+              <View style={styles.requestInfo}>
+                <Text style={[styles.requestTitle, { color: colors.text }]}>
+                  {task.title}
+                </Text>
+                <Text style={[styles.requestMeta, { color: colors.text }]}>
+                  {task.location} • {new Date(task.created_at).toLocaleDateString()}
+                </Text>
+                <View style={styles.requestCategoryRow}>
+                  {(() => {
+                    const urgencyLabel = formatUrgency(task.urgency_level);
+                    const urgencyPalette = getUrgencyColors(task.urgency_level);
+                    return (
+                      <View
+                        style={[
+                          styles.urgencyBadge,
+                          { backgroundColor: urgencyPalette.background, borderColor: colors.border },
+                        ]}
+                      >
+                        <Text style={[styles.urgencyText, { color: urgencyPalette.text }]} numberOfLines={1} ellipsizeMode="tail">
+                          {`${urgencyLabel} Urgency`}
+                        </Text>
+                      </View>
+                    );
+                  })()}
+                  <View style={[styles.requestCategory, { borderColor: colors.border }]}>
+                    <Text style={[styles.requestCategoryText, { color: colors.text }]} numberOfLines={1} ellipsizeMode="tail">
+                      {task.category}
+                    </Text>
+                  </View>
                 </View>
               </View>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={colors.text} />
-          </TouchableOpacity>
-        ))}
-        <TouchableOpacity onPress={() => router.push('/requests')} style={styles.seeAllLink}>
+              <Ionicons
+                name="chevron-forward"
+                size={20}
+                color={colors.text}
+                accessible={false}
+                importantForAccessibility="no"
+              />
+            </TouchableOpacity>
+          );
+        })}
+        <TouchableOpacity
+          onPress={() => router.push('/requests')}
+          style={styles.seeAllLink}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="See all requests"
+        >
           <Text style={[styles.seeAllText, { color: colors.primary }]}>See all requests</Text>
         </TouchableOpacity>
       </ScrollView>
 
       {/* — Bottom Navigation Bar — */}
-      <View style={[styles.bottomBar, { backgroundColor: colors.card }]}>
+      <View style={[styles.bottomBar, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
         <TouchableOpacity
           style={styles.tabItem}
           onPress={() => {
             scrollRef.current?.scrollTo({ y: 0, animated: true });
           }}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Go to top of feed"
+          testID="tab-home"
         >
-          <Ionicons name="home" size={24} color={colors.primary} />
+          <Ionicons
+            name="home"
+            size={24}
+            color={colors.primary}
+            accessible={false}
+            importantForAccessibility="no"
+          />
           <Text style={[styles.tabLabel, { color: colors.primary }]}>Home</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.tabItem}
           onPress={() => router.push('/categories')}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Open categories"
+          testID="tab-categories"
         >
-          <Ionicons name="pricetag-outline" size={24} color={colors.text} />
+          <Ionicons
+            name="pricetag-outline"
+            size={24}
+            color={colors.text}
+            accessible={false}
+            importantForAccessibility="no"
+          />
           <Text style={[styles.tabLabel, { color: colors.text }]}>
             Categories
           </Text>
@@ -208,30 +392,77 @@ export default function Feed() {
           <TouchableOpacity
             style={styles.tabItem}
             onPress={() => { router.push('/create_request'); }}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Create a new request"
+            testID="tab-create"
           >
-            <Ionicons name="add-circle-outline" size={24} color={colors.text} />
+            <Ionicons
+              name="add-circle-outline"
+              size={24}
+              color={colors.text}
+              accessible={false}
+              importantForAccessibility="no"
+            />
             <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
           </TouchableOpacity>
         ) : (
-          <View style={[styles.tabItem, { opacity: 0.5 }]}> 
-            <Ionicons name="add-circle-outline" size={24} color={colors.text} />
+          <TouchableOpacity
+            style={[styles.tabItem, { opacity: 0.5 }]}
+            disabled
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Create a new request (disabled when not signed in)"
+            accessibilityState={{ disabled: true }}
+          >
+            <Ionicons
+              name="add-circle-outline"
+              size={24}
+              color={colors.text}
+              accessible={false}
+              importantForAccessibility="no"
+            />
             <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
-          </View>
+          </TouchableOpacity>
         )}
 
         <TouchableOpacity
           style={styles.tabItem}
           onPress={() => router.push('/requests')}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Open all requests"
+          testID="tab-requests"
         >
-          <Ionicons name="list-outline" size={24} color={colors.text} />
+          <Ionicons
+            name="list-outline"
+            size={24}
+            color={colors.text}
+            accessible={false}
+            importantForAccessibility="no"
+          />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Requests</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.tabItem}
           onPress={() => router.push('/profile')}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Go to profile"
+          testID="tab-profile"
         >
-          <Ionicons name="person-outline" size={24} color={colors.text} />
+          <Ionicons
+            name="person-outline"
+            size={24}
+            color={colors.text}
+            accessible={false}
+            importantForAccessibility="no"
+          />
           <Text style={[styles.tabLabel, { color: colors.text }]}>Profile</Text>
         </TouchableOpacity>
       </View>
@@ -294,14 +525,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 60,
     borderTopWidth: 1,
-    borderTopColor: '#ddd',
   },
   tabItem: { alignItems: 'center' },
   tabLabel: { fontSize: 10, marginTop: 2 },
 
   seeAllLink: { alignSelf: 'flex-end', marginBottom: 16 },
   seeAllText: { fontSize: 13, fontWeight: '500' },
-  urgencyBadge: { borderRadius: 8, paddingHorizontal: 12, paddingVertical: 2, alignSelf: 'flex-start', marginRight: 4 },
-  urgencyText: { fontSize: 12, color: '#fff', fontWeight: 'bold' },
+  urgencyBadge: {
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 2,
+    alignSelf: 'flex-start',
+    marginRight: 4,
+    borderWidth: 1,
+  },
+  urgencyText: { fontSize: 12, fontWeight: 'bold' },
   requestCategoryRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
 });

@@ -47,9 +47,9 @@ const CategoryCard = ({ title, image, onClick, className = "" }) => {
       aria-label={`View ${title} category`}
     >
       {/* Title at top with proper padding and styling */}
-      <div className="p-6 pt-8 pb-0 pl-12 h-auto flex items-start justify-start">
+      <div className="p-6 pt-8 pb-0 pl-12 h-28 flex items-start justify-start">
         <h6
-          className="text-lg font-bold text-left overflow-hidden text-ellipsis 
+          className="text-lg font-bold text-left overflow-hidden text-ellipsis
             line-clamp-2 mt-8 mb-4 leading-tight"
           style={{ color: colors.text.primary }}
         >
@@ -57,8 +57,8 @@ const CategoryCard = ({ title, image, onClick, className = "" }) => {
         </h6>
       </div>
       {/* Image below title with proper sizing and rounded corners */}
-      <div className="px-12 pb-12 pt-4 flex-grow flex">
-        <div className="w-full h-full rounded-xl overflow-hidden flex-grow">
+      <div className="px-12 pb-12 pt-4 flex">
+        <div className="w-full h-24 rounded-xl overflow-hidden">
           <img
             src={image}
             alt={`${title}`}

@@ -1,11 +1,10 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider, useAuth } from '../lib/auth';
+import { AppThemeProvider, useAppTheme } from '@/theme/ThemeProvider';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -78,15 +77,19 @@ function RootNavigator() {
   );
 }
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
+function ThemedStatusBar() {
+  const { resolvedTheme } = useAppTheme();
+  const style = resolvedTheme === 'light' ? 'dark' : 'light';
+  return <StatusBar style={style} />;
+}
 
+export default function RootLayout() {
   return (
     <AuthProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <AppThemeProvider>
         <RootNavigator />
-        <StatusBar style="auto" />
-      </ThemeProvider>
+        <ThemedStatusBar />
+      </AppThemeProvider>
     </AuthProvider>
   );
 }

@@ -86,8 +86,10 @@ export const lightTheme: ThemeColors = {
     disabled: '#9CA3AF', // Contrast ratio: 3.5:1
   },
   border: {
-    primary: '#E5E7EB',
-    secondary: '#D1D5DB',
+    // Darkened to ensure >= 3:1 contrast with white backgrounds for graphical object boundaries
+    // Primary borders convey input and card boundaries; secondary remains lighter for subtle dividers
+    primary: '#9CA3AF', // Gray 400 (~3.5:1 vs #FFFFFF)
+    secondary: '#D1D5DB', // Gray 300 (~2.6:1 vs #FFFFFF)
     focus: '#3B82F6',
   },
   brand: {
@@ -136,8 +138,9 @@ export const darkTheme: ThemeColors = {
     disabled: '#6B7280', // Contrast ratio: 3.2:1
   },
   border: {
-    primary: '#374151',
-    secondary: '#4B5563',
+    // Raised primary border contrast on dark bg for >= 3:1 graphical object contrast
+    primary: '#4B5563', // Gray 600 (~3.4:1 vs #111827)
+    secondary: '#374151', // Gray 700 (~2.3:1 vs #111827)
     focus: '#60A5FA',
   },
   brand: {

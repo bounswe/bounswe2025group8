@@ -10,6 +10,8 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
+import FlagIcon from "@mui/icons-material/Flag";
+import { Menu, MenuItem } from "@mui/material";
 import {
   updateTask,
   updateTaskStatus,
@@ -30,13 +32,18 @@ import {
 import { removeTaskFromList } from "../features/request/store/allRequestsSlice";
 import Sidebar from "../components/Sidebar";
 import EditRequestModal from "../components/EditRequestModal";
+import RatingReviewModal from "../components/RatingReviewModal";
+import ReportModal from "../components/ReportModal";
 import { urgencyLevels } from "../constants/urgency_level";
 import { getCategoryImage } from "../constants/categories";
 import { toAbsoluteUrl } from "../utils/url";
+import { getReviewableUsers } from "../services/reviewService";
+import { useTheme } from "../hooks/useTheme";
 
 const RequestDetail = () => {
   const { requestId } = useParams();
   const navigate = useNavigate();
+  const { colors } = useTheme();
 
   // Authentication state
   const currentUser = useAppSelector(selectCurrentUser);
@@ -50,6 +57,15 @@ const RequestDetail = () => {
 
   // Edit dialog state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+
+  // Rating/Review dialog state
+  const [ratingDialogOpen, setRatingDialogOpen] = useState(false);
+
+  // Report dialog state
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+
+  // Menu state for 3-dot menu
+  const [menuAnchorEl, setMenuAnchorEl] = useState(null);
 
   // Add these new state variables
   const [isDeleting, setIsDeleting] = useState(false);
@@ -67,6 +83,62 @@ const RequestDetail = () => {
     const now = new Date();
     const deadlineDate = new Date(deadline);
     return now > deadlineDate;
+  };
+
+  // Helper function to parse and filter location based on permissions
+  const getFilteredLocation = (locationString, canSeePrivateInfo) => {
+    if (!locationString) return "";
+
+    // Split the location string into parts
+    const parts = locationString.split(", ");
+
+    // Check if it's the formatted version with prefixes
+    const isFormatted = parts.some(
+      (part) =>
+        part.includes("Country:") ||
+        part.includes("State:") ||
+        part.includes("City:")
+    );
+
+    if (!isFormatted) {
+      // For unformatted locations, show everything if can see private info
+      // Otherwise show first 3 parts (assumed to be public region info)
+      return canSeePrivateInfo ? locationString : parts.slice(0, 3).join(", ");
+    }
+
+    // For formatted locations, filter based on permissions
+    const publicPrefixes = ["Country:", "State:", "City:"];
+    const privatePrefixes = [
+      "Neighborhood:",
+      "Street:",
+      "Building:",
+      "Door:",
+      "Description:",
+    ];
+
+    if (canSeePrivateInfo) {
+      // Show everything
+      return locationString;
+    } else {
+      // Show only public parts (Country, State/Province, City/District)
+      const publicParts = parts.filter((part) =>
+        publicPrefixes.some((prefix) => part.trim().startsWith(prefix))
+      );
+      return publicParts.join(", ");
+    }
+  };
+
+  // Helper function to check if user can see private information
+  const canSeePrivateInfo = () => {
+    // Task creator can always see their own info
+    if (isTaskCreator) return true;
+
+    // Selected volunteers (ACCEPTED status) can see private info
+    if (volunteerRecord && volunteerRecord.status === "ACCEPTED") {
+      return true;
+    }
+
+    return false;
   };
 
   // Fetch request details and volunteer status
@@ -198,6 +270,14 @@ const RequestDetail = () => {
     });
   };
 
+  const requesterPhoto = toAbsoluteUrl(
+    request?.creator?.profile_photo ||
+      request?.creator?.profilePhoto ||
+      request?.creator?.profilePicture ||
+      request?.creator?.photo ||
+      request?.creator?.avatar
+  );
+
   // Get time ago
   const getTimeAgo = (dateString) => {
     const now = new Date();
@@ -216,9 +296,20 @@ const RequestDetail = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[50vh] flex-col gap-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <p className="text-gray-600">Loading request details...</p>
+      <div
+        className="flex justify-center items-center min-h-[50vh] flex-col gap-4"
+        style={{ backgroundColor: colors.background.primary }}
+        role="status"
+        aria-busy="true"
+      >
+        <div
+          className="animate-spin rounded-full h-12 w-12 border-b-2"
+          style={{ borderColor: colors.brand.primary }}
+          aria-hidden="true"
+        ></div>
+        <p style={{ color: colors.text.secondary }}>
+          Loading request details...
+        </p>
       </div>
     );
   }
@@ -226,17 +317,41 @@ const RequestDetail = () => {
   // Error state
   if (error) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
+      <div
+        className="flex min-h-screen"
+        style={{ backgroundColor: colors.background.primary }}
+      >
         <Sidebar />
         <div className="flex-grow p-6 flex items-center justify-center">
-          <div className="text-center max-w-md">
-            <h2 className="text-2xl font-semibold text-red-600 mb-4">
+          <div
+            className="text-center max-w-md"
+            role="alert"
+            aria-live="assertive"
+          >
+            <h2
+              className="text-2xl font-semibold mb-4"
+              style={{ color: colors.semantic.error }}
+            >
               Error loading request
             </h2>
-            <p className="text-gray-600 mb-6">{error}</p>
+            <p className="mb-6" style={{ color: colors.text.secondary }}>
+              {error}
+            </p>
             <button
               onClick={() => navigate("/requests")}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center px-4 py-2 rounded-md transition-colors"
+              style={{
+                backgroundColor: colors.brand.primary,
+                color: colors.text.inverse,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor =
+                  colors.brand.primaryHover;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = colors.brand.primary;
+              }}
+              aria-label="Back to Requests"
             >
               <ArrowBackIcon className="mr-2 w-4 h-4" />
               Back to Requests
@@ -250,19 +365,41 @@ const RequestDetail = () => {
   // Request not found
   if (!request) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
+      <div
+        className="flex min-h-screen"
+        style={{ backgroundColor: colors.background.primary }}
+      >
         <Sidebar />
         <div className="flex-grow p-6 flex items-center justify-center">
-          <div className="text-center max-w-md">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+          <div
+            className="text-center max-w-md"
+            role="alert"
+            aria-live="assertive"
+          >
+            <h2
+              className="text-2xl font-semibold mb-4"
+              style={{ color: colors.text.primary }}
+            >
               Request not found
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="mb-6" style={{ color: colors.text.secondary }}>
               The request you're looking for doesn't exist or has been removed.
             </p>
             <button
               onClick={() => navigate("/requests")}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center px-4 py-2 rounded-md transition-colors"
+              style={{
+                backgroundColor: colors.brand.primary,
+                color: colors.text.inverse,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor =
+                  colors.brand.primaryHover;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = colors.brand.primary;
+              }}
+              aria-label="Back to Requests"
             >
               <ArrowBackIcon className="mr-2 w-4 h-4" />
               Back to Requests
@@ -278,8 +415,7 @@ const RequestDetail = () => {
   const photos = Array.isArray(request?.photos)
     ? request.photos
         .map((p) => ({
-          src:
-            toAbsoluteUrl(p?.url || p?.image || p?.photo_url) || undefined,
+          src: toAbsoluteUrl(p?.url || p?.image || p?.photo_url) || undefined,
           alt: p?.alt_text || request.title,
         }))
         .filter((p) => !!p.src)
@@ -297,14 +433,37 @@ const RequestDetail = () => {
     !isTaskCreator &&
     (request?.status === "POSTED" || request?.status === "ASSIGNED") &&
     acceptedVolunteersCount < request.volunteer_number &&
-    !volunteerRecord;
-  const canWithdraw = isAuthenticated && !isTaskCreator && volunteerRecord;
+    (!volunteerRecord ||
+      volunteerRecord.status === "REJECTED" ||
+      volunteerRecord.status === "WITHDRAWN");
+  const canWithdraw =
+    isAuthenticated &&
+    !isTaskCreator &&
+    volunteerRecord &&
+    volunteerRecord.status !== "WITHDRAWN" &&
+    volunteerRecord.status !== "REJECTED" &&
+    request?.status !== "COMPLETED";
   const canMarkAsComplete =
     isAuthenticated &&
     isTaskCreator &&
     (request?.status === "ASSIGNED" || request?.status === "IN_PROGRESS") &&
     acceptedVolunteersCount > 0 &&
     request?.status !== "COMPLETED";
+
+  // Check if current user is a volunteer who participated in the task
+  const isVolunteerForTask =
+    volunteerRecord &&
+    (volunteerRecord.status === "ACCEPTED" || request?.status === "COMPLETED");
+
+  // Check if user can rate and review
+  const canRateAndReview =
+    isAuthenticated &&
+    currentUser &&
+    request?.status === "COMPLETED" &&
+    (getReviewableUsers(request, currentUser).length > 0 ||
+      (isVolunteerForTask && !isTaskCreator) ||
+      (isTaskCreator &&
+        request?.volunteers?.some((v) => v.status === "ACCEPTED"))); // Ensure task creators can always rate volunteers
 
   // Debug logging
   console.log("Permission debug:", {
@@ -313,12 +472,24 @@ const RequestDetail = () => {
     requestCreator: request?.creator?.id,
     isTaskCreator,
     requestStatus: request?.status,
-    volunteerRecord: volunteerRecord?.id,
+    volunteerRecord: volunteerRecord,
+    volunteerRecordId: volunteerRecord?.id,
+    volunteerRecordStatus: volunteerRecord?.status,
     canVolunteer,
     canWithdraw,
     canMarkAsComplete,
+    canRateAndReview,
+    reviewableUsers: getReviewableUsers(request, currentUser),
     isDeadlinePassed: isDeadlinePassed(request.deadline),
     deadline: request?.deadline,
+    // Additional debugging for volunteer
+    taskVolunteers: request?.volunteers,
+    taskAssignees: request?.assignees,
+    isVolunteerForTask: isVolunteerForTask,
+    reviewableUsersCheck: getReviewableUsers(request, currentUser).length > 0,
+    volunteerFallback: isVolunteerForTask && !isTaskCreator,
+    acceptedVolunteersCount: acceptedVolunteersCount,
+    volunteerNumber: request.volunteer_number,
   });
 
   // Button handlers
@@ -363,7 +534,9 @@ const RequestDetail = () => {
     try {
       const response = await updateTask(request.id, payload);
       const updatedTask = response?.data ?? response;
-      setRequest((prev) => ({ ...prev, ...updatedTask }));
+      // Preserve volunteers array when updating task
+      const volunteers = request.volunteers || [];
+      setRequest((prev) => ({ ...prev, ...updatedTask, volunteers }));
       setEditDialogOpen(false);
     } catch (err) {
       console.error("Failed to update task:", err);
@@ -382,25 +555,48 @@ const RequestDetail = () => {
       const result = await volunteerForTask(request.id);
       console.log("Volunteer result:", result);
 
-      // Update volunteer status
+      // Update volunteer status - extract the actual volunteer record
       const volunteerRecord = result.data || result;
+      console.log("Setting volunteer record:", volunteerRecord);
       setVolunteerRecord(volunteerRecord);
-      setIsVolunteering(false);
 
       alert("Successfully volunteered for this task!");
 
-      // Refresh the request data to get updated status
-      const updatedRequest = await getRequestById(requestId);
-      setRequest(updatedRequest);
+      // Refresh the request data to get updated volunteer list
+      try {
+        const updatedRequest = await getRequestById(requestId);
+        setRequest(updatedRequest);
+        console.log("Updated request after volunteering:", updatedRequest);
+      } catch (refreshError) {
+        console.warn(
+          "Could not refresh request data after volunteering:",
+          refreshError
+        );
+      }
+
+      // Also refresh volunteer status to ensure consistency
+      try {
+        const refreshedVolunteerRecord = await checkUserVolunteerStatus(
+          requestId
+        );
+        console.log("Refreshed volunteer record:", refreshedVolunteerRecord);
+        setVolunteerRecord(refreshedVolunteerRecord);
+      } catch (volunteerRefreshError) {
+        console.warn(
+          "Could not refresh volunteer status:",
+          volunteerRefreshError
+        );
+      }
     } catch (error) {
       console.error("Error volunteering for task:", error);
-      setIsVolunteering(false);
 
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
         "Failed to volunteer for task";
       alert(`Error: ${errorMessage}`);
+    } finally {
+      setIsVolunteering(false);
     }
   };
 
@@ -408,30 +604,60 @@ const RequestDetail = () => {
     if (!volunteerRecord) return;
 
     try {
-      console.log("Withdrawing from task:", request.id);
+      console.log(
+        "Withdrawing from task:",
+        request.id,
+        "volunteer record:",
+        volunteerRecord.id
+      );
       setIsVolunteering(true);
 
       await withdrawFromTask(volunteerRecord.id);
-      console.log("Withdrawn from task");
+      console.log("Withdrawn from task successfully");
 
-      // Update volunteer status
+      // Clear volunteer status
       setVolunteerRecord(null);
-      setIsVolunteering(false);
 
       alert("Successfully withdrew from this task");
 
-      // Refresh the request data
-      const updatedRequest = await getRequestById(requestId);
-      setRequest(updatedRequest);
+      // Refresh the request data to get updated volunteer list
+      try {
+        const updatedRequest = await getRequestById(requestId);
+        setRequest(updatedRequest);
+        console.log("Updated request after withdrawing:", updatedRequest);
+      } catch (refreshError) {
+        console.warn(
+          "Could not refresh request data after withdrawing:",
+          refreshError
+        );
+      }
+
+      // Also refresh volunteer status to ensure consistency
+      try {
+        const refreshedVolunteerRecord = await checkUserVolunteerStatus(
+          requestId
+        );
+        console.log(
+          "Refreshed volunteer record after withdrawal:",
+          refreshedVolunteerRecord
+        );
+        setVolunteerRecord(refreshedVolunteerRecord);
+      } catch (volunteerRefreshError) {
+        console.warn(
+          "Could not refresh volunteer status:",
+          volunteerRefreshError
+        );
+      }
     } catch (error) {
       console.error("Error withdrawing from task:", error);
-      setIsVolunteering(false);
 
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
         "Failed to withdraw from task";
       alert(`Error: ${errorMessage}`);
+    } finally {
+      setIsVolunteering(false);
     }
   };
 
@@ -471,6 +697,19 @@ const RequestDetail = () => {
       const refreshedTask = await getRequestById(request.id);
       console.log("Refreshed task data:", refreshedTask);
 
+      // Also fetch volunteers for the refreshed task
+      try {
+        const volunteers = await getTaskVolunteers(request.id);
+        console.log("Received volunteers data after completion:", volunteers);
+        refreshedTask.volunteers = volunteers;
+      } catch (volunteersError) {
+        console.warn(
+          `Could not fetch volunteers for completed task ${request.id}:`,
+          volunteersError
+        );
+        refreshedTask.volunteers = request.volunteers || [];
+      }
+
       // Update the request state with the refreshed data
       setRequest(refreshedTask);
 
@@ -478,6 +717,11 @@ const RequestDetail = () => {
       dispatch(removeTaskFromList(request.id));
 
       alert("Task marked as completed successfully!");
+
+      // Force a page refresh after a short delay to ensure UI updates correctly
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
       console.error("Error marking task as completed:", error);
       console.error("Error details:", error.response?.data);
@@ -492,6 +736,60 @@ const RequestDetail = () => {
     }
   };
 
+  const handleRateAndReview = async () => {
+    if (canRateAndReview) {
+      // Fetch latest volunteers data before opening modal
+      try {
+        const volunteers = await getTaskVolunteers(request.id);
+        console.log(
+          "Fetched volunteers before opening review modal:",
+          volunteers
+        );
+        setRequest((prev) => ({ ...prev, volunteers }));
+      } catch (error) {
+        console.warn("Could not fetch volunteers for review modal:", error);
+      }
+      setRatingDialogOpen(true);
+    }
+  };
+
+  const handleReviewSubmitSuccess = (reviewedUser, rating, comment) => {
+    console.log("Review submitted successfully:", {
+      reviewedUser,
+      rating,
+      comment,
+    });
+    // Optionally refresh the request data or update UI state
+    alert(`Review submitted for ${reviewedUser.name} ${reviewedUser.surname}!`);
+  };
+
+  const handleMenuOpen = (event) => {
+    setMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+  };
+
+  const handleMenuEdit = () => {
+    handleMenuClose();
+    setEditDialogOpen(true);
+  };
+
+  const handleMenuDelete = () => {
+    handleMenuClose();
+    handleDeleteRequest();
+  };
+
+  const handleMenuReport = () => {
+    handleMenuClose();
+    setReportDialogOpen(true);
+  };
+
+  const handleReportSubmitSuccess = () => {
+    alert("Thank you for reporting this task! Our team will review it shortly.");
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
@@ -500,11 +798,27 @@ const RequestDetail = () => {
       {/* Success/Error Messages */}
       {deleteSuccess && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg flex items-center">
+          <div
+            className="px-4 py-3 rounded shadow-lg flex items-center"
+            role="alert"
+            aria-live="polite"
+            style={{
+              backgroundColor: colors.semantic.successBg,
+              border: `1px solid ${colors.semantic.success}`,
+              color: colors.semantic.success,
+            }}
+          >
             <span>Request deleted successfully! Redirecting...</span>
             <button
               onClick={() => setDeleteSuccess(false)}
-              className="ml-4 text-green-700 hover:text-green-900"
+              className="ml-4 transition-colors"
+              style={{ color: colors.semantic.success }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = "0.7";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = "1";
+              }}
             >
               ×
             </button>
@@ -514,11 +828,27 @@ const RequestDetail = () => {
 
       {deleteError && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg flex items-center">
+          <div
+            className="px-4 py-3 rounded shadow-lg flex items-center"
+            role="alert"
+            aria-live="assertive"
+            style={{
+              backgroundColor: colors.semantic.errorBg,
+              border: `1px solid ${colors.semantic.error}`,
+              color: colors.semantic.error,
+            }}
+          >
             <span>{deleteError}</span>
             <button
               onClick={() => setDeleteError(null)}
-              className="ml-4 text-red-700 hover:text-red-900"
+              className="ml-4 transition-colors"
+              style={{ color: colors.semantic.error }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = "0.7";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = "1";
+              }}
             >
               ×
             </button>
@@ -527,44 +857,120 @@ const RequestDetail = () => {
       )}
 
       {/* Main Content */}
-      <div className="flex-grow p-6">
+      <div
+        className="flex-grow p-6"
+        role="main"
+        aria-labelledby="request-title"
+        style={{ backgroundColor: colors.background.primary }}
+      >
         {/* Back Button and Title */}
         <div className="flex items-center mb-6">
           <button
             onClick={() => navigate("/requests")}
-            className="mr-4 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors"
+            className="mr-4 p-2 rounded-full transition-colors"
+            style={{ color: colors.text.secondary }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = colors.text.primary;
+              e.currentTarget.style.backgroundColor = colors.interactive.hover;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = colors.text.secondary;
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
+            aria-label="Back to Requests"
           >
-            <ArrowBackIcon className="w-6 h-6" />
+            <ArrowBackIcon className="w-6 h-6" aria-hidden="true" />
           </button>
-          <h1 className="flex-grow text-3xl font-bold text-gray-900">
+          <h1
+            className="flex-grow text-3xl font-bold"
+            id="request-title"
+            style={{ color: colors.text.primary }}
+          >
             {request.title}
           </h1>
           <div className="flex gap-2 items-center">
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+            <span
+              className="px-3 py-1 text-sm font-medium rounded-full"
+              style={{
+                backgroundColor: colors.interactive.default,
+                color: colors.brand.primary,
+              }}
+            >
               {request.category_display}
             </span>
             <span
-              className="px-3 py-1 text-white text-sm font-medium rounded-full"
-              style={{ backgroundColor: urgency.color }}
+              className="px-3 py-1 text-sm font-medium rounded-full"
+              style={{
+                backgroundColor: urgency.color,
+                color: colors.text.inverse,
+              }}
             >
               {urgency.name} Urgency
             </span>
-            <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors">
-              <MoreVertIcon className="w-6 h-6" />
+            <button
+              onClick={handleMenuOpen}
+              className="p-2 rounded-full transition-colors"
+              style={{ color: colors.text.secondary }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = colors.text.primary;
+                e.currentTarget.style.backgroundColor =
+                  colors.interactive.hover;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = colors.text.secondary;
+                e.currentTarget.style.backgroundColor = "transparent";
+              }}
+              aria-label="More options"
+            >
+              <MoreVertIcon className="w-6 h-6" aria-hidden="true" />
             </button>
+            <Menu
+              anchorEl={menuAnchorEl}
+              open={Boolean(menuAnchorEl)}
+              onClose={handleMenuClose}
+            >
+              {isTaskCreator && (
+                <>
+                  <MenuItem onClick={handleMenuEdit}>
+                    <EditIcon className="w-4 h-4 mr-2" />
+                    Edit
+                  </MenuItem>
+                  <MenuItem onClick={handleMenuDelete}>
+                    <DeleteIcon className="w-4 h-4 mr-2" />
+                    Delete
+                  </MenuItem>
+                </>
+              )}
+              {isAuthenticated && !isTaskCreator && (
+                <MenuItem onClick={handleMenuReport}>
+                  <FlagIcon className="w-4 h-4 mr-2" />
+                  Report
+                </MenuItem>
+              )}
+            </Menu>
           </div>
         </div>
 
         {/* Main Content Card - Improved Layout */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
+        <div
+          className="rounded-lg overflow-hidden mb-6"
+          style={{
+            backgroundColor: colors.background.elevated,
+            boxShadow: `0 10px 15px -3px ${colors.shadow.lg}`,
+          }}
+        >
           <div className="grid grid-cols-1 lg:grid-cols-2">
             {/* Left Column - Image/Gallery */}
             <div className="relative h-120">
               {photos.length > 0 ? (
                 <>
                   <img
-                    src={photos[Math.min(activePhotoIdx, photos.length - 1)]?.src}
-                    alt={photos[Math.min(activePhotoIdx, photos.length - 1)]?.alt}
+                    src={
+                      photos[Math.min(activePhotoIdx, photos.length - 1)]?.src
+                    }
+                    alt={
+                      photos[Math.min(activePhotoIdx, photos.length - 1)]?.alt
+                    }
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
@@ -579,7 +985,9 @@ const RequestDetail = () => {
                           setActivePhotoIdx(idx);
                         }}
                         className={`h-12 w-12 rounded overflow-hidden border ${
-                          idx === activePhotoIdx ? 'border-white' : 'border-transparent'
+                          idx === activePhotoIdx
+                            ? "border-white"
+                            : "border-transparent"
                         }`}
                         aria-label={`Show photo ${idx + 1}`}
                       >
@@ -603,7 +1011,13 @@ const RequestDetail = () => {
               )}
               {/* Image overlay with category */}
               <div className="absolute bottom-4 left-4">
-                <span className="px-3 py-2 bg-black bg-opacity-60 text-white text-sm font-medium rounded-lg">
+                <span
+                  className="px-3 py-2 text-sm font-medium rounded-lg"
+                  style={{
+                    backgroundColor: "rgba(0, 0, 0, 0.6)",
+                    color: colors.text.inverse,
+                  }}
+                >
                   {request.category_display}
                 </span>
               </div>
@@ -613,17 +1027,54 @@ const RequestDetail = () => {
             <div className="p-6 flex flex-col justify-between">
               {/* Requester Info */}
               <div
-                className="flex items-center mb-6 p-3 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                className="flex items-center mb-6 p-3 rounded-lg cursor-pointer transition-colors"
+                style={{
+                  "&:hover": {
+                    backgroundColor: colors.background.tertiary,
+                  },
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor =
+                    colors.background.tertiary;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "transparent";
+                }}
                 onClick={() => navigate(`/profile/${request.creator.id}`)}
+                role="link"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    navigate(`/profile/${request.creator.id}`);
+                  }
+                }}
+                aria-label={`View profile of ${request.creator.name} ${request.creator.surname}`}
               >
-                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg mr-4">
-                  {request.creator.name.charAt(0)}
+                <div className="w-12 h-12 mr-4">
+                  {requesterPhoto ? (
+                    <img
+                      src={requesterPhoto}
+                      alt={`${request.creator.name} ${request.creator.surname}`}
+                      className="w-full h-full rounded-full object-cover border border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                      {request.creator.name.charAt(0)}
+                    </div>
+                  )}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3
+                    className="text-lg font-semibold"
+                    style={{ color: colors.text.primary }}
+                  >
                     {request.creator.name} {request.creator.surname}
                   </h3>
-                  <p className="text-sm text-gray-500">
+                  <p
+                    className="text-sm"
+                    style={{ color: colors.text.secondary }}
+                  >
                     {getTimeAgo(request.created_at)}
                   </p>
                 </div>
@@ -631,40 +1082,70 @@ const RequestDetail = () => {
 
               {/* Description */}
               <div className="mb-6 flex-grow">
-                <p className="text-gray-700 leading-relaxed">
+                <p
+                  className="leading-relaxed"
+                  style={{ color: colors.text.primary }}
+                >
                   {request.description}
                 </p>
               </div>
 
               {/* Details Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                <div className="flex items-center text-gray-600">
-                  <AccessTimeIcon className="w-5 h-5 mr-3 text-gray-400" />
+                <div
+                  className="flex items-center"
+                  style={{ color: colors.text.secondary }}
+                >
+                  <AccessTimeIcon
+                    className="w-5 h-5 mr-3"
+                    style={{ color: colors.text.tertiary }}
+                    aria-hidden="true"
+                  />
                   <span className="text-sm">
                     {formatDate(request.deadline)} -{" "}
                     {formatTime(request.deadline)}
                   </span>
                 </div>
-
-                <div className="flex items-center text-gray-600">
-                  <LocationOnIcon className="w-5 h-5 mr-3 text-gray-400" />
+                <div
+                  className="flex items-center"
+                  style={{ color: colors.text.secondary }}
+                >
+                  <LocationOnIcon
+                    className="w-5 h-5 mr-3"
+                    style={{ color: colors.text.tertiary }}
+                    aria-hidden="true"
+                  />
                   <span className="text-sm">{request.location}</span>
                 </div>
-
-                <div className="flex items-center text-gray-600">
-                  <PersonIcon className="w-5 h-5 mr-3 text-gray-400" />
+                <div
+                  className="flex items-center"
+                  style={{ color: colors.text.secondary }}
+                >
+                  <PersonIcon
+                    className="w-5 h-5 mr-3"
+                    style={{ color: colors.text.tertiary }}
+                    aria-hidden="true"
+                  />
                   <span className="text-sm">
                     {request.volunteer_number} person
                     {request.volunteer_number > 1 ? "s" : ""} required
                   </span>
                 </div>
-
-                <div className="flex items-center text-gray-600">
-                  <PhoneIcon className="w-5 h-5 mr-3 text-gray-400" />
-                  <span className="text-sm">
-                    {request.creator.phone_number}
-                  </span>
-                </div>
+                {canSeePrivateInfo() && request.creator.phone_number && (
+                  <div
+                    className="flex items-center"
+                    style={{ color: colors.text.secondary }}
+                  >
+                    <PhoneIcon
+                      className="w-5 h-5 mr-3"
+                      style={{ color: colors.text.tertiary }}
+                      aria-hidden="true"
+                    />
+                    <span className="text-sm">
+                      {request.creator.phone_number}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Status */}
@@ -673,33 +1154,102 @@ const RequestDetail = () => {
                 request.status === "IN_PROGRESS" ||
                 request.status === "COMPLETED") && (
                 <div className="mb-6">
-                  <p className="text-sm text-gray-500">
-                    {request.status === "POSTED"
-                      ? "Waiting for Volunteers"
-                      : request.status === "ASSIGNED"
-                      ? isTaskCreator
-                        ? acceptedVolunteersCount > 0
+                  {request.status === "COMPLETED" ? (
+                    <div
+                      className="p-4 rounded-lg"
+                      style={{
+                        backgroundColor: colors.semantic.successBg,
+                        border: `1px solid ${colors.semantic.success}`,
+                      }}
+                    >
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0">
+                          <div
+                            className="w-6 h-6 rounded-full flex items-center justify-center"
+                            style={{ backgroundColor: colors.semantic.success }}
+                          >
+                            <span
+                              className="text-sm"
+                              style={{ color: colors.text.inverse }}
+                            >
+                              ✓
+                            </span>
+                          </div>
+                        </div>
+                        <div className="ml-3">
+                          <p
+                            className="font-medium"
+                            style={{ color: colors.semantic.success }}
+                          >
+                            Task Completed Successfully!
+                          </p>
+                          {isTaskCreator && (
+                            <p
+                              className="text-sm mt-1"
+                              style={{ color: colors.semantic.success }}
+                            >
+                              Don't forget to rate and review your volunteers to
+                              help the community.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p
+                      className="text-sm"
+                      style={{ color: colors.text.secondary }}
+                    >
+                      {request.status === "POSTED"
+                        ? "Waiting for Volunteers"
+                        : request.status === "ASSIGNED"
+                        ? isTaskCreator
+                          ? acceptedVolunteersCount > 0
+                            ? "Ready to mark as complete"
+                            : null
+                          : volunteerRecord &&
+                            volunteerRecord.status === "ACCEPTED"
+                          ? "Task Assigned to You"
+                          : acceptedVolunteersCount < request.volunteer_number
+                          ? "Waiting for More Volunteers"
+                          : "Task Assigned"
+                        : request.status === "IN_PROGRESS"
+                        ? isTaskCreator && acceptedVolunteersCount > 0
                           ? "Ready to mark as complete"
-                          : null
-                        : volunteerRecord &&
-                          volunteerRecord.status === "ACCEPTED"
-                        ? "Task Assigned to You"
-                        : acceptedVolunteersCount < request.volunteer_number
-                        ? "Waiting for More Volunteers"
-                        : "Task Assigned"
-                      : request.status === "IN_PROGRESS"
-                      ? isTaskCreator && acceptedVolunteersCount > 0
-                        ? "Ready to mark as complete"
-                        : "In Progress"
-                      : request.status === "COMPLETED"
-                      ? "Task Completed"
-                      : "Unknown Status"}
-                  </p>
+                          : "In Progress"
+                        : "Unknown Status"}
+                    </p>
+                  )}
                 </div>
               )}
 
               {/* Action Buttons */}
               <div className="space-y-3">
+                {/* Rate & Review Button for Requesters (Task Creators) - Show prominently when task is completed */}
+                {canRateAndReview &&
+                  isTaskCreator &&
+                  request?.status === "COMPLETED" && (
+                    <button
+                      onClick={handleRateAndReview}
+                      className="w-full py-3 px-6 text-base font-medium rounded-lg transition-all duration-200 transform hover:scale-105 flex items-center justify-center shadow-lg"
+                      style={{
+                        background:
+                          "linear-gradient(to right, #ec4899, #9333ea)",
+                        color: colors.text.inverse,
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background =
+                          "linear-gradient(to right, #db2777, #7e22ce)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background =
+                          "linear-gradient(to right, #ec4899, #9333ea)";
+                      }}
+                    >
+                      ⭐ Rate & Review Volunteers
+                    </button>
+                  )}
+
                 {/* Primary Action Buttons for Task Creator - Mark as Complete and Select Volunteer */}
                 {canEdit &&
                   (request.status === "POSTED" ||
@@ -712,9 +1262,21 @@ const RequestDetail = () => {
                       {/* Select Volunteer Button */}
                       <button
                         onClick={handleSelectVolunteer}
-                        className={`py-3 px-6 bg-purple-600 text-white text-base font-medium rounded-lg hover:bg-purple-700 transition-colors ${
+                        className={`py-3 px-6 text-base font-medium rounded-lg transition-colors ${
                           canMarkAsComplete ? "" : "w-full"
                         }`}
+                        style={{
+                          backgroundColor: colors.brand.secondary,
+                          color: colors.text.inverse,
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor =
+                            colors.brand.secondaryHover;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor =
+                            colors.brand.secondary;
+                        }}
                       >
                         {request.status === "ASSIGNED"
                           ? "Change Volunteers"
@@ -726,7 +1288,21 @@ const RequestDetail = () => {
                         <button
                           onClick={handleMarkAsComplete}
                           disabled={isMarkingComplete}
-                          className="py-3 px-6 bg-green-600 text-white text-base font-medium rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                          className="py-3 px-6 text-base font-medium rounded-lg disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                          style={{
+                            backgroundColor: isMarkingComplete
+                              ? colors.interactive.disabled
+                              : colors.semantic.success,
+                            color: colors.text.inverse,
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isMarkingComplete)
+                              e.currentTarget.style.opacity = "0.9";
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isMarkingComplete)
+                              e.currentTarget.style.opacity = "1";
+                          }}
                         >
                           {isMarkingComplete ? (
                             <>
@@ -749,7 +1325,21 @@ const RequestDetail = () => {
                     <button
                       onClick={handleMarkAsComplete}
                       disabled={isMarkingComplete}
-                      className="w-full py-3 px-6 bg-green-600 text-white text-base font-medium rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                      className="w-full py-3 px-6 text-base font-medium rounded-lg disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                      style={{
+                        backgroundColor: isMarkingComplete
+                          ? colors.interactive.disabled
+                          : colors.semantic.success,
+                        color: colors.text.inverse,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isMarkingComplete)
+                          e.currentTarget.style.opacity = "0.9";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isMarkingComplete)
+                          e.currentTarget.style.opacity = "1";
+                      }}
                     >
                       {isMarkingComplete ? (
                         <>
@@ -766,7 +1356,20 @@ const RequestDetail = () => {
                   <button
                     onClick={handleVolunteer}
                     disabled={isVolunteering}
-                    className="w-full py-3 px-6 bg-green-600 text-white text-base font-medium rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                    className="w-full py-3 px-6 text-base font-medium rounded-lg disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                    style={{
+                      backgroundColor: isVolunteering
+                        ? colors.interactive.disabled
+                        : colors.semantic.success,
+                      color: colors.text.inverse,
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isVolunteering)
+                        e.currentTarget.style.opacity = "0.9";
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isVolunteering) e.currentTarget.style.opacity = "1";
+                    }}
                   >
                     <VolunteerActivismIcon className="w-5 h-5 mr-2" />
                     {isVolunteering
@@ -779,17 +1382,67 @@ const RequestDetail = () => {
                   <button
                     onClick={handleWithdrawVolunteer}
                     disabled={isVolunteering}
-                    className="w-full py-3 px-6 border-2 border-red-500 text-red-600 text-base font-medium rounded-lg hover:bg-red-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                    className="w-full py-3 px-6 border-2 text-base font-medium rounded-lg disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                    style={{
+                      borderColor: isVolunteering
+                        ? colors.border.secondary
+                        : colors.semantic.error,
+                      color: isVolunteering
+                        ? colors.text.disabled
+                        : colors.semantic.error,
+                      backgroundColor: "transparent",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isVolunteering)
+                        e.currentTarget.style.backgroundColor =
+                          colors.semantic.errorBg;
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isVolunteering)
+                        e.currentTarget.style.backgroundColor = "transparent";
+                    }}
                   >
                     <VolunteerActivismIcon className="w-5 h-5 mr-2" />
                     {isVolunteering ? "Withdrawing..." : "Withdraw from Task"}
                   </button>
                 )}
 
+                {/* Rate & Review Button for Volunteers (replaces Withdraw button after completion) */}
+                {canRateAndReview && !isTaskCreator && (
+                  <button
+                    onClick={handleRateAndReview}
+                    className="w-full py-3 px-6 text-base font-medium rounded-lg transition-colors flex items-center justify-center"
+                    style={{
+                      backgroundColor: "#ec4899",
+                      color: colors.text.inverse,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "#db2777";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "#ec4899";
+                    }}
+                  >
+                    ⭐ Rate & Review Requester
+                  </button>
+                )}
+
                 {!isAuthenticated && (
                   <button
                     onClick={() => navigate("/login")}
-                    className="w-full py-3 px-6 bg-blue-600 text-white text-base font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                    className="w-full py-3 px-6 text-base font-medium rounded-lg transition-colors"
+                    style={{
+                      backgroundColor: colors.brand.primary,
+                      color: colors.text.inverse,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor =
+                        colors.brand.primaryHover;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor =
+                        colors.brand.primary;
+                    }}
                   >
                     Login to Volunteer
                   </button>
@@ -800,7 +1453,19 @@ const RequestDetail = () => {
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={handleEditTask}
-                      className="py-2 px-4 border-2 border-amber-500 text-amber-600 text-sm font-medium rounded-lg hover:bg-amber-50 transition-colors flex items-center justify-center"
+                      className="py-2 px-4 border-2 text-sm font-medium rounded-lg transition-colors flex items-center justify-center"
+                      style={{
+                        borderColor: colors.semantic.warning,
+                        color: colors.semantic.warning,
+                        backgroundColor: "transparent",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor =
+                          colors.semantic.warningBg;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                      }}
                     >
                       <EditIcon className="w-4 h-4 mr-2" />
                       Edit
@@ -808,7 +1473,25 @@ const RequestDetail = () => {
                     <button
                       onClick={handleDeleteTask}
                       disabled={isDeleting}
-                      className="py-2 px-4 border-2 border-red-500 text-red-600 text-sm font-medium rounded-lg hover:bg-red-50 disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                      className="py-2 px-4 border-2 text-sm font-medium rounded-lg disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                      style={{
+                        borderColor: isDeleting
+                          ? colors.border.secondary
+                          : colors.semantic.error,
+                        color: isDeleting
+                          ? colors.text.disabled
+                          : colors.semantic.error,
+                        backgroundColor: "transparent",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isDeleting)
+                          e.currentTarget.style.backgroundColor =
+                            colors.semantic.errorBg;
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isDeleting)
+                          e.currentTarget.style.backgroundColor = "transparent";
+                      }}
                     >
                       {isDeleting ? (
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500 mr-2"></div>
@@ -830,6 +1513,22 @@ const RequestDetail = () => {
         onClose={() => setEditDialogOpen(false)}
         request={request}
         onSubmit={handleEditSubmit}
+      />
+
+      <RatingReviewModal
+        open={ratingDialogOpen}
+        onClose={() => setRatingDialogOpen(false)}
+        task={request}
+        currentUser={currentUser}
+        onSubmitSuccess={handleReviewSubmitSuccess}
+      />
+
+      <ReportModal
+        open={reportDialogOpen}
+        onClose={() => setReportDialogOpen(false)}
+        task={request}
+        currentUser={currentUser}
+        onSubmitSuccess={handleReportSubmitSuccess}
       />
     </div>
   );

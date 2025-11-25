@@ -19,13 +19,13 @@ export const fetchUserProfile = createAsyncThunk(
 
 export const fetchUserReviews = createAsyncThunk(
   'profile/fetchUserReviews',
-  async ({ userId, page = 1, limit = 20 }, { rejectWithValue }) => {
+  async ({ userId, page = 1, limit = 20, role = null }, { rejectWithValue }) => {
     try {
       // For 'current' user, replace with the actual ID from local storage
       const currentUserId = localStorage.getItem('userId');
       const actualUserId = userId === 'current' && currentUserId ? currentUserId : userId;
       
-      const response = await profileService.getUserReviews(actualUserId, page, limit);
+      const response = await profileService.getUserReviews(actualUserId, page, limit, 'createdAt', 'desc', role);
       return response;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.response?.data || 'Error fetching reviews');
@@ -51,13 +51,13 @@ export const fetchUserCreatedRequests = createAsyncThunk(
 
 export const fetchUserVolunteeredRequests = createAsyncThunk(
   'profile/fetchUserVolunteeredRequests',
-  async ({ userId, page = 1, limit = 10 }, { rejectWithValue }) => {
+  async ({ userId, page = 1, limit = 10, taskStatus = null }, { rejectWithValue }) => {
     try {
       // For 'current' user, replace with the actual ID from local storage
       const currentUserId = localStorage.getItem('userId');
       const actualUserId = userId === 'current' && currentUserId ? currentUserId : userId;
       
-      const response = await profileService.getUserVolunteeredRequests(actualUserId, page, limit);
+      const response = await profileService.getUserVolunteeredRequests(actualUserId, page, limit, taskStatus);
       return response;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.response?.data || 'Error fetching volunteered requests');
@@ -240,7 +240,18 @@ const profileSlice = createSlice({
       })
       .addCase(uploadProfilePicture.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = {...state.user, profilePicture: action.payload.profilePicture};
+        const newPhoto =
+          action.payload?.profile_photo ||
+          action.payload?.profilePhoto ||
+          action.payload?.profilePicture ||
+          action.payload?.photo ||
+          null;
+        state.user = {
+          ...state.user,
+          profile_photo: newPhoto,
+          profilePhoto: newPhoto,
+          profilePicture: newPhoto,
+        };
         state.error = null;
         state.uploadSuccess = true;
       })

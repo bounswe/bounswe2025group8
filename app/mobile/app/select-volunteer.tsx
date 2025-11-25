@@ -1,53 +1,27 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, FlatList, ActivityIndicator, Alert, Platform, SafeAreaView } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
-import { Colors } from '../constants/Colors';
-import { useColorScheme } from 'react-native';
-import { getTaskApplicants, Volunteer, updateVolunteerAssignmentStatus } from '../lib/api';
-
-// Helper to parse currentVolunteers, assuming it's a JSON string of Volunteer[] or UserProfile[]
-const parseCurrentVolunteers = (param: string | string[] | undefined): Volunteer[] => {
-    if (typeof param === 'string') {
-        try {
-            const parsed = JSON.parse(param);
-            // Basic validation if it's an array (further validation of items might be needed)
-            return Array.isArray(parsed) ? parsed : [];
-        } catch (e) {
-            console.error("Failed to parse currentVolunteers:", e);
-            return [];
-        }
-    }
-    return [];
-};
-
+import { getTaskApplicants, Volunteer, batchAssignVolunteers, BACKEND_BASE_URL } from '../lib/api';
+import type { ThemeTokens } from '../constants/Colors';
 
 export default function SelectVolunteer() {
     const params = useLocalSearchParams();
     const router = useRouter();
     const { colors } = useTheme();
-    const colorScheme = useColorScheme();
-    const themeColors = Colors[colorScheme || 'light'];
+    const themeColors = colors as ThemeTokens;
 
     const taskIdParam = (params.taskId as string | undefined) ?? (params.id as string | undefined);
     const taskId = taskIdParam ? parseInt(taskIdParam, 10) : null;
     const requiredVolunteers = params.requiredVolunteers ? parseInt(params.requiredVolunteers as string, 10) : 1;
-    
-    // Assuming currentVolunteers is passed as a JSON string of Volunteer[]
-    // For simplicity, we'll treat currentVolunteers as those already accepted.
-    // Their user objects will be used to avoid re-listing them if they somehow appear in 'PENDING' list.
-    const initiallyAssignedVolunteers: Volunteer[] = useMemo(() => parseCurrentVolunteers(params.currentVolunteers), [params.currentVolunteers]);
 
     const [applicants, setApplicants] = useState<Volunteer[]>([]);
+    const [assignedVolunteers, setAssignedVolunteers] = useState<Volunteer[]>([]);
     const [selectedApplicants, setSelectedApplicants] = useState<Volunteer[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isAssigning, setIsAssigning] = useState(false);
-
-    const maxSelectable = useMemo(() => {
-        return Math.max(0, requiredVolunteers - initiallyAssignedVolunteers.length);
-    }, [requiredVolunteers, initiallyAssignedVolunteers]);
 
     useEffect(() => {
         if (!taskId) {
@@ -56,52 +30,53 @@ export default function SelectVolunteer() {
             return;
         }
 
-        const fetchApplicants = async () => {
+        const fetchVolunteers = async () => {
             setIsLoading(true);
             setError(null);
             try {
-                // Fetch PENDING applicants
-                const response = await getTaskApplicants(taskId, 'PENDING', 1, 50); // Fetch up to 50 pending applicants
-                if (response.status === 'success') {
-                    // Filter out any users who might already be in initiallyAssignedVolunteers (by user ID)
-                    const assignedUserIds = new Set(initiallyAssignedVolunteers.map(v => v.user.id));
-                    const pendingApplicants = response.data.volunteers.filter(app => !assignedUserIds.has(app.user.id));
+                // Fetch both ACCEPTED and PENDING volunteers
+                const [acceptedResponse, pendingResponse] = await Promise.all([
+                    getTaskApplicants(taskId, 'ACCEPTED', 1, 50),
+                    getTaskApplicants(taskId, 'PENDING', 1, 50)
+                ]);
+
+                if (acceptedResponse.status === 'success') {
+                    setAssignedVolunteers(acceptedResponse.data.volunteers);
+                    // Pre-select assigned volunteers
+                    setSelectedApplicants(acceptedResponse.data.volunteers);
+                }
+
+                if (pendingResponse.status === 'success') {
+                    // Filter out any users who are already assigned
+                    const assignedUserIds = new Set(acceptedResponse.data.volunteers.map(v => v.user.id));
+                    const pendingApplicants = pendingResponse.data.volunteers.filter(app => !assignedUserIds.has(app.user.id));
                     setApplicants(pendingApplicants);
-                } else {
-                    setError(response.message || "Failed to fetch applicants.");
+                } else if (acceptedResponse.status !== 'success') {
+                    setError(acceptedResponse.message || "Failed to fetch volunteers.");
                 }
             } catch (err: any) {
                 setError(err.message || "An unexpected error occurred.");
-                console.error("Fetch applicants error:", err);
+                console.error("Fetch volunteers error:", err);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchApplicants();
-    }, [taskId, initiallyAssignedVolunteers]);
+        fetchVolunteers();
+    }, [taskId]);
 
-    const toggleSelectApplicant = (applicant: Volunteer, forceSelect?: boolean) => {
+    const toggleSelectApplicant = (applicant: Volunteer) => {
         setSelectedApplicants(prevSelected => {
-            if (forceSelect) {
-                if (prevSelected.some(v => v.id === applicant.id)) {
-                    return prevSelected;
-                }
-                if (prevSelected.length < maxSelectable) {
-                    return [...prevSelected, applicant];
-                }
-                return prevSelected;
-            }
             const isAlreadySelected = prevSelected.some(v => v.id === applicant.id);
             if (isAlreadySelected) {
                 return prevSelected.filter(v => v.id !== applicant.id);
             } else {
-                if (prevSelected.length < maxSelectable) {
-                    return [...prevSelected, applicant];
-                } else {
-                    Alert.alert("Selection Limit", `You can select up to ${maxSelectable} new volunteer(s).`);
+                // Check if we exceed the required number
+                if (prevSelected.length >= requiredVolunteers) {
+                    Alert.alert("Selection Limit", `You can select up to ${requiredVolunteers} volunteer(s).`);
                     return prevSelected;
                 }
+                return [...prevSelected, applicant];
             }
         });
     };
@@ -112,9 +87,15 @@ export default function SelectVolunteer() {
             return;
         }
 
+        const volunteerIds = selectedApplicants.map(v => v.id);
+        const actionText = selectedApplicants.length === assignedVolunteers.length && 
+                          selectedApplicants.every(sel => assignedVolunteers.some(assigned => assigned.id === sel.id))
+                          ? "update assignments" 
+                          : `assign ${selectedApplicants.length} volunteer(s)`;
+
         Alert.alert(
             "Confirm Assignment", 
-            `Are you sure you want to assign ${selectedApplicants.length} volunteer(s) to this task?`, 
+            `Are you sure you want to ${actionText} to this task?`, 
             [
                 { text: "Cancel", style: "cancel" },
                 { 
@@ -125,46 +106,23 @@ export default function SelectVolunteer() {
                             return;
                         }
                         setIsAssigning(true);
-                        const assignmentPromises = selectedApplicants.map(applicant => 
-                            updateVolunteerAssignmentStatus(taskId, applicant.id, 'accept')
-                        );
                         try {
-                            const results = await Promise.allSettled(assignmentPromises);
+                            const response = await batchAssignVolunteers(taskId, volunteerIds);
                             
-                            const successfulAssignments = results.filter(r => r.status === 'fulfilled' && r.value.status === 'success').length;
-                            const failedAssignments = results.length - successfulAssignments;
-
-                            let message = `Successfully assigned ${successfulAssignments} volunteer(s).`;
-                            if (failedAssignments > 0) {
-                                message += `\nFailed to assign ${failedAssignments} volunteer(s).`;
-                                results.forEach(r => {
-                                    if (r.status === 'rejected') {
-                                        console.error("Assignment error:", r.reason);
-                                    } else if (r.status === 'fulfilled' && r.value.status !== 'success') {
-                                        console.error("Assignment API error:", r.value.message);
-                                    }
-                                });
-                            }
-
-                            Alert.alert("Assignment Complete", message, [
+                            Alert.alert("Assignment Complete", response.message || `Successfully assigned ${response.data.total_assigned} volunteer(s).`, [
                                 {
                                     text: "OK",
                                     onPress: () => {
-                                        // Navigate back to request details, potentially with a refresh param
-                                        // router.replace({ pathname: '/r-request-details', params: { taskId: taskId.toString(), refresh: 'true' } });
-                                        // For now, just go back. The refresh logic needs to be handled in r-request-details.
                                         if (router.canGoBack()) router.back();
-                                        else router.replace(`/r-request-details?taskId=${taskId}`);
+                                        else router.replace(`/r-request-details?id=${taskId}`);
                                     }
                                 }
                             ]);
                         } catch (e: any) {
-                            // This catch is for Promise.allSettled itself, which shouldn't really happen
-                            Alert.alert("Error", "An unexpected error occurred during assignment.");
-                            console.error("Unexpected assignment error:", e);
+                            Alert.alert("Error", e.message || "An unexpected error occurred during assignment.");
+                            console.error("Assignment error:", e);
                         } finally {
                             setIsAssigning(false);
-                            setSelectedApplicants([]); // Clear selection
                         }
                     }
                 }
@@ -174,23 +132,49 @@ export default function SelectVolunteer() {
 
     const renderApplicantItem = ({ item }: { item: Volunteer }) => {
         const isSelected = selectedApplicants.some(v => v.id === item.id);
-        const canSelectMore = selectedApplicants.length < maxSelectable;
+        const isAssigned = assignedVolunteers.some(v => v.id === item.id);
+        const canSelectMore = selectedApplicants.length < requiredVolunteers;
 
         return (
-            <View style={styles.volunteerRow}>
+            <View style={[styles.volunteerRow, { borderBottomColor: themeColors.border }]}>
                 <TouchableOpacity
                     style={[styles.volunteerInfo, { backgroundColor: themeColors.card }]}
                     activeOpacity={0.8}
                     onPress={() => {
                         router.push({ pathname: '/profile', params: { userId: String(item.user.id) } });
                     }}
+                    accessible
+
+                    accessibilityRole="button"
+                    accessibilityLabel={`View profile for ${item.user.name} ${item.user.surname}`}
                 >
                     <Image
-                        source={item.user.photo ? { uri: item.user.photo } : require('../assets/images/avatar.png')}
-                        style={styles.avatar}
+                        source={
+                            item.user.profile_photo || item.user.photo
+                                ? {
+                                    uri: (item.user.profile_photo || item.user.photo).startsWith('http')
+                                        ? item.user.profile_photo || item.user.photo
+                                        : `${BACKEND_BASE_URL}${item.user.profile_photo || item.user.photo}`,
+                                }
+                                : require('../assets/images/avatar.png')
+                        }
+                        style={[styles.avatar, { backgroundColor: themeColors.border }]}
                     />
                     <View style={styles.volunteerTextContainer}>
-                        <Text style={[styles.volunteerName, { color: themeColors.text }]}>{item.user.name} {item.user.surname}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={[styles.volunteerName, { color: themeColors.text }]}>{item.user.name} {item.user.surname}</Text>
+                            {isAssigned && (
+                                <Text
+                                    style={[
+                                        styles.assignedBadge,
+                                        { backgroundColor: themeColors.primary, color: themeColors.onPrimary },
+                                    ]}
+                                >
+                                    {' '}
+                                    Assigned
+                                </Text>
+                            )}
+                        </View>
                         <Text style={[styles.volunteerUsername, { color: themeColors.textMuted }]}>@{item.user.username}</Text>
                         <Text style={[styles.volunteerRating, { color: themeColors.textMuted }]}>Rating: {item.user.rating ? Number(item.user.rating).toFixed(1) : 'N/A'}</Text>
                     </View>
@@ -198,18 +182,23 @@ export default function SelectVolunteer() {
                 <TouchableOpacity
                     style={[
                         styles.checkButton,
-                        { 
-                            backgroundColor: isSelected ? themeColors.primary : themeColors.background,
-                            borderColor: themeColors.primary 
-                        }
+                        {
+                            backgroundColor: isSelected ? themeColors.primary : themeColors.card,
+                            borderColor: themeColors.primary,
+                        },
                     ]}
                     onPress={() => toggleSelectApplicant(item)}
-                    disabled={!isSelected && !canSelectMore && selectedApplicants.length >= maxSelectable}
+                    disabled={!isSelected && !canSelectMore}
+                    accessible
+
+                    accessibilityRole="button"
+                    accessibilityLabel={`${isSelected ? 'Deselect' : 'Select'} ${item.user.name}`}
+                    accessibilityState={{ selected: isSelected, disabled: !isSelected && !canSelectMore }}
                 >
                     <Ionicons 
                         name={isSelected ? "checkmark-circle" : "ellipse-outline"} 
                         size={28} 
-                        color={isSelected ? themeColors.background : themeColors.primary} 
+                        color={isSelected ? themeColors.onPrimary : themeColors.primary} 
                     />
                 </TouchableOpacity>
             </View>
@@ -229,58 +218,49 @@ export default function SelectVolunteer() {
         return (
             <View style={[styles.centered, { backgroundColor: themeColors.background }]}>
                 <Text style={{ color: themeColors.error, marginBottom: 10 }}>Error: {error}</Text>
-                <TouchableOpacity onPress={() => router.back()} style={[styles.actionButton, { backgroundColor: themeColors.primary }]}>
-                    <Text style={styles.buttonText}>Go Back</Text>
+                <TouchableOpacity
+                    onPress={() => router.back()}
+                    style={[styles.actionButton, { backgroundColor: themeColors.primary }]}
+                    accessible
+
+                    accessibilityRole="button"
+                    accessibilityLabel="Go back"
+                >
+                    <Text style={[styles.buttonText, { color: themeColors.onPrimary }]}>Go Back</Text>
                 </TouchableOpacity>
             </View>
         );
     }
-    
-    const remainingSlots = maxSelectable - selectedApplicants.length;
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background }}>
             <View style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border, borderBottomWidth: 1 }]}>
-                <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/feed')} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color={themeColors.text} />
+                <TouchableOpacity
+                  onPress={() => router.canGoBack() ? router.back() : router.replace('/feed')}
+                  style={styles.backButton}
+                  accessible
+
+                  accessibilityRole="button"
+                  accessibilityLabel="Go back"
+                >
+                    <Ionicons name="arrow-back" size={24} color={themeColors.text}  accessible={false} importantForAccessibility="no"/>
                 </TouchableOpacity>
                 <Text style={[styles.title, { color: themeColors.text }]}>Select Volunteers</Text>
                 <View style={{width: 24}} />{/* Spacer */}
             </View>
 
-            {initiallyAssignedVolunteers.length > 0 && (
-                <View style={[styles.assignedSection, { backgroundColor: themeColors.card, margin:10, borderRadius: 8, padding: 10}]}>
-                    <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Already Assigned ({initiallyAssignedVolunteers.length}):</Text>
-                    {initiallyAssignedVolunteers.map(v => (
-                        <View key={v.id} style={[styles.assignedVolunteerItem, { borderBottomColor: themeColors.border}]}>
-                             <Image 
-                                source={v.user.photo ? { uri: v.user.photo } : require('../assets/images/avatar.png')} 
-                                style={styles.assignedAvatar} 
-                            />
-                            <Text style={{color: themeColors.textMuted}}>@{v.user.username} ({v.status_display})</Text>
-                        </View>
-                    ))}
-                </View>
-            )}
-            
             <Text style={[styles.infoText, { color: themeColors.textMuted, marginHorizontal: 15, marginVertical: 5}]}>
-                Required: {requiredVolunteers}, Assigned: {initiallyAssignedVolunteers.length}, Max New Selections: {maxSelectable}
+                Required: {requiredVolunteers}, Currently Selected: {selectedApplicants.length}
             </Text>
             <Text style={[styles.infoText, { color: themeColors.primary, marginHorizontal: 15, marginBottom: 10}]}>
-                {selectedApplicants.length > 0 ? `${selectedApplicants.length} selected. ${remainingSlots < 0 ? 0 : remainingSlots} slot(s) remaining.` : `Select up to ${maxSelectable} volunteer(s).`}
+                {selectedApplicants.length > 0 
+                    ? `${selectedApplicants.length} selected. ${requiredVolunteers - selectedApplicants.length} slot(s) remaining.` 
+                    : `Select up to ${requiredVolunteers} volunteer(s).`}
             </Text>
 
-
-            {applicants.length === 0 && maxSelectable > 0 && (
-                <Text style={[styles.centeredText, { color: themeColors.textMuted }]}>No pending applicants for this task.</Text>
-            )}
-             {applicants.length === 0 && maxSelectable <= 0 && (
-                <Text style={[styles.centeredText, { color: themeColors.textMuted }]}>All volunteer slots are filled or no new selections possible.</Text>
-            )}
-
-            {maxSelectable > 0 && applicants.length > 0 && (
+            {(assignedVolunteers.length > 0 || applicants.length > 0) && (
                 <FlatList
-                    data={applicants}
+                    data={[...assignedVolunteers, ...applicants]}
                     renderItem={renderApplicantItem}
                     keyExtractor={(item) => item.id.toString()}
                     contentContainerStyle={styles.listContainer}
@@ -288,7 +268,11 @@ export default function SelectVolunteer() {
                 />
             )}
 
-            {(maxSelectable > 0 || selectedApplicants.length > 0) && (
+            {assignedVolunteers.length === 0 && applicants.length === 0 && (
+                <Text style={[styles.centeredText, { color: themeColors.textMuted }]}>No volunteers available for this task.</Text>
+            )}
+
+            {selectedApplicants.length > 0 && (
                  <TouchableOpacity
                     style={[
                         styles.confirmButton, 
@@ -298,11 +282,24 @@ export default function SelectVolunteer() {
                     ]}
                     onPress={handleConfirmAssignment}
                     disabled={selectedApplicants.length === 0 || isAssigning}
+                    accessible
+
+                    accessibilityRole="button"
+                    accessibilityLabel="Confirm volunteer assignment"
+                    accessibilityState={{ disabled: selectedApplicants.length === 0 || isAssigning }}
                 >
                     {isAssigning ? (
-                        <ActivityIndicator color={themeColors.card} />
+                        <ActivityIndicator color={themeColors.onPrimary} />
                     ) : (
-                        <Text style={[styles.buttonText, {color: selectedApplicants.length > 0 ? themeColors.card : themeColors.textMuted}]}>
+                        <Text
+                            style={[
+                                styles.buttonText,
+                                {
+                                    color:
+                                        selectedApplicants.length > 0 ? themeColors.onPrimary : themeColors.textMuted,
+                                },
+                            ]}
+                        >
                             Confirm {selectedApplicants.length > 0 ? `${selectedApplicants.length} Assignment(s)` : 'Assignments'}
                         </Text>
                     )}
@@ -370,7 +367,6 @@ const styles = StyleSheet.create({
         height: 50,
         borderRadius: 25,
         marginRight: 12,
-        backgroundColor: '#e0e0e0', // Placeholder color
     },
     volunteerTextContainer: {
         flex: 1, // Allow text to wrap
@@ -402,7 +398,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     buttonText: {
-        color: '#fff',
         fontSize: 17,
         fontWeight: '600',
     },
@@ -414,28 +409,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         marginTop: 10,
     },
-    assignedSection: {
-      // Styles for the section showing already assigned volunteers
+    assignedBadge: {
+        fontSize: 11,
+        fontWeight: '600',
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 4,
+        marginLeft: 6,
     },
-    sectionTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginBottom: 5,
-        marginLeft: 5,
-    },
-    assignedVolunteerItem: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingVertical: 5,
-        paddingHorizontal: 5,
-        borderBottomWidth: 1,
-        // borderBottomColor set dynamically
-    },
-    assignedAvatar: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-        marginRight: 8,
-        backgroundColor: '#e0e0e0',
-    }
 }); 

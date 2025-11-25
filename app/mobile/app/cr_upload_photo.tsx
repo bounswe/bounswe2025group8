@@ -7,6 +7,7 @@ import { useTheme } from '@react-navigation/native';
 
 export default function CRUploadPhoto() {
   const { colors } = useTheme();
+  const themeColors = colors as any;
   const router = useRouter();
   const params = useLocalSearchParams();
   const [photos, setPhotos] = useState<{ uri: string; name: string }[]>([]);
@@ -47,28 +48,48 @@ export default function CRUploadPhoto() {
             <Image source={require('../assets/images/logo.png')} style={{ width: 28, height: 28, resizeMode: 'contain' }} />
           </View>
           <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => router.push('/notifications')} style={{ marginRight: 16 }}>
-              <Ionicons name="notifications-outline" size={24} color={colors.text} />
+            <TouchableOpacity
+              onPress={() => router.push('/notifications')}
+              style={{ marginRight: 16 }}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Open notifications"
+            >
+              <Ionicons name="notifications-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/settings')}>
-              <Ionicons name="settings-outline" size={24} color={colors.text} />
+            <TouchableOpacity
+              onPress={() => router.push('/settings')}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Open settings"
+            >
+              <Ionicons name="settings-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={styles.titleRow}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => router.back()}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <Ionicons name="arrow-back" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
           </TouchableOpacity>
           <Text style={[styles.pageTitle, { color: colors.text }]}>Create Request</Text>
         </View>
         <Text style={[styles.pageSubtitle, { color: `${colors.text}99` }]}>Upload Photos</Text>
 
         <View style={styles.tabBar}>
-          <View style={styles.inactiveTab} />
+          <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
           <View style={[styles.activeTab, { backgroundColor: colors.primary }]} />
-          <View style={styles.inactiveTab} />
-          <View style={styles.inactiveTab} />
+          <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
+          <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
         </View>
 
         <TouchableOpacity
@@ -78,6 +99,12 @@ export default function CRUploadPhoto() {
           ]}
           onPress={pickImage}
           disabled={photos.length >= MAX_PHOTOS}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Browse photos"
+          accessibilityState={{ disabled: photos.length >= MAX_PHOTOS }}
+          testID="create-request-browse-photos"
         >
           <Text style={[styles.browseBtnText, { color: colors.primary }]}>+ Browse photos</Text>
         </TouchableOpacity>
@@ -90,6 +117,10 @@ export default function CRUploadPhoto() {
             <TouchableOpacity
               style={[styles.removeBtn, { borderColor: `${colors.primary}66` }]}
               onPress={() => removePhoto(photo.name)}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel={`Remove photo ${photo.name}`}
             >
               <Text style={[styles.removeBtnText, { color: colors.primary }]}>× {photo.name}</Text>
             </TouchableOpacity>
@@ -99,13 +130,23 @@ export default function CRUploadPhoto() {
         <TouchableOpacity
           style={[styles.nextBtn, { backgroundColor: colors.primary }]}
           onPress={() => {
+            // Serialize photos as JSON string to pass through route params
+            const photosData = JSON.stringify(photos);
             router.push({
               pathname: '/cr_deadline',
-              params,
+              params: {
+                ...params,
+                photos: photosData,
+              },
             });
           }}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Next step set deadline"
+          testID="create-request-upload-next-button"
         >
-          <Text style={styles.nextBtnText}>Next</Text>
+          <Text style={[styles.nextBtnText, { color: themeColors.onPrimary }]}>Next</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -115,12 +156,10 @@ export default function CRUploadPhoto() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   container: {
     padding: 20,
     paddingBottom: 40,
-    backgroundColor: '#fff',
     flexGrow: 1,
   },
   header: {
@@ -133,7 +172,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F3F0FF',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -153,10 +191,8 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#222',
   },
   pageSubtitle: {
-    color: '#B0B0B0',
     fontWeight: 'bold',
     marginBottom: 8,
     marginTop: 2,
@@ -169,26 +205,22 @@ const styles = StyleSheet.create({
   activeTab: {
     flex: 1,
     height: 3,
-    backgroundColor: '#7C6AED',
     borderRadius: 2,
     marginRight: 2,
   },
   inactiveTab: {
     flex: 1,
     height: 3,
-    backgroundColor: '#E5E5E5',
     borderRadius: 2,
     marginRight: 2,
   },
   browseBtn: {
-    backgroundColor: '#F6F3FF',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
     marginBottom: 16,
   },
   browseBtnText: {
-    color: '#7C6AED',
     fontWeight: 'bold',
     fontSize: 16,
   },
@@ -220,13 +252,11 @@ const styles = StyleSheet.create({
   },
   nextBtn: {
     marginTop: 12,
-    backgroundColor: '#7C6AED',
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
   },
   nextBtnText: {
-    color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },

@@ -14,6 +14,8 @@ import DataObjectIcon from "@mui/icons-material/DataObject";
 import logo from "../assets/logo.png";
 import useAuth from "../features/authentication/hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
+import { toAbsoluteUrl } from "../utils/url";
+import { useUnreadCount } from "../features/notification";
 // import { logout } from "../store/slices/authSlice";
 // import { logout as logoutService } from "../services/authService";
 
@@ -22,6 +24,38 @@ const Sidebar = () => {
   const location = useLocation();
   const { isAuthenticated, currentUser, userRole, logout } = useAuth();
   const { colors, theme } = useTheme();
+  const fallbackName =
+    `${currentUser?.name || ""} ${currentUser?.surname || ""}`.trim() ||
+    currentUser?.username ||
+    currentUser?.email ||
+    "User";
+
+  // Get initials from name and surname
+  const getInitials = () => {
+    const name = currentUser?.name || "";
+    const surname = currentUser?.surname || "";
+
+    if (name && surname) {
+      return `${name.charAt(0)}${surname.charAt(0)}`.toUpperCase();
+    } else if (name) {
+      return name.charAt(0).toUpperCase();
+    } else if (currentUser?.username) {
+      return currentUser.username.charAt(0).toUpperCase();
+    }
+    return "U";
+  };
+
+  const resolvedAvatar = toAbsoluteUrl(
+    currentUser?.profile_photo ||
+      currentUser?.profilePhoto ||
+      currentUser?.profilePicture ||
+      currentUser?.avatar
+  );
+
+  const { unreadCount } = useUnreadCount({
+    autoFetch: isAuthenticated,
+    pollInterval: isAuthenticated ? 60000 : 0, // Poll every minute if authenticated
+  });
 
   const handleLogout = async () => {
     try {
@@ -75,7 +109,11 @@ const Sidebar = () => {
       </div>
 
       {/* Navigation Menu */}
-      <nav className="px-4 py-2">
+      <nav
+        className="px-4 py-2"
+        role="navigation"
+        aria-label="Primary navigation"
+      >
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
 
@@ -86,7 +124,9 @@ const Sidebar = () => {
                 className="w-full flex items-center px-3 py-2 rounded-lg transition-colors"
                 style={{
                   backgroundColor: isActive
-                    ? (theme === "high-contrast" ? "#1E40AF" : colors.brand.primary)
+                    ? theme === "high-contrast"
+                      ? "#1E40AF"
+                      : colors.brand.primary
                     : "transparent",
                   color: isActive ? "#FFFFFF" : colors.text.primary,
                 }}
@@ -143,14 +183,17 @@ const Sidebar = () => {
           }}
           className="w-full flex items-center justify-center px-4 py-3 rounded-full transition-colors shadow-md"
           style={{
-            backgroundColor: theme === "high-contrast" ? "#1E40AF" : colors.brand.primary,
+            backgroundColor:
+              theme === "high-contrast" ? "#1E40AF" : colors.brand.primary,
             color: "#FFFFFF",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = theme === "high-contrast" ? "#1E40AF" : colors.brand.primaryHover;
+            e.currentTarget.style.backgroundColor =
+              theme === "high-contrast" ? "#1E40AF" : colors.brand.primaryHover;
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = theme === "high-contrast" ? "#1E40AF" : colors.brand.primary;
+            e.currentTarget.style.backgroundColor =
+              theme === "high-contrast" ? "#1E40AF" : colors.brand.primary;
           }}
           onFocus={(e) => {
             if (theme === "high-contrast") {
@@ -273,15 +316,22 @@ const Sidebar = () => {
             }}
             aria-label="View your profile"
           >
-            <img
-              src={
-                currentUser?.avatar ||
-                currentUser?.profilePicture ||
-                "https://randomuser.me/api/portraits/men/32.jpg"
-              }
-              alt={`${currentUser?.name || "User"}'s avatar`}
-              className="w-10 h-10 rounded-full object-cover"
-            />
+            {resolvedAvatar ? (
+              <img
+                src={resolvedAvatar}
+                alt={`${currentUser?.name || "User"}'s avatar`}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm"
+                style={{
+                  backgroundColor: colors.brand.primary,
+                }}
+              >
+                {getInitials()}
+              </div>
+            )}
           </div>
 
           {/* Username and buttons on the right */}
@@ -320,7 +370,7 @@ const Sidebar = () => {
             <div className="flex items-center">
               <button
                 title="Notifications"
-                className="p-1 mr-2 rounded transition-colors"
+                className="p-1 mr-2 rounded transition-colors relative"
                 onClick={() => navigate("/notifications")}
                 style={{ color: colors.text.secondary }}
                 onMouseEnter={(e) => {
@@ -341,9 +391,27 @@ const Sidebar = () => {
                     e.currentTarget.style.outline = "none";
                   }
                 }}
-                aria-label="View notifications"
+                aria-label={
+                  unreadCount > 0
+                    ? `View notifications (${unreadCount} unread)`
+                    : "View notifications"
+                }
               >
                 <NotificationsIcon fontSize="small" />
+                {unreadCount > 0 && (
+                  <span
+                    className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] text-xs font-bold rounded-full"
+                    style={{
+                      backgroundColor: colors.semantic.error,
+                      color: colors.text.inverse,
+                      fontSize: "0.625rem",
+                      padding: "0 4px",
+                    }}
+                    aria-label={`${unreadCount} unread notifications`}
+                  >
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
               </button>
               <button
                 title="Settings"

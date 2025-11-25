@@ -41,6 +41,9 @@ class ReviewModelTests(TestCase):
             status='COMPLETED'
         )
         
+        # Add assignee to many-to-many field as well
+        self.task.assignees.add(self.assignee)
+        
         # Create a review
         self.review = Review.objects.create(
             score=4.5,

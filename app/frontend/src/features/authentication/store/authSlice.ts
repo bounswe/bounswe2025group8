@@ -13,18 +13,41 @@ import type {
   VerifyTokenReturn, 
   ResetPasswordReturn, 
 } from '../types';
+import { toAbsoluteUrl } from '../../../utils/url';
 
 
+
+const resolveProfilePhoto = (userData: Partial<AuthUser> & Record<string, unknown> | null | undefined) => {
+  return toAbsoluteUrl(
+    userData?.profile_photo ||
+      userData?.profilePhoto ||
+      userData?.profilePicture ||
+      (userData as Record<string, unknown> | undefined)?.photo ||
+      (userData as Record<string, unknown> | undefined)?.avatar ||
+      null
+  );
+};
 
 // Load user from localStorage using centralized utility
 const getUserFromStorage = (): Omit<AuthState, 'loading' | 'error'> => {
   const user = authStorage.getUser();
+  const normalizedUser = user
+    ? (() => {
+        const photo = resolveProfilePhoto(user);
+        return {
+          ...user,
+          profilePicture: photo ?? user.profilePicture ?? null,
+          profilePhoto: photo ?? (user as Record<string, unknown>)?.profilePhoto ?? null,
+          profile_photo: photo ?? (user as Record<string, unknown>)?.profile_photo ?? null,
+        };
+      })()
+    : null;
   const token = authStorage.getToken();
   const role = authStorage.getRole();
   
-  return user && token ? {
+  return normalizedUser && token ? {
     isAuthenticated: true,
-    user,
+    user: normalizedUser,
     role,
     token
   } : {
@@ -57,6 +80,7 @@ export const fetchUserProfileAsync = createAsyncThunk<
       const response = await api.get(`/users/${userId}/`);
       
       const userData = response.data?.data || response.data;
+      const profilePhoto = resolveProfilePhoto(userData);
       
       const profileUser: AuthUser = {
         id: userData.id,
@@ -65,7 +89,9 @@ export const fetchUserProfileAsync = createAsyncThunk<
         surname: userData.surname || userData.last_name || '',
         username: userData.username || '',
         phone: userData.phone || userData.phone_number || '',
-        profilePicture: userData.profilePicture || userData.photo || null,
+        profilePicture: profilePhoto,
+        profilePhoto,
+        profile_photo: profilePhoto,
         rating: userData.rating || 0,
       };
       
@@ -92,29 +118,40 @@ export const loginAsync = createAsyncThunk<
       
       if (response.status === 'success' && response.data) {
         const responseData = response.data; 
-
+        const token = responseData.token as string;
+        
         // Initial user data with minimal info
-        const userData: AuthUser = {
+        const initialUserData: AuthUser = {
           id: responseData.user_id,
           email: email,
           name: email.split('@')[0] // Temporary until profile is fetched
         };
         
-        const token = responseData.token as string;
-        const role = 'user'; // Default role, modify as needed based on your backend
-        
-        // Store auth data using centralized helper
-        authStorage.setAuthData(userData, token, role);
+        // Store initial auth data with default role
+        authStorage.setAuthData(initialUserData, token, 'user');
         
         // Fetch complete user profile after login
         try {
-          await dispatch(fetchUserProfileAsync(responseData.user_id));
+          const userProfileResult = await dispatch(fetchUserProfileAsync(responseData.user_id));
+          
+          if (fetchUserProfileAsync.fulfilled.match(userProfileResult)) {
+            const userData = userProfileResult.payload;
+            const role = userData.username === 'admin' ? 'admin' : 'user';
+            
+            // Update with complete profile data and correct role
+            authStorage.setAuthData(userData, token, role);
+            
+            return { user: userData, token, role };
+          } else {
+            // Profile fetch failed, but continue with minimal data
+            console.warn('Could not fetch user profile after login');
+            return { user: initialUserData, token, role: 'user' };
+          }
         } catch (profileError) {
           console.warn('Could not fetch user profile after login:', profileError);
           // Continue with login even if profile fetch fails
+          return { user: initialUserData, token, role: 'user' };
         }
-        
-        return { user: userData, token, role };
       } else {
         return rejectWithValue(response.message || 'Login failed');
       }

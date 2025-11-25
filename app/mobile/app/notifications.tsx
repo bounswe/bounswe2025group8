@@ -8,14 +8,13 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
-  useColorScheme,
   SafeAreaView,
   Button,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
-import { Colors } from '../constants/Colors';
+import type { ThemeTokens } from '../constants/Colors';
 import {
   getNotifications,
   markNotificationAsRead,
@@ -28,8 +27,7 @@ import { useAuth } from '../lib/auth';
 export default function NotificationsScreen() {
   const router = useRouter();
   const { colors } = useTheme();
-  const colorScheme = useColorScheme();
-  const themeColors = Colors[colorScheme || 'light'];
+  const themeColors = colors as ThemeTokens;
   const { user } = useAuth();
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -145,6 +143,11 @@ export default function NotificationsScreen() {
           router.push({ pathname: path, params: { id: item.related_task.id } });
         }
       }}
+      accessible
+
+      accessibilityRole="button"
+      accessibilityLabel={`${item.is_read ? 'Read' : 'Unread'} notification: ${item.type_display}. ${item.content}`}
+      accessibilityState={{ disabled: false }}
     >
       <View style={styles.notificationHeader}>
         <Text style={[styles.notificationType, { color: themeColors.text }]}>{item.type_display}</Text>
@@ -159,8 +162,13 @@ export default function NotificationsScreen() {
 
   if (!user) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: colors.text, fontSize: 18, marginBottom: 16 }}>
+      <View
+        style={[
+          styles.container,
+          { justifyContent: 'center', alignItems: 'center', backgroundColor: themeColors.background },
+        ]}
+      >
+        <Text style={{ color: themeColors.text, fontSize: 18, marginBottom: 16 }}>
           Please sign in to view notifications.
         </Text>
         <Button title="Go to Home" onPress={() => router.replace('/')} />
@@ -170,18 +178,35 @@ export default function NotificationsScreen() {
 
   if (loading && notifications.length === 0) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View
+        style={[
+          styles.container,
+          { justifyContent: 'center', alignItems: 'center', backgroundColor: themeColors.background },
+        ]}
+      >
+        <ActivityIndicator size="large" color={themeColors.primary} />
       </View>
     );
   }
 
   if (error && notifications.length === 0) {
     return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ color: 'red', fontSize: 16 }}>Error: {error}</Text>
-        <TouchableOpacity onPress={() => fetchNotifications(1)} style={styles.retryButton}>
-          <Text style={{ color: colors.primary }}>Try Again</Text>
+      <View
+        style={[
+          styles.container,
+          { justifyContent: 'center', alignItems: 'center', backgroundColor: themeColors.background },
+        ]}
+      >
+        <Text style={{ color: themeColors.error, fontSize: 16 }}>Error: {error}</Text>
+        <TouchableOpacity
+          onPress={() => fetchNotifications(1)}
+          style={[styles.retryButton, { borderColor: themeColors.primary }]}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Try loading notifications again"
+        >
+          <Text style={{ color: themeColors.primary }}>Try Again</Text>
         </TouchableOpacity>
       </View>
     );
@@ -193,13 +218,30 @@ export default function NotificationsScreen() {
         <TouchableOpacity
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/feed'))}
           style={styles.backButton}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
         >
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Ionicons
+            name="arrow-back"
+            size={24}
+            color={themeColors.text}
+            accessible={false}
+            importantForAccessibility="no"
+          />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Notifications</Text>
+        <Text style={[styles.headerTitle, { color: themeColors.text }]}>Notifications</Text>
         {unreadCount > 0 && (
-          <TouchableOpacity onPress={handleMarkAllRead} style={styles.markAllReadButton}>
-            <Text style={{ color: colors.primary }}>Mark All Read ({unreadCount})</Text>
+          <TouchableOpacity
+            onPress={handleMarkAllRead}
+            style={styles.markAllReadButton}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Mark all notifications as read"
+          >
+            <Text style={{ color: themeColors.primary }}>Mark All Read ({unreadCount})</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -210,21 +252,23 @@ export default function NotificationsScreen() {
         renderItem={renderNotificationItem}
         ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: themeColors.border }]} />}
         contentContainerStyle={styles.listContent}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={themeColors.primary} />
+        }
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.4}
         ListFooterComponent={
-          loadingMore ? <ActivityIndicator style={{ marginVertical: 16 }} color={colors.primary} /> : null
+          loadingMore ? <ActivityIndicator style={{ marginVertical: 16 }} color={themeColors.primary} /> : null
         }
         ListEmptyComponent={
-          !loading ? <Text style={[styles.emptyText, { color: colors.textMuted }]}>No notifications yet.</Text> : null
+          !loading ? <Text style={[styles.emptyText, { color: themeColors.textMuted }]}>No notifications yet.</Text> : null
         }
       />
     </SafeAreaView>
   );
 }
 
-const getThemedStyles = (themeColors: typeof Colors.light) =>
+const getThemedStyles = (themeColors: ThemeTokens) =>
   StyleSheet.create({
     headerBar: {
       backgroundColor: themeColors.card,

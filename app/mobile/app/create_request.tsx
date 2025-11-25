@@ -4,53 +4,22 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
 import { useAuth } from '../lib/auth';
-import { getCategories } from '../lib/api';
+import { CategoryPicker } from '../components/forms/CategoryPicker';
 
-const fallbackCategories = [
-  { value: 'GROCERY_SHOPPING', label: 'Grocery Shopping' },
-  { value: 'TUTORING', label: 'Tutoring' },
-  { value: 'HOME_REPAIR', label: 'Home Repair' },
-  { value: 'MOVING_HELP', label: 'Moving Help' },
-  { value: 'HOUSE_CLEANING', label: 'House Cleaning' },
-  { value: 'OTHER', label: 'Other' },
-];
 const urgencies = ['Low', 'Medium', 'High'];
 
 export default function CreateRequest() {
   const { colors } = useTheme();
+  const themeColors = colors as any;
   const router = useRouter();
   const { user } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [urgency, setUrgency] = useState(urgencies[0]);
   const [people, setPeople] = useState(1);
-  const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showUrgencyModal, setShowUrgencyModal] = useState(false);
-  const [categories, setCategories] = useState(fallbackCategories);
-  const [category, setCategory] = useState(categories[0].value);
+  const [category, setCategory] = useState('GROCERY_SHOPPING');
 
-  
-useEffect(() => {
-  let cancelled = false;
-  getCategories()
-    .then(({ results }) => {
-      if (!cancelled && results?.length) {
-        console.log("Fetched categories:", results);
-        const mapped = results.map(c => ({ value: c.id, label: c.name }));
-        setCategories(mapped);
-        setCategory(prev => {
-        const stillThere = mapped.find(c => c.value === prev);
-        return stillThere ? prev : mapped[0].value;
-        })
-      }
-})
-    .catch(() => {
-      console.log("Error fetching categories, using fallback.");
-    });
-  return () => {
-    cancelled = true;
-  };
-}, []);
 
   useEffect(() => {
     if (!user) {
@@ -82,12 +51,28 @@ useEffect(() => {
   ) => {
     return (
       <Modal animationType="slide" transparent visible={visible} onRequestClose={() => setVisible(false)}>
-        <View style={styles.modalOverlay}>
+        <View
+          style={[styles.modalOverlay, { backgroundColor: themeColors.overlay }]}
+          accessibilityViewIsModal
+          importantForAccessibility="yes"
+        >
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: colors.text }]}>Select an option</Text>
-              <TouchableOpacity onPress={() => setVisible(false)}>
-                <Ionicons name="close" size={24} color={colors.primary} />
+              <TouchableOpacity
+                onPress={() => setVisible(false)}
+                accessible
+
+                accessibilityRole="button"
+                accessibilityLabel="Close selection"
+              >
+                <Ionicons
+                  name="close"
+                  size={24}
+                  color={colors.primary}
+                  accessible={false}
+                  importantForAccessibility="no"
+                />
               </TouchableOpacity>
             </View>
             {options.map((option) => {
@@ -109,6 +94,11 @@ useEffect(() => {
                     onSelect(value);
                     setVisible(false);
                   }}
+                  accessible
+
+                  accessibilityRole="button"
+                  accessibilityLabel={`Select ${label}`}
+                  accessibilityState={{ selected: selectedValue === value }}
                 >
                   <Text
                     style={[
@@ -124,7 +114,7 @@ useEffect(() => {
             })}
           </View>
         </View>
-      </Modal>
+      </Modal >
     );
   };
 
@@ -136,18 +126,38 @@ useEffect(() => {
             <Image source={require('../assets/images/logo.png')} style={{ width: 28, height: 28, resizeMode: 'contain' }} />
           </View>
           <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => router.push('/notifications')} style={{ marginRight: 16 }}>
-              <Ionicons name="notifications-outline" size={24} color={colors.text} />
+            <TouchableOpacity
+              onPress={() => router.push('/notifications')}
+              style={{ marginRight: 16 }}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Open notifications"
+            >
+              <Ionicons name="notifications-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/settings')}>
-              <Ionicons name="settings-outline" size={24} color={colors.text} />
+            <TouchableOpacity
+              onPress={() => router.push('/settings')}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Open settings"
+            >
+              <Ionicons name="settings-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={styles.titleRow}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => router.back()}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <Ionicons name="arrow-back" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
           </TouchableOpacity>
           <Text style={[styles.pageTitle, { color: colors.text }]}>Create Request</Text>
         </View>
@@ -155,19 +165,28 @@ useEffect(() => {
         <View style={styles.tabBar}>
           <View style={[styles.activeTab, { backgroundColor: colors.primary }]} />
           <View style={styles.inactiveTab} />
-            <View style={styles.inactiveTab} />
+          <View style={styles.inactiveTab} />
           <View style={styles.inactiveTab} />
         </View>
 
         <Text style={[styles.label, { color: colors.text }]}>Title</Text>
         <View style={[styles.inputRow, { backgroundColor: colors.card }]}>
-          <Ionicons name="pencil-outline" size={18} color={colors.border} style={{ marginLeft: 8 }} />
+          <Ionicons
+            name="pencil-outline"
+            size={18}
+            color={colors.border}
+            style={{ marginLeft: 8 }}
+            accessible={false}
+            importantForAccessibility="no"
+          />
           <TextInput
             style={[styles.input, { color: colors.text }]}
             placeholder="Title of your request"
             placeholderTextColor={colors.border}
             value={title}
             onChangeText={setTitle}
+            accessibilityLabel="Request title"
+            testID="create-request-title-input"
           />
         </View>
 
@@ -179,24 +198,30 @@ useEffect(() => {
           value={description}
           onChangeText={setDescription}
           multiline
+          accessibilityLabel="Request description"
+          testID="create-request-description-input"
         />
 
-        <Text style={[styles.label, { color: colors.text }]}>Category</Text>
-        <Pressable
-          style={[styles.selectorBtn, { backgroundColor: colors.card }]}
-          onPress={() => setShowCategoryModal(true)}
-        >
-          <Text style={[styles.selectorText, { color: colors.text }]}>{categories.find((c) => c.value === category)?.label}</Text>
-          <Ionicons name="chevron-down" size={20} color={colors.border} />
-        </Pressable>
+        <CategoryPicker value={category} onChange={setCategory} />
 
         <Text style={[styles.label, { color: colors.text }]}>Urgency</Text>
         <Pressable
           style={[styles.selectorBtn, { backgroundColor: colors.card }]}
           onPress={() => setShowUrgencyModal(true)}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Select urgency"
+          testID="create-request-urgency-selector"
         >
           <Text style={[styles.selectorText, { color: colors.text }]}>{urgency}</Text>
-          <Ionicons name="chevron-down" size={20} color={colors.border} />
+          <Ionicons
+            name="chevron-down"
+            size={20}
+            color={colors.border}
+            accessible={false}
+            importantForAccessibility="no"
+          />
         </Pressable>
 
         <Text style={[styles.label, { color: colors.text }]}>Number of People Needed</Text>
@@ -204,15 +229,37 @@ useEffect(() => {
           <TouchableOpacity
             style={[styles.peopleBtn, { backgroundColor: colors.card }]}
             onPress={() => setPeople((p) => Math.max(1, p - 1))}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Decrease volunteer count"
+            testID="create-request-people-decrease"
           >
-            <Ionicons name="remove" size={20} color={colors.text} />
+            <Ionicons
+              name="remove"
+              size={20}
+              color={colors.text}
+              accessible={false}
+              importantForAccessibility="no"
+            />
           </TouchableOpacity>
-          <Text style={[styles.peopleCount, { color: colors.text }]}>{people}</Text>
+          <Text style={[styles.peopleCount, { color: colors.text }]} testID="create-request-people-count">{people}</Text>
           <TouchableOpacity
             style={[styles.peopleBtn, { backgroundColor: colors.card }]}
             onPress={() => setPeople((p) => p + 1)}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Increase volunteer count"
+            testID="create-request-people-increase"
           >
-            <Ionicons name="add" size={20} color={colors.text} />
+            <Ionicons
+              name="add"
+              size={20}
+              color={colors.text}
+              accessible={false}
+              importantForAccessibility="no"
+            />
           </TouchableOpacity>
         </View>
 
@@ -238,11 +285,15 @@ useEffect(() => {
               },
             });
           }}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Next step upload photos"
+          testID="create-request-next-button"
         >
-          <Text style={styles.nextBtnText}>Next</Text>
+          <Text style={[styles.nextBtnText, { color: themeColors.onPrimary }]}>Next</Text>
         </TouchableOpacity>
 
-        {renderPickerModal(showCategoryModal, setShowCategoryModal, categories, category, setCategory)}
         {renderPickerModal(showUrgencyModal, setShowUrgencyModal, urgencies, urgency, setUrgency)}
       </ScrollView>
     </SafeAreaView>
@@ -252,12 +303,10 @@ useEffect(() => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   container: {
     padding: 20,
     paddingBottom: 40,
-    backgroundColor: '#fff',
     flexGrow: 1,
   },
   header: {
@@ -270,7 +319,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F3F0FF',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -290,10 +338,8 @@ const styles = StyleSheet.create({
   pageTitle: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#222',
   },
   pageSubtitle: {
-    color: '#B0B0B0',
     fontWeight: 'bold',
     marginBottom: 8,
     marginTop: 2,
@@ -306,14 +352,12 @@ const styles = StyleSheet.create({
   activeTab: {
     flex: 1,
     height: 3,
-    backgroundColor: '#7C6AED',
     borderRadius: 2,
     marginRight: 2,
   },
   inactiveTab: {
     flex: 1,
     height: 3,
-    backgroundColor: '#E5E5E5',
     borderRadius: 2,
     marginRight: 2,
   },
@@ -321,12 +365,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginTop: 12,
     marginBottom: 4,
-    color: '#444',
   },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F6F6F6',
     borderRadius: 8,
     marginBottom: 8,
     height: 44,
@@ -335,22 +377,18 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 10,
     fontSize: 16,
-    color: '#222',
     backgroundColor: 'transparent',
   },
   textArea: {
-    backgroundColor: '#F6F6F6',
     borderRadius: 8,
     minHeight: 60,
     padding: 10,
     fontSize: 16,
-    color: '#222',
   },
   selectorBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#F6F6F6',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 12,
@@ -358,7 +396,6 @@ const styles = StyleSheet.create({
   },
   selectorText: {
     fontSize: 16,
-    color: '#333',
   },
   peopleRow: {
     flexDirection: 'row',
@@ -372,7 +409,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F0F0F0',
   },
   peopleCount: {
     marginHorizontal: 18,
@@ -381,19 +417,16 @@ const styles = StyleSheet.create({
   },
   nextBtn: {
     marginTop: 12,
-    backgroundColor: '#7C6AED',
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
   },
   nextBtnText: {
-    color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
   },

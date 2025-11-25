@@ -232,8 +232,9 @@ export const checkUserVolunteerStatus = async (taskId) => {
   try {
     console.log(`Checking volunteer status for task ${taskId}`);
     
-    // Get all volunteers for the current user
-    const response = await api.get(`/volunteers/`);
+    // Get all volunteers for the current user (including all statuses)
+    // Add volunteer_status=all to get all volunteer records, not just ACCEPTED ones
+    const response = await api.get(`/volunteers/?volunteer_status=all`);
     console.log('All volunteers API response:', response.data);
     
     // Handle different response formats
@@ -253,11 +254,15 @@ export const checkUserVolunteerStatus = async (taskId) => {
     console.log('All volunteers:', volunteers);
 
     // Filter by task ID to find if user has volunteered for this specific task
+    // Exclude WITHDRAWN status as those should not count as current volunteering
     const volunteerRecord = volunteers.find(volunteer => {
       // Check both possible field names for task ID
       const volunteerTaskId = volunteer.task?.id || volunteer.task_id || volunteer.task;
-      console.log('Comparing task IDs:', volunteerTaskId, 'with', taskId);
-      return volunteerTaskId === parseInt(taskId);
+      const isMatchingTask = volunteerTaskId === parseInt(taskId);
+      const isActiveVolunteer = volunteer.status !== 'WITHDRAWN';
+      
+      console.log('Comparing task IDs:', volunteerTaskId, 'with', taskId, 'Status:', volunteer.status, 'Match:', isMatchingTask, 'Active:', isActiveVolunteer);
+      return isMatchingTask && isActiveVolunteer;
     });
 
     console.log('Found volunteer record for task:', volunteerRecord);

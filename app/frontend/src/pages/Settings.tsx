@@ -37,7 +37,7 @@ const Settings = () => {
         color: colors.text.primary,
       }}
     >
-      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem' }}>
+      <main style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem' }} role="main" aria-labelledby="settings-title">
         {/* Header */}
         <h1
           style={{
@@ -46,6 +46,7 @@ const Settings = () => {
             marginBottom: '0.5rem',
             color: colors.text.primary,
           }}
+          id="settings-title"
         >
           Settings
         </h1>
@@ -265,7 +266,7 @@ const Settings = () => {
             </p>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

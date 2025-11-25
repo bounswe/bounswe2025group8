@@ -1,9 +1,9 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .api.views import (
-    user_views, auth_views, task_views, volunteer_views, 
-    review_views, bookmark_views, notification_views, 
-    photo_views, admin_views, comment_views
+    user_views, auth_views, task_views, volunteer_views,
+    review_views, bookmark_views, notification_views,
+    photo_views, admin_views, comment_views, report_views
 )
 
 # Create a router and register our viewsets
@@ -15,6 +15,8 @@ router.register(r'reviews', review_views.ReviewViewSet)
 router.register(r'bookmarks', bookmark_views.BookmarkViewSet)
 router.register(r'notifications', notification_views.NotificationViewSet)
 router.register(r'comments', comment_views.CommentViewSet)
+router.register(r'task-reports', report_views.TaskReportViewSet, basename='task-report')
+router.register(r'user-reports', report_views.UserReportViewSet, basename='user-report')
 
 # URLs that don't use the router
 urlpatterns = [
@@ -41,7 +43,10 @@ urlpatterns = [
     path('users/<int:user_id>/reviews/', review_views.UserReviewsView.as_view(), name='user-reviews'),
     
     # Admin endpoints
+    path('admin/reports/', admin_views.AdminReportsView.as_view(), name='admin-reports'),
     path('admin/reported-users/', admin_views.ReportedUsersView.as_view(), name='reported-users'),
     path('admin/users/<int:user_id>/', admin_views.AdminUserDetailView.as_view(), name='admin-user-detail'),
     path('admin/users/<int:user_id>/ban/', admin_views.BanUserView.as_view(), name='ban-user'),
+    path('admin/users/<int:user_id>/dismiss-reports/', admin_views.DismissUserReportsView.as_view(), name='dismiss-user-reports'),
+    path('admin/tasks/<int:task_id>/delete/', admin_views.DeleteTaskView.as_view(), name='admin-delete-task'),
 ]

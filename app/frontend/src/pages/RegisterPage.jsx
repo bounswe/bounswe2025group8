@@ -149,6 +149,7 @@ const RegisterPage = () => {
           value={theme}
           onChange={(e) => setTheme(e.target.value)}
           className="px-3 py-2 rounded-md border text-sm focus:outline-none"
+          aria-label="Theme selection"
           style={{
             backgroundColor: colors.background.secondary,
             color: colors.text.primary,
@@ -165,13 +166,18 @@ const RegisterPage = () => {
         </select>
       </div>
 
-      <div className="w-full max-w-md">
+      <main
+        role="main"
+        aria-labelledby="register-page-title"
+        className="w-full max-w-md"
+      >
         {/* Logo and Title updated to be side by side */}
         <div className="flex flex-row items-center justify-center mb-1">
           <img src={logoImage} alt="Logo" width="160" height="160" />
           <h1
             className="text-4xl font-bold ml-2"
             style={{ color: colors.text.primary }}
+            id="register-page-title"
           >
             Neighborhood
             <br />
@@ -248,7 +254,12 @@ const RegisterPage = () => {
 
               {/* Show either the register error or the Redux error */}
               {(registerError || error) && (
-                <p className="mb-4" style={{ color: colors.semantic.error }}>
+                <p
+                  className="mb-4"
+                  style={{ color: colors.semantic.error }}
+                  role="alert"
+                  aria-live="assertive"
+                >
                   {registerError || error}
                 </p>
               )}
@@ -261,7 +272,8 @@ const RegisterPage = () => {
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <img
                           src={userIcon}
-                          alt="Name"
+                          alt=""
+                          aria-hidden="true"
                           width="16"
                           height="16"
                           style={{
@@ -272,6 +284,23 @@ const RegisterPage = () => {
                           }}
                         />
                       </div>
+                      <label
+                        htmlFor="firstName"
+                        className="sr-only"
+                        style={{
+                          position: "absolute",
+                          width: 1,
+                          height: 1,
+                          padding: 0,
+                          margin: -1,
+                          overflow: "hidden",
+                          clip: "rect(0, 0, 0, 0)",
+                          whiteSpace: "nowrap",
+                          border: 0,
+                        }}
+                      >
+                        First Name
+                      </label>
                       <input
                         type="text"
                         id="firstName"
@@ -292,6 +321,7 @@ const RegisterPage = () => {
                           (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
                         }
                         onBlur={(e) => (e.target.style.boxShadow = "none")}
+                        aria-required="true"
                       />
                     </div>
                   </div>
@@ -300,7 +330,8 @@ const RegisterPage = () => {
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <img
                           src={userIcon}
-                          alt="Name"
+                          alt=""
+                          aria-hidden="true"
                           width="16"
                           height="16"
                           style={{
@@ -311,6 +342,23 @@ const RegisterPage = () => {
                           }}
                         />
                       </div>
+                      <label
+                        htmlFor="lastName"
+                        className="sr-only"
+                        style={{
+                          position: "absolute",
+                          width: 1,
+                          height: 1,
+                          padding: 0,
+                          margin: -1,
+                          overflow: "hidden",
+                          clip: "rect(0, 0, 0, 0)",
+                          whiteSpace: "nowrap",
+                          border: 0,
+                        }}
+                      >
+                        Last Name
+                      </label>
                       <input
                         type="text"
                         id="lastName"
@@ -330,6 +378,7 @@ const RegisterPage = () => {
                           (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
                         }
                         onBlur={(e) => (e.target.style.boxShadow = "none")}
+                        aria-required="true"
                       />
                     </div>
                   </div>
@@ -341,7 +390,8 @@ const RegisterPage = () => {
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <img
                         src={userIcon}
-                        alt="Username"
+                        alt=""
+                        aria-hidden="true"
                         width="16"
                         height="16"
                         style={{
@@ -352,6 +402,23 @@ const RegisterPage = () => {
                         }}
                       />
                     </div>
+                    <label
+                      htmlFor="username"
+                      className="sr-only"
+                      style={{
+                        position: "absolute",
+                        width: 1,
+                        height: 1,
+                        padding: 0,
+                        margin: -1,
+                        overflow: "hidden",
+                        clip: "rect(0, 0, 0, 0)",
+                        whiteSpace: "nowrap",
+                        border: 0,
+                      }}
+                    >
+                      Username
+                    </label>
                     <input
                       type="text"
                       id="username"
@@ -380,7 +447,8 @@ const RegisterPage = () => {
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <img
                         src={phoneIcon}
-                        alt="Phone"
+                        alt=""
+                        aria-hidden="true"
                         width="16"
                         height="16"
                         style={{
@@ -391,6 +459,23 @@ const RegisterPage = () => {
                         }}
                       />
                     </div>
+                    <label
+                      htmlFor="phone"
+                      className="sr-only"
+                      style={{
+                        position: "absolute",
+                        width: 1,
+                        height: 1,
+                        padding: 0,
+                        margin: -1,
+                        overflow: "hidden",
+                        clip: "rect(0, 0, 0, 0)",
+                        whiteSpace: "nowrap",
+                        border: 0,
+                      }}
+                    >
+                      Phone
+                    </label>
                     <input
                       type="tel"
                       id="phone"
@@ -419,7 +504,8 @@ const RegisterPage = () => {
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <img
                         src={mailIcon}
-                        alt="Email"
+                        alt=""
+                        aria-hidden="true"
                         width="16"
                         height="16"
                         style={{
@@ -430,6 +516,23 @@ const RegisterPage = () => {
                         }}
                       />
                     </div>
+                    <label
+                      htmlFor="email"
+                      className="sr-only"
+                      style={{
+                        position: "absolute",
+                        width: 1,
+                        height: 1,
+                        padding: 0,
+                        margin: -1,
+                        overflow: "hidden",
+                        clip: "rect(0, 0, 0, 0)",
+                        whiteSpace: "nowrap",
+                        border: 0,
+                      }}
+                    >
+                      Email
+                    </label>
                     <input
                       type="email"
                       id="email"
@@ -459,7 +562,8 @@ const RegisterPage = () => {
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <img
                         src={keyIcon}
-                        alt="Password"
+                        alt=""
+                        aria-hidden="true"
                         width="16"
                         height="16"
                         style={{
@@ -470,6 +574,23 @@ const RegisterPage = () => {
                         }}
                       />
                     </div>
+                    <label
+                      htmlFor="password"
+                      className="sr-only"
+                      style={{
+                        position: "absolute",
+                        width: 1,
+                        height: 1,
+                        padding: 0,
+                        margin: -1,
+                        overflow: "hidden",
+                        clip: "rect(0, 0, 0, 0)",
+                        whiteSpace: "nowrap",
+                        border: 0,
+                      }}
+                    >
+                      Password
+                    </label>
                     <input
                       type={showPassword ? "text" : "password"}
                       id="password"
@@ -495,6 +616,9 @@ const RegisterPage = () => {
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="focus:outline-none"
+                        aria-label={
+                          showPassword ? "Hide password" : "Show password"
+                        }
                         style={{ color: colors.text.tertiary }}
                         onMouseOver={(e) =>
                           (e.currentTarget.style.color = colors.text.secondary)
@@ -515,7 +639,8 @@ const RegisterPage = () => {
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <img
                         src={keyIcon}
-                        alt="Confirm Password"
+                        alt=""
+                        aria-hidden="true"
                         width="16"
                         height="16"
                         style={{
@@ -526,6 +651,23 @@ const RegisterPage = () => {
                         }}
                       />
                     </div>
+                    <label
+                      htmlFor="confirmPassword"
+                      className="sr-only"
+                      style={{
+                        position: "absolute",
+                        width: 1,
+                        height: 1,
+                        padding: 0,
+                        margin: -1,
+                        overflow: "hidden",
+                        clip: "rect(0, 0, 0, 0)",
+                        whiteSpace: "nowrap",
+                        border: 0,
+                      }}
+                    >
+                      Confirm Password
+                    </label>
                     <input
                       type={showConfirmPassword ? "text" : "password"}
                       id="confirmPassword"
@@ -553,6 +695,11 @@ const RegisterPage = () => {
                           setShowConfirmPassword(!showConfirmPassword)
                         }
                         className="focus:outline-none"
+                        aria-label={
+                          showConfirmPassword
+                            ? "Hide confirm password"
+                            : "Show confirm password"
+                        }
                         style={{ color: colors.text.tertiary }}
                         onMouseOver={(e) =>
                           (e.currentTarget.style.color = colors.text.secondary)
@@ -657,7 +804,7 @@ const RegisterPage = () => {
             Continue as a guest
           </RouterLink>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
