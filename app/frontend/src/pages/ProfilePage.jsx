@@ -502,7 +502,7 @@ const ProfilePage = () => {
           sx={{
             mt: 2,
             backgroundColor: colors.brand.primary,
-            color: colors.text.inverted,
+            color: colors.text.inverse,
             "&:hover": {
               backgroundColor: colors.brand.secondary,
             },
@@ -647,7 +647,7 @@ const ProfilePage = () => {
                     onClick={() => setRatingCategoriesOpen(true)}
                     sx={{
                       backgroundColor: colors.brand.primary,
-                      color: colors.text.inverted,
+                      color: colors.text.inverse,
                       "& .MuiChip-label": { px: 2 },
                       cursor: "pointer",
                       "&:hover": {
@@ -729,7 +729,7 @@ const ProfilePage = () => {
                   ml: 4,
                   "& .MuiBadge-badge": {
                     backgroundColor: colors.brand.primary,
-                    color: colors.text.inverted,
+                    color: colors.text.inverse,
                   },
                 }}
                 aria-label={`Earned badges: ${earnedBadges.length}`}
@@ -920,7 +920,7 @@ const ProfilePage = () => {
                       px: 3,
                       py: 1,
                       backgroundColor: colors.brand.primary,
-                      color: colors.text.inverted,
+                      color: colors.text.inverse,
                       "&:hover": {
                         backgroundColor: colors.brand.secondary,
                       },
@@ -951,7 +951,7 @@ const ProfilePage = () => {
                       px: 3,
                       py: 1,
                       backgroundColor: colors.brand.primary,
-                      color: colors.text.inverted,
+                      color: colors.text.inverse,
                       "&:hover": {
                         backgroundColor: colors.brand.secondary,
                       },
@@ -1011,7 +1011,7 @@ const ProfilePage = () => {
                 size="small"
                 sx={{
                   backgroundColor: colors.brand.primary,
-                  color: colors.text.inverted,
+                  color: colors.text.inverse,
                   "& .MuiChip-label": { px: 1 },
                 }}
               />
@@ -1043,7 +1043,7 @@ const ProfilePage = () => {
                           },
                           "& .Mui-selected": {
                             backgroundColor: `${colors.brand.primary} !important`,
-                            color: `${colors.text.inverted} !important`,
+                            color: `${colors.text.inverse} !important`,
                             "&:hover": {
                               backgroundColor: `${colors.brand.secondary} !important`,
                             },
