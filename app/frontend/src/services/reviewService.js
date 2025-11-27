@@ -11,15 +11,38 @@ import api from './api';
  * @param {number} revieweeId - ID of the user being reviewed
  * @param {number} score - Rating score (1-5)
  * @param {string} comment - Review comment
+ * @param {Object} dimensionRatings - Dimensional ratings object with specific keys
+ * @param {boolean} isVolunteerToRequester - True if volunteer is reviewing requester
+ * @param {boolean} isRequesterToVolunteer - True if requester is reviewing volunteer
  * @returns {Promise} API response
  */
-export const submitReview = async (taskId, revieweeId, score, comment) => {
+export const submitReview = async (
+  taskId, 
+  revieweeId, 
+  score, 
+  comment, 
+  dimensionRatings = {},
+  isVolunteerToRequester = false,
+  isRequesterToVolunteer = false
+) => {
   try {
-    const response = await api.post(`/tasks/${taskId}/reviews/`, {
+    // Filter out null/undefined values from dimensionRatings
+    const cleanedDimensionRatings = Object.entries(dimensionRatings)
+      .filter(([key, value]) => value !== null && value !== undefined)
+      .reduce((acc, [key, value]) => {
+        acc[key] = value;
+        return acc;
+      }, {});
+
+    const payload = {
       reviewee_id: revieweeId,
+      task_id: taskId,
       score,
       comment,
-    });
+      ...cleanedDimensionRatings,
+    };
+
+    const response = await api.post('/reviews/', payload);
     return response.data;
   } catch (error) {
     console.error('Error submitting review:', error);

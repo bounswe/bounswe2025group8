@@ -506,7 +506,10 @@ const SelectVolunteer = () => {
                           sx={{ color: "#ffc107", fontSize: 20, mr: 0.5 }}
                         />
                         <Typography variant="body2" color="text.secondary">
-                          {volunteer.rating} ({volunteer.reviewCount} reviews)
+                          {(
+                            Math.round((volunteer.rating || 0) * 10) / 10
+                          ).toFixed(1)}{" "}
+                          ({volunteer.reviewCount} reviews)
                         </Typography>
                       </Box>
 

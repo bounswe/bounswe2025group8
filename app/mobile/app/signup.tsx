@@ -137,12 +137,12 @@ export default function SignUp() {
           </Text>
 
           {/* Full Name */}
-          <View style={styles.inputWrapper}>
-            <Ionicons name="person-outline" size={20} color="#666" />
+          <View style={[styles.inputWrapper, { borderColor: colors.border }]}>
+            <Ionicons name="person-outline" size={20} color={colors.icon} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
               placeholder="Full Name"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textMuted}
               value={fullName}
               onChangeText={setFullName}
               editable={!isLoading}
@@ -151,12 +151,12 @@ export default function SignUp() {
           </View>
 
           {/* Username */}
-          <View style={styles.inputWrapper}>
-            <Ionicons name="at-outline" size={20} color="#666" />
+          <View style={[styles.inputWrapper, { borderColor: colors.border }]}>
+            <Ionicons name="at-outline" size={20} color={colors.icon} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
               placeholder="Username"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textMuted}
               value={username}
               onChangeText={setUsername}
               autoCapitalize="none"
@@ -166,12 +166,12 @@ export default function SignUp() {
           </View>
 
           {/* Phone */}
-          <View style={styles.inputWrapper}>
-            <Ionicons name="call-outline" size={20} color="#666" />
+          <View style={[styles.inputWrapper, { borderColor: colors.border }]}>
+            <Ionicons name="call-outline" size={20} color={colors.icon} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
               placeholder="Phone"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textMuted}
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
@@ -181,12 +181,12 @@ export default function SignUp() {
           </View>
 
           {/* Email */}
-          <View style={styles.inputWrapper}>
-            <Ionicons name="mail-outline" size={20} color="#666" />
+          <View style={[styles.inputWrapper, { borderColor: colors.border }]}>
+            <Ionicons name="mail-outline" size={20} color={colors.icon} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
               placeholder="Email"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textMuted}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -197,12 +197,12 @@ export default function SignUp() {
           </View>
 
           {/* Password */}
-          <View style={styles.inputWrapper}>
-            <Ionicons name="key-outline" size={20} color="#666" />
+          <View style={[styles.inputWrapper, { borderColor: colors.border }]}>
+            <Ionicons name="key-outline" size={20} color={colors.icon} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
               placeholder="Password"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textMuted}
               secureTextEntry={!showPwd}
               value={password}
               onChangeText={setPassword}
@@ -214,7 +214,7 @@ export default function SignUp() {
               <Ionicons
                 name={showPwd ? 'eye' : 'eye-off'}
                 size={20}
-                color="#666"
+                color={colors.icon}
               />
             </Pressable>
           </View>
@@ -228,7 +228,7 @@ export default function SignUp() {
               <Ionicons
                 name={agree ? 'checkbox' : 'square-outline'}
                 size={20}
-                color="#666"
+                color={agree ? colors.primary : colors.icon}
               />
             </Pressable>
 
@@ -257,7 +257,7 @@ export default function SignUp() {
             disabled={!agree || isLoading}
             onPress={handleSignUp}
           >
-            <Text style={styles.buttonText}>
+            <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
               {isLoading ? 'Signing up...' : 'Sign Up'}
             </Text>
           </TouchableOpacity>
@@ -292,7 +292,6 @@ const styles = StyleSheet.create({
   },
   backText: {
     fontSize: 16,
-    color: '#6C63FF'
   },
   logo: {
     width: 100,
@@ -308,7 +307,6 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: '#666',
     lineHeight: 20,
     marginBottom: 32,
   },
@@ -319,7 +317,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderColor: '#DDD',
     marginBottom: 16,
     paddingBottom: 4,
   },
@@ -331,17 +328,13 @@ const styles = StyleSheet.create({
   passwordRequirements: {
     marginBottom: 16,
     padding: 8,
-    backgroundColor: '#f8f8f8',
     borderRadius: 8,
   },
   requirementText: {
     fontSize: 12,
-    color: '#666',
     marginBottom: 4,
   },
-  requirementError: {
-    color: '#ff4444',
-  },
+  requirementError: {},
   rememberWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -360,7 +353,8 @@ const styles = StyleSheet.create({
     marginBottom: 75
   },
   buttonText: {
-    color: '#fff', fontWeight: 'bold', fontSize: 16
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   signupPrompt: {
     flexDirection: 'row',

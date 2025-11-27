@@ -5,22 +5,25 @@ import { useTheme } from '@react-navigation/native';
 export type Category = { id: string; title: string; count: number; image: ImageSourcePropType };
 export type Request = { id: string; title: string; urgency: string; meta?: string; category?: string; color?: string; image?: ImageSourcePropType };
 export type Profile = { id: string; name: string; image?: ImageSourcePropType };
+export type Location = { id: string; title: string; count: number; image?: ImageSourcePropType };
 
 interface Props {
   categories?: Category[];
   requests?: Request[];
   profiles?: Profile[];
-  onSelect?: (item: Category | Request | Profile, tab: string) => void;
+  locations?: Location[];
+  onSelect?: (item: Category | Request | Profile | Location, tab: string) => void;
   onFocus?: () => void;
 }
 
-const TABS = ['Categories', 'Requests', 'Profiles'] as const;
+const TABS = ['Categories', 'Requests', 'Profiles', 'Locations'] as const;
 const URGENCY_LEVELS = ['All', 'High', 'Medium', 'Low'] as const;
 
 export default function SearchBarWithResults({
   categories = [],
   requests = [],
   profiles = [],
+  locations = [],
   onSelect,
   onFocus,
 }: Props) {
@@ -40,7 +43,7 @@ export default function SearchBarWithResults({
     });
   }
 
-  let filtered: (Category | Request | Profile)[] = [];
+  let filtered: (Category | Request | Profile | Location)[] = [];
   if (tab === 'Categories') {
     filtered = sortByName(
       categories.filter((cat) => cat.title.toLowerCase().includes(lowerSearch))
@@ -56,6 +59,10 @@ export default function SearchBarWithResults({
   } else if (tab === 'Profiles') {
     filtered = sortByName(
       profiles.filter((profile) => profile.name.toLowerCase().includes(lowerSearch))
+    );
+  } else if (tab === 'Locations') {
+    filtered = sortByName(
+      locations.filter((loc) => loc.title.toLowerCase().includes(lowerSearch))
     );
   }
 
@@ -123,10 +130,16 @@ export default function SearchBarWithResults({
             ]}
             onPress={() => onSelect && onSelect(item, tab)}
           >
-            {tab === 'Profiles' && (
+            {(tab === 'Categories' || tab === 'Profiles' || tab === 'Locations') && (
               <Image
-                source={(item as Profile).image || require('../../assets/images/empty_profile_photo.png')}
-                style={{ width: 36, height: 36, borderRadius: 18, marginRight: 12, backgroundColor: colors.border }}
+                source={
+                  tab === 'Profiles'
+                    ? ((item as Profile).image || require('../../assets/images/empty_profile_photo.png'))
+                    : tab === 'Categories'
+                    ? ((item as Category).image || require('../../assets/images/help.png'))
+                    : ((item as Location).image || require('../../assets/images/help.png'))
+                }
+                style={{ width: 36, height: 36, borderRadius: tab === 'Profiles' ? 18 : 8, marginRight: 12, backgroundColor: colors.border }}
               />
             )}
             <View style={{ flex: 1 }}>
@@ -137,7 +150,7 @@ export default function SearchBarWithResults({
                 <Text style={[styles.resultMeta, { color: colors.text }]}>{item.urgency} urgency</Text>
               )}
               {'count' in item && (
-                <Text style={[styles.resultMeta, { color: colors.text }]}>{item.count} requests</Text>
+                <Text style={[styles.resultMeta, { color: colors.text }]}>{item.count} {tab === 'Locations' ? 'requests' : 'requests'}</Text>
               )}
               {'meta' in item && item.meta && (
                 <Text style={[styles.resultMeta, { color: colors.text }]}>{item.meta}</Text>

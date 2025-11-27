@@ -26,6 +26,7 @@ import {
   ArrowBack,
   People,
   EmojiEvents,
+  Flag as FlagIcon,
 } from "@mui/icons-material";
 import {
   fetchUserProfile,
@@ -50,6 +51,7 @@ import ReviewCard from "../components/ReviewCard";
 import Badge from "../components/Badge";
 import EditProfileDialog from "../components/EditProfileDialog";
 import RatingCategoriesModal from "../components/RatingCategoriesModal";
+import UserReportModal from "../components/UserReportModal";
 import { useTheme } from "../hooks/useTheme";
 import { toAbsoluteUrl } from "../utils/url";
 // No need for CSS module import as we're using Material UI's sx prop
@@ -130,6 +132,7 @@ const ProfilePage = () => {
   const [refreshData, setRefreshData] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [ratingCategoriesOpen, setRatingCategoriesOpen] = useState(false); // Empty array for badges since we'll use API data
+  const [userReportDialogOpen, setUserReportDialogOpen] = useState(false);
   const [mockBadges] = useState([]);
 
   const loadProfileData = useCallback(async () => {
@@ -439,6 +442,19 @@ const ProfilePage = () => {
     }
   };
 
+  // Handler for user report
+  const handleUserReport = () => {
+    if (canEdit) {
+      // Don't allow users to report themselves
+      return;
+    }
+    setUserReportDialogOpen(true);
+  };
+
+  const handleUserReportSuccess = () => {
+    alert("Thank you for reporting this user! Our team will review it shortly.");
+  };
+
   if (loading) {
     return (
       <Box
@@ -623,8 +639,10 @@ const ProfilePage = () => {
                     }}
                   />
                   <Chip
-                    label={`${user.rating} (${
-                      user.reviewCount || reviews.length
+                    label={`${(
+                      Math.round((user.rating || 0) * 10) / 10
+                    ).toFixed(1)} (${
+                      user.reviewCount || reviews?.reviews?.length || 0
                     } reviews)`}
                     onClick={() => setRatingCategoriesOpen(true)}
                     sx={{
@@ -638,6 +656,26 @@ const ProfilePage = () => {
                     }}
                   />
                 </Box>
+                {/* Report button - only show for other users, not own profile */}
+                {!canEdit && (
+                  <Button
+                    onClick={handleUserReport}
+                    startIcon={<FlagIcon />}
+                    sx={{
+                      color: colors.semantic.error,
+                      borderColor: colors.semantic.error,
+                      mt: 0.5,
+                      textTransform: "none",
+                      "&:hover": {
+                        backgroundColor: `${colors.semantic.error}15`,
+                        borderColor: colors.semantic.error,
+                      },
+                    }}
+                    variant="outlined"
+                  >
+                    Report
+                  </Button>
+                )}
               </Box>
             </Box>
             {/* Edit Profile Button - Only show for current user */}
@@ -967,9 +1005,9 @@ const ProfilePage = () => {
                 Reviews
               </Typography>
               <Chip
-                label={`${user.rating || 0} (${
-                  reviews?.reviews?.length || 0
-                } reviews)`}
+                label={`${(Math.round((user.rating || 0) * 10) / 10).toFixed(
+                  1
+                )} (${reviews?.reviews?.length || 0} reviews)`}
                 size="small"
                 sx={{
                   backgroundColor: colors.brand.primary,
@@ -1042,6 +1080,14 @@ const ProfilePage = () => {
         onClose={() => setRatingCategoriesOpen(false)}
         user={user}
         role={roleTab === 0 ? "volunteer" : "requester"}
+      />
+      {/* User Report Dialog */}
+      <UserReportModal
+        open={userReportDialogOpen}
+        onClose={() => setUserReportDialogOpen(false)}
+        user={user}
+        currentUser={loggedInUserData}
+        onSubmitSuccess={handleUserReportSuccess}
       />
     </Box>
   );

@@ -1,29 +1,98 @@
 from rest_framework import viewsets, permissions, status, views
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from django.db.models import Count
+from django.db.models import Count, Q
 
-from core.models import RegisteredUser, Administrator
+from core.models import RegisteredUser, Administrator, Task, TaskReport, UserReport
 from core.api.serializers.user_serializers import AdminUserSerializer
+from core.api.serializers.report_serializers import TaskReportSerializer, UserReportSerializer
 from core.permissions import IsAdministrator
 from core.utils import format_response, paginate_results
 
 
+class AdminReportsView(views.APIView):
+    """View for listing all reports (admin only)"""
+    permission_classes = [permissions.IsAuthenticated, IsAdministrator]
+    
+    def get(self, request):
+        """Handle GET requests to retrieve all reports"""
+        # Get report type parameter
+        report_type = request.query_params.get('type', 'all')  # 'task', 'user', or 'all'
+        
+        # Get status filter
+        status_filter = request.query_params.get('status')
+        
+        # Get page and limit parameters
+        page = int(request.query_params.get('page', 1))
+        limit = int(request.query_params.get('limit', 20))
+        
+        response_data = {}
+        
+        if report_type in ['task', 'all']:
+            # Get task reports
+            task_reports = TaskReport.objects.all()
+            if status_filter:
+                task_reports = task_reports.filter(status=status_filter)
+            
+            # Paginate task reports
+            paginated_task = paginate_results(
+                task_reports.order_by('-created_at'),
+                page=page,
+                items_per_page=limit
+            )
+            
+            # Serialize task reports
+            task_serializer = TaskReportSerializer(paginated_task['data'], many=True)
+            response_data['task_reports'] = {
+                'reports': task_serializer.data,
+                'pagination': paginated_task['pagination']
+            }
+        
+        if report_type in ['user', 'all']:
+            # Get user reports
+            user_reports = UserReport.objects.all()
+            if status_filter:
+                user_reports = user_reports.filter(status=status_filter)
+            
+            # Paginate user reports
+            paginated_user = paginate_results(
+                user_reports.order_by('-created_at'),
+                page=page,
+                items_per_page=limit
+            )
+            
+            # Serialize user reports
+            user_serializer = UserReportSerializer(paginated_user['data'], many=True)
+            response_data['user_reports'] = {
+                'reports': user_serializer.data,
+                'pagination': paginated_user['pagination']
+            }
+        
+        # Get statistics
+        response_data['statistics'] = {
+            'total_task_reports': TaskReport.objects.count(),
+            'pending_task_reports': TaskReport.objects.filter(status='PENDING').count(),
+            'total_user_reports': UserReport.objects.count(),
+            'pending_user_reports': UserReport.objects.filter(status='PENDING').count(),
+        }
+        
+        return Response(format_response(
+            status='success',
+            data=response_data
+        ))
+
+
 class ReportedUsersView(views.APIView):
-    """View for listing reported users"""
+    """View for listing reported users (admin only)"""
     permission_classes = [permissions.IsAuthenticated, IsAdministrator]
     
     def get(self, request):
         """Handle GET requests to retrieve reported users"""
-        # In a real implementation, there would be a ReportedUser model
-        # For this implementation, we'll simulate it by counting notifications
-        from core.models import Notification
-        
-        # Get users with reports
-        # Assuming reports are stored as notifications of a specific type
+        # Get users with pending reports only
+        from django.db.models import Q
         reported_users = RegisteredUser.objects.annotate(
-            reports=Count('notifications', filter=models.Q(notifications__type='USER_REPORT'))
-        ).filter(reports__gt=0).order_by('-reports')
+            report_count=Count('reports_received', filter=Q(reports_received__status='PENDING'))
+        ).filter(report_count__gt=0).order_by('-report_count')
         
         # Get page and limit parameters
         page = int(request.query_params.get('page', 1))
@@ -35,11 +104,14 @@ class ReportedUsersView(views.APIView):
         # Create response data
         response_data = []
         for user in paginated['data']:
+            latest_report = user.reports_received.filter(status='PENDING').order_by('-created_at').first()
             response_data.append({
                 'user_id': user.id,
                 'username': user.username,
-                'reports': user.reports,
-                'last_reported_at': user.notifications.filter(type='USER_REPORT').latest('timestamp').timestamp
+                'email': user.email,
+                'is_active': user.is_active,
+                'report_count': user.report_count,
+                'last_reported_at': latest_report.created_at if latest_report else None
             })
         
         return Response(format_response(
@@ -61,30 +133,44 @@ class AdminUserDetailView(views.APIView):
         user = get_object_or_404(RegisteredUser, id=user_id)
         
         # Get reports
-        from core.models import Notification
-        reports_count = Notification.objects.filter(
-            type='USER_REPORT',
-            related_user=user
-        ).count()
+        user_reports = UserReport.objects.filter(reported_user=user)
+        task_reports_count = TaskReport.objects.filter(task__creator=user).count()
         
-        # Get flagged posts/tasks
-        from core.models import Task
+        # Get flagged tasks
         flagged_tasks = []
-        for task in Task.objects.filter(creator=user, status='REPORTED'):
+        reported_tasks = Task.objects.filter(
+            Q(creator=user) & Q(reports__isnull=False)
+        ).distinct()
+        
+        for task in reported_tasks:
+            latest_report = task.reports.order_by('-created_at').first()
             flagged_tasks.append({
                 'task_id': task.id,
+                'task_title': task.title,
                 'created_at': task.created_at,
-                'reason': 'Content reported by users'  # In a real implementation, this would come from the report
+                'report_type': latest_report.report_type if latest_report else None,
+                'report_description': latest_report.description if latest_report else None
             })
+        
+        # Serialize user reports
+        user_reports_serialized = UserReportSerializer(user_reports, many=True).data
         
         # Create response data
         response_data = {
             'user_id': user.id,
             'username': user.username,
             'email': user.email,
+            'name': user.name,
+            'surname': user.surname,
+            'phone_number': user.phone_number,
+            'location': user.location,
+            'rating': user.rating,
+            'completed_task_count': user.completed_task_count,
             'status': 'active' if user.is_active else 'banned',
-            'reports': reports_count,
-            'flagged_posts': flagged_tasks
+            'user_reports': user_reports_serialized,
+            'user_reports_count': user_reports.count(),
+            'task_reports_count': task_reports_count,
+            'flagged_tasks': flagged_tasks
         }
         
         return Response(format_response(
@@ -94,11 +180,11 @@ class AdminUserDetailView(views.APIView):
 
 
 class BanUserView(views.APIView):
-    """View for banning a user"""
+    """View for banning a user (admin only)"""
     permission_classes = [permissions.IsAuthenticated, IsAdministrator]
     
-    def patch(self, request, user_id):
-        """Handle PATCH requests to ban a user"""
+    def post(self, request, user_id):
+        """Handle POST requests to ban a user"""
         # Get reason
         reason = request.data.get('reason')
         if not reason:
@@ -106,7 +192,7 @@ class BanUserView(views.APIView):
                 status='error',
                 message='Reason for banning is required.'
             ), status=status.HTTP_400_BAD_REQUEST)
-        
+
         # Get user
         try:
             user = RegisteredUser.objects.get(id=user_id)
@@ -115,7 +201,7 @@ class BanUserView(views.APIView):
                 status='error',
                 message='User not found.'
             ), status=status.HTTP_404_NOT_FOUND)
-        
+
         # Get admin
         try:
             admin = Administrator.objects.get(user=request.user)
@@ -124,7 +210,7 @@ class BanUserView(views.APIView):
                 status='error',
                 message='Admin not found.'
             ), status=status.HTTP_403_FORBIDDEN)
-        
+
         # Ban user
         success = admin.ban_user(user)
         if not success:
@@ -132,24 +218,135 @@ class BanUserView(views.APIView):
                 status='error',
                 message='Could not ban user.'
             ), status=status.HTTP_400_BAD_REQUEST)
-        
+
+        # Mark all pending reports against this user as resolved
+        user_reports = UserReport.objects.filter(reported_user=user, status='PENDING')
+        resolved_count = 0
+        for report in user_reports:
+            report.update_status(
+                status='RESOLVED',
+                admin=admin,
+                notes=f'Resolved by banning user. Reason: {reason}'
+            )
+            resolved_count += 1
+
         # Send notification to user
         from core.models import Notification, NotificationType
-        Notification.send_notification(
+        from django.utils import timezone
+        notification = Notification.send_notification(
             user=user,
             content=f"Your account has been banned for violating community guidelines: {reason}. You may appeal by emailing support@example.com.",
             notification_type=NotificationType.SYSTEM_NOTIFICATION
         )
-        
+
         # Create response data
         return Response(format_response(
             status='success',
             message='User banned successfully.',
             data={
                 'user_id': user.id,
+                'username': user.username,
                 'new_status': 'banned',
-                'banned_at': user.notifications.filter(
-                    type=NotificationType.SYSTEM_NOTIFICATION
-                ).latest('timestamp').timestamp.isoformat()
+                'banned_at': timezone.now().isoformat(),
+                'reason': reason,
+                'reports_resolved': resolved_count
+            }
+        ))
+
+
+class DismissUserReportsView(views.APIView):
+    """View for dismissing all reports against a user (admin only)"""
+    permission_classes = [permissions.IsAuthenticated, IsAdministrator]
+
+    def post(self, request, user_id):
+        """Handle POST requests to dismiss all reports against a user"""
+        # Get user
+        try:
+            user = RegisteredUser.objects.get(id=user_id)
+        except RegisteredUser.DoesNotExist:
+            return Response(format_response(
+                status='error',
+                message='User not found.'
+            ), status=status.HTTP_404_NOT_FOUND)
+
+        # Get admin
+        try:
+            admin = Administrator.objects.get(user=request.user)
+        except Administrator.DoesNotExist:
+            return Response(format_response(
+                status='error',
+                message='Admin not found.'
+            ), status=status.HTTP_403_FORBIDDEN)
+
+        # Get all pending reports against this user
+        reports = UserReport.objects.filter(reported_user=user, status='PENDING')
+
+        if not reports.exists():
+            return Response(format_response(
+                status='success',
+                message='No pending reports to dismiss.',
+                data={'dismissed_count': 0}
+            ))
+
+        # Mark all reports as dismissed
+        dismissed_count = 0
+        for report in reports:
+            report.update_status(
+                status='DISMISSED',
+                admin=admin,
+                notes='Dismissed by admin for user dismissal action'
+            )
+            dismissed_count += 1
+
+        return Response(format_response(
+            status='success',
+            message=f'Successfully dismissed {dismissed_count} reports against {user.username}.',
+            data={'dismissed_count': dismissed_count}
+        ))
+
+
+class DeleteTaskView(views.APIView):
+    """View for deleting a task (admin only)"""
+    permission_classes = [permissions.IsAuthenticated, IsAdministrator]
+    
+    def delete(self, request, task_id):
+        """Handle DELETE requests to delete a task"""
+        # Get reason
+        reason = request.data.get('reason', 'Violates community guidelines')
+        
+        # Get task
+        try:
+            task = Task.objects.get(id=task_id)
+        except Task.DoesNotExist:
+            return Response(format_response(
+                status='error',
+                message='Task not found.'
+            ), status=status.HTTP_404_NOT_FOUND)
+        
+        # Store task info before deletion
+        task_info = {
+            'task_id': task.id,
+            'title': task.title,
+            'creator_id': task.creator.id,
+            'creator_username': task.creator.username
+        }
+        
+        # Send notification to task creator
+        from core.models import Notification, NotificationType
+        Notification.send_notification(
+            user=task.creator,
+            content=f"Your task '{task.title}' has been removed by administrators. Reason: {reason}",
+            notification_type=NotificationType.SYSTEM_NOTIFICATION
+        )
+        
+        # Delete the task
+        task.delete()
+        
+        return Response(format_response(
+            status='success',
+            message='Task deleted successfully.',
+            data={
+                **task_info,
+                'reason': reason
             }
         ))
