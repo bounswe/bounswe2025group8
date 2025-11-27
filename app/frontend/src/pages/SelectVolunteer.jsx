@@ -11,6 +11,7 @@ import {
   CircularProgress,
   Grid,
   useTheme,
+  Tooltip,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -19,6 +20,7 @@ import StarIcon from "@mui/icons-material/Star";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import PersonIcon from "@mui/icons-material/Person";
 import { useAppSelector } from "../store/hooks";
 import {
   selectCurrentUser,
@@ -196,6 +198,12 @@ const SelectVolunteer = () => {
       console.error("Error assigning volunteers:", error);
       alert("Failed to assign volunteers. Please try again.");
     }
+  };
+
+  // Handle view volunteer profile
+  const handleViewProfile = (volunteerId, event) => {
+    event.stopPropagation();
+    navigate(`/profile/${volunteerId}`);
   };
 
   // Loading state
@@ -547,13 +555,33 @@ const SelectVolunteer = () => {
                         {volunteer.completedTasks} tasks completed
                       </Typography>
 
-                      {/* View Details Arrow */}
-                      <Box sx={{ display: "flex", justifyContent: "center" }}>
-                        <ChevronRightIcon
-                          sx={{ color: "text.secondary" }}
-                          aria-hidden="true"
-                        />
-                      </Box>
+                      {/* View Profile Button */}
+                      <Tooltip title="View full profile" arrow>
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          startIcon={<PersonIcon />}
+                          onClick={(e) =>
+                            handleViewProfile(
+                              volunteer.user?.id || volunteer.id,
+                              e
+                            )
+                          }
+                          sx={{
+                            mt: 1,
+                            textTransform: "none",
+                            borderColor: "#7c4dff",
+                            color: "#7c4dff",
+                            "&:hover": {
+                              borderColor: "#6a3de8",
+                              bgcolor: "rgba(124, 77, 255, 0.04)",
+                            },
+                          }}
+                          aria-label={`View profile of ${volunteer.name} ${volunteer.surname}`}
+                        >
+                          View Profile
+                        </Button>
+                      </Tooltip>
                     </CardContent>
                   </Card>
                 </Grid>
