@@ -1033,6 +1033,9 @@ export default function RequestDetails() {
                   pathname: '/profile',
                   params: { userId: comment.user.id }
                 })}
+                userRating={comment.user.rating}
+                isRequester={comment.user.id === request?.creator?.id}
+                completedTaskCount={comment.user.completed_task_count}
               />
             ))
           )}

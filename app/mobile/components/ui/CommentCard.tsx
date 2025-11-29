@@ -4,6 +4,7 @@ import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import type { ThemeTokens } from '../../constants/Colors';
 import { BACKEND_BASE_URL } from '../../lib/api';
+import RatingPill from './RatingPill';
 
 export interface CommentCardProps {
   userName: string;
@@ -15,6 +16,9 @@ export interface CommentCardProps {
   onDelete?: () => void;
   userId?: number;
   onProfilePress?: () => void;
+  userRating?: number;
+  isRequester?: boolean;
+  completedTaskCount?: number;
 }
 
 const CommentCard: React.FC<CommentCardProps> = ({
@@ -27,6 +31,9 @@ const CommentCard: React.FC<CommentCardProps> = ({
   onDelete,
   userId,
   onProfilePress,
+  userRating,
+  isRequester = false,
+  completedTaskCount = 0,
 }) => {
   const { colors } = useTheme();
   const themeColors = colors as ThemeTokens;
@@ -88,6 +95,7 @@ const CommentCard: React.FC<CommentCardProps> = ({
               accessible
               accessibilityRole="button"
               accessibilityLabel={`View ${userName}'s profile`}
+              style={styles.nameButton}
             >
               <Text style={[styles.userName, { color: themeColors.text }]}>{userName}</Text>
             </TouchableOpacity>
@@ -123,6 +131,17 @@ const CommentCard: React.FC<CommentCardProps> = ({
               )}
             </View>
           </View>
+          {!isRequester && userRating !== undefined && (
+            <View style={styles.ratingRow}>
+              <RatingPill
+                rating={userRating}
+                reviewCount={completedTaskCount}
+                backgroundColor={themeColors.pink}
+                textColor={themeColors.onAccent}
+                iconColor={themeColors.onAccent}
+              />
+            </View>
+          )}
         </View>
       </View>
       <Text style={[styles.content, { color: themeColors.text }]}>{content}</Text>
@@ -161,12 +180,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 4,
-    width: '100%',
+  },
+  nameButton: {
+    flexShrink: 1,
+    marginRight: 8,
   },
   userName: {
     fontWeight: '600',
     fontSize: 16,
-    flex: 1,
+  },
+  ratingRow: {
+    marginTop: 4,
   },
   rightSection: {
     flexDirection: 'row',
