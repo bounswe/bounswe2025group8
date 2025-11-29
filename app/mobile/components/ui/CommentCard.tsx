@@ -13,6 +13,8 @@ export interface CommentCardProps {
   isOwnComment?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
+  userId?: number;
+  onProfilePress?: () => void;
 }
 
 const CommentCard: React.FC<CommentCardProps> = ({
@@ -23,6 +25,8 @@ const CommentCard: React.FC<CommentCardProps> = ({
   isOwnComment = false,
   onEdit,
   onDelete,
+  userId,
+  onProfilePress,
 }) => {
   const { colors } = useTheme();
   const themeColors = colors as ThemeTokens;
@@ -60,17 +64,33 @@ const CommentCard: React.FC<CommentCardProps> = ({
   return (
     <View style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border, borderWidth: 1 }]}>
       <View style={styles.header}>
-        <Image
-          source={
-            absoluteAvatarUrl
-              ? { uri: absoluteAvatarUrl }
-              : require('../../assets/images/empty_profile_photo.png')
-          }
-          style={styles.avatar}
-        />
+        <TouchableOpacity
+          onPress={onProfilePress}
+          disabled={!onProfilePress}
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel={`View ${userName}'s profile`}
+        >
+          <Image
+            source={
+              absoluteAvatarUrl
+                ? { uri: absoluteAvatarUrl }
+                : require('../../assets/images/empty_profile_photo.png')
+            }
+            style={styles.avatar}
+          />
+        </TouchableOpacity>
         <View style={styles.headerText}>
           <View style={styles.nameRow}>
-            <Text style={[styles.userName, { color: themeColors.text }]}>{userName}</Text>
+            <TouchableOpacity
+              onPress={onProfilePress}
+              disabled={!onProfilePress}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={`View ${userName}'s profile`}
+            >
+              <Text style={[styles.userName, { color: themeColors.text }]}>{userName}</Text>
+            </TouchableOpacity>
             <View style={styles.rightSection}>
               <Text style={[styles.timestamp, { color: themeColors.textMuted }]}>
                 {formatTimestamp(timestamp)}

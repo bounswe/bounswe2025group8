@@ -971,6 +971,11 @@ export default function RequestDetailsVolunteer() {
                 isOwnComment={comment.user.id === user?.id}
                 onEdit={() => handleEditComment(comment)}
                 onDelete={() => handleDeleteComment(comment.id)}
+                userId={comment.user.id}
+                onProfilePress={() => router.push({
+                  pathname: '/profile',
+                  params: { userId: comment.user.id }
+                })}
               />
             ))
           )}
