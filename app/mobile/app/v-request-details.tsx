@@ -632,7 +632,6 @@ export default function RequestDetailsVolunteer() {
   const requesterName = request.creator?.name || 'Unknown';
   const requestTitleForA11y = request.title || 'this request';
   const datetime = request.deadline ? new Date(request.deadline).toLocaleString() : '';
-  const locationDisplay = request.location || 'N/A';
   const requiredPerson = request.volunteer_number || 1;
   const phoneNumber = request.creator?.phone_number || '';
   const isCreatorView = user?.id === request.creator?.id;
@@ -644,6 +643,16 @@ export default function RequestDetailsVolunteer() {
   const volunteerStatusLabel = normalizeStatus(volunteerRecord?.status).toLowerCase() || (hasVolunteered ? 'pending' : undefined);
   const userAssigned = user && (request.assignee?.id === user?.id);
   const isAssignedVolunteer = user && acceptedIds.includes(user.id);
+  // Show full address only if user is assigned, otherwise show partial location (last 3 elements)
+  const fullLocation = request.location || 'N/A';
+  const locationDisplay = isAssignedVolunteer 
+    ? fullLocation 
+    : (() => {
+        const parts = fullLocation.split(',').map(p => p.trim());
+        return parts.length > 3 
+          ? parts.slice(-3).join(', ') // Show last 3 parts (e.g., "City, State, ZIP")
+          : fullLocation; // If 3 or fewer parts, show all
+      })();
   const isAlreadyVolunteered =
     hasVolunteered || userAssigned || (!!user && acceptedIds.includes(user.id));
   const acceptedCount = acceptedVolunteers.length;

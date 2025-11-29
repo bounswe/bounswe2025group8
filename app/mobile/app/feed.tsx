@@ -59,6 +59,20 @@ export default function Feed() {
     });
   };
 
+  // Helper function to format address - show only last 3 parts for privacy
+  const formatAddress = (address: string, isCreator: boolean): string => {
+    // Creators always see full address for their own tasks
+    if (isCreator) {
+      return address;
+    }
+    
+    // For non-creators (volunteers), show only last 3 parts
+    const parts = address.split(',').map(p => p.trim());
+    return parts.length > 3 
+      ? parts.slice(-3).join(', ') // Show last 3 parts (e.g., "City, State, ZIP")
+      : address; // If 3 or fewer parts, show all
+  };
+
   const fetchTasks = async () => {
     try {
       setLoading(true);
@@ -269,6 +283,10 @@ export default function Feed() {
               ? `${BACKEND_BASE_URL}${photoUrl}`
               : null;
 
+          // Check if current user is the creator
+          const isCreator = task.creator && task.creator.id === user?.id;
+          const displayLocation = formatAddress(task.location, !!isCreator);
+
           return (
             <TouchableOpacity
               key={task.id}
@@ -296,7 +314,7 @@ export default function Feed() {
                   {task.title}
                 </Text>
                 <Text style={[styles.requestMeta, { color: colors.text }]}>
-                  {task.location} • {new Date(task.created_at).toLocaleDateString()}
+                  {displayLocation} • {new Date(task.created_at).toLocaleDateString()}
                 </Text>
                 <View style={styles.requestCategoryRow}>
                   {(() => {
