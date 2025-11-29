@@ -57,18 +57,26 @@ const GeneralInformationStep = (props, ref) => {
 
   return (
     <div className="w-full">
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        aria-describedby={
+          errors && (errors.title || errors.description)
+            ? "general-info-errors"
+            : undefined
+        }
+      >
         <div className="flex flex-col md:flex-row gap-6 mb-8">
           {/* Left Column */}
           <div className="flex-1">
             {/* Title */}
             <div className="mb-6">
-              <h3
+              <label
+                htmlFor="title"
                 className="text-sm font-bold mb-2"
                 style={{ color: colors.text.primary }}
               >
                 Title
-              </h3>
+              </label>
               <Controller
                 name="title"
                 control={control}
@@ -83,11 +91,15 @@ const GeneralInformationStep = (props, ref) => {
                   <>
                     <div className="relative mb-1">
                       <div className="absolute left-0 top-1/2 -translate-y-1/2 pl-3 flex items-center pointer-events-none">
-                        <CreateIcon sx={{ color: colors.brand.primary }} />
+                        <CreateIcon
+                          sx={{ color: colors.brand.primary }}
+                          aria-hidden="true"
+                        />
                       </div>
                       <input
                         {...field}
                         type="text"
+                        id="title"
                         className={`w-full pl-12 pr-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:border-transparent ${
                           errors.title ? "border-red-500" : "border-gray-300"
                         }`}
@@ -111,12 +123,20 @@ const GeneralInformationStep = (props, ref) => {
                           trigger("title");
                           e.target.style.boxShadow = "none";
                         }}
+                        aria-required="true"
+                        aria-invalid={errors.title ? "true" : "false"}
+                        aria-describedby={
+                          errors.title ? "title-error" : undefined
+                        }
                       />
                     </div>
                     {errors.title && (
                       <p
                         className="mt-1 text-sm"
                         style={{ color: colors.semantic.error }}
+                        role="alert"
+                        aria-live="assertive"
+                        id="title-error"
                       >
                         {errors.title.message}
                       </p>
@@ -127,18 +147,20 @@ const GeneralInformationStep = (props, ref) => {
             </div>
             {/* Category */}
             <div className="mb-6">
-              <h3
+              <label
+                htmlFor="category"
                 className="text-sm font-bold mb-2"
                 style={{ color: colors.text.primary }}
               >
                 Category
-              </h3>
+              </label>
               <Controller
                 name="category"
                 control={control}
                 render={({ field }) => (
                   <select
                     {...field}
+                    id="category"
                     className="w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:border-transparent"
                     style={{
                       backgroundColor: colors.background.secondary,
@@ -153,6 +175,7 @@ const GeneralInformationStep = (props, ref) => {
                       (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
                     }
                     onBlur={(e) => (e.target.style.boxShadow = "none")}
+                    aria-required="true"
                   >
                     {/* Add "Other" as a fallback option even if API doesn't return it */}
                     <option value="OTHER">Other Services</option>
@@ -171,12 +194,13 @@ const GeneralInformationStep = (props, ref) => {
           <div className="flex-1">
             {/* Description */}
             <div className="mb-6">
-              <h3
+              <label
+                htmlFor="description"
                 className="text-sm font-bold mb-2"
                 style={{ color: colors.text.primary }}
               >
                 Description
-              </h3>
+              </label>
               <Controller
                 name="description"
                 control={control}
@@ -191,6 +215,7 @@ const GeneralInformationStep = (props, ref) => {
                   <div>
                     <textarea
                       {...field}
+                      id="description"
                       rows={1}
                       className={`w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:border-transparent resize-vertical ${
                         errors.description
@@ -217,11 +242,19 @@ const GeneralInformationStep = (props, ref) => {
                         trigger("description");
                         e.target.style.boxShadow = "none";
                       }}
+                      aria-required="true"
+                      aria-invalid={errors.description ? "true" : "false"}
+                      aria-describedby={
+                        errors.description ? "description-error" : undefined
+                      }
                     />
                     {errors.description && (
                       <p
                         className="mt-1 text-sm"
                         style={{ color: colors.semantic.error }}
+                        role="alert"
+                        aria-live="assertive"
+                        id="description-error"
                       >
                         {errors.description.message}
                       </p>
@@ -233,18 +266,20 @@ const GeneralInformationStep = (props, ref) => {
 
             {/* Urgency */}
             <div className="mb-6">
-              <h3
+              <label
+                htmlFor="urgency"
                 className="text-sm font-bold mb-2"
                 style={{ color: colors.text.primary }}
               >
                 Urgency
-              </h3>
+              </label>
               <Controller
                 name="urgency"
                 control={control}
                 render={({ field }) => (
                   <select
                     {...field}
+                    id="urgency"
                     className="w-full px-3 py-3 border rounded-md focus:outline-none focus:ring-2 focus:border-transparent"
                     style={{
                       backgroundColor: colors.background.secondary,
@@ -274,12 +309,13 @@ const GeneralInformationStep = (props, ref) => {
 
         {/* Required number of people - Full width */}
         <div className="mb-6">
-          <h3
+          <label
             className="text-sm font-bold mb-2 text-left"
             style={{ color: colors.text.primary }}
+            htmlFor="required-people"
           >
             Required number of people
-          </h3>
+          </label>
           <div className="flex items-center">
             <button
               type="button"
@@ -302,13 +338,20 @@ const GeneralInformationStep = (props, ref) => {
                 (e.currentTarget.style.backgroundColor =
                   colors.background.secondary)
               }
+              aria-label="Decrease required number of people"
             >
-              <RemoveIcon sx={{ color: colors.text.primary }} />
+              <RemoveIcon
+                sx={{ color: colors.text.primary }}
+                aria-hidden="true"
+              />
             </button>
 
             <span
               className="mx-4 w-8 text-center font-bold"
               style={{ color: colors.text.primary }}
+              id="required-people"
+              role="status"
+              aria-live="polite"
             >
               {formData.requiredPeople}
             </span>
@@ -328,8 +371,9 @@ const GeneralInformationStep = (props, ref) => {
               onMouseOut={(e) =>
                 (e.currentTarget.style.backgroundColor = colors.brand.primary)
               }
+              aria-label="Increase required number of people"
             >
-              <AddIcon />
+              <AddIcon aria-hidden="true" />
             </button>
           </div>
         </div>

@@ -47,6 +47,7 @@ const ForgotPassword = () => {
           value={theme}
           onChange={(e) => setTheme(e.target.value)}
           className="px-3 py-2 rounded-md border text-sm focus:outline-none"
+          aria-label="Theme selection"
           style={{
             backgroundColor: colors.background.secondary,
             color: colors.text.primary,
@@ -63,13 +64,18 @@ const ForgotPassword = () => {
         </select>
       </div>
 
-      <div className="w-full max-w-sm mx-auto">
+      <main
+        role="main"
+        aria-labelledby="forgot-page-title"
+        className="w-full max-w-sm mx-auto"
+      >
         {/* Logo and Title updated to be side by side */}
         <div className="flex flex-row items-center justify-center mb-1">
           <img src={logoImage} alt="Logo" width="160" height="160" />
           <h1
             className="text-4xl font-bold ml-2"
             style={{ color: colors.text.primary }}
+            id="forgot-page-title"
           >
             Neighborhood
             <br />
@@ -108,6 +114,8 @@ const ForgotPassword = () => {
                     backgroundColor: colors.semantic.errorBackground,
                     borderColor: colors.semantic.error,
                   }}
+                  role="alert"
+                  aria-live="assertive"
                 >
                   <p
                     className="text-sm"
@@ -125,6 +133,8 @@ const ForgotPassword = () => {
                     backgroundColor: colors.semantic.successBackground,
                     borderColor: colors.semantic.success,
                   }}
+                  role="alert"
+                  aria-live="polite"
                 >
                   <p
                     className="text-sm"
@@ -140,7 +150,8 @@ const ForgotPassword = () => {
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <img
                       src={mailIcon}
-                      alt="Email"
+                      alt=""
+                      aria-hidden="true"
                       width="16"
                       height="16"
                       style={{
@@ -151,6 +162,23 @@ const ForgotPassword = () => {
                       }}
                     />
                   </div>
+                  <label
+                    htmlFor="email"
+                    className="sr-only"
+                    style={{
+                      position: "absolute",
+                      width: 1,
+                      height: 1,
+                      padding: 0,
+                      margin: -1,
+                      overflow: "hidden",
+                      clip: "rect(0, 0, 0, 0)",
+                      whiteSpace: "nowrap",
+                      border: 0,
+                    }}
+                  >
+                    Email
+                  </label>
                   <input
                     required
                     className="w-full pl-10 pr-3 py-2 text-sm border rounded-md focus:outline-none"
@@ -171,6 +199,7 @@ const ForgotPassword = () => {
                     autoFocus
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    aria-required="true"
                   />
                 </div>
 
@@ -221,7 +250,7 @@ const ForgotPassword = () => {
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

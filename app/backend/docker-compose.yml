@@ -37,6 +37,7 @@ services:
       "
     volumes:
       - .:/app
+      - media_files:/app/media
     ports:
       - "8000:8000"
     depends_on:
@@ -93,5 +94,6 @@ networks:
 volumes:
   postgres_data:
   node_modules:
+  media_files:
   caddy_data:
   caddy_config:

@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from core.models import RegisteredUser
+from core.models import RegisteredUser, Administrator
 
 
 class Command(BaseCommand):
@@ -23,6 +23,17 @@ class Command(BaseCommand):
             self.stdout.write(
                 self.style.SUCCESS(f'Existing admin user: {admin_user.username} ({admin_user.email})')
             )
+
+            # Ensure Administrator record exists for the existing user
+            try:
+                Administrator.objects.get_or_create(user=admin_user)
+                self.stdout.write(
+                    self.style.SUCCESS('✓ Administrator record verified/created')
+                )
+            except Exception as admin_error:
+                self.stdout.write(
+                    self.style.ERROR(f'Error creating Administrator record: {str(admin_error)}')
+                )
             return
 
         if RegisteredUser.objects.filter(username=username).exists():
@@ -41,7 +52,18 @@ class Command(BaseCommand):
                 phone_number=phone_number,
                 password=password
             )
-            
+
+            # Create Administrator record for custom admin permissions
+            try:
+                Administrator.objects.create(user=admin_user)
+                self.stdout.write(
+                    self.style.SUCCESS('✓ Created Administrator record')
+                )
+            except Exception as admin_error:
+                self.stdout.write(
+                    self.style.WARNING(f'Warning: Could not create Administrator record: {str(admin_error)}')
+                )
+
             self.stdout.write(self.style.SUCCESS('Successfully created admin user!'))
             self.stdout.write(self.style.SUCCESS('=' * 50))
             self.stdout.write(self.style.SUCCESS(f'Email: {email}'))
@@ -52,7 +74,7 @@ class Command(BaseCommand):
             self.stdout.write(
                 self.style.WARNING('IMPORTANT: Change the password after first login!')
             )
-            
+
         except Exception as e:
             self.stdout.write(
                 self.style.ERROR(f'Error creating admin user: {str(e)}')

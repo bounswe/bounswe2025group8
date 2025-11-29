@@ -60,6 +60,22 @@ const RequestCardForHomePage = ({
         display: "flex",
       }}
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
+      onFocus={(e) => {
+        e.currentTarget.style.outline = `3px solid ${colors.border.focus}`;
+        e.currentTarget.style.outlineOffset = "2px";
+      }}
+      onBlur={(e) => {
+        e.currentTarget.style.outline = "none";
+      }}
+      aria-label={`View request: ${title}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

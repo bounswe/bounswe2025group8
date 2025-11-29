@@ -10,6 +10,7 @@ import { categoryMapping, getCategoryImage } from "../constants/categories";
 import { urgencyLevels } from "../constants/urgency_level";
 import { formatRelativeTime } from "../utils/dateUtils";
 import { extractRegionFromLocation } from "../utils/taskUtils";
+import { toAbsoluteUrl } from "../utils/url";
 import sortIcon from "../assets/sort.svg";
 import filterIcon from "../assets/filter.svg";
 import AddressFilterDialog from "../components/AddressFilterDialog";
@@ -141,7 +142,15 @@ const AllRequests = () => {
     const categoryDisplayName = categoryMapping[task.category] || task.category;
     const urgencyDisplayName =
       urgencyLevels[task.urgency_level]?.name || "Unknown";
-    const imageUrl = getCategoryImage(task.category);
+
+    // Get task image the same way as Home page - check photos array and primary_photo_url
+    const photoFromList =
+      task.photos?.[0]?.url ||
+      task.photos?.[0]?.image ||
+      task.photos?.[0]?.photo_url;
+    const preferred = task.primary_photo_url || photoFromList || null;
+    const imageUrl =
+      toAbsoluteUrl(preferred) || getCategoryImage(task.category);
 
     // Format location (fallback to "Location not specified")
     const location = task.location
@@ -175,7 +184,7 @@ const AllRequests = () => {
           height: "24rem",
         }}
       >
-        <div style={{ textAlign: "center" }}>
+        <div style={{ textAlign: "center" }} role="alert" aria-live="assertive">
           <h3
             style={{
               fontSize: "1.125rem",
@@ -207,6 +216,7 @@ const AllRequests = () => {
             onMouseOut={(e) =>
               (e.currentTarget.style.backgroundColor = colors.brand.primary)
             }
+            aria-label="Retry loading requests"
           >
             Try Again
           </button>
@@ -216,7 +226,11 @@ const AllRequests = () => {
   }
 
   return (
-    <>
+    <main
+      role="main"
+      aria-busy={loading ? "true" : "false"}
+      aria-labelledby="all-requests-title"
+    >
       {/* Header Section */}
       <div
         style={{
@@ -235,6 +249,7 @@ const AllRequests = () => {
               color: colors.text.primary,
               fontFamily: "Inter, sans-serif",
             }}
+            id="all-requests-title"
           >
             {categoryFilter
               ? `${categoryMapping[categoryFilter] || categoryFilter} Requests`
@@ -318,6 +333,7 @@ const AllRequests = () => {
               onKeyDown={(e) => {
                 if (e.key === "Enter") applyLocationFilter();
               }}
+              aria-label="Filter by location (district or city)"
             />
             <button
               onClick={applyLocationFilter}
@@ -337,6 +353,7 @@ const AllRequests = () => {
               onMouseOut={(e) =>
                 (e.currentTarget.style.backgroundColor = colors.brand.primary)
               }
+              aria-label="Apply location filter"
             >
               Apply
             </button>
@@ -363,7 +380,8 @@ const AllRequests = () => {
           >
             <img
               src={sortIcon}
-              alt="Sort"
+              alt=""
+              aria-hidden="true"
               style={{
                 width: "100%",
                 height: "100%",
@@ -396,7 +414,8 @@ const AllRequests = () => {
           >
             <img
               src={filterIcon}
-              alt="Filter"
+              alt=""
+              aria-hidden="true"
               style={{
                 width: "100%",
                 height: "100%",
@@ -658,6 +677,8 @@ const AllRequests = () => {
                           colors.background.secondary;
                       }
                     }}
+                    aria-label={`Go to page ${pageNumber}`}
+                    aria-current={isActive ? "page" : undefined}
                   >
                     {pageNumber}
                   </button>
@@ -737,7 +758,7 @@ const AllRequests = () => {
           setSearchParams(newSearchParams);
         }}
       />
-    </>
+    </main>
   );
 };
 

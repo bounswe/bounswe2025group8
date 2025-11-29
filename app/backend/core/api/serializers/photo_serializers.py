@@ -2,6 +2,9 @@ from rest_framework import serializers
 from core.models import Photo
 from .task_serializers import TaskSerializer
 from typing import Optional
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class PhotoSerializer(serializers.ModelSerializer):
@@ -19,16 +22,42 @@ class PhotoSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'uploaded_at', 'alt_text', 'task']
 
     def _absolute(self, url: Optional[str]) -> Optional[str]:
+        """Convert relative URL to absolute URL"""
+        if not url:
+            return None
+            
+        # If already absolute, return as is
+        if url.startswith('http://') or url.startswith('https://'):
+            return url
+            
         request = self.context.get('request') if hasattr(self, 'context') else None
-        if request and url:
+        if request:
             try:
-                return request.build_absolute_uri(url)
-            except Exception:
-                return url
+                absolute = request.build_absolute_uri(url)
+                # Debug: Log what host Django is using
+                logger.info(f"Building absolute URI - Host: {request.get_host()}, Relative: {url}, Absolute: {absolute}")
+                logger.info(f"Headers - X-Forwarded-Host: {request.META.get('HTTP_X_FORWARDED_HOST')}, Host: {request.META.get('HTTP_HOST')}")
+                return absolute
+            except Exception as e:
+                logger.error(f"Error building absolute URI: {e}")
+                pass
+        
+        # Fallback: if no request context, return the URL (still relative but valid)
+        logger.warning(f"No request context for URL: {url}, returning relative")
         return url
 
     def get_url(self, obj: Photo) -> Optional[str]:
-        return self._absolute(obj.get_url())
+        """Get absolute photo URL"""
+        if obj.url:
+            # Use the ImageField's url property which gives the correct media path
+            relative_url = obj.url.url
+            absolute_url = self._absolute(relative_url)
+            
+            # Debug logging
+            logger.debug(f"Photo URL - Relative: {relative_url}, Absolute: {absolute_url}")
+            
+            return absolute_url
+        return None
 
     def get_photo_url(self, obj: Photo) -> Optional[str]:
         # Alias used in some frontend usages
