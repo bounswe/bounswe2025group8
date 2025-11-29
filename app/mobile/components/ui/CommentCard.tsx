@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useTheme } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import type { ThemeTokens } from '../../constants/Colors';
 import { BACKEND_BASE_URL } from '../../lib/api';
 
@@ -9,6 +10,9 @@ export interface CommentCardProps {
   content: string;
   timestamp: string;
   avatarUrl?: string | null;
+  isOwnComment?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 const CommentCard: React.FC<CommentCardProps> = ({
@@ -16,6 +20,9 @@ const CommentCard: React.FC<CommentCardProps> = ({
   content,
   timestamp,
   avatarUrl,
+  isOwnComment = false,
+  onEdit,
+  onDelete,
 }) => {
   const { colors } = useTheme();
   const themeColors = colors as ThemeTokens;
@@ -64,9 +71,37 @@ const CommentCard: React.FC<CommentCardProps> = ({
         <View style={styles.headerText}>
           <View style={styles.nameRow}>
             <Text style={[styles.userName, { color: themeColors.text }]}>{userName}</Text>
-            <Text style={[styles.timestamp, { color: themeColors.textMuted }]}>
-              {formatTimestamp(timestamp)}
-            </Text>
+            <View style={styles.rightSection}>
+              <Text style={[styles.timestamp, { color: themeColors.textMuted }]}>
+                {formatTimestamp(timestamp)}
+              </Text>
+              {isOwnComment && (
+                <View style={styles.actionButtons}>
+                  {onEdit && (
+                    <TouchableOpacity
+                      onPress={onEdit}
+                      style={styles.iconButton}
+                      accessible
+                      accessibilityRole="button"
+                      accessibilityLabel="Edit comment"
+                    >
+                      <Ionicons name="pencil" size={16} color={themeColors.primary} />
+                    </TouchableOpacity>
+                  )}
+                  {onDelete && (
+                    <TouchableOpacity
+                      onPress={onDelete}
+                      style={styles.iconButton}
+                      accessible
+                      accessibilityRole="button"
+                      accessibilityLabel="Delete comment"
+                    >
+                      <Ionicons name="trash-outline" size={16} color={themeColors.error} />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
+            </View>
           </View>
         </View>
       </View>
@@ -106,15 +141,28 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 4,
+    width: '100%',
   },
   userName: {
     fontWeight: '600',
     fontSize: 16,
     flex: 1,
   },
+  rightSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   timestamp: {
     fontSize: 12,
-    marginLeft: 8,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  iconButton: {
+    padding: 4,
   },
   content: {
     fontSize: 14,

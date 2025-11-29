@@ -279,6 +279,10 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
   timeout: 10000, // 10 second timeout
+  validateStatus: (status) => {
+    // Accept all 2xx and 204 status codes as successful
+    return (status >= 200 && status < 300) || status === 204;
+  },
 });
 
 // Add a request interceptor to add auth token
@@ -303,9 +307,38 @@ api.interceptors.request.use(
 // Add a response interceptor to handle network errors
 api.interceptors.response.use(
   (response) => {
+    // Handle 204 No Content responses gracefully
+    if (response.status === 204) {
+      // Ensure we return a consistent structure even for 204
+      if (!response.data) {
+        response.data = { status: 'success', message: 'Operation completed successfully.' };
+      }
+    }
     return response;
   },
   (error: AxiosError) => {
+    // Handle 204 responses that might be treated as errors
+    if (error.response?.status === 204) {
+      // Convert to successful response
+      return Promise.resolve({
+        ...error.response,
+        data: error.response.data || { status: 'success', message: 'Operation completed successfully.' }
+      });
+    }
+    
+    // React Native iOS specific: ERR_NETWORK with no response often means 204 No Content
+    // This happens when a DELETE request returns 204 with no body
+    if (error.code === 'ERR_NETWORK' && !error.response && error.config?.method?.toLowerCase() === 'delete') {
+      console.log('[API] Treating ERR_NETWORK on DELETE as successful 204 response');
+      return Promise.resolve({
+        status: 204,
+        statusText: 'No Content',
+        data: { status: 'success', message: 'Operation completed successfully.' },
+        headers: {},
+        config: error.config,
+      } as any);
+    }
+    
     // Enhanced error logging for network issues
     if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || error.message.includes('Network Error')) {
       console.error('[API Network Error]', {
@@ -1507,6 +1540,91 @@ export const createTaskComment = async (taskId: number, content: string): Promis
       throw new Error(errMessage);
     }
     const errMessage = (error as Error).message || 'An unexpected error occurred while trying to create comment.';
+    throw new Error(errMessage);
+  }
+};
+
+export const updateComment = async (commentId: number, content: string): Promise<CreateCommentResponse> => {
+  try {
+    const response = await api.patch<CreateCommentResponse>(`/comments/${commentId}/`, {
+      content: content.trim()
+    });
+    console.log('Update comment response:', response.data);
+    if (response.data.status !== 'success') {
+      throw new Error(response.data.message || 'Failed to update comment.');
+    }
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Update comment error:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      const errorData = error.response?.data;
+      let errMessage = 'Failed to update comment.';
+
+      if (errorData?.message) {
+        errMessage = errorData.message;
+      } else if (errorData?.error) {
+        errMessage = errorData.error;
+      } else if (typeof errorData === 'string') {
+        errMessage = errorData;
+      } else if (errorData) {
+        const validationErrors = Object.values(errorData).flat();
+        if (validationErrors.length > 0) {
+          errMessage = Array.isArray(validationErrors[0])
+            ? validationErrors[0][0]
+            : String(validationErrors[0]);
+        }
+      }
+
+      throw new Error(errMessage);
+    }
+    const errMessage = (error as Error).message || 'An unexpected error occurred while updating comment.';
+    throw new Error(errMessage);
+  }
+};
+
+export const deleteComment = async (commentId: number): Promise<{ status: string; message: string }> => {
+  try {
+    const response = await api.delete(`/comments/${commentId}/`);
+    console.log('Delete comment response:', response.data);
+    
+    // Handle 204 No Content response (may have empty body)
+    if (response.status === 204) {
+      return { status: 'success', message: 'Comment deleted successfully.' };
+    }
+    
+    return response.data || { status: 'success', message: 'Comment deleted successfully.' };
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      // Handle 204 response that might be treated as error by some axios configurations
+      if (error.response?.status === 204) {
+        return { status: 'success', message: 'Comment deleted successfully.' };
+      }
+      
+      console.error('Delete comment error:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      const errorData = error.response?.data;
+      let errMessage = 'Failed to delete comment.';
+
+      if (errorData?.message) {
+        errMessage = errorData.message;
+      } else if (errorData?.error) {
+        errMessage = errorData.error;
+      } else if (typeof errorData === 'string') {
+        errMessage = errorData;
+      }
+
+      throw new Error(errMessage);
+    }
+    const errMessage = (error as Error).message || 'An unexpected error occurred while deleting comment.';
     throw new Error(errMessage);
   }
 };

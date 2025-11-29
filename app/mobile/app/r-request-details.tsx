@@ -20,7 +20,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { getTaskDetails, getTaskApplicants, completeTask, cancelTask, createReview, getTaskReviews, getTaskPhotos, BACKEND_BASE_URL, updateTask, getTaskComments, createTaskComment, type Task, type Volunteer, type Review, type Photo, type UpdateTaskPayload, type Comment } from '../lib/api';
+import { getTaskDetails, getTaskApplicants, completeTask, cancelTask, createReview, getTaskReviews, getTaskPhotos, BACKEND_BASE_URL, updateTask, getTaskComments, createTaskComment, updateComment, deleteComment, type Task, type Volunteer, type Review, type Photo, type UpdateTaskPayload, type Comment } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useAppTheme } from '../theme/ThemeProvider';
 import type { ThemeTokens } from '../constants/Colors';
@@ -68,6 +68,7 @@ export default function RequestDetails() {
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
 
   const getLabelColors = (type: string, property: 'Background' | 'Text' | 'Border') => {
     const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
@@ -538,27 +539,89 @@ export default function RequestDetails() {
 
     setSubmittingComment(true);
     try {
-      const response = await createTaskComment(id, commentText);
-      
-      // Add the new comment to the end of the list (oldest to newest order)
-      setComments((prev) => [...prev, response.data]);
+      if (editingCommentId) {
+        // Update existing comment
+        const response = await updateComment(editingCommentId, commentText);
+        
+        // Update the comment in the list
+        setComments((prev) => 
+          prev.map((c) => (c.id === editingCommentId ? response.data : c))
+        );
+        
+        // Clear editing state
+        setEditingCommentId(null);
+      } else {
+        // Create new comment
+        const response = await createTaskComment(id, commentText);
+        
+        // Add the new comment to the end of the list (oldest to newest order)
+        setComments((prev) => [...prev, response.data]);
+        
+        // Scroll to bottom to show the new comment
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      }
       
       // Clear the input
       setCommentText('');
       
       // Dismiss keyboard
       Keyboard.dismiss();
-      
-      // Scroll to bottom to show the new comment
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      }, 100);
     } catch (err: any) {
-      const errorMessage = err?.message || 'Failed to submit comment. Please try again.';
+      const errorMessage = err?.message || `Failed to ${editingCommentId ? 'update' : 'submit'} comment. Please try again.`;
       Alert.alert('Error', errorMessage);
     } finally {
       setSubmittingComment(false);
     }
+  };
+
+  const handleEditComment = (comment: Comment) => {
+    setCommentText(comment.content);
+    setEditingCommentId(comment.id);
+    // Scroll to bottom to show the input field
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  };
+
+  const handleCancelEdit = () => {
+    setCommentText('');
+    setEditingCommentId(null);
+  };
+
+  const handleDeleteComment = (commentId: number) => {
+    Alert.alert(
+      'Delete Comment',
+      'Are you sure you want to delete this comment?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteComment(commentId);
+              
+              // Remove the comment from the list
+              setComments((prev) => prev.filter((c) => c.id !== commentId));
+              
+              // Clear editing state if deleting the comment being edited
+              if (editingCommentId === commentId) {
+                setCommentText('');
+                setEditingCommentId(null);
+              }
+            } catch (err: any) {
+              const errorMessage = err?.message || 'Failed to delete comment. Please try again.';
+              Alert.alert('Error', errorMessage);
+            }
+          },
+        },
+      ]
+    );
   };
 
   if (loading) {
@@ -962,6 +1025,9 @@ export default function RequestDetails() {
                 content={comment.content}
                 timestamp={comment.timestamp}
                 avatarUrl={comment.user.profile_photo || comment.user.photo}
+                isOwnComment={comment.user.id === user?.id}
+                onEdit={() => handleEditComment(comment)}
+                onDelete={() => handleDeleteComment(comment.id)}
               />
             ))
           )}
@@ -975,43 +1041,53 @@ export default function RequestDetails() {
           keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
         >
           <View style={[styles.commentInputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border }]}>
-            <TextInput
-              style={[
-                styles.commentInput,
-                {
-                  borderColor: themeColors.border,
-                  color: themeColors.text,
-                  backgroundColor: themeColors.background,
-                },
-              ]}
-              placeholder="Add comment..."
-              placeholderTextColor={themeColors.textMuted}
-              value={commentText}
-              onChangeText={setCommentText}
-              multiline
-              editable={!submittingComment}
-              accessibilityLabel="Comment input"
-            />
-            <TouchableOpacity
-              style={[
-                styles.sendButton,
-                {
-                  backgroundColor: submittingComment ? themeColors.border : themeColors.primary,
-                },
-              ]}
-              onPress={handleSubmitComment}
-              disabled={submittingComment || !commentText.trim()}
-              accessible
-              accessibilityRole="button"
-              accessibilityLabel="Send comment"
-              accessibilityState={{ disabled: submittingComment || !commentText.trim() }}
-            >
-              {submittingComment ? (
-                <ActivityIndicator size="small" color={themeColors.card} />
-              ) : (
-                <Ionicons name="send" size={20} color={themeColors.card} />
-              )}
-            </TouchableOpacity>
+            {editingCommentId && (
+              <View style={[styles.editingBanner, { backgroundColor: themeColors.lightPurple }]}>
+                <Text style={[styles.editingText, { color: themeColors.primary }]}>Editing comment</Text>
+                <TouchableOpacity onPress={handleCancelEdit}>
+                  <Ionicons name="close" size={20} color={themeColors.textMuted} />
+                </TouchableOpacity>
+              </View>
+            )}
+            <View style={styles.inputRow}>
+              <TextInput
+                style={[
+                  styles.commentInput,
+                  {
+                    borderColor: themeColors.border,
+                    color: themeColors.text,
+                    backgroundColor: themeColors.background,
+                  },
+                ]}
+                placeholder="Add comment..."
+                placeholderTextColor={themeColors.textMuted}
+                value={commentText}
+                onChangeText={setCommentText}
+                multiline
+                editable={!submittingComment}
+                accessibilityLabel="Comment input"
+              />
+              <TouchableOpacity
+                style={[
+                  styles.sendButton,
+                  {
+                    backgroundColor: submittingComment ? themeColors.border : themeColors.primary,
+                  },
+                ]}
+                onPress={handleSubmitComment}
+                disabled={submittingComment || !commentText.trim()}
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel={editingCommentId ? "Update comment" : "Send comment"}
+                accessibilityState={{ disabled: submittingComment || !commentText.trim() }}
+              >
+                {submittingComment ? (
+                  <ActivityIndicator size="small" color={themeColors.card} />
+                ) : (
+                  <Ionicons name={editingCommentId ? "checkmark" : "send"} size={20} color={themeColors.card} />
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
         </KeyboardAvoidingView>
       )}
@@ -1526,12 +1602,25 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   commentInputContainer: {
+    borderTopWidth: 1,
+    paddingBottom: 20,
+  },
+  editingBanner: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  editingText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  inputRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderTopWidth: 1,
-    paddingBottom: 20,
   },
   commentInput: {
     flex: 1,
