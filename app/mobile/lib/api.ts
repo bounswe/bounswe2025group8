@@ -1421,4 +1421,94 @@ export const deleteProfilePhoto = async (userId: number): Promise<{ status: stri
   }
 };
 
+// Comment interfaces
+export interface Comment {
+  id: number;
+  content: string;
+  timestamp: string; // ISO date string
+  user: UserProfile;
+  task: number; // task ID
+}
+
+export interface TaskCommentsResponse {
+  status: string;
+  message?: string;
+  data: {
+    comments: Comment[];
+    pagination: PaginationInfo;
+  };
+}
+
+export interface CreateCommentResponse {
+  status: string;
+  message: string;
+  data: Comment;
+}
+
+// Comment API functions
+export const getTaskComments = async (taskId: number, page = 1, limit = 20): Promise<TaskCommentsResponse> => {
+  try {
+    const response = await api.get<TaskCommentsResponse>(`/tasks/${taskId}/comments/`, {
+      params: { page, limit }
+    });
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get task comments error:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+    }
+    throw error;
+  }
+};
+
+export const createTaskComment = async (taskId: number, content: string): Promise<CreateCommentResponse> => {
+  try {
+    const response = await api.post<CreateCommentResponse>(`/tasks/${taskId}/comments/`, {
+      content: content.trim()
+    });
+    console.log('Create comment response:', response.data);
+    if (response.data.status !== 'success') {
+      throw new Error(response.data.message || 'Failed to create comment.');
+    }
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Create comment error:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers,
+      });
+      // Extract detailed error message from backend
+      const errorData = error.response?.data;
+      let errMessage = 'Failed to create comment.';
+
+      if (errorData?.message) {
+        errMessage = errorData.message;
+      } else if (errorData?.error) {
+        errMessage = errorData.error;
+      } else if (typeof errorData === 'string') {
+        errMessage = errorData;
+      } else if (errorData) {
+        // Try to extract validation errors
+        const validationErrors = Object.values(errorData).flat();
+        if (validationErrors.length > 0) {
+          errMessage = Array.isArray(validationErrors[0])
+            ? validationErrors[0][0]
+            : String(validationErrors[0]);
+        }
+      }
+
+      throw new Error(errMessage);
+    }
+    const errMessage = (error as Error).message || 'An unexpected error occurred while trying to create comment.';
+    throw new Error(errMessage);
+  }
+};
+
 export default api;

@@ -12,16 +12,19 @@ import {
   Alert,
   SafeAreaView,
   Dimensions,
-  Keyboard
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../theme/ThemeProvider';
-import { getTaskDetails, listVolunteers, type Task, type Volunteer, volunteerForTask, withdrawVolunteer, createReview, getTaskReviews, type Review, type UserProfile, getTaskPhotos, BACKEND_BASE_URL, type Photo } from '../lib/api';
+import { getTaskDetails, listVolunteers, type Task, type Volunteer, volunteerForTask, withdrawVolunteer, createReview, getTaskReviews, type Review, type UserProfile, getTaskPhotos, BACKEND_BASE_URL, type Photo, getTaskComments, createTaskComment, type Comment } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ThemeTokens } from '../constants/Colors';
+import CommentCard from '../components/ui/CommentCard';
 
 export default function RequestDetailsVolunteer() {
   const params = useLocalSearchParams();
@@ -50,6 +53,10 @@ export default function RequestDetailsVolunteer() {
   const [volunteerRecord, setVolunteerRecord] = useState<{ id: number; status?: string } | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [photosLoading, setPhotosLoading] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [submittingComment, setSubmittingComment] = useState(false);
   const storageKey = id && user?.id ? `volunteer-record-${id}-${user.id}` : null;
   const legacyStorageKey = id ? `volunteer-record-${id}` : null;
   const volunteerRecordRef = useRef<{ id: number; status?: string } | null>(null);
@@ -192,6 +199,20 @@ export default function RequestDetailsVolunteer() {
         setPhotos([]);
       } finally {
         setPhotosLoading(false);
+      }
+
+      // Fetch comments for the task
+      try {
+        setCommentsLoading(true);
+        const commentsResponse = await getTaskComments(id);
+        if (commentsResponse.status === 'success') {
+          setComments(commentsResponse.data.comments || []);
+        }
+      } catch (commentError: any) {
+        console.warn('Error fetching comments:', commentError.message);
+        setComments([]);
+      } finally {
+        setCommentsLoading(false);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load request.';
@@ -485,6 +506,44 @@ export default function RequestDetailsVolunteer() {
     }
   };
 
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const handleSubmitComment = async () => {
+    if (!commentText.trim()) {
+      Alert.alert('Comment Required', 'Please enter a comment.');
+      return;
+    }
+
+    if (!id || !user) {
+      Alert.alert('Error', 'Unable to submit comment. Please sign in.');
+      return;
+    }
+
+    setSubmittingComment(true);
+    try {
+      const response = await createTaskComment(id, commentText);
+      
+      // Add the new comment to the end of the list (oldest to newest order)
+      setComments((prev) => [...prev, response.data]);
+      
+      // Clear the input
+      setCommentText('');
+      
+      // Dismiss keyboard
+      Keyboard.dismiss();
+      
+      // Scroll to bottom to show the new comment
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    } catch (err: any) {
+      const errorMessage = err?.message || 'Failed to submit comment. Please try again.';
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+
   if (loading) {
     return (
       <ActivityIndicator
@@ -534,10 +593,6 @@ export default function RequestDetailsVolunteer() {
   const volunteerStatusMessage = !isCreatorView && (userAssigned || ['pending', 'accepted', 'rejected', 'withdrawn'].includes(volunteerStatusLabel ?? ''))
     ? (() => {
       if (userAssigned || volunteerStatusLabel === 'accepted') {
-        console.log("userAssigned", userAssigned);
-        console.log("volunteerStatusLabel", volunteerStatusLabel);
-        console.log(request);
-        console.log(user);
         return 'You have been assigned to this request.';
       }
       if (volunteerStatusLabel === 'rejected') {
@@ -558,8 +613,6 @@ export default function RequestDetailsVolunteer() {
     volunteerRecord?.id &&
     isTaskOpen &&
     volunteerStatusLabel === 'pending';
-
-  console.log('DEBUG: showWithdrawButton', !isCreator, volunteerRecord?.id, isTaskOpen, volunteerStatusLabel);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background }}>
@@ -612,7 +665,10 @@ export default function RequestDetailsVolunteer() {
         </Text>
       </View>
 
-      <ScrollView contentContainerStyle={[styles.container, { backgroundColor: themeColors.background }]}>
+      <ScrollView 
+        ref={scrollViewRef}
+        contentContainerStyle={[styles.container, { backgroundColor: themeColors.background, paddingBottom: user ? 100 : 40 }]}
+      >
         {/* Show first photo as hero image if available */}
         {photos.length > 0 && !photosLoading && (
           <>
@@ -691,13 +747,6 @@ export default function RequestDetailsVolunteer() {
               const absolutePhotoUrl = photoUrl
                 ? (photoUrl.startsWith('http') ? photoUrl : `${BACKEND_BASE_URL}${photoUrl}`)
                 : null;
-              console.log('[v-request-details] Rendering avatar Image:', {
-                creatorId: request.creator?.id,
-                creatorName: request.creator?.name,
-                photoUrl,
-                absolutePhotoUrl,
-                hasPhoto: !!photoUrl
-              });
               return (
                 <Image
                   source={
@@ -708,8 +757,6 @@ export default function RequestDetailsVolunteer() {
                   style={[styles.avatar, { backgroundColor: themeColors.gray }]}
                   accessibilityRole="image"
                   accessibilityLabel={`Profile photo of ${requesterName}`}
-                  onError={(error) => console.log('[v-request-details] Image load error:', error.nativeEvent)}
-                  onLoad={() => console.log('[v-request-details] Image loaded successfully for:', photoUrl)}
                 />
               );
             })()}
@@ -842,7 +889,75 @@ export default function RequestDetailsVolunteer() {
             <Text style={[styles.buttonText, { color: themeColors.primary }]}>View Requester Profile</Text>
           </TouchableOpacity>
         )}
+
+        {/* Comments Section */}
+        <View style={[styles.detailsContainer, { backgroundColor: themeColors.card }]}>
+          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Comments</Text>
+          {commentsLoading ? (
+            <ActivityIndicator size="small" color={themeColors.primary} style={{ marginVertical: 16 }} />
+          ) : comments.length === 0 ? (
+            <Text style={[styles.descriptionText, { color: themeColors.textMuted }]}>No comments yet. Be the first to comment!</Text>
+          ) : (
+            comments.map((comment) => (
+              <CommentCard
+                key={comment.id}
+                userName={`${comment.user.name} ${comment.user.surname}`}
+                content={comment.content}
+                timestamp={comment.timestamp}
+                avatarUrl={comment.user.profile_photo || comment.user.photo}
+              />
+            ))
+          )}
+        </View>
       </ScrollView>
+
+      {/* Comment Input Section - Fixed at Bottom */}
+      {user && (
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        >
+          <View style={[styles.commentInputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border }]}>
+            <TextInput
+              style={[
+                styles.commentInput,
+                {
+                  borderColor: themeColors.border,
+                  color: themeColors.text,
+                  backgroundColor: themeColors.background,
+                },
+              ]}
+              placeholder="Add comment..."
+              placeholderTextColor={themeColors.textMuted}
+              value={commentText}
+              onChangeText={setCommentText}
+              multiline
+              editable={!submittingComment}
+              accessibilityLabel="Comment input"
+            />
+            <TouchableOpacity
+              style={[
+                styles.sendButton,
+                {
+                  backgroundColor: submittingComment ? themeColors.border : themeColors.primary,
+                },
+              ]}
+              onPress={handleSubmitComment}
+              disabled={submittingComment || !commentText.trim()}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel="Send comment"
+              accessibilityState={{ disabled: submittingComment || !commentText.trim() }}
+            >
+              {submittingComment ? (
+                <ActivityIndicator size="small" color={themeColors.card} />
+              ) : (
+                <Ionicons name="send" size={20} color={themeColors.card} />
+              )}
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      )}
 
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View
@@ -1195,5 +1310,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 12,
     borderWidth: 1,
+  },
+  commentInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    paddingBottom: 20,
+  },
+  commentInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    maxHeight: 100,
+    marginRight: 8,
+    fontSize: 14,
+  },
+  sendButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

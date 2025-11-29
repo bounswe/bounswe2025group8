@@ -1,0 +1,126 @@
+import React from 'react';
+import { View, Text, StyleSheet, Image } from 'react-native';
+import { useTheme } from '@react-navigation/native';
+import type { ThemeTokens } from '../../constants/Colors';
+import { BACKEND_BASE_URL } from '../../lib/api';
+
+export interface CommentCardProps {
+  userName: string;
+  content: string;
+  timestamp: string;
+  avatarUrl?: string | null;
+}
+
+const CommentCard: React.FC<CommentCardProps> = ({
+  userName,
+  content,
+  timestamp,
+  avatarUrl,
+}) => {
+  const { colors } = useTheme();
+  const themeColors = colors as ThemeTokens;
+
+  // Format timestamp to a readable format
+  const formatTimestamp = (timestamp: string) => {
+    try {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+      
+      if (diffInSeconds < 60) {
+        return 'Just now';
+      } else if (diffInSeconds < 3600) {
+        const minutes = Math.floor(diffInSeconds / 60);
+        return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+      } else if (diffInSeconds < 86400) {
+        const hours = Math.floor(diffInSeconds / 3600);
+        return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+      } else if (diffInSeconds < 604800) {
+        const days = Math.floor(diffInSeconds / 86400);
+        return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+      } else {
+        return date.toLocaleDateString();
+      }
+    } catch {
+      return timestamp;
+    }
+  };
+
+  const absoluteAvatarUrl = avatarUrl
+    ? (avatarUrl.startsWith('http') ? avatarUrl : `${BACKEND_BASE_URL}${avatarUrl}`)
+    : null;
+
+  return (
+    <View style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border, borderWidth: 1 }]}>
+      <View style={styles.header}>
+        <Image
+          source={
+            absoluteAvatarUrl
+              ? { uri: absoluteAvatarUrl }
+              : require('../../assets/images/empty_profile_photo.png')
+          }
+          style={styles.avatar}
+        />
+        <View style={styles.headerText}>
+          <View style={styles.nameRow}>
+            <Text style={[styles.userName, { color: themeColors.text }]}>{userName}</Text>
+            <Text style={[styles.timestamp, { color: themeColors.textMuted }]}>
+              {formatTimestamp(timestamp)}
+            </Text>
+          </View>
+        </View>
+      </View>
+      <Text style={[styles.content, { color: themeColors.text }]}>{content}</Text>
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  card: {
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 12,
+    backgroundColor: '#ccc',
+  },
+  headerText: {
+    flex: 1,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  userName: {
+    fontWeight: '600',
+    fontSize: 16,
+    flex: 1,
+  },
+  timestamp: {
+    fontSize: 12,
+    marginLeft: 8,
+  },
+  content: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+});
+
+export default CommentCard;
+

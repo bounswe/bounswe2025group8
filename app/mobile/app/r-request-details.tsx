@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -13,12 +13,14 @@ import {
   SafeAreaView,
   Switch,
   Dimensions,
-  Keyboard
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { getTaskDetails, getTaskApplicants, completeTask, cancelTask, createReview, getTaskReviews, getTaskPhotos, BACKEND_BASE_URL, updateTask, type Task, type Volunteer, type Review, type Photo, type UpdateTaskPayload } from '../lib/api';
+import { getTaskDetails, getTaskApplicants, completeTask, cancelTask, createReview, getTaskReviews, getTaskPhotos, BACKEND_BASE_URL, updateTask, getTaskComments, createTaskComment, type Task, type Volunteer, type Review, type Photo, type UpdateTaskPayload, type Comment } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useAppTheme } from '../theme/ThemeProvider';
 import type { ThemeTokens } from '../constants/Colors';
@@ -26,6 +28,7 @@ import { CategoryPicker } from '../components/forms/CategoryPicker';
 import { DeadlinePicker } from '../components/forms/DeadlinePicker';
 import { AddressFields } from '../components/forms/AddressFields';
 import { AddressFieldsValue, emptyAddress, parseAddressString, formatAddress } from '../utils/address';
+import CommentCard from '../components/ui/CommentCard';
 
 export default function RequestDetails() {
   const params = useLocalSearchParams();
@@ -61,6 +64,10 @@ export default function RequestDetails() {
   const [addressFields, setAddressFields] = useState<AddressFieldsValue>(emptyAddress);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [photosLoading, setPhotosLoading] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [submittingComment, setSubmittingComment] = useState(false);
 
   const getLabelColors = (type: string, property: 'Background' | 'Text' | 'Border') => {
     const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
@@ -147,6 +154,20 @@ export default function RequestDetails() {
         setPhotos([]);
       } finally {
         setPhotosLoading(false);
+      }
+
+      // Fetch comments for the task
+      try {
+        setCommentsLoading(true);
+        const commentsResponse = await getTaskComments(id);
+        if (commentsResponse.status === 'success') {
+          setComments(commentsResponse.data.comments || []);
+        }
+      } catch (commentError: any) {
+        console.warn('Error fetching comments:', commentError.message);
+        setComments([]);
+      } finally {
+        setCommentsLoading(false);
       }
     } catch (err: any) {
       setError(err.message || 'Failed to load request details.');
@@ -502,6 +523,44 @@ export default function RequestDetails() {
     );
   };
 
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const handleSubmitComment = async () => {
+    if (!commentText.trim()) {
+      Alert.alert('Comment Required', 'Please enter a comment.');
+      return;
+    }
+
+    if (!id || !user) {
+      Alert.alert('Error', 'Unable to submit comment. Please sign in.');
+      return;
+    }
+
+    setSubmittingComment(true);
+    try {
+      const response = await createTaskComment(id, commentText);
+      
+      // Add the new comment to the end of the list (oldest to newest order)
+      setComments((prev) => [...prev, response.data]);
+      
+      // Clear the input
+      setCommentText('');
+      
+      // Dismiss keyboard
+      Keyboard.dismiss();
+      
+      // Scroll to bottom to show the new comment
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    } catch (err: any) {
+      const errorMessage = err?.message || 'Failed to submit comment. Please try again.';
+      Alert.alert('Error', errorMessage);
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+
   if (loading) {
     return (
       <ActivityIndicator
@@ -630,14 +689,16 @@ export default function RequestDetails() {
           </Text>
         </View>
       </View>
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+      <ScrollView 
+        ref={scrollViewRef}
+        contentContainerStyle={{ paddingBottom: user ? 100 : 40 }}
+      >
         {/* Show first photo as hero image if available, otherwise show default */}
         {photos.length > 0 && !photosLoading ? (
           <>
             {(() => {
               const firstPhoto = photos[0];
               const photoUrl = firstPhoto.photo_url || firstPhoto.url || firstPhoto.image || '';
-              console.log(photoUrl);
               const absoluteUrl = photoUrl.startsWith('http')
                 ? photoUrl
                 : `${BACKEND_BASE_URL}${photoUrl}`;
@@ -885,7 +946,75 @@ export default function RequestDetails() {
             </TouchableOpacity>
           </>
         )}
+
+        {/* Comments Section */}
+        <View style={[styles.section, { backgroundColor: themeColors.card }]}>
+          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Comments</Text>
+          {commentsLoading ? (
+            <ActivityIndicator size="small" color={themeColors.primary} style={{ marginVertical: 16 }} />
+          ) : comments.length === 0 ? (
+            <Text style={[styles.sectionText, { color: themeColors.textMuted }]}>No comments yet. Be the first to comment!</Text>
+          ) : (
+            comments.map((comment) => (
+              <CommentCard
+                key={comment.id}
+                userName={`${comment.user.name} ${comment.user.surname}`}
+                content={comment.content}
+                timestamp={comment.timestamp}
+                avatarUrl={comment.user.profile_photo || comment.user.photo}
+              />
+            ))
+          )}
+        </View>
       </ScrollView>
+
+      {/* Comment Input Section - Fixed at Bottom */}
+      {user && (
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        >
+          <View style={[styles.commentInputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border }]}>
+            <TextInput
+              style={[
+                styles.commentInput,
+                {
+                  borderColor: themeColors.border,
+                  color: themeColors.text,
+                  backgroundColor: themeColors.background,
+                },
+              ]}
+              placeholder="Add comment..."
+              placeholderTextColor={themeColors.textMuted}
+              value={commentText}
+              onChangeText={setCommentText}
+              multiline
+              editable={!submittingComment}
+              accessibilityLabel="Comment input"
+            />
+            <TouchableOpacity
+              style={[
+                styles.sendButton,
+                {
+                  backgroundColor: submittingComment ? themeColors.border : themeColors.primary,
+                },
+              ]}
+              onPress={handleSubmitComment}
+              disabled={submittingComment || !commentText.trim()}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel="Send comment"
+              accessibilityState={{ disabled: submittingComment || !commentText.trim() }}
+            >
+              {submittingComment ? (
+                <ActivityIndicator size="small" color={themeColors.card} />
+              ) : (
+                <Ionicons name="send" size={20} color={themeColors.card} />
+              )}
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      )}
 
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View
@@ -1395,5 +1524,30 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 16,
     marginHorizontal: 16,
+  },
+  commentInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    paddingBottom: 20,
+  },
+  commentInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    maxHeight: 100,
+    marginRight: 8,
+    fontSize: 14,
+  },
+  sendButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
