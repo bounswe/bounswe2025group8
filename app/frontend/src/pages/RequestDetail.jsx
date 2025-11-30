@@ -34,6 +34,7 @@ import Sidebar from "../components/Sidebar";
 import EditRequestModal from "../components/EditRequestModal";
 import RatingReviewModal from "../components/RatingReviewModal";
 import ReportModal from "../components/ReportModal";
+import CommentSection from "../components/CommentSection";
 import { urgencyLevels } from "../constants/urgency_level";
 import { getCategoryImage } from "../constants/categories";
 import { toAbsoluteUrl } from "../utils/url";
@@ -787,7 +788,9 @@ const RequestDetail = () => {
   };
 
   const handleReportSubmitSuccess = () => {
-    alert("Thank you for reporting this task! Our team will review it shortly.");
+    alert(
+      "Thank you for reporting this task! Our team will review it shortly."
+    );
   };
 
   return (
@@ -929,18 +932,18 @@ const RequestDetail = () => {
               open={Boolean(menuAnchorEl)}
               onClose={handleMenuClose}
             >
-              {isTaskCreator && (
-                <>
-                  <MenuItem onClick={handleMenuEdit}>
-                    <EditIcon className="w-4 h-4 mr-2" />
-                    Edit
-                  </MenuItem>
-                  <MenuItem onClick={handleMenuDelete}>
-                    <DeleteIcon className="w-4 h-4 mr-2" />
-                    Delete
-                  </MenuItem>
-                </>
-              )}
+              {isTaskCreator
+                ? [
+                    <MenuItem key="edit" onClick={handleMenuEdit}>
+                      <EditIcon className="w-4 h-4 mr-2" />
+                      Edit
+                    </MenuItem>,
+                    <MenuItem key="delete" onClick={handleMenuDelete}>
+                      <DeleteIcon className="w-4 h-4 mr-2" />
+                      Delete
+                    </MenuItem>,
+                  ]
+                : null}
               {isAuthenticated && !isTaskCreator && (
                 <MenuItem onClick={handleMenuReport}>
                   <FlagIcon className="w-4 h-4 mr-2" />
@@ -1506,6 +1509,13 @@ const RequestDetail = () => {
             </div>
           </div>
         </div>
+
+        {/* Comment Section */}
+        <CommentSection
+          taskId={requestId}
+          currentUser={currentUser}
+          isAuthenticated={isAuthenticated}
+        />
       </div>
 
       <EditRequestModal
