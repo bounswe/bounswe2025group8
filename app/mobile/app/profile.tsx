@@ -6,7 +6,8 @@ import RatingPill from '../components/ui/RatingPill';
 import ReviewCard from '../components/ui/ReviewCard';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../lib/auth';
-import { getUserProfile, type UserProfile, getTasks, type Task, getUserReviews, type Review, listVolunteers, type Volunteer, uploadProfilePhoto, deleteProfilePhoto, BACKEND_BASE_URL } from '../lib/api';
+import { getUserProfile, type UserProfile, getTasks, type Task, getUserReviews, type Review, listVolunteers, type Volunteer, uploadProfilePhoto, deleteProfilePhoto, submitUserReport, BACKEND_BASE_URL } from '../lib/api';
+import { ReportModal } from '../components/ReportModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RequestCard from '../components/ui/RequestCard';
 import { Ionicons } from '@expo/vector-icons';
@@ -36,8 +37,20 @@ export default function ProfileScreen() {
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewsError, setReviewsError] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
 
   const [selectedTab, setSelectedTab] = useState<'volunteer' | 'requester'>(initialTab);
+
+  const handleReportUser = async (reportType: string, description: string) => {
+    if (!profile?.id) return;
+    try {
+      await submitUserReport(profile.id, reportType, description);
+      Alert.alert('Success', 'Report submitted successfully. Thank you for helping keep our community safe.');
+      setReportModalVisible(false);
+    } catch (err: any) {
+      Alert.alert('Error', err.message || 'Failed to submit report.');
+    }
+  };
 
   const handlePhotoUpload = async () => {
     if (!user?.id) return;
@@ -508,6 +521,17 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </>
           )}
+          {!isOwnProfile && (
+            <TouchableOpacity
+              onPress={() => setReportModalVisible(true)}
+              style={{ marginLeft: 12 }}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Report user"
+            >
+              <Ionicons name="flag-outline" size={28} color={themeColors.error} />
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={[styles.tabSelectorContainer, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
@@ -610,6 +634,13 @@ export default function ProfileScreen() {
           })}
         </View>
 
+        <ReportModal
+          visible={reportModalVisible}
+          onClose={() => setReportModalVisible(false)}
+          onSubmit={handleReportUser}
+          targetName={profile ? `${profile.name} ${profile.surname}` : 'User'}
+          isUserReport={true}
+        />
       </ScrollView>
     </SafeAreaView>
   );
