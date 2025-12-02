@@ -20,7 +20,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../theme/ThemeProvider';
-import { getTaskDetails, listVolunteers, type Task, type Volunteer, volunteerForTask, withdrawVolunteer, createReview, getTaskReviews, type Review, type UserProfile, getTaskPhotos, BACKEND_BASE_URL, type Photo, getTaskComments, createTaskComment, updateComment, deleteComment, type Comment } from '../lib/api';
+import { getTaskDetails, listVolunteers, type Task, type Volunteer, volunteerForTask, withdrawVolunteer, createReview, getTaskReviews, type Review, type UserProfile, getTaskPhotos, BACKEND_BASE_URL, type Photo, getTaskComments, createTaskComment, updateComment, deleteComment, submitReport, type Comment } from '../lib/api';
+import { ReportModal } from '../components/ReportModal';
 import { useAuth } from '../lib/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ThemeTokens } from '../constants/Colors';
@@ -58,6 +59,7 @@ export default function RequestDetailsVolunteer() {
   const [commentText, setCommentText] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
   const storageKey = id && user?.id ? `volunteer-record-${id}-${user.id}` : null;
   const legacyStorageKey = id ? `volunteer-record-${id}` : null;
   const volunteerRecordRef = useRef<{ id: number; status?: string } | null>(null);
@@ -525,30 +527,30 @@ export default function RequestDetailsVolunteer() {
       if (editingCommentId) {
         // Update existing comment
         const response = await updateComment(editingCommentId, commentText);
-        
+
         // Update the comment in the list
-        setComments((prev) => 
+        setComments((prev) =>
           prev.map((c) => (c.id === editingCommentId ? response.data : c))
         );
-        
+
         // Clear editing state
         setEditingCommentId(null);
       } else {
         // Create new comment
         const response = await createTaskComment(id, commentText);
-        
+
         // Add the new comment to the end of the list (oldest to newest order)
         setComments((prev) => [...prev, response.data]);
-        
+
         // Scroll to bottom to show the new comment
         setTimeout(() => {
           scrollViewRef.current?.scrollToEnd({ animated: true });
         }, 100);
       }
-      
+
       // Clear the input
       setCommentText('');
-      
+
       // Dismiss keyboard
       Keyboard.dismiss();
     } catch (err: any) {
@@ -588,10 +590,10 @@ export default function RequestDetailsVolunteer() {
           onPress: async () => {
             try {
               await deleteComment(commentId);
-              
+
               // Remove the comment from the list
               setComments((prev) => prev.filter((c) => c.id !== commentId));
-              
+
               // Clear editing state if deleting the comment being edited
               if (editingCommentId === commentId) {
                 setCommentText('');
@@ -605,6 +607,19 @@ export default function RequestDetailsVolunteer() {
         },
       ]
     );
+  };
+
+
+
+  const handleReportTask = async (reportType: string, description: string) => {
+    if (!id) return;
+    try {
+      await submitReport(id, reportType, description);
+      Alert.alert('Success', 'Report submitted successfully. Thank you for helping keep our community safe.');
+      setReportModalVisible(false);
+    } catch (err: any) {
+      Alert.alert('Error', err.message || 'Failed to submit report.');
+    }
   };
 
   if (loading) {
@@ -728,7 +743,34 @@ export default function RequestDetailsVolunteer() {
         </Text>
       </View>
 
-      <ScrollView 
+      <View style={{ position: 'absolute', top: 56, right: 16, zIndex: 10 }}>
+        {!isCreator && (
+          <TouchableOpacity
+            onPress={() => setReportModalVisible(true)}
+            style={{
+              backgroundColor: themeColors.card,
+              padding: 8,
+              borderRadius: 20,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+              elevation: 3,
+            }}
+          >
+            <Ionicons name="flag-outline" size={20} color={themeColors.error} />
+          </TouchableOpacity>
+        )}
+      </View>
+      <ReportModal
+        visible={reportModalVisible}
+        onClose={() => setReportModalVisible(false)}
+        onSubmit={handleReportTask}
+        targetName={request?.title || 'Task'}
+        isUserReport={false}
+      />
+
+      <ScrollView
         ref={scrollViewRef}
         contentContainerStyle={[styles.container, { backgroundColor: themeColors.background, paddingBottom: user ? 100 : 40 }]}
       >

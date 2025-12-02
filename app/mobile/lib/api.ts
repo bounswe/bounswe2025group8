@@ -1629,4 +1629,107 @@ export const deleteComment = async (commentId: number): Promise<{ status: string
   }
 };
 
+// Report Types
+export enum ReportType {
+  SPAM = 'SPAM',
+  INAPPROPRIATE_CONTENT = 'INAPPROPRIATE_CONTENT',
+  HARASSMENT = 'HARASSMENT',
+  FRAUD = 'FRAUD',
+  FAKE_REQUEST = 'FAKE_REQUEST',
+  NO_SHOW = 'NO_SHOW',
+  SAFETY_CONCERN = 'SAFETY_CONCERN',
+  OTHER = 'OTHER',
+}
+
+export const REPORT_TYPE_LABELS: Record<ReportType, string> = {
+  [ReportType.SPAM]: 'Spam',
+  [ReportType.INAPPROPRIATE_CONTENT]: 'Inappropriate Content',
+  [ReportType.HARASSMENT]: 'Harassment',
+  [ReportType.FRAUD]: 'Fraud',
+  [ReportType.FAKE_REQUEST]: 'Fake Request',
+  [ReportType.NO_SHOW]: 'No Show',
+  [ReportType.SAFETY_CONCERN]: 'Safety Concern',
+  [ReportType.OTHER]: 'Other',
+};
+
+export interface ReportResponse {
+  status: string;
+  message: string;
+  data?: any;
+}
+
+/**
+ * Submit a report for a task
+ * @param taskId - ID of the task to report
+ * @param reportType - Type of report
+ * @param description - Description/details of the report
+ */
+export const submitReport = async (
+  taskId: number,
+  reportType: ReportType | string,
+  description: string
+): Promise<ReportResponse> => {
+  try {
+    const response = await api.post<ReportResponse>('/task-reports/', {
+      task_id: taskId,
+      report_type: reportType,
+      description,
+    });
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const errorData = error.response?.data;
+      let errMessage = 'Failed to submit report.';
+
+      if (errorData?.message) {
+        errMessage = errorData.message;
+      } else if (errorData?.error) {
+        errMessage = errorData.error;
+      } else if (errorData?.errors) {
+        errMessage = Object.values(errorData.errors).flat().join(', ');
+      }
+
+      throw new Error(errMessage);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Submit a report for a user
+ * @param userId - ID of the user to report
+ * @param reportType - Type of report
+ * @param description - Description/details of the report
+ */
+export const submitUserReport = async (
+  userId: number,
+  reportType: ReportType | string,
+  description: string
+): Promise<ReportResponse> => {
+  try {
+    const response = await api.post<ReportResponse>('/user-reports/', {
+      reported_user_id: userId,
+      report_type: reportType,
+      description,
+    });
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const errorData = error.response?.data;
+      let errMessage = 'Failed to submit user report.';
+
+      if (errorData?.message) {
+        errMessage = errorData.message;
+      } else if (errorData?.error) {
+        errMessage = errorData.error;
+      } else if (errorData?.errors) {
+        errMessage = Object.values(errorData.errors).flat().join(', ');
+      }
+
+      throw new Error(errMessage);
+    }
+    throw error;
+  }
+};
+
 export default api;
