@@ -126,7 +126,39 @@ CORS_ALLOW_HEADERS = [
 CORS_ALLOW_CREDENTIALS = True  # Allow cookies in cross-origin requests
 
 # CSRF ayarları - Token auth kullandığımız için esnek
-CSRF_TRUSTED_ORIGINS = ['http://*', 'https://*']
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost',
+    'http://127.0.0.1',
+    'http://neighborhelp.webhop.me',
+    'https://neighborhelp.webhop.me',
+]
 CSRF_COOKIE_SECURE = False
 SESSION_COOKIE_SECURE = False
 SESSION_COOKIE_SAMESITE = None
+
+# Proxy settings - Required for correct URL generation behind Caddy
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'core.api.serializers.photo_serializers': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}

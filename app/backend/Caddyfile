@@ -1,9 +1,33 @@
 neighborhelp.webhop.me {
-    reverse_proxy frontend:5173 {
-        header_up Host neighborhelp.webhop.me
+    @api path /api/*
+    handle @api {
+        reverse_proxy backend:8000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto https
+            header_up X-Forwarded-Host {host}
+        }
     }
     
-    handle /api/* {
-        reverse_proxy backend:8000
+    @media path /media/*
+    handle @media {
+        reverse_proxy backend:8000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto https
+            header_up X-Forwarded-Host {host}
+        }
+    }
+    
+    handle {
+        reverse_proxy frontend:5173 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto https
+            header_up X-Forwarded-Host {host}
+        }
     }
 }
