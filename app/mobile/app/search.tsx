@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import SearchBarWithResults, { Category, Request, Profile, Location } from '../components/ui/SearchBarWithResults';
-import { getTasks, searchUsers, type Task, type Category as ApiCategory, type UserProfile } from '../lib/api';
+import { getTasks, searchUsers, BACKEND_BASE_URL, type Task, type UserProfile } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import { normalizedLocationLabel, locationMatches } from '../utils/address';
 
 export default function SearchPage() {
   const router = useRouter();
@@ -32,14 +33,17 @@ export default function SearchPage() {
         const activeTasks = filterActiveTasks(fetchedTasks);
         setAllTasks(activeTasks);
         setRequests(
-          activeTasks.map((task) => ({
-            id: String(task.id),
-            title: task.title,
-            urgency: task.urgency_level === 3 ? 'High' : task.urgency_level === 2 ? 'Medium' : 'Low',
-            meta: `${task.location} • ${task.deadline ? new Date(task.deadline).toLocaleDateString() : 'N/A'}`,
-            category: task.category_display || task.category,
-            image: require('../assets/images/help.png'),
-          }))
+          activeTasks.map((task) => {
+            const locationLabel = normalizedLocationLabel(task.location);
+            return {
+              id: String(task.id),
+              title: task.title,
+              urgency: task.urgency_level === 3 ? 'High' : task.urgency_level === 2 ? 'Medium' : 'Low',
+              meta: `${locationLabel} • ${task.deadline ? new Date(task.deadline).toLocaleDateString() : 'N/A'}`,
+              category: task.category_display || task.category,
+              image: require('../assets/images/help.png'),
+            };
+          })
         );
 
         if (activeTasks.length > 0) {
@@ -58,20 +62,36 @@ export default function SearchPage() {
           });
           setCategories(Array.from(uniqueCategoriesMap.values()));
 
-          const uniqueLocationsMap = new Map<string, Location>();
+          const locationCount = new Map<string, number>();
+
+          const addLabel = (label: string) => {
+            const trimmed = label.trim();
+            if (!trimmed) return;
+
+            // Merge labels that match on parsed parts (e.g., city vs full label)
+            const existingKey = Array.from(locationCount.keys()).find(
+              (existing) =>
+                locationMatches(existing, trimmed) && locationMatches(trimmed, existing)
+            );
+            const key = existingKey ?? trimmed;
+            locationCount.set(key, (locationCount.get(key) ?? 0) + 1);
+          };
+
           activeTasks.forEach((task) => {
-            if (task.location) {
-              if (!uniqueLocationsMap.has(task.location)) {
-                uniqueLocationsMap.set(task.location, {
-                  id: task.location,
-                  title: task.location,
-                  image: require('../assets/images/help.png'),
-                  count: activeTasks.filter((t) => t.location === task.location).length,
-                });
-              }
-            }
+            if (!task.location) return;
+
+            const normalized = normalizedLocationLabel(task.location);
+            addLabel(normalized || task.location);
           });
-          setLocations(Array.from(uniqueLocationsMap.values()));
+
+          const locationList: Location[] = Array.from(locationCount.entries()).map(([label, count]) => ({
+            id: label,
+            title: label,
+            image: require('../assets/images/help.png'),
+            count,
+          }));
+
+          setLocations(locationList);
         } else {
           setCategories([]);
           setLocations([]);
@@ -80,11 +100,18 @@ export default function SearchPage() {
         if (user) {
           const usersResponse = await searchUsers();
           setProfiles(
-            usersResponse.results.map((prof: UserProfile) => ({
-              id: String(prof.id),
-              name: `${prof.name} ${prof.surname}`,
-              image: prof.photo ? { uri: prof.photo } : require('../assets/images/empty_profile_photo.png'),
-            }))
+            usersResponse.results.map((prof: UserProfile) => {
+              const photoUrl = prof.profile_photo || prof.photo;
+              const absolutePhotoUrl = photoUrl 
+                ? (photoUrl.startsWith('http') ? photoUrl : `${BACKEND_BASE_URL}${photoUrl}`)
+                : null;
+              
+              return {
+                id: String(prof.id),
+                name: `${prof.name} ${prof.surname}`,
+                image: absolutePhotoUrl ? { uri: absolutePhotoUrl } : require('../assets/images/empty_profile_photo.png'),
+              };
+            })
           );
         } else {
           setProfiles([]);

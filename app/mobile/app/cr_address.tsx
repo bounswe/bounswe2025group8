@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, Scro
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
-import { createTask, uploadTaskPhoto} from '../lib/api';
+import { createTask, uploadTaskPhoto } from '../lib/api';
 import { AddressFields } from '../components/forms/AddressFields';
 import { AddressFieldsValue, emptyAddress, formatAddress } from '../utils/address';
 
@@ -18,6 +18,7 @@ interface TaskParams {
 
 export default function CRAddress() {
   const { colors } = useTheme();
+  const themeColors = colors as any;
   const router = useRouter();
   const params = useLocalSearchParams();
   const [address, setAddress] = useState<AddressFieldsValue>(emptyAddress);
@@ -28,7 +29,7 @@ export default function CRAddress() {
     options: string[];
     selected: string;
     onSelect: (v: string) => void;
-  }>({ visible: false, options: [], selected: '', onSelect: () => {} });
+  }>({ visible: false, options: [], selected: '', onSelect: () => { } });
 
   const openModal = (options: string[], selected: string, onSelect: (v: string) => void) => {
     setModal({ visible: true, options, selected, onSelect });
@@ -39,7 +40,7 @@ export default function CRAddress() {
   const handleCreateRequest = async () => {
     try {
       setUploading(true);
-      
+
       const title = params.title as string;
       const taskDescription = params.description as string;
       const category = params.category as string;
@@ -47,6 +48,7 @@ export default function CRAddress() {
       const people = parseInt(params.people as string) || 1;
       const deadline =
         (params.deadline as string) || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+      const deadlineDate = new Date(deadline);
 
       if (!title || !taskDescription || !category) {
         Alert.alert('Error', 'Missing task data. Please go back and try again.');
@@ -54,8 +56,20 @@ export default function CRAddress() {
         return;
       }
 
-      if (!address.city || !address.district) {
-        Alert.alert('Error', 'Please select a city and district for the address.');
+      if (Number.isNaN(deadlineDate.getTime())) {
+        Alert.alert('Error', 'Invalid deadline. Please pick a valid deadline.');
+        setUploading(false);
+        return;
+      }
+
+      if (deadlineDate.getTime() <= Date.now()) {
+        Alert.alert('Invalid Deadline', 'Please select a future date and time.');
+        setUploading(false);
+        return;
+      }
+
+      if (!address.country || !address.state || !address.city) {
+        Alert.alert('Error', 'Please select a country, state and city for the address.');
         return;
       }
 
@@ -77,21 +91,21 @@ export default function CRAddress() {
       // If photos were selected, upload them
       const photosParam = params.photos as string;
       console.log('Photos param received:', photosParam);
-      
+
       if (photosParam && createdTask.id) {
         try {
           const photosData = JSON.parse(photosParam);
           console.log('Parsed photos data:', photosData);
-          
+
           if (Array.isArray(photosData) && photosData.length > 0) {
             console.log(`Uploading ${photosData.length} photos for task ${createdTask.id}`);
-            
+
             // Upload each photo
             const uploadPromises = photosData.map((photo: { uri: string; name: string }) => {
               console.log(`Preparing to upload photo: ${photo.name} from ${photo.uri}`);
               return uploadTaskPhoto(createdTask.id, photo.uri, photo.name);
             });
-            
+
             const results = await Promise.all(uploadPromises);
             console.log('All photos uploaded successfully:', results);
           } else {
@@ -101,7 +115,7 @@ export default function CRAddress() {
           console.error('Error uploading photos:', photoError);
           // Don't fail the entire task creation if photos fail
           Alert.alert(
-            'Warning', 
+            'Warning',
             'Task created but some photos could not be uploaded.',
             [{ text: 'OK', onPress: () => router.replace('/requests') }]
           );
@@ -130,17 +144,37 @@ export default function CRAddress() {
             <Image source={require('../assets/images/logo.png')} style={{ width: 28, height: 28, resizeMode: 'contain' }} />
           </View>
           <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => router.push('/notifications')} style={{ marginRight: 16 }}>
-              <Ionicons name="notifications-outline" size={24} color={colors.text} />
+            <TouchableOpacity
+              onPress={() => router.push('/notifications')}
+              style={{ marginRight: 16 }}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Open notifications"
+            >
+              <Ionicons name="notifications-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/settings')}>
-              <Ionicons name="settings-outline" size={24} color={colors.text} />
+            <TouchableOpacity
+              onPress={() => router.push('/settings')}
+              accessible
+
+              accessibilityRole="button"
+              accessibilityLabel="Open settings"
+            >
+              <Ionicons name="settings-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
             </TouchableOpacity>
           </View>
         </View>
         <View style={styles.titleRow}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => router.back()}
+            accessible
+
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <Ionicons name="arrow-back" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
           </TouchableOpacity>
           <Text style={[styles.pageTitle, { color: colors.text }]}>Create Request</Text>
         </View>
@@ -162,26 +196,46 @@ export default function CRAddress() {
           value={description}
           onChangeText={setDescription}
           multiline
+          accessibilityLabel="Address description"
+          testID="create-request-address-description"
         />
 
-        <TouchableOpacity 
-          style={[styles.nextBtn, { backgroundColor: colors.primary, opacity: uploading ? 0.6 : 1 }]} 
+        <TouchableOpacity
+          style={[styles.nextBtn, { backgroundColor: colors.primary, opacity: uploading ? 0.6 : 1 }]}
           onPress={handleCreateRequest}
           disabled={uploading}
+          accessible
+
+          accessibilityRole="button"
+          accessibilityLabel="Create request"
+          accessibilityState={{ disabled: uploading }}
+          testID="create-request-submit-button"
         >
           {uploading ? (
-            <ActivityIndicator color={colors.onPrimary} />
+            <ActivityIndicator color={themeColors.onPrimary} />
           ) : (
-            <Text style={[styles.nextBtnText, { color: colors.onPrimary }]}>Create Request</Text>
+            <Text style={[styles.nextBtnText, { color: themeColors.onPrimary }]}>
+              {uploading ? 'Creating...' : 'Create Request'}
+            </Text>
           )}
         </TouchableOpacity>
 
         <Modal animationType="slide" transparent visible={modal.visible} onRequestClose={closeModal}>
-          <View style={[styles.modalOverlay, { backgroundColor: colors.overlay }]}>
+          <View
+            style={[styles.modalOverlay, { backgroundColor: themeColors.overlay }]}
+            accessibilityViewIsModal
+            importantForAccessibility="yes"
+          >
             <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
               <View style={styles.modalHeader}>
                 <Text style={[styles.modalTitle, { color: colors.text }]}>Select</Text>
-                <TouchableOpacity onPress={closeModal}>
+                <TouchableOpacity
+                  onPress={closeModal}
+                  accessible
+
+                  accessibilityRole="button"
+                  accessibilityLabel="Close selection modal"
+                >
                   <Ionicons name="close" size={24} color={colors.primary} />
                 </TouchableOpacity>
               </View>
@@ -203,6 +257,11 @@ export default function CRAddress() {
                       modal.onSelect(option);
                       closeModal();
                     }}
+                    accessible
+
+                    accessibilityRole="button"
+                    accessibilityLabel={`Select ${option}`}
+                    accessibilityState={{ selected: isSelected }}
                   >
                     <Text
                       style={[
@@ -320,7 +379,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
-    marginTop: 8,
   },
   nextBtnText: {
     fontWeight: 'bold',

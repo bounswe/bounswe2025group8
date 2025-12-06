@@ -205,3 +205,163 @@ class GuestUserTests(TestCase):
         
         # Verify public tasks are returned
         self.assertEqual(public_tasks.count(), 2)
+
+
+class UserModelEdgeCaseTests(TestCase):
+    """Test edge cases for User model"""
+
+    def test_create_user_with_missing_email(self):
+        """Test creating user with missing email raises error"""
+        with self.assertRaises(ValueError) as context:
+            RegisteredUser.objects.create_user(
+                email='',
+                name='Test',
+                surname='User',
+                username='testuser',
+                phone_number='1234567890',
+                password='password123'
+            )
+        self.assertIn('User must have an email address', str(context.exception))
+
+    def test_create_user_with_none_email(self):
+        """Test creating user with None email raises error"""
+        with self.assertRaises(ValueError) as context:
+            RegisteredUser.objects.create_user(
+                email=None,
+                name='Test',
+                surname='User',
+                username='testuser',
+                phone_number='1234567890',
+                password='password123'
+            )
+        self.assertIn('User must have an email address', str(context.exception))
+
+    def test_create_user_with_missing_password(self):
+        """Test creating user with missing/None password"""
+        user = RegisteredUser.objects.create_user(
+            email='test@example.com',
+            name='Test',
+            surname='User',
+            username='testuser',
+            phone_number='1234567890',
+            password=None
+        )
+        # User should be created but password won't be set properly
+        self.assertIsNotNone(user)
+        # Password should be unusable
+        self.assertFalse(user.check_password(''))
+        self.assertFalse(user.check_password(None))
+
+    def test_create_user_with_duplicate_email(self):
+        """Test creating user with duplicate email raises error"""
+        # Create first user
+        RegisteredUser.objects.create_user(
+            email='duplicate@example.com',
+            name='First',
+            surname='User',
+            username='firstuser',
+            phone_number='1234567890',
+            password='password123'
+        )
+        
+        # Attempt to create second user with same email
+        from django.db import IntegrityError
+        with self.assertRaises(IntegrityError):
+            RegisteredUser.objects.create_user(
+                email='duplicate@example.com',
+                name='Second',
+                surname='User',
+                username='seconduser',
+                phone_number='0987654321',
+                password='password456'
+            )
+
+    def test_create_user_with_duplicate_username(self):
+        """Test creating user with duplicate username raises error"""
+        # Create first user
+        RegisteredUser.objects.create_user(
+            email='user1@example.com',
+            name='First',
+            surname='User',
+            username='sameusername',
+            phone_number='1234567890',
+            password='password123'
+        )
+        
+        # Attempt to create second user with same username
+        from django.db import IntegrityError
+        with self.assertRaises(IntegrityError):
+            RegisteredUser.objects.create_user(
+                email='user2@example.com',
+                name='Second',
+                surname='User',
+                username='sameusername',
+                phone_number='0987654321',
+                password='password456'
+            )
+
+    def test_user_email_normalization(self):
+        """Test that email addresses are normalized"""
+        user = RegisteredUser.objects.create_user(
+            email='Test@EXAMPLE.COM',
+            name='Test',
+            surname='User',
+            username='testuser',
+            phone_number='1234567890',
+            password='password123'
+        )
+        # Email domain should be lowercase
+        self.assertEqual(user.email, 'Test@example.com')
+
+    def test_create_superuser_defaults(self):
+        """Test that superuser has correct default flags"""
+        admin = RegisteredUser.objects.create_superuser(
+            email='superadmin@example.com',
+            name='Super',
+            surname='Admin',
+            username='superadmin',
+            phone_number='1234567890',
+            password='adminpass123'
+        )
+        
+        self.assertTrue(admin.is_superuser)
+        self.assertTrue(admin.is_staff)
+        self.assertTrue(admin.is_active)  # Should be active by default
+
+    def test_user_rating_boundaries(self):
+        """Test setting user rating to boundary values"""
+        user = RegisteredUser.objects.create_user(
+            email='test@example.com',
+            name='Test',
+            surname='User',
+            username='testuser',
+            phone_number='1234567890',
+            password='password123'
+        )
+        
+        # Test minimum rating
+        user.set_rating(0.0)
+        self.assertEqual(user.get_rating(), 0.0)
+        
+        # Test maximum rating
+        user.set_rating(5.0)
+        self.assertEqual(user.get_rating(), 5.0)
+        
+        # Test negative rating (no validation in model, but should work)
+        user.set_rating(-1.0)
+        self.assertEqual(user.get_rating(), -1.0)
+
+    def test_user_completed_task_count_negative(self):
+        """Test setting negative completed task count"""
+        user = RegisteredUser.objects.create_user(
+            email='test@example.com',
+            name='Test',
+            surname='User',
+            username='testuser',
+            phone_number='1234567890',
+            password='password123'
+        )
+        
+        # Set negative count (no validation in model)
+        user.set_completed_task_count(-5)
+        self.assertEqual(user.get_completed_task_count(), -5)

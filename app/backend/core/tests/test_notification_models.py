@@ -181,6 +181,29 @@ class NotificationModelTests(TestCase):
         
         self.assertIsNotNone(assignee_notification)
         self.assertIn("completed", assignee_notification.content.lower())
+    
+    def test_task_completed_notification_without_assignee(self):
+        """Task completion should still notify creator when no assignee exists"""
+        self.task.assignee = None
+        self.task.status = 'COMPLETED'
+        self.task.save()
+
+        Notification.send_task_completed_notification(self.task)
+
+        creator_notification = Notification.objects.filter(
+            user=self.user1,
+            type=NotificationType.TASK_COMPLETED,
+            related_task=self.task
+        ).first()
+        self.assertIsNotNone(creator_notification)
+        self.assertNotIn('None', creator_notification.content)
+
+    def test_mark_as_read_idempotent(self):
+        """Marking a notification as read twice should remain read"""
+        self.notification.mark_as_read()
+        self.notification.mark_as_read()
+        refreshed = Notification.objects.get(id=self.notification.id)
+        self.assertTrue(refreshed.is_read)
 
 
 class NotificationTypeEnumTests(TestCase):

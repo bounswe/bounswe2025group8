@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.utils import timezone
+from django.db import IntegrityError
 import datetime
 from core.models import RegisteredUser, Task, Bookmark, Tag, BookmarkTag
 
@@ -102,6 +103,27 @@ class BookmarkModelTests(TestCase):
         
         # Should return existing bookmark
         self.assertEqual(duplicate.id, new_bookmark.id)
+
+    def test_unique_bookmark_per_user_and_task(self):
+        """Ensure duplicate bookmarks for same user-task pair are blocked"""
+        with self.assertRaises(IntegrityError):
+            Bookmark.objects.create(user=self.user, task=self.task)
+
+    def test_same_task_can_be_bookmarked_by_different_users(self):
+        """Ensure uniqueness is scoped per user (other users can bookmark same task)"""
+        other_user = RegisteredUser.objects.create_user(
+            email='other@example.com',
+            name='Other',
+            surname='User',
+            username='otheruser',
+            phone_number='2223334444',
+            password='password789'
+        )
+
+        bookmark = Bookmark.add_bookmark(user=other_user, task=self.task)
+        self.assertIsNotNone(bookmark)
+        self.assertNotEqual(bookmark.user, self.user)
+        self.assertEqual(bookmark.task, self.task)
 
     def test_remove_bookmark(self):
         """Test remove_bookmark method"""
