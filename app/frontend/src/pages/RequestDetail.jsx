@@ -429,9 +429,14 @@ const RequestDetail = () => {
   const canDelete = isAuthenticated && isTaskCreator;
   const acceptedVolunteersCount =
     request.volunteers?.filter((v) => v.status === "ACCEPTED").length || 0;
+
+  // Check if the request creator is a banned user (name shows as *deleted)
+  const isCreatorBanned = request?.creator?.name === "*deleted";
+
   const canVolunteer =
     isAuthenticated &&
     !isTaskCreator &&
+    !isCreatorBanned && // Prevent volunteering for banned user's requests
     (request?.status === "POSTED" || request?.status === "ASSIGNED") &&
     acceptedVolunteersCount < request.volunteer_number &&
     (!volunteerRecord ||
@@ -1055,22 +1060,34 @@ const RequestDetail = () => {
                 aria-label={`View profile of ${request.creator.name} ${request.creator.surname}`}
               >
                 <div className="w-12 h-12 mr-4">
-                  {requesterPhoto ? (
+                  {/* Don't show profile photo for banned users */}
+                  {requesterPhoto && !isCreatorBanned ? (
                     <img
                       src={requesterPhoto}
                       alt={`${request.creator.name} ${request.creator.surname}`}
                       className="w-full h-full rounded-full object-cover border border-gray-200"
                     />
                   ) : (
-                    <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                      {request.creator.name.charAt(0)}
+                    <div
+                      className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-lg"
+                      style={{
+                        backgroundColor: isCreatorBanned
+                          ? colors.text.tertiary
+                          : "#2563eb",
+                      }}
+                    >
+                      {isCreatorBanned ? "?" : request.creator.name.charAt(0)}
                     </div>
                   )}
                 </div>
                 <div>
                   <h3
                     className="text-lg font-semibold"
-                    style={{ color: colors.text.primary }}
+                    style={{
+                      color: isCreatorBanned
+                        ? colors.text.tertiary
+                        : colors.text.primary,
+                    }}
                   >
                     {request.creator.name} {request.creator.surname}
                   </h3>
@@ -1380,6 +1397,26 @@ const RequestDetail = () => {
                       : "Volunteer for this Task"}
                   </button>
                 )}
+
+                {/* Disabled volunteer button for banned user's requests */}
+                {isAuthenticated &&
+                  !isTaskCreator &&
+                  isCreatorBanned &&
+                  (request?.status === "POSTED" ||
+                    request?.status === "ASSIGNED") && (
+                    <button
+                      disabled
+                      className="w-full py-3 px-6 text-base font-medium rounded-lg cursor-not-allowed flex items-center justify-center"
+                      style={{
+                        backgroundColor: colors.interactive.disabled,
+                        color: colors.text.disabled,
+                      }}
+                      title="This request was created by a deleted user"
+                    >
+                      <VolunteerActivismIcon className="w-5 h-5 mr-2" />
+                      Volunteering Unavailable
+                    </button>
+                  )}
 
                 {canWithdraw && (
                   <button

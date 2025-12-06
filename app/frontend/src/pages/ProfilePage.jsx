@@ -419,6 +419,9 @@ const ProfilePage = () => {
   const earnedBadges = badgesToUse.filter((badge) => badge.earned);
   const inProgressBadges = badgesToUse.filter((badge) => !badge.earned);
 
+  // Check if the profile being viewed belongs to a banned user
+  const isUserBanned = user?.name === "*deleted";
+
   // Get initials from name and surname for fallback avatar
   const getInitials = () => {
     const name = user?.name || "";
@@ -559,7 +562,9 @@ const ProfilePage = () => {
                     sx={{
                       width: 80,
                       height: 80,
-                      backgroundColor: colors.brand.primary,
+                      backgroundColor: isUserBanned
+                        ? colors.text.tertiary
+                        : colors.brand.primary,
                       fontSize: "2rem",
                       fontWeight: "semibold",
                     }}
@@ -619,7 +624,12 @@ const ProfilePage = () => {
                 <Typography
                   variant="h5"
                   component="h1"
-                  sx={{ textAlign: "left", color: colors.text.primary }}
+                  sx={{
+                    textAlign: "left",
+                    color: isUserBanned
+                      ? colors.text.tertiary
+                      : colors.text.primary,
+                  }}
                   id="profile-page-title"
                 >
                   {user.name} {user.surname}
@@ -656,8 +666,8 @@ const ProfilePage = () => {
                     }}
                   />
                 </Box>
-                {/* Report button - only show for other users, not own profile */}
-                {!canEdit && (
+                {/* Report button - only show for other users, not own profile, and not for banned users */}
+                {!canEdit && !isUserBanned && (
                   <Button
                     onClick={handleUserReport}
                     startIcon={<FlagIcon />}

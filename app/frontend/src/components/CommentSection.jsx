@@ -228,6 +228,8 @@ const CommentSection = ({ taskId, currentUser, isAuthenticated }) => {
                   comment.user?.profilePhoto ||
                   comment.user?.avatar
               );
+              // Check if commenter is banned (name shows as *deleted)
+              const isCommenterBanned = comment.user?.name === "*deleted";
 
               return (
                 <div
@@ -260,7 +262,8 @@ const CommentSection = ({ taskId, currentUser, isAuthenticated }) => {
                         }
                       }}
                     >
-                      {userPhoto ? (
+                      {/* Don't show profile photo for banned users */}
+                      {userPhoto && !isCommenterBanned ? (
                         <img
                           src={userPhoto}
                           alt={`${comment.user?.name} ${comment.user?.surname}`}
@@ -270,7 +273,11 @@ const CommentSection = ({ taskId, currentUser, isAuthenticated }) => {
                       ) : (
                         <div
                           className="w-8 h-8 rounded-full flex items-center justify-center text-white font-semibold text-sm"
-                          style={{ backgroundColor: colors.brand.primary }}
+                          style={{
+                            backgroundColor: isCommenterBanned
+                              ? colors.text.tertiary
+                              : colors.brand.primary,
+                          }}
                         >
                           {comment.user?.name?.charAt(0) || "U"}
                         </div>
@@ -278,7 +285,11 @@ const CommentSection = ({ taskId, currentUser, isAuthenticated }) => {
                       <div>
                         <p
                           className="font-semibold text-sm"
-                          style={{ color: colors.text.primary }}
+                          style={{
+                            color: isCommenterBanned
+                              ? colors.text.tertiary
+                              : colors.text.primary,
+                          }}
                         >
                           {comment.user?.name} {comment.user?.surname}
                         </p>
