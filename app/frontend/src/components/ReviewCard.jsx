@@ -17,6 +17,9 @@ const ReviewCard = ({ review }) => {
       review.reviewer?.avatar
   );
 
+  // Check if reviewer is banned (name shows as *deleted)
+  const isReviewerBanned = review.reviewer?.name === "*deleted";
+
   // Get initials for fallback avatar
   const getInitials = () => {
     const name = review.reviewer?.name || "";
@@ -103,26 +106,34 @@ const ReviewCard = ({ review }) => {
           onClick={handleProfileClick}
         >
           <Avatar
-            src={reviewerPhoto || undefined}
+            src={!isReviewerBanned ? reviewerPhoto || undefined : undefined}
             alt={review.reviewer?.name || "User"}
             sx={{
               border: `2px solid ${colors.border.primary}`,
               width: 40,
               height: 40,
-              backgroundColor: !reviewerPhoto
-                ? colors.brand.primary
-                : undefined,
-              color: !reviewerPhoto ? colors.text.inverse : undefined,
+              backgroundColor:
+                !reviewerPhoto || isReviewerBanned
+                  ? isReviewerBanned
+                    ? colors.text.tertiary
+                    : colors.brand.primary
+                  : undefined,
+              color:
+                !reviewerPhoto || isReviewerBanned
+                  ? colors.text.inverse
+                  : undefined,
             }}
           >
-            {!reviewerPhoto && getInitials()}
+            {(!reviewerPhoto || isReviewerBanned) && getInitials()}
           </Avatar>
           <Box>
             <Typography
               variant="subtitle2"
               fontWeight="bold"
               sx={{
-                color: colors.text.primary,
+                color: isReviewerBanned
+                  ? colors.text.tertiary
+                  : colors.text.primary,
                 "&:hover": review.reviewer?.id
                   ? {
                       textDecoration: "underline",
