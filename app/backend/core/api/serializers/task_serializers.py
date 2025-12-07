@@ -26,10 +26,17 @@ class TaskSerializer(serializers.ModelSerializer):
     def _is_user_authorized(self, task, user):
         """
         Check if user is authorized to view sensitive information.
-        User is authorized if they are the creator or assignee.
+        User is authorized if they are the creator, assignee, or admin/superuser.
         """
         if not user or not user.is_authenticated:
             return False
+        
+        # Admins and superusers have full access
+        if hasattr(user, 'is_staff') and user.is_staff:
+            return True
+        if hasattr(user, 'is_superuser') and user.is_superuser:
+            return True
+            
         return user == task.creator or user == task.assignee or user in task.assignees.all()
     
     def get_location(self, obj):

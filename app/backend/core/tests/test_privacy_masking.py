@@ -306,3 +306,71 @@ class TaskSerializerPrivacyTests(TestCase):
         data = serializer.data
         
         self.assertEqual(data['assignee']['phone_number'], '+9876543210')
+
+    def test_admin_sees_full_address(self):
+        """Test that admin user sees full address"""
+        admin = RegisteredUser.objects.create_user(
+            email='admin@example.com',
+            name='Admin',
+            surname='User',
+            username='adminuser',
+            phone_number='+5555555555',
+            password='Password123!'
+        )
+        admin.is_staff = True
+        admin.save()
+        
+        request = self.factory.get('/api/tasks/')
+        request.user = admin
+        
+        serializer = TaskSerializer(instance=self.task, context={'request': request})
+        data = serializer.data
+        
+        self.assertEqual(data['location'], '123 Main St, Apt 4B, New York, NY, 10001')
+
+    def test_admin_sees_full_phone_numbers(self):
+        """Test that admin user sees full phone numbers"""
+        admin = RegisteredUser.objects.create_user(
+            email='admin@example.com',
+            name='Admin',
+            surname='User',
+            username='adminuser',
+            phone_number='+5555555555',
+            password='Password123!'
+        )
+        admin.is_staff = True
+        admin.save()
+        
+        self.task.assignee = self.assignee
+        self.task.save()
+        
+        request = self.factory.get('/api/tasks/')
+        request.user = admin
+        
+        serializer = TaskSerializer(instance=self.task, context={'request': request})
+        data = serializer.data
+        
+        self.assertEqual(data['creator']['phone_number'], '+1234567890')
+        self.assertEqual(data['assignee']['phone_number'], '+9876543210')
+
+    def test_superuser_sees_full_data(self):
+        """Test that superuser sees full data"""
+        superuser = RegisteredUser.objects.create_user(
+            email='super@example.com',
+            name='Super',
+            surname='User',
+            username='superuser',
+            phone_number='+9999999999',
+            password='Password123!'
+        )
+        superuser.is_superuser = True
+        superuser.save()
+        
+        request = self.factory.get('/api/tasks/')
+        request.user = superuser
+        
+        serializer = TaskSerializer(instance=self.task, context={'request': request})
+        data = serializer.data
+        
+        self.assertEqual(data['location'], '123 Main St, Apt 4B, New York, NY, 10001')
+        self.assertEqual(data['creator']['phone_number'], '+1234567890')
