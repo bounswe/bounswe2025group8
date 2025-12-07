@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import RequestCardForHomePage from "../components/RequestCardForHomePage";
+import UserCard from "../components/UserCard";
 import {
   fetchAllTasks,
   clearError,
 } from "../features/request/store/allRequestsSlice";
+import { searchUsers } from "../features/user/services/userSearchService";
 import { categoryMapping, getCategoryImage } from "../constants/categories";
 import { urgencyLevels } from "../constants/urgency_level";
 import { formatRelativeTime } from "../utils/dateUtils";
@@ -31,9 +33,25 @@ const SearchResults = () => {
   const categoryFilter = searchParams.get("category");
   const urgencyFilter = searchParams.get("urgency_level");
   const locationFilter = searchParams.get("location");
+  const searchTypeParam = searchParams.get("type") || "tasks";
 
   const [locationInput, setLocationInput] = useState(locationFilter || "");
   const [addressDialogOpen, setAddressDialogOpen] = useState(false);
+
+  // Tab state: "tasks" or "users"
+  const [activeTab, setActiveTab] = useState(searchTypeParam);
+
+  // User search state
+  const [users, setUsers] = useState([]);
+  const [userPagination, setUserPagination] = useState({
+    totalItems: 0,
+    totalPages: 0,
+    currentPage: 1,
+    hasNextPage: false,
+    hasPreviousPage: false,
+  });
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersError, setUsersError] = useState(null);
 
   // Debug logs
   console.log("SearchResults Component State:", {
@@ -45,7 +63,41 @@ const SearchResults = () => {
     categoryFilter,
     urgencyFilter,
     locationFilter,
+    activeTab,
   });
+
+  // Sync activeTab with URL param
+  useEffect(() => {
+    setActiveTab(searchTypeParam);
+  }, [searchTypeParam]);
+
+  // Fetch users when user tab is active
+  const fetchUsers = useCallback(async () => {
+    if (!searchQuery.trim() || activeTab !== "users") {
+      return;
+    }
+
+    setUsersLoading(true);
+    setUsersError(null);
+
+    try {
+      const result = await searchUsers(searchQuery, currentPage);
+      setUsers(result.users);
+      setUserPagination(result.pagination);
+    } catch (err) {
+      console.error("Error fetching users:", err);
+      setUsersError("Failed to search users. Please try again.");
+      setUsers([]);
+    } finally {
+      setUsersLoading(false);
+    }
+  }, [searchQuery, currentPage, activeTab]);
+
+  useEffect(() => {
+    if (activeTab === "users" && searchQuery.trim()) {
+      fetchUsers();
+    }
+  }, [activeTab, searchQuery, currentPage, fetchUsers]);
 
   useEffect(() => {
     // If no search query, redirect to all requests
@@ -190,11 +242,39 @@ const SearchResults = () => {
     const newSearchParams = new URLSearchParams();
     newSearchParams.set("q", searchQuery);
     newSearchParams.set("page", "1");
+    if (activeTab !== "tasks") {
+      newSearchParams.set("type", activeTab);
+    }
     setSearchParams(newSearchParams);
     setLocationInput("");
   };
 
-  if (error) {
+  // Handle tab change
+  const handleTabChange = (newTab) => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    if (newTab === "tasks") {
+      newSearchParams.delete("type");
+    } else {
+      newSearchParams.set("type", newTab);
+    }
+    newSearchParams.set("page", "1");
+    setSearchParams(newSearchParams);
+  };
+
+  // User pagination handlers
+  const handleUserPreviousPage = () => {
+    if (userPagination.hasPreviousPage) {
+      handlePageChange(currentPage - 1);
+    }
+  };
+
+  const handleUserNextPage = () => {
+    if (userPagination.hasNextPage) {
+      handlePageChange(currentPage + 1);
+    }
+  };
+
+  if (error && activeTab === "tasks") {
     return (
       <div
         style={{
@@ -255,7 +335,7 @@ const SearchResults = () => {
   return (
     <main
       role="main"
-      aria-busy={loading ? "true" : "false"}
+      aria-busy={(loading || usersLoading) ? "true" : "false"}
       aria-labelledby="search-results-title"
     >
       {/* Header Section */}
@@ -288,7 +368,7 @@ const SearchResults = () => {
             }}
           >
             Results for "<strong>{searchQuery}</strong>"
-            {(categoryFilter || urgencyFilter || locationFilter) && (
+            {activeTab === "tasks" && (categoryFilter || urgencyFilter || locationFilter) && (
               <button
                 onClick={handleClearFilters}
                 style={{
@@ -311,7 +391,7 @@ const SearchResults = () => {
               </button>
             )}
           </p>
-          {(categoryFilter || urgencyFilter || locationFilter) && (
+          {activeTab === "tasks" && (categoryFilter || urgencyFilter || locationFilter) && (
             <p
               style={{
                 fontSize: "0.75rem",
@@ -335,131 +415,208 @@ const SearchResults = () => {
           )}
         </div>
 
-        {/* Header Icons */}
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-          {/* Location filter */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              backgroundColor: colors.background.elevated,
-              border: `1px solid ${colors.border.primary}`,
-              borderRadius: "9999px",
-              overflow: "hidden",
-            }}
-          >
-            <input
-              type="text"
-              placeholder="Filter by location (district/city)"
+        {/* Header Icons - only show for tasks tab */}
+        {activeTab === "tasks" && (
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            {/* Location filter */}
+            <div
               style={{
-                padding: "8px 16px",
-                fontSize: "0.875rem",
-                outline: "none",
-                minWidth: "220px",
-                backgroundColor: "transparent",
-                color: colors.text.primary,
-                border: "none",
+                display: "flex",
+                alignItems: "center",
+                backgroundColor: colors.background.elevated,
+                border: `1px solid ${colors.border.primary}`,
+                borderRadius: "9999px",
+                overflow: "hidden",
               }}
-              value={locationInput}
-              onChange={(e) => setLocationInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") applyLocationFilter();
-              }}
-              aria-label="Filter by location (district or city)"
-            />
+            >
+              <input
+                type="text"
+                placeholder="Filter by location (district/city)"
+                style={{
+                  padding: "8px 16px",
+                  fontSize: "0.875rem",
+                  outline: "none",
+                  minWidth: "220px",
+                  backgroundColor: "transparent",
+                  color: colors.text.primary,
+                  border: "none",
+                }}
+                value={locationInput}
+                onChange={(e) => setLocationInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") applyLocationFilter();
+                }}
+                aria-label="Filter by location (district or city)"
+              />
+              <button
+                onClick={applyLocationFilter}
+                style={{
+                  padding: "8px 16px",
+                  fontSize: "0.875rem",
+                  backgroundColor: colors.brand.primary,
+                  color: "#FFFFFF",
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "background-color 0.2s",
+                }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.backgroundColor =
+                    colors.brand.primaryHover)
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.backgroundColor = colors.brand.primary)
+                }
+                aria-label="Apply location filter"
+              >
+                Apply
+              </button>
+            </div>
+            {/* Sort Icon */}
             <button
-              onClick={applyLocationFilter}
               style={{
-                padding: "8px 16px",
-                fontSize: "0.875rem",
-                backgroundColor: colors.brand.primary,
-                color: "#FFFFFF",
+                width: "24px",
+                height: "24px",
+                color: colors.text.primary,
+                transition: "color 0.2s",
+                background: "none",
                 border: "none",
                 cursor: "pointer",
-                transition: "background-color 0.2s",
+                padding: 0,
               }}
               onMouseOver={(e) =>
-                (e.currentTarget.style.backgroundColor =
-                  colors.brand.primaryHover)
+                (e.currentTarget.style.color = colors.brand.primary)
               }
               onMouseOut={(e) =>
-                (e.currentTarget.style.backgroundColor = colors.brand.primary)
+                (e.currentTarget.style.color = colors.text.primary)
               }
-              aria-label="Apply location filter"
+              aria-label="Sort requests"
             >
-              Apply
+              <img
+                src={sortIcon}
+                alt=""
+                aria-hidden="true"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  filter:
+                    colors.text.primary === "#FFFFFF" ? "invert(1)" : "none",
+                }}
+              />
+            </button>
+
+            {/* Filter Icon */}
+            <button
+              style={{
+                width: "24px",
+                height: "24px",
+                color: colors.text.primary,
+                transition: "color 0.2s",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: 0,
+              }}
+              onClick={() => setAddressDialogOpen(true)}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.color = colors.brand.primary)
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.color = colors.text.primary)
+              }
+              aria-label="Open address filter"
+            >
+              <img
+                src={filterIcon}
+                alt=""
+                aria-hidden="true"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  filter:
+                    colors.text.primary === "#FFFFFF" ? "invert(1)" : "none",
+                }}
+              />
             </button>
           </div>
-          {/* Sort Icon */}
-          <button
-            style={{
-              width: "24px",
-              height: "24px",
-              color: colors.text.primary,
-              transition: "color 0.2s",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: 0,
-            }}
-            onMouseOver={(e) =>
-              (e.currentTarget.style.color = colors.brand.primary)
-            }
-            onMouseOut={(e) =>
-              (e.currentTarget.style.color = colors.text.primary)
-            }
-            aria-label="Sort requests"
-          >
-            <img
-              src={sortIcon}
-              alt=""
-              aria-hidden="true"
-              style={{
-                width: "100%",
-                height: "100%",
-                filter:
-                  colors.text.primary === "#FFFFFF" ? "invert(1)" : "none",
-              }}
-            />
-          </button>
-
-          {/* Filter Icon */}
-          <button
-            style={{
-              width: "24px",
-              height: "24px",
-              color: colors.text.primary,
-              transition: "color 0.2s",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              padding: 0,
-            }}
-            onClick={() => setAddressDialogOpen(true)}
-            onMouseOver={(e) =>
-              (e.currentTarget.style.color = colors.brand.primary)
-            }
-            onMouseOut={(e) =>
-              (e.currentTarget.style.color = colors.text.primary)
-            }
-            aria-label="Open address filter"
-          >
-            <img
-              src={filterIcon}
-              alt=""
-              aria-hidden="true"
-              style={{
-                width: "100%",
-                height: "100%",
-                filter:
-                  colors.text.primary === "#FFFFFF" ? "invert(1)" : "none",
-              }}
-            />
-          </button>
-        </div>
+        )}
       </div>
 
-      {/* Request Cards Grid */}
+      {/* Tabs for Tasks/Users */}
+      <div
+        style={{
+          display: "flex",
+          gap: "8px",
+          marginBottom: "24px",
+        }}
+        role="tablist"
+        aria-label="Search result type"
+      >
+        <button
+          role="tab"
+          aria-selected={activeTab === "tasks"}
+          aria-controls="tasks-panel"
+          onClick={() => handleTabChange("tasks")}
+          style={{
+            padding: "10px 24px",
+            borderRadius: "9999px",
+            fontSize: "0.875rem",
+            fontWeight: 500,
+            border: "none",
+            cursor: "pointer",
+            transition: "all 0.2s",
+            backgroundColor:
+              activeTab === "tasks" ? colors.brand.primary : colors.background.secondary,
+            color: activeTab === "tasks" ? "#FFFFFF" : colors.text.primary,
+          }}
+          onMouseOver={(e) => {
+            if (activeTab !== "tasks") {
+              e.currentTarget.style.backgroundColor = colors.interactive?.hover || colors.background.tertiary;
+            }
+          }}
+          onMouseOut={(e) => {
+            if (activeTab !== "tasks") {
+              e.currentTarget.style.backgroundColor = colors.background.secondary;
+            }
+          }}
+        >
+          Tasks
+        </button>
+        <button
+          role="tab"
+          aria-selected={activeTab === "users"}
+          aria-controls="users-panel"
+          onClick={() => handleTabChange("users")}
+          style={{
+            padding: "10px 24px",
+            borderRadius: "9999px",
+            fontSize: "0.875rem",
+            fontWeight: 500,
+            border: "none",
+            cursor: "pointer",
+            transition: "all 0.2s",
+            backgroundColor:
+              activeTab === "users" ? colors.brand.primary : colors.background.secondary,
+            color: activeTab === "users" ? "#FFFFFF" : colors.text.primary,
+          }}
+          onMouseOver={(e) => {
+            if (activeTab !== "users") {
+              e.currentTarget.style.backgroundColor = colors.interactive?.hover || colors.background.tertiary;
+            }
+          }}
+          onMouseOut={(e) => {
+            if (activeTab !== "users") {
+              e.currentTarget.style.backgroundColor = colors.background.secondary;
+            }
+          }}
+        >
+          Users
+        </button>
+      </div>
+
+      {/* Tasks Content */}
+      {activeTab === "tasks" && (
+        <>
+          {/* Request Cards Grid */}
       <div style={{ padding: "0 20px", overflow: "hidden" }}>
         {loading ? (
           // Loading state - show skeleton cards
@@ -795,6 +952,286 @@ const SearchResults = () => {
               {" "}
               (Page {currentPage} of {pagination.totalPages})
             </span>
+          )}
+        </div>
+      )}
+        </>
+      )}
+
+      {/* Users Content */}
+      {activeTab === "users" && (
+        <div id="users-panel" role="tabpanel" aria-labelledby="users-tab">
+          {/* User search error state */}
+          {usersError && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "200px",
+              }}
+            >
+              <div style={{ textAlign: "center" }} role="alert">
+                <h3
+                  style={{
+                    fontSize: "1.125rem",
+                    fontWeight: 500,
+                    color: colors.text.primary,
+                    marginBottom: "8px",
+                  }}
+                >
+                  Error Loading Users
+                </h3>
+                <p style={{ color: colors.text.secondary, marginBottom: "16px" }}>
+                  {usersError}
+                </p>
+                <button
+                  onClick={fetchUsers}
+                  style={{
+                    padding: "8px 16px",
+                    backgroundColor: colors.brand.primary,
+                    color: "#FFFFFF",
+                    borderRadius: "6px",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* User loading state */}
+          {usersLoading && !usersError && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {[...Array(6)].map((_, index) => (
+                <div
+                  key={index}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "16px",
+                    padding: "16px",
+                    backgroundColor: colors.background.secondary,
+                    borderRadius: "12px",
+                    animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "56px",
+                      height: "56px",
+                      borderRadius: "50%",
+                      backgroundColor: colors.background.tertiary,
+                    }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <div
+                      style={{
+                        height: "16px",
+                        backgroundColor: colors.background.tertiary,
+                        borderRadius: "4px",
+                        width: "60%",
+                        marginBottom: "8px",
+                      }}
+                    />
+                    <div
+                      style={{
+                        height: "12px",
+                        backgroundColor: colors.background.tertiary,
+                        borderRadius: "4px",
+                        width: "40%",
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* User results */}
+          {!usersLoading && !usersError && users.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {users.map((user) => (
+                <UserCard key={user.id} user={user} />
+              ))}
+            </div>
+          )}
+
+          {/* No users found */}
+          {!usersLoading && !usersError && users.length === 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "200px",
+              }}
+            >
+              <div style={{ textAlign: "center" }}>
+                <div
+                  style={{
+                    width: "64px",
+                    height: "64px",
+                    backgroundColor: colors.background.secondary,
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    margin: "0 auto 16px",
+                  }}
+                >
+                  <svg
+                    style={{
+                      width: "32px",
+                      height: "32px",
+                      color: colors.text.tertiary,
+                    }}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                </div>
+                <h3
+                  style={{
+                    fontSize: "1.125rem",
+                    fontWeight: 500,
+                    color: colors.text.primary,
+                    marginBottom: "8px",
+                  }}
+                >
+                  No Users Found
+                </h3>
+                <p style={{ color: colors.text.secondary }}>
+                  No users matching "<strong>{searchQuery}</strong>". Try a different name or username.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* User pagination */}
+          {!usersLoading && !usersError && users.length > 0 && userPagination.totalPages > 1 && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                marginTop: "32px",
+                gap: "16px",
+              }}
+            >
+              <button
+                onClick={handleUserPreviousPage}
+                disabled={!userPagination.hasPreviousPage}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "6px",
+                  fontSize: "0.875rem",
+                  fontWeight: 500,
+                  backgroundColor: userPagination.hasPreviousPage
+                    ? colors.brand.primary
+                    : colors.interactive?.disabled || colors.background.tertiary,
+                  color: userPagination.hasPreviousPage
+                    ? colors.text.inverse
+                    : colors.text.tertiary,
+                  cursor: userPagination.hasPreviousPage ? "pointer" : "not-allowed",
+                  border: "none",
+                }}
+              >
+                Previous
+              </button>
+
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                {Array.from(
+                  { length: Math.min(5, userPagination.totalPages) },
+                  (_, i) => {
+                    let pageNumber;
+                    if (userPagination.totalPages <= 5) {
+                      pageNumber = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNumber = i + 1;
+                    } else if (currentPage >= userPagination.totalPages - 2) {
+                      pageNumber = userPagination.totalPages - 4 + i;
+                    } else {
+                      pageNumber = currentPage - 2 + i;
+                    }
+
+                    const isActive = currentPage === pageNumber;
+                    return (
+                      <button
+                        key={pageNumber}
+                        onClick={() => handlePageChange(pageNumber)}
+                        style={{
+                          padding: "8px 12px",
+                          borderRadius: "6px",
+                          fontSize: "0.875rem",
+                          fontWeight: 500,
+                          backgroundColor: isActive
+                            ? colors.brand.primary
+                            : colors.background.secondary,
+                          color: isActive ? colors.text.inverse : colors.text.primary,
+                          cursor: "pointer",
+                          border: "none",
+                        }}
+                        aria-label={`Go to page ${pageNumber}`}
+                        aria-current={isActive ? "page" : undefined}
+                      >
+                        {pageNumber}
+                      </button>
+                    );
+                  }
+                )}
+              </div>
+
+              <button
+                onClick={handleUserNextPage}
+                disabled={!userPagination.hasNextPage}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "6px",
+                  fontSize: "0.875rem",
+                  fontWeight: 500,
+                  backgroundColor: userPagination.hasNextPage
+                    ? colors.brand.primary
+                    : colors.interactive?.disabled || colors.background.tertiary,
+                  color: userPagination.hasNextPage
+                    ? colors.text.inverse
+                    : colors.text.tertiary,
+                  cursor: userPagination.hasNextPage ? "pointer" : "not-allowed",
+                  border: "none",
+                }}
+              >
+                Next
+              </button>
+            </div>
+          )}
+
+          {/* User pagination info */}
+          {!usersLoading && !usersError && users.length > 0 && (
+            <div
+              style={{
+                textAlign: "center",
+                marginTop: "16px",
+                fontSize: "0.875rem",
+                color: colors.text.secondary,
+              }}
+            >
+              Showing {users.length} of {userPagination.totalItems} users
+              {userPagination.totalPages > 1 && (
+                <span>
+                  {" "}
+                  (Page {currentPage} of {userPagination.totalPages})
+                </span>
+              )}
+            </div>
           )}
         </div>
       )}
