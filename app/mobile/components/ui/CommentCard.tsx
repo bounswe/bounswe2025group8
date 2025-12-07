@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import type { ThemeTokens } from '../../constants/Colors';
 import { BACKEND_BASE_URL } from '../../lib/api';
 import RatingPill from './RatingPill';
+import { useTranslation } from 'react-i18next';
 
 export interface CommentCardProps {
   userName: string;
@@ -38,24 +39,26 @@ const CommentCard: React.FC<CommentCardProps> = ({
   const { colors } = useTheme();
   const themeColors = colors as ThemeTokens;
 
+  const { t } = useTranslation();
+
   // Format timestamp to a readable format
   const formatTimestamp = (timestamp: string) => {
     try {
       const date = new Date(timestamp);
       const now = new Date();
       const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-      
+
       if (diffInSeconds < 60) {
-        return 'Just now';
+        return t('common.time.justNow');
       } else if (diffInSeconds < 3600) {
         const minutes = Math.floor(diffInSeconds / 60);
-        return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+        return t('common.time.minutesAgo', { count: minutes });
       } else if (diffInSeconds < 86400) {
         const hours = Math.floor(diffInSeconds / 3600);
-        return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+        return t('common.time.hoursAgo', { count: hours });
       } else if (diffInSeconds < 604800) {
         const days = Math.floor(diffInSeconds / 86400);
-        return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+        return t('common.time.daysAgo', { count: days });
       } else {
         return date.toLocaleDateString();
       }

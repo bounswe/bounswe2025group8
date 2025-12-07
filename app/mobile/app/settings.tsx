@@ -7,12 +7,14 @@ import { logout as apiLogout } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { CommonActions } from '@react-navigation/native';
 import { useAppTheme, type ThemePreference } from '@/theme/ThemeProvider';
+import { useTranslation } from 'react-i18next';
 
 export default function Settings() {
   const router = useRouter();
   const navigation = useNavigation();
   const { user, logout: contextLogout } = useAuth();
   const { tokens: themeColors, preference, setPreference } = useAppTheme();
+  const { t } = useTranslation();
 
   if (!user) {
     return (
@@ -23,9 +25,9 @@ export default function Settings() {
         ]}
       >
         <Text style={{ color: themeColors.text, fontSize: 18, marginBottom: 16 }}>
-          You must sign in to access settings.
+          {t('settings.signInRequired')}
         </Text>
-        <Button title="Go to Home" onPress={() => router.replace('/')} />
+        <Button title={t('settings.goToHome')} onPress={() => router.replace('/')} />
       </SafeAreaView>
     );
   }
@@ -40,13 +42,13 @@ export default function Settings() {
   };
 
   const handleLogout = async () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
+    Alert.alert(t('settings.logoutConfirmTitle'), t('settings.logoutConfirmMessage'), [
       {
-        text: 'Cancel',
+        text: t('common.cancel'),
         style: 'cancel',
       },
       {
-        text: 'Logout',
+        text: t('settings.logout'),
         style: 'destructive',
         onPress: async () => {
           try {
@@ -56,7 +58,7 @@ export default function Settings() {
             await contextLogout();
           } catch (error) {
             console.error('Error during logout:', error);
-            Alert.alert('Error', 'Failed to logout. Please try again.');
+            Alert.alert(t('common.error'), t('settings.logoutError'));
           }
         },
       },
@@ -64,10 +66,10 @@ export default function Settings() {
   };
 
   const themeOptions: { label: string; description: string; value: ThemePreference }[] = [
-    { label: 'Match Device', description: 'Follow the OS appearance', value: 'system' },
-    { label: 'Light', description: 'Bright backgrounds, high contrast text', value: 'light' },
-    { label: 'Dark', description: 'Dark surfaces for low-light comfort', value: 'dark' },
-    { label: 'High Contrast', description: 'Maximum contrast for accessibility', value: 'highContrast' },
+    { label: t('settings.themeSystem'), description: t('settings.themeSystemDesc'), value: 'system' },
+    { label: t('settings.themeLight'), description: t('settings.themeLightDesc'), value: 'light' },
+    { label: t('settings.themeDark'), description: t('settings.themeDarkDesc'), value: 'dark' },
+    { label: t('settings.themeHighContrast'), description: t('settings.themeHighContrastDesc'), value: 'highContrast' },
   ];
 
   const handleThemeSelect = async (nextPreference: ThemePreference) => {
@@ -93,15 +95,15 @@ export default function Settings() {
             importantForAccessibility="no"
           />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: themeColors.text }]}>Settings</Text>
+        <Text style={[styles.headerTitle, { color: themeColors.text }]}>{t('settings.title')}</Text>
         <View style={{ width: 24 }} />
       </View>
 
       <View style={styles.contentContainer}>
         <View style={styles.section}>
-          <Text style={[styles.sectionLabel, { color: themeColors.text }]}>Appearance</Text>
+          <Text style={[styles.sectionLabel, { color: themeColors.text }]}>{t('settings.appearance')}</Text>
           <Text style={[styles.sectionDescription, { color: themeColors.textMuted }]}>
-            Choose how the app looks. Your choice is saved on this device.
+            {t('settings.appearanceDesc')}
           </Text>
           <View accessible accessibilityRole="radiogroup">
             {themeOptions.map(option => {
@@ -157,7 +159,7 @@ export default function Settings() {
             accessible={false}
             importantForAccessibility="no"
           />
-          <Text style={[styles.logoutText, { color: themeColors.card }]}>Logout</Text>
+          <Text style={[styles.logoutText, { color: themeColors.card }]}>{t('settings.logout')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

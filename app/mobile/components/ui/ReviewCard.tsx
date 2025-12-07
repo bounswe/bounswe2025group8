@@ -26,6 +26,10 @@ export interface ReviewCardProps {
   safety_and_respect?: number;
 }
 
+import { useTranslation } from 'react-i18next';
+
+// ... (imports remain same)
+
 const ReviewCard: React.FC<ReviewCardProps> = ({
   reviewerName,
   comment,
@@ -43,7 +47,8 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
   safety_and_respect
 }) => {
   const { colors } = useTheme();
-  const themeColors = colors as ThemeTokens;
+  const themeColors = colors as unknown as ThemeTokens;
+  const { t } = useTranslation();
 
   const renderStars = (value: number | undefined) => {
     const starValue = value || 0;
@@ -70,24 +75,24 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
         <View style={styles.detailedRatingsContainer}>
           {/* Overall rating - always first and bold */}
           <View style={styles.ratingRow}>
-            <Text style={[styles.ratingLabel, { color: themeColors.text, fontWeight: 'bold' }]}>Overall:</Text>
+            <Text style={[styles.ratingLabel, { color: themeColors.text, fontWeight: 'bold' }]}>{t('profile.reviews.overall')}:</Text>
             {renderStars(rating)}
           </View>
           {accuracy_of_request && (
             <View style={styles.ratingRow}>
-              <Text style={[styles.ratingLabel, { color: themeColors.textMuted }]}>Accuracy of Request:</Text>
+              <Text style={[styles.ratingLabel, { color: themeColors.textMuted }]}>{t('profile.reviews.accuracy')}:</Text>
               {renderStars(accuracy_of_request)}
             </View>
           )}
           {communication_volunteer_to_requester && (
             <View style={styles.ratingRow}>
-              <Text style={[styles.ratingLabel, { color: themeColors.textMuted }]}>Communication:</Text>
+              <Text style={[styles.ratingLabel, { color: themeColors.textMuted }]}>{t('profile.reviews.communication')}:</Text>
               {renderStars(communication_volunteer_to_requester)}
             </View>
           )}
           {safety_and_preparedness && (
             <View style={styles.ratingRow}>
-              <Text style={[styles.ratingLabel, { color: themeColors.textMuted }]}>Safety & Preparedness:</Text>
+              <Text style={[styles.ratingLabel, { color: themeColors.textMuted }]}>{t('profile.reviews.safetyPreparedness')}:</Text>
               {renderStars(safety_and_preparedness)}
             </View>
           )}
@@ -98,30 +103,30 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
         <View style={styles.detailedRatingsContainer}>
           {/* Overall rating - always first and bold */}
           <View style={styles.ratingRow}>
-            <Text style={[styles.ratingLabel, { color: themeColors.text, fontWeight: 'bold' }]}>Overall:</Text>
+            <Text style={[styles.ratingLabel, { color: themeColors.text, fontWeight: 'bold' }]}>{t('profile.reviews.overall')}:</Text>
             {renderStars(rating)}
           </View>
           {reliability && (
             <View style={styles.ratingRow}>
-              <Text style={[styles.ratingLabel, { color: themeColors.textMuted }]}>Reliability:</Text>
+              <Text style={[styles.ratingLabel, { color: themeColors.textMuted }]}>{t('profile.reviews.reliability')}:</Text>
               {renderStars(reliability)}
             </View>
           )}
           {task_completion && (
             <View style={styles.ratingRow}>
-              <Text style={[styles.ratingLabel, { color: themeColors.textMuted }]}>Task Completion:</Text>
+              <Text style={[styles.ratingLabel, { color: themeColors.textMuted }]}>{t('profile.reviews.taskCompletion')}:</Text>
               {renderStars(task_completion)}
             </View>
           )}
           {communication_requester_to_volunteer && (
             <View style={styles.ratingRow}>
-              <Text style={[styles.ratingLabel, { color: themeColors.textMuted }]}>Communication:</Text>
+              <Text style={[styles.ratingLabel, { color: themeColors.textMuted }]}>{t('profile.reviews.communication')}:</Text>
               {renderStars(communication_requester_to_volunteer)}
             </View>
           )}
           {safety_and_respect && (
             <View style={styles.ratingRow}>
-              <Text style={[styles.ratingLabel, { color: themeColors.textMuted }]}>Safety & Respect:</Text>
+              <Text style={[styles.ratingLabel, { color: themeColors.textMuted }]}>{t('profile.reviews.safetyRespect')}:</Text>
               {renderStars(safety_and_respect)}
             </View>
           )}

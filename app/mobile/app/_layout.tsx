@@ -1,5 +1,7 @@
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+
+import '../lib/i18n';
 import React, { useEffect } from 'react';
 import 'react-native-reanimated';
 
@@ -36,7 +38,7 @@ function RootNavigator() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!segments || segments.length === 0) {
+    if (!segments) {
       return;
     }
 

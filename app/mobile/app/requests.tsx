@@ -19,6 +19,7 @@ import { getTasks, getTaskPhotos, BACKEND_BASE_URL, type Task, type Photo } from
 import { useAuth } from '../lib/auth';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { locationMatches, normalizedLocationLabel } from '../utils/address';
+import { useTranslation } from 'react-i18next';
 
 export default function Requests() {
   const { colors } = useTheme();
@@ -26,11 +27,12 @@ export default function Requests() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [taskPhotos, setTaskPhotos] = useState<Map<number, Photo[]>>(new Map());
-  
+
   const locationLabel = (Array.isArray(params.location) ? params.location[0]?.trim() : params.location)?.trim() || undefined;
 
   // Filter out completed and cancelled tasks
@@ -46,13 +48,13 @@ export default function Requests() {
       const response = await getTasks();
       const fetchedTasks = response.results || [];
       const activeTasks = filterActiveTasks(fetchedTasks);
-      
+
       // Filter by location if location parameter is provided
       let filteredTasks = activeTasks;
       if (locationLabel) {
         filteredTasks = activeTasks.filter(task => normalizedLocationLabel(task.location) === locationLabel);
       }
-      
+
       setTasks(filteredTasks);
 
       // Fetch photos for filtered tasks
@@ -73,7 +75,7 @@ export default function Requests() {
       setTaskPhotos(photosMap);
     } catch (error) {
       console.error('Error fetching tasks:', error);
-      Alert.alert('Error', 'Failed to load tasks. Please try again.');
+      Alert.alert(t('common.error'), t('search.loadError'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -144,10 +146,10 @@ export default function Requests() {
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
 
     if (diffInHours < 24) {
-      return `${diffInHours} hours ago`;
+      return `${diffInHours} ${t('common.hoursAgo')}`;
     } else {
       const diffInDays = Math.floor(diffInHours / 24);
-      return `${diffInDays} days ago`;
+      return `${diffInDays} ${t('common.daysAgo')}`;
     }
   };
 
@@ -164,7 +166,7 @@ export default function Requests() {
             accessibilityRole="button"
             accessibilityLabel="Open notifications"
           >
-            <Ionicons name="notifications-outline" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
+            <Ionicons name="notifications-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => router.push('/settings')}
@@ -173,7 +175,7 @@ export default function Requests() {
             accessibilityRole="button"
             accessibilityLabel="Open settings"
           >
-            <Ionicons name="settings-outline" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
+            <Ionicons name="settings-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
           </TouchableOpacity>
         </View>
       </View>
@@ -188,14 +190,14 @@ export default function Requests() {
         accessibilityLabel="Search requests"
       >
         <Ionicons name="search-outline" size={20} color={themeColors.icon} />
-        <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>What do you need help with</Text>
+        <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>{t('feed.searchPlaceholder')}</Text>
       </TouchableOpacity>
 
       {/* Title + Sort/Filter */}
       <View style={styles.titleRow}>
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            {locationLabel ? `Requests in ${locationLabel}` : 'All Requests'}
+            {locationLabel ? t('search.requestsIn', { location: locationLabel }) : t('feed.seeAllRequests')}
           </Text>
           {locationLabel && (
             <TouchableOpacity
@@ -243,10 +245,10 @@ export default function Requests() {
           const photos = taskPhotos.get(task.id) || [];
           const primaryPhoto = photos.length > 0 ? photos[0] : null;
           const photoUrl = primaryPhoto ? (primaryPhoto.photo_url || primaryPhoto.url || primaryPhoto.image) : null;
-          const absolutePhotoUrl = photoUrl && photoUrl.startsWith('http') 
-            ? photoUrl 
-            : photoUrl 
-              ? `${BACKEND_BASE_URL}${photoUrl}` 
+          const absolutePhotoUrl = photoUrl && photoUrl.startsWith('http')
+            ? photoUrl
+            : photoUrl
+              ? `${BACKEND_BASE_URL}${photoUrl}`
               : null;
 
           return (
@@ -264,8 +266,8 @@ export default function Requests() {
               accessibilityRole="button"
               accessibilityLabel={`View request ${task.title}`}
             >
-              <Image 
-                source={absolutePhotoUrl ? { uri: absolutePhotoUrl } : require('../assets/images/help.png')} 
+              <Image
+                source={absolutePhotoUrl ? { uri: absolutePhotoUrl } : require('../assets/images/help.png')}
                 style={styles.cardImage}
                 accessibilityRole="image"
                 accessibilityLabel={absolutePhotoUrl ? `Photo for ${task.title}` : `Default illustration for ${task.title}`}
@@ -293,7 +295,7 @@ export default function Requests() {
                     ]}
                   >
                     <Text style={[styles.categoryText, { color: themeColors.primary }]} numberOfLines={1} ellipsizeMode="tail">
-                      {task.category_display || task.category}
+                      {t(`categories.${task.category}`, task.category_display || task.category)}
                     </Text>
                   </View>
                 </View>
@@ -316,7 +318,7 @@ export default function Requests() {
           accessibilityLabel="Go to home feed"
         >
           <Ionicons name="home" size={24} color={colors.text} />
-          <Text style={[styles.tabLabel, { color: colors.text }]}>Home</Text>
+          <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.home')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.tabItem}
@@ -327,7 +329,7 @@ export default function Requests() {
           accessibilityLabel="Browse categories"
         >
           <Ionicons name="pricetag-outline" size={24} color={colors.text} />
-          <Text style={[styles.tabLabel, { color: colors.text }]}>Categories</Text>
+          <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.categories')}</Text>
         </TouchableOpacity>
         {user ? (
           <TouchableOpacity
@@ -339,7 +341,7 @@ export default function Requests() {
             accessibilityLabel="Create a new request"
           >
             <Ionicons name="add-circle-outline" size={24} color={colors.text} />
-            <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
+            <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.create')}</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
@@ -364,7 +366,7 @@ export default function Requests() {
           accessibilityState={{ selected: true }}
         >
           <Ionicons name="list-outline" size={24} color={colors.primary} />
-          <Text style={[styles.tabLabel, { color: colors.primary }]}>Requests</Text>
+          <Text style={[styles.tabLabel, { color: colors.primary }]}>{t('feed.requests')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.tabItem}
@@ -375,7 +377,7 @@ export default function Requests() {
           accessibilityLabel="Go to profile"
         >
           <Ionicons name="person-outline" size={24} color={colors.text} />
-          <Text style={[styles.tabLabel, { color: colors.text }]}>Profile</Text>
+          <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.profile')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

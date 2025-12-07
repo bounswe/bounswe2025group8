@@ -13,10 +13,11 @@ import RequestCard from '../components/ui/RequestCard';
 import { Ionicons } from '@expo/vector-icons';
 import type { ThemeTokens } from '../constants/Colors';
 import * as ImagePicker from 'expo-image-picker';
+import { useTranslation } from 'react-i18next';
 
 export default function ProfileScreen() {
   const { colors } = useTheme();
-  const themeColors = colors as ThemeTokens;
+  const themeColors = colors as unknown as ThemeTokens;
   const params = useLocalSearchParams();
   const router = useRouter();
   const { user } = useAuth();
@@ -41,14 +42,16 @@ export default function ProfileScreen() {
 
   const [selectedTab, setSelectedTab] = useState<'volunteer' | 'requester'>(initialTab);
 
+  const { t } = useTranslation();
+
   const handleReportUser = async (reportType: string, description: string) => {
     if (!profile?.id) return;
     try {
       await submitUserReport(profile.id, reportType, description);
-      Alert.alert('Success', 'Report submitted successfully. Thank you for helping keep our community safe.');
+      Alert.alert(t('common.success'), t('profile.reportSuccess'));
       setReportModalVisible(false);
     } catch (err: any) {
-      Alert.alert('Error', err.message || 'Failed to submit report.');
+      Alert.alert(t('common.error'), err.message || t('profile.reportError'));
     }
   };
 
@@ -58,7 +61,7 @@ export default function ProfileScreen() {
     try {
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permissionResult.granted) {
-        Alert.alert('Permission Required', 'Please allow access to your photo library.');
+        Alert.alert(t('common.error'), t('profile.photoPermission'));
         return;
       }
 
@@ -81,11 +84,11 @@ export default function ProfileScreen() {
         setProfile(updatedProfile);
         await AsyncStorage.setItem('userProfile', JSON.stringify(updatedProfile));
 
-        Alert.alert('Success', 'Profile photo updated successfully!');
+        Alert.alert(t('common.success'), t('profile.photoSuccess'));
       }
     } catch (error) {
       console.error('Photo upload error:', error);
-      Alert.alert('Error', 'Failed to upload profile photo. Please try again.');
+      Alert.alert(t('common.error'), t('profile.photoError'));
     } finally {
       setPhotoUploading(false);
     }
@@ -191,7 +194,7 @@ export default function ProfileScreen() {
         setAllTasks(res.results || []);
       })
       .catch(() => {
-        Alert.alert('Error', 'Could not load task lists.');
+        Alert.alert(t('common.error'), t('profile.loadTasksError', { defaultValue: 'Could not load task lists.' }));
         setAllTasks([]);
       });
 
@@ -292,13 +295,13 @@ export default function ProfileScreen() {
   const getUrgencyLabel = (task: Task) => {
     switch (task.urgency_level) {
       case 3:
-        return 'High';
+        return t('urgency.high');
       case 2:
-        return 'Medium';
+        return t('urgency.medium');
       case 1:
-        return 'Low';
+        return t('urgency.low');
       default:
-        return 'Medium';
+        return t('urgency.medium');
     }
   };
 
@@ -318,7 +321,7 @@ export default function ProfileScreen() {
             <RequestCard
               key={task.id}
               title={task.title}
-              category={task.category_display || task.category}
+              category={t(`categories.${task.category}`, { defaultValue: task.category_display || task.category })}
               urgencyLevel={getUrgencyLabel(task)}
               status={task.status_display || task.status}
               distance={task.location || 'N/A'}
@@ -348,15 +351,15 @@ export default function ProfileScreen() {
         console.log('[ProfileScreen] Reviews response:', JSON.stringify(res.data.reviews));
         setReviews(res.data.reviews || []);
       })
-      .catch(() => setReviewsError('Failed to load reviews'))
+      .catch(() => setReviewsError(t('profile.loadReviewsError')))
       .finally(() => setReviewsLoading(false));
   }, [profile?.id]);
 
   if (!viewedUserId && !user) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-        <Text style={{ color: colors.text, fontSize: 20, marginBottom: 16 }}>You are browsing as a guest.</Text>
-        <Text style={{ color: colors.text, fontSize: 16, marginBottom: 24 }}>Sign up or sign in to access your profile!</Text>
+        <Text style={{ color: colors.text, fontSize: 20, marginBottom: 16 }}>{t('profile.guestMessage')}</Text>
+        <Text style={{ color: colors.text, fontSize: 16, marginBottom: 24 }}>{t('profile.guestAction')}</Text>
         <TouchableOpacity
           style={{ backgroundColor: colors.primary, paddingHorizontal: 32, paddingVertical: 12, borderRadius: 24, marginBottom: 12 }}
           onPress={() => router.push('/signup')}
@@ -365,7 +368,7 @@ export default function ProfileScreen() {
           accessibilityRole="button"
           accessibilityLabel="Sign up"
         >
-          <Text style={{ color: colors.background, fontWeight: 'bold', fontSize: 16 }}>Sign Up</Text>
+          <Text style={{ color: colors.background, fontWeight: 'bold', fontSize: 16 }}>{t('auth.signUp')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={{ borderColor: colors.primary, borderWidth: 2, paddingHorizontal: 32, paddingVertical: 12, borderRadius: 24 }}
@@ -375,7 +378,7 @@ export default function ProfileScreen() {
           accessibilityRole="button"
           accessibilityLabel="Sign in"
         >
-          <Text style={{ color: colors.primary, fontWeight: 'bold', fontSize: 16 }}>Sign In</Text>
+          <Text style={{ color: colors.primary, fontWeight: 'bold', fontSize: 16 }}>{t('auth.signIn')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -406,7 +409,7 @@ export default function ProfileScreen() {
                 .catch(() => setError(viewedUserId ? 'Failed to load user profile.' : 'Failed to load your profile.'))
                 .finally(() => setLoading(false));
             } else {
-              Alert.alert("Error", "Cannot retry: User ID is not available.");
+              Alert.alert(t('common.error'), "Cannot retry: User ID is not available.");
             }
           }}
           accessible
@@ -414,7 +417,7 @@ export default function ProfileScreen() {
           accessibilityRole="button"
           accessibilityLabel="Retry loading profile"
         >
-          <Text style={{ color: colors.background, fontWeight: 'bold' }}>Retry</Text>
+          <Text style={{ color: colors.background, fontWeight: 'bold' }}>{t('profile.retry')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -423,7 +426,7 @@ export default function ProfileScreen() {
   if (!profile) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-        <Text style={{ color: colors.text, fontSize: 18 }}>Profile data is not available.</Text>
+        <Text style={{ color: colors.text, fontSize: 18 }}>{t('profile.dataUnavailable')}</Text>
       </View>
     );
   }
@@ -442,7 +445,7 @@ export default function ProfileScreen() {
     displayName = profile.username;
   }
   if (!displayName) {
-    displayName = 'User';
+    displayName = t('profile.defaultUser');
   }
   const usernameLabel = profile.username ? `@${profile.username}` : '';
 
@@ -545,7 +548,7 @@ export default function ProfileScreen() {
             accessibilityState={{ selected: selectedTab === 'volunteer' }}
           >
             <Text style={[styles.tabButtonText, { color: selectedTab === 'volunteer' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'volunteer' ? 'bold' : 'normal' }]}>
-              {isOwnProfile ? 'My Volunteer Tasks' : 'Volunteer Tasks'}
+              {isOwnProfile ? t('profile.myVolunteerTasks') : t('profile.volunteerTasks')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -558,7 +561,7 @@ export default function ProfileScreen() {
             accessibilityState={{ selected: selectedTab === 'requester' }}
           >
             <Text style={[styles.tabButtonText, { color: selectedTab === 'requester' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'requester' ? 'bold' : 'normal' }]}>
-              {isOwnProfile ? 'My Created Tasks' : 'Created Tasks'}
+              {isOwnProfile ? t('profile.myCreatedTasks') : t('profile.createdTasks')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -566,15 +569,15 @@ export default function ProfileScreen() {
         {selectedTab === 'volunteer' && (
           <>
             {renderTaskSection(
-              isOwnProfile ? 'Active Tasks as Volunteer' : 'Active Volunteer Tasks',
+              isOwnProfile ? t('profile.activeVolunteerTasksMy') : t('profile.activeVolunteerTasksOther'),
               activeVolunteerTasks,
-              'No active volunteer tasks.',
+              t('profile.noActiveVolunteerTasks'),
               '/v-request-details'
             )}
             {renderTaskSection(
-              isOwnProfile ? 'Past Tasks as Volunteer' : 'Past Volunteer Tasks',
+              isOwnProfile ? t('profile.pastVolunteerTasksMy') : t('profile.pastVolunteerTasksOther'),
               pastVolunteerTasks,
-              'No past volunteer tasks.',
+              t('profile.noPastVolunteerTasks'),
               '/v-request-details'
             )}
           </>
@@ -583,15 +586,15 @@ export default function ProfileScreen() {
         {selectedTab === 'requester' && (
           <>
             {renderTaskSection(
-              isOwnProfile ? 'Active Tasks as Requester' : 'Active Requests',
+              isOwnProfile ? t('profile.activeRequesterTasksMy') : t('profile.activeRequesterTasksOther'),
               activeRequesterTasks,
-              isOwnProfile ? 'No active requester tasks.' : 'No active requests.',
+              isOwnProfile ? t('profile.noActiveRequesterTasksMy') : t('profile.noActiveRequesterTasksOther'),
               '/r-request-details'
             )}
             {renderTaskSection(
-              isOwnProfile ? 'Past Tasks as Requester' : 'Past Requests',
+              isOwnProfile ? t('profile.pastRequesterTasksMy') : t('profile.pastRequesterTasksOther'),
               pastRequesterTasks,
-              isOwnProfile ? 'No past requester tasks.' : 'No past requests.',
+              isOwnProfile ? t('profile.noPastRequesterTasksMy') : t('profile.noPastRequesterTasksOther'),
               '/r-request-details'
             )}
           </>
@@ -600,12 +603,12 @@ export default function ProfileScreen() {
         <View style={[styles.reviewsSectionContainer, { borderColor: themeColors.border }]}>
           <View style={styles.reviewsHeaderRow}>
             <Ionicons name="star-outline" size={20} color={themeColors.pink} />
-            <Text style={[styles.reviewsHeaderText, { color: themeColors.text }]}>Reviews for {profile ? profile.name : 'User'}</Text>
+            <Text style={[styles.reviewsHeaderText, { color: themeColors.text }]}>{t('profile.reviewsFor', { name: profile ? profile.name : t('profile.defaultUser') })}</Text>
           </View>
           {reviewsLoading && <ActivityIndicator color={themeColors.primary} style={{ marginVertical: 16 }} />}
           {reviewsError && <Text style={[styles.errorText, { color: themeColors.error }]}>{reviewsError}</Text>}
           {!reviewsLoading && !reviewsError && reviews.length === 0 && (
-            <Text style={[styles.emptyListText, { color: themeColors.textMuted, marginTop: 8, marginBottom: 16 }]}>No reviews yet for this user.</Text>
+            <Text style={[styles.emptyListText, { color: themeColors.textMuted, marginTop: 8, marginBottom: 16 }]}>{t('profile.noReviews')}</Text>
           )}
           {!reviewsLoading && !reviewsError && reviews.map((review) => {
             const reviewerPhotoUrl = review.reviewer.profile_photo || review.reviewer.photo;

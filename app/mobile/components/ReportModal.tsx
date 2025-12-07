@@ -15,6 +15,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { ReportType, REPORT_TYPE_LABELS } from '../lib/api';
+import { useTranslation } from 'react-i18next';
 
 interface ReportModalProps {
     visible: boolean;
@@ -31,6 +32,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
     targetName,
     isUserReport = false,
 }) => {
+    const { t } = useTranslation();
     const { tokens: themeColors } = useAppTheme();
 
     const [reportType, setReportType] = useState<string>('');
@@ -49,17 +51,17 @@ export const ReportModal: React.FC<ReportModalProps> = ({
 
     const handleSubmit = async () => {
         if (!reportType) {
-            Alert.alert('Validation Error', 'Please select a reason for reporting.');
+            Alert.alert(t('report.validationError'), t('report.selectReasonError'));
             return;
         }
 
         if (!description.trim()) {
-            Alert.alert('Validation Error', 'Please provide details about your report.');
+            Alert.alert(t('report.validationError'), t('report.detailsError'));
             return;
         }
 
         if (description.trim().length < 10) {
-            Alert.alert('Validation Error', 'Please provide at least 10 characters in your report.');
+            Alert.alert(t('report.validationError'), t('report.lengthError'));
             return;
         }
 
@@ -89,7 +91,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                 onPress={() => setShowTypePicker(false)}
             >
                 <View style={[styles.pickerContainer, { backgroundColor: themeColors.card }]}>
-                    <Text style={[styles.pickerTitle, { color: themeColors.text }]}>Select Reason</Text>
+                    <Text style={[styles.pickerTitle, { color: themeColors.text }]}>{t('report.selectReason')}</Text>
                     <ScrollView style={{ maxHeight: 300 }}>
                         {Object.values(ReportType).map((type) => (
                             <TouchableOpacity
@@ -109,7 +111,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                                     { color: themeColors.text },
                                     reportType === type && { color: themeColors.primary, fontWeight: 'bold' }
                                 ]}>
-                                    {REPORT_TYPE_LABELS[type]}
+                                    {t(`report.types.${type}`)}
                                 </Text>
                                 {reportType === type && (
                                     <Ionicons name="checkmark" size={20} color={themeColors.primary} />
@@ -121,7 +123,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                         style={[styles.pickerCloseButton, { borderTopColor: themeColors.border }]}
                         onPress={() => setShowTypePicker(false)}
                     >
-                        <Text style={{ color: themeColors.primary, fontSize: 16, fontWeight: '600' }}>Cancel</Text>
+                        <Text style={{ color: themeColors.primary, fontSize: 16, fontWeight: '600' }}>{t('report.cancel')}</Text>
                     </TouchableOpacity>
                 </View>
             </TouchableOpacity>
@@ -142,7 +144,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                 <View style={[styles.modalContent, { backgroundColor: themeColors.card }]}>
                     <View style={[styles.header, { borderBottomColor: themeColors.border }]}>
                         <Text style={[styles.title, { color: themeColors.text }]}>
-                            Report {isUserReport ? 'User' : 'Task'}
+                            {t('report.title', { target: isUserReport ? t('report.user') : t('report.task') })}
                         </Text>
                         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                             <Ionicons name="close" size={24} color={themeColors.text} />
@@ -152,13 +154,13 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                     <ScrollView contentContainerStyle={styles.body}>
                         {isUserReport && (
                             <View style={[styles.targetInfo, { backgroundColor: themeColors.background }]}>
-                                <Text style={[styles.targetLabel, { color: themeColors.textMuted }]}>Reporting User:</Text>
+                                <Text style={[styles.targetLabel, { color: themeColors.textMuted }]}>{t('report.reportingUser')}</Text>
                                 <Text style={[styles.targetValue, { color: themeColors.text }]}>{targetName}</Text>
                             </View>
                         )}
 
                         <Text style={[styles.label, { color: themeColors.text }]}>
-                            Reason for Report <Text style={{ color: themeColors.error }}>*</Text>
+                            {t('report.reasonLabel')} <Text style={{ color: themeColors.error }}>{t('report.reasonRequired')}</Text>
                         </Text>
 
                         <TouchableOpacity
@@ -169,13 +171,13 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                                 color: reportType ? themeColors.text : themeColors.textMuted,
                                 fontSize: 16
                             }}>
-                                {reportType ? REPORT_TYPE_LABELS[reportType as ReportType] : 'Select a reason'}
+                                {reportType ? t(`report.types.${reportType}`) : t('report.selectReason')}
                             </Text>
                             <Ionicons name="chevron-down" size={20} color={themeColors.textMuted} />
                         </TouchableOpacity>
 
                         <Text style={[styles.label, { color: themeColors.text, marginTop: 16 }]}>
-                            Details <Text style={{ color: themeColors.error }}>*</Text>
+                            {t('report.detailsLabel')} <Text style={{ color: themeColors.error }}>{t('report.detailsRequired')}</Text>
                         </Text>
                         <TextInput
                             style={[
@@ -186,7 +188,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                                     color: themeColors.text
                                 }
                             ]}
-                            placeholder="Please explain why you're reporting this. Provide specific details to help us review your report (minimum 10 characters)..."
+                            placeholder={t('report.detailsPlaceholder')}
                             placeholderTextColor={themeColors.textMuted}
                             multiline
                             numberOfLines={4}
@@ -195,13 +197,13 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                             textAlignVertical="top"
                         />
                         <Text style={[styles.charCount, { color: themeColors.textMuted }]}>
-                            {description.length} characters
+                            {t('report.charCount', { count: description.length })}
                         </Text>
 
                         <View style={styles.infoContainer}>
                             <Ionicons name="information-circle-outline" size={20} color={themeColors.textMuted} />
                             <Text style={[styles.infoText, { color: themeColors.textMuted }]}>
-                                Your report helps us maintain a safe and trustworthy community.
+                                {t('report.info')}
                             </Text>
                         </View>
                     </ScrollView>
@@ -219,7 +221,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                             {loading ? (
                                 <ActivityIndicator color="#fff" />
                             ) : (
-                                <Text style={styles.submitButtonText}>Submit Report</Text>
+                                <Text style={styles.submitButtonText}>{t('report.submit')}</Text>
                             )}
                         </TouchableOpacity>
                     </View>

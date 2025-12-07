@@ -5,10 +5,12 @@ import SearchBarWithResults, { Category, Request, Profile, Location } from '../c
 import { getTasks, searchUsers, BACKEND_BASE_URL, type Task, type UserProfile } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { normalizedLocationLabel, locationMatches } from '../utils/address';
+import { useTranslation } from 'react-i18next';
 
 export default function SearchPage() {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
   const [requests, setRequests] = useState<Request[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -40,7 +42,7 @@ export default function SearchPage() {
               title: task.title,
               urgency: task.urgency_level === 3 ? 'High' : task.urgency_level === 2 ? 'Medium' : 'Low',
               meta: `${locationLabel} • ${task.deadline ? new Date(task.deadline).toLocaleDateString() : 'N/A'}`,
-              category: task.category_display || task.category,
+              category: t(`categories.${task.category}`, task.category_display || task.category),
               image: require('../assets/images/help.png'),
             };
           })
@@ -53,7 +55,7 @@ export default function SearchPage() {
               if (!uniqueCategoriesMap.has(task.category)) {
                 uniqueCategoriesMap.set(task.category, {
                   id: task.category,
-                  title: task.category_display,
+                  title: t(`categories.${task.category}`, task.category_display),
                   image: require('../assets/images/help.png'),
                   count: activeTasks.filter((t) => t.category === task.category).length,
                 });
@@ -102,10 +104,10 @@ export default function SearchPage() {
           setProfiles(
             usersResponse.results.map((prof: UserProfile) => {
               const photoUrl = prof.profile_photo || prof.photo;
-              const absolutePhotoUrl = photoUrl 
+              const absolutePhotoUrl = photoUrl
                 ? (photoUrl.startsWith('http') ? photoUrl : `${BACKEND_BASE_URL}${photoUrl}`)
                 : null;
-              
+
               return {
                 id: String(prof.id),
                 name: `${prof.name} ${prof.surname}`,

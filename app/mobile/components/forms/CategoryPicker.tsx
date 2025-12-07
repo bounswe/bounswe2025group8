@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Modal, ScrollView, StyleSheet, ActivityIn
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useCategories } from '../../hooks/useCategories';
+import { useTranslation } from 'react-i18next';
 
 interface CategoryPickerProps {
   value?: string;
@@ -11,19 +12,23 @@ interface CategoryPickerProps {
   placeholder?: string;
 }
 
-export function CategoryPicker({ value, onChange, label = 'Category', placeholder = 'Select category' }: CategoryPickerProps) {
+export function CategoryPicker({ value, onChange, label, placeholder }: CategoryPickerProps) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const { options, loading } = useCategories();
   const [visible, setVisible] = useState(false);
 
+  const effectiveLabel = label || t('common.category');
+  const effectivePlaceholder = placeholder || t('common.selectCategory');
+
   const selectedLabel = useMemo(() => {
     const option = options.find((opt) => opt.value === value);
-    return option?.label ?? placeholder;
-  }, [options, placeholder, value]);
+    return option?.label ?? effectivePlaceholder;
+  }, [options, effectivePlaceholder, value]);
 
   return (
     <View style={styles.wrapper}>
-      {label ? <Text style={[styles.label, { color: colors.text }]}>{label}</Text> : null}
+      {effectiveLabel ? <Text style={[styles.label, { color: colors.text }]}>{effectiveLabel}</Text> : null}
       <TouchableOpacity style={[styles.button, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={() => setVisible(true)}>
         <Text style={[styles.buttonText, { color: colors.text }]} numberOfLines={1}>
           {selectedLabel}
@@ -34,7 +39,7 @@ export function CategoryPicker({ value, onChange, label = 'Category', placeholde
         <View style={styles.overlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: colors.text }]}>{label}</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>{effectiveLabel}</Text>
               <TouchableOpacity onPress={() => setVisible(false)}>
                 <Ionicons name="close" size={24} color={colors.primary} />
               </TouchableOpacity>
