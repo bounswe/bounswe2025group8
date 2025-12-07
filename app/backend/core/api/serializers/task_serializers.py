@@ -2,12 +2,14 @@ from rest_framework import serializers
 from core.models import Task, TaskCategory, TaskStatus
 from django.utils import timezone
 from .user_serializers import UserSerializer
+from core.utils import mask_address, mask_phone_number
 
 
 class TaskSerializer(serializers.ModelSerializer):
-    """Serializer for Task model"""
-    creator = UserSerializer(read_only=True)
-    assignee = UserSerializer(read_only=True)
+    """Serializer for Task model with conditional field masking for privacy"""
+    creator = serializers.SerializerMethodField()
+    assignee = serializers.SerializerMethodField()
+    location = serializers.SerializerMethodField()
     status_display = serializers.SerializerMethodField()
     category_display = serializers.SerializerMethodField()
     primary_photo_url = serializers.SerializerMethodField()
@@ -19,7 +21,64 @@ class TaskSerializer(serializers.ModelSerializer):
                   'volunteer_number', 'status', 'status_display', 'is_recurring',
                   'creator', 'assignee', 'created_at', 'updated_at', 'primary_photo_url']
         read_only_fields = ['id', 'created_at', 'updated_at', 'status_display',
-                           'category_display', 'creator', 'assignee']
+                           'category_display', 'creator', 'assignee', 'location']
+    
+    def _is_user_authorized(self, task, user):
+        """
+        Check if user is authorized to view sensitive information.
+        User is authorized if they are the creator, assignee, or admin/superuser.
+        """
+        if not user or not user.is_authenticated:
+            return False
+        
+        # Admins and superusers have full access
+        if hasattr(user, 'is_staff') and user.is_staff:
+            return True
+        if hasattr(user, 'is_superuser') and user.is_superuser:
+            return True
+            
+        return user == task.creator or user == task.assignee or user in task.assignees.all()
+    
+    def get_location(self, obj):
+        """Get location with masking for unauthorized users"""
+        request = self.context.get('request')
+        user = request.user if request else None
+        
+        if self._is_user_authorized(obj, user):
+            return obj.location
+        else:
+            return mask_address(obj.location)
+    
+    def get_creator(self, obj):
+        """Get creator with phone number masking for unauthorized users"""
+        request = self.context.get('request')
+        user = request.user if request else None
+        
+        creator_data = UserSerializer(obj.creator, context=self.context).data
+        
+        # Mask phone number if user is not authorized
+        if not self._is_user_authorized(obj, user):
+            if 'phone_number' in creator_data:
+                creator_data['phone_number'] = mask_phone_number(creator_data['phone_number'])
+        
+        return creator_data
+    
+    def get_assignee(self, obj):
+        """Get assignee with phone number masking for unauthorized users"""
+        if not obj.assignee:
+            return None
+            
+        request = self.context.get('request')
+        user = request.user if request else None
+        
+        assignee_data = UserSerializer(obj.assignee, context=self.context).data
+        
+        # Mask phone number if user is not authorized
+        if not self._is_user_authorized(obj, user):
+            if 'phone_number' in assignee_data:
+                assignee_data['phone_number'] = mask_phone_number(assignee_data['phone_number'])
+        
+        return assignee_data
     
     def get_status_display(self, obj):
         """Get the display name for the status"""

@@ -207,3 +207,60 @@ def is_token_valid(expiry_timestamp):
         return False
     
     return timezone.now() < expiry_timestamp
+
+
+def mask_address(address):
+    """
+    Mask detailed address information, keeping only city, state, and zip code.
+    
+    Args:
+        address (str): Full address string
+        
+    Returns:
+        str: Masked address with only general location
+        
+    Examples:
+        "123 Main St, Apt 4B, New York, NY, 10001" -> "New York, NY, 10001"
+        "456 Oak Ave, Los Angeles, CA, 90001" -> "Los Angeles, CA, 90001"
+    """
+    if not address:
+        return address
+    
+    # Split by comma and get the last parts (typically city, state, zip)
+    parts = [part.strip() for part in address.split(',')]
+    
+    # Keep last 3 parts if available (city, state, zip), otherwise keep last 2
+    if len(parts) >= 3:
+        return ', '.join(parts[-3:])
+    elif len(parts) >= 2:
+        return ', '.join(parts[-2:])
+    else:
+        # If address doesn't follow expected format, return as is
+        return address
+
+
+def mask_phone_number(phone_number):
+    """
+    Mask phone number for privacy.
+    
+    Args:
+        phone_number (str): Full phone number
+        
+    Returns:
+        str: Masked phone number showing only last 4 digits
+        
+    Examples:
+        "+1234567890" -> "****7890"
+        "1234567890" -> "****7890"
+    """
+    if not phone_number:
+        return phone_number
+    
+    # Remove any non-digit characters except '+'
+    cleaned = ''.join(c for c in phone_number if c.isdigit())
+    
+    # Show only last 4 digits
+    if len(cleaned) > 4:
+        return '****' + cleaned[-4:]
+    else:
+        return phone_number

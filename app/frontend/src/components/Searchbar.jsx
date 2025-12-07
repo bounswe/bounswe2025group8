@@ -79,7 +79,8 @@ const Searchbar = ({
 
       <input
         type="search"
-        className="ml-2 flex-1 bg-transparent py-3 px-4 w-full outline-none text-sm"
+        className="ml-2 flex-1 bg-transparent py-3 px-4 w-full outline-none text-sm
+          [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
         placeholder={placeholder}
         aria-label="Search input"
         value={query}
