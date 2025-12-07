@@ -294,13 +294,9 @@ const CommentSection = ({ taskId, currentUser, isAuthenticated }) => {
                           {comment.user?.name} {comment.user?.surname}
                         </p>
                         <div
-                          className="flex items-center gap-1 text-xs"
+                          className="text-xs"
                           style={{ color: colors.text.tertiary }}
                         >
-                          <AccessTimeIcon
-                            className="w-3 h-3"
-                            aria-hidden="true"
-                          />
                           <span>{formatTimeAgo(comment.timestamp)}</span>
                         </div>
                       </div>
