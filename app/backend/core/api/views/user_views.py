@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.conf import settings
+from django.db.models import Q
 from core.models import RegisteredUser
 from core.api.serializers.user_serializers import (
     UserSerializer, UserUpdateSerializer, PasswordChangeSerializer
@@ -17,6 +18,21 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = RegisteredUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
+    
+    def get_queryset(self):
+        """Return appropriate queryset based on filters"""
+        queryset = RegisteredUser.objects.all()
+        
+        # Filter by search term (name, surname, or full name)
+        search_param = self.request.query_params.get('search')
+        if search_param:
+            queryset = queryset.filter(
+                Q(name__icontains=search_param) | 
+                Q(surname__icontains=search_param) |
+                Q(username__icontains=search_param)
+            )
+        
+        return queryset
     
     def get_permissions(self):
         """
