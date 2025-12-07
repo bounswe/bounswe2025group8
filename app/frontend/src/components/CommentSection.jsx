@@ -294,13 +294,9 @@ const CommentSection = ({ taskId, currentUser, isAuthenticated }) => {
                           {comment.user?.name} {comment.user?.surname}
                         </p>
                         <div
-                          className="flex items-center gap-1 text-xs"
+                          className="text-xs"
                           style={{ color: colors.text.tertiary }}
                         >
-                          <AccessTimeIcon
-                            className="w-3 h-3"
-                            aria-hidden="true"
-                          />
                           <span>{formatTimeAgo(comment.timestamp)}</span>
                         </div>
                       </div>
@@ -420,8 +416,13 @@ const CommentSection = ({ taskId, currentUser, isAuthenticated }) => {
                     </div>
                   ) : (
                     <p
-                      className="whitespace-pre-wrap text-sm"
-                      style={{ color: colors.text.primary }}
+                      className="whitespace-pre-wrap text-sm break-words"
+                      style={{
+                        color: colors.text.primary,
+                        wordWrap: "break-word",
+                        overflowWrap: "break-word",
+                        wordBreak: "break-word",
+                      }}
                     >
                       {comment.content}
                     </p>

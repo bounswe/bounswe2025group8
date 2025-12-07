@@ -46,7 +46,7 @@ const CommentInput = ({ onSubmit, disabled = false }) => {
           onKeyDown={handleKeyPress}
           placeholder="Write a comment... (Ctrl+Enter to submit)"
           disabled={disabled || isSubmitting}
-          rows={3}
+          rows={1}
           className="flex-grow px-3 py-2 rounded-md resize-none focus:outline-none focus:ring-2 transition-all"
           style={{
             backgroundColor: colors.background.primary,
