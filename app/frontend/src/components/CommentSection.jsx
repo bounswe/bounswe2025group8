@@ -417,11 +417,11 @@ const CommentSection = ({ taskId, currentUser, isAuthenticated }) => {
                   ) : (
                     <p
                       className="whitespace-pre-wrap text-sm break-words"
-                      style={{ 
+                      style={{
                         color: colors.text.primary,
-                        wordWrap: 'break-word',
-                        overflowWrap: 'break-word',
-                        wordBreak: 'break-word'
+                        wordWrap: "break-word",
+                        overflowWrap: "break-word",
+                        wordBreak: "break-word",
                       }}
                     >
                       {comment.content}
