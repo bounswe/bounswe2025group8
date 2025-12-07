@@ -386,8 +386,11 @@ const SelectVolunteer = () => {
           <Grid container spacing={2} sx={{ mb: 3 }}>
             {volunteers.map((volunteer) => {
               const isSelected = selectedVolunteers.includes(volunteer.id);
+              // Check if volunteer is banned (name shows as *deleted)
+              const isVolunteerBanned = volunteer.name === "*deleted";
               const canSelect =
-                selectedVolunteers.length < maxVolunteers || isSelected;
+                (selectedVolunteers.length < maxVolunteers || isSelected) &&
+                !isVolunteerBanned; // Banned volunteers cannot be selected
               const isCurrentlyAccepted =
                 volunteer.volunteerRecord?.status === "ACCEPTED";
               const isCurrentlyRejected =
@@ -462,7 +465,7 @@ const SelectVolunteer = () => {
                       {/* Avatar and Selection Indicator */}
                       <Box sx={{ position: "relative", mb: 2 }}>
                         <Avatar
-                          src={volunteer.avatar}
+                          src={!isVolunteerBanned ? volunteer.avatar : undefined}
                           sx={{
                             width: 80,
                             height: 80,
@@ -470,8 +473,11 @@ const SelectVolunteer = () => {
                             border: isSelected
                               ? "3px solid #7c4dff"
                               : "3px solid transparent",
+                            bgcolor: isVolunteerBanned ? "#9e9e9e" : undefined,
                           }}
-                        />
+                        >
+                          {isVolunteerBanned && "*"}
+                        </Avatar>
                         {/* Selection Circle */}
                         <Box
                           sx={{
@@ -497,7 +503,16 @@ const SelectVolunteer = () => {
                       </Box>
 
                       {/* Name */}
-                      <Typography variant="h6" fontWeight="medium" gutterBottom>
+                      <Typography
+                        variant="h6"
+                        fontWeight="medium"
+                        gutterBottom
+                        sx={{
+                          color: isVolunteerBanned
+                            ? "text.disabled"
+                            : "text.primary",
+                        }}
+                      >
                         {volunteer.name} {volunteer.surname}
                       </Typography>
 
