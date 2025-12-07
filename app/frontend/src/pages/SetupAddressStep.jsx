@@ -30,7 +30,9 @@ const SetupAddressStep = (props, ref) => {
   } = useForm({
     defaultValues: {
       country: formData.country || "",
+      countryIsoCode: formData.countryIsoCode || "",
       state: formData.state || "",
+      stateIsoCode: formData.stateIsoCode || "",
       city: formData.city || "",
       neighborhood: formData.neighborhood || "",
       street: formData.street || "",
@@ -41,45 +43,45 @@ const SetupAddressStep = (props, ref) => {
   });
 
   // Watch country, state, and city values for filtering
-  const watchCountry = watch("country");
-  const watchState = watch("state");
+  const watchCountryIsoCode = watch("countryIsoCode");
+  const watchStateIsoCode = watch("stateIsoCode");
   const watchCity = watch("city");
 
   // Update states when country changes
   useEffect(() => {
-    if (!watchCountry) {
+    if (!watchCountryIsoCode) {
       setStates([]);
       return;
     }
 
     try {
       setError(null);
-      const statesData = State.getStatesOfCountry(watchCountry);
+      const statesData = State.getStatesOfCountry(watchCountryIsoCode);
       setStates(statesData);
     } catch (err) {
       console.error("Error loading states/provinces:", err);
       setError("Failed to load states/provinces. Please try again later.");
       setStates([]);
     }
-  }, [watchCountry]);
+  }, [watchCountryIsoCode]);
 
   // Update cities when state changes
   useEffect(() => {
-    if (!watchCountry || !watchState) {
+    if (!watchCountryIsoCode || !watchStateIsoCode) {
       setCities([]);
       return;
     }
 
     try {
       setError(null);
-      const citiesData = City.getCitiesOfState(watchCountry, watchState);
+      const citiesData = City.getCitiesOfState(watchCountryIsoCode, watchStateIsoCode);
       setCities(citiesData);
     } catch (err) {
       console.error("Error loading cities:", err);
       setError("Failed to load cities. Please try again later.");
       setCities([]);
     }
-  }, [watchCountry, watchState]);
+  }, [watchCountryIsoCode, watchStateIsoCode]);
   // Auto-save form data happens when fields change (handled by handleFieldChange)
   // Auto-save form data when fields change
   const handleFieldChange = (field, value) => {
@@ -133,6 +135,7 @@ const SetupAddressStep = (props, ref) => {
                   <div className="relative">
                     <select
                       {...field}
+                      value={field.value ? JSON.stringify({name: field.value, isoCode: watch("countryIsoCode")}) : ""}
                       id="country-select"
                       className="w-full px-3 py-3 border rounded-md focus:outline-none"
                       style={{
@@ -155,18 +158,31 @@ const SetupAddressStep = (props, ref) => {
                         e.target.style.boxShadow = "none";
                       }}
                       onChange={(e) => {
-                        field.onChange(e);
-                        handleFieldChange("country", e.target.value);
+                        const selectedValue = e.target.value;
+                        if (selectedValue) {
+                          const countryData = JSON.parse(selectedValue);
+                          field.onChange(countryData.name);
+                          setValue("countryIsoCode", countryData.isoCode);
+                          handleFieldChange("country", countryData.name);
+                          handleFieldChange("countryIsoCode", countryData.isoCode);
+                        } else {
+                          field.onChange("");
+                          setValue("countryIsoCode", "");
+                          handleFieldChange("country", "");
+                          handleFieldChange("countryIsoCode", "");
+                        }
                         // Reset state and city when country changes
                         setValue("state", "");
+                        setValue("stateIsoCode", "");
                         setValue("city", "");
                         handleFieldChange("state", "");
+                        handleFieldChange("stateIsoCode", "");
                         handleFieldChange("city", "");
                       }}
                     >
                       <option value="">Select Country</option>
                       {countries.map((country) => (
-                        <option key={country.isoCode} value={country.isoCode}>
+                        <option key={country.isoCode} value={JSON.stringify({name: country.name, isoCode: country.isoCode})}>
                           {country.name}
                         </option>
                       ))}
@@ -204,6 +220,7 @@ const SetupAddressStep = (props, ref) => {
                   <div className="relative">
                     <select
                       {...field}
+                      value={field.value ? JSON.stringify({name: field.value, isoCode: watch("stateIsoCode")}) : ""}
                       id="state-select"
                       className="w-full px-3 py-3 border rounded-md focus:outline-none"
                       style={{
@@ -225,10 +242,21 @@ const SetupAddressStep = (props, ref) => {
                         field.onBlur();
                         e.target.style.boxShadow = "none";
                       }}
-                      disabled={!watchCountry}
+                      disabled={!watchCountryIsoCode}
                       onChange={(e) => {
-                        field.onChange(e);
-                        handleFieldChange("state", e.target.value);
+                        const selectedValue = e.target.value;
+                        if (selectedValue) {
+                          const stateData = JSON.parse(selectedValue);
+                          field.onChange(stateData.name);
+                          setValue("stateIsoCode", stateData.isoCode);
+                          handleFieldChange("state", stateData.name);
+                          handleFieldChange("stateIsoCode", stateData.isoCode);
+                        } else {
+                          field.onChange("");
+                          setValue("stateIsoCode", "");
+                          handleFieldChange("state", "");
+                          handleFieldChange("stateIsoCode", "");
+                        }
                         // Reset city when state changes
                         setValue("city", "");
                         handleFieldChange("city", "");
@@ -238,7 +266,7 @@ const SetupAddressStep = (props, ref) => {
                       {states.map((state) => (
                         <option
                           key={state.isoCode}
-                          value={state.isoCode}
+                          value={JSON.stringify({name: state.name, isoCode: state.isoCode})}
                         >
                           {state.name}
                         </option>
@@ -297,7 +325,7 @@ const SetupAddressStep = (props, ref) => {
                         field.onBlur();
                         e.target.style.boxShadow = "none";
                       }}
-                      disabled={!watchState}
+                      disabled={!watchStateIsoCode}
                       onChange={(e) => {
                         field.onChange(e);
                         handleFieldChange("city", e.target.value);
