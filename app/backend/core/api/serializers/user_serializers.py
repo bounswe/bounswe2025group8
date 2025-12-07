@@ -7,13 +7,18 @@ from core.utils import password_meets_requirements, validate_phone_number
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for the RegisteredUser model"""
     profile_photo = serializers.SerializerMethodField()
+    followers_count = serializers.SerializerMethodField()
+    following_count = serializers.SerializerMethodField()
+    is_following = serializers.SerializerMethodField()
     
     class Meta:
         model = RegisteredUser
         fields = ['id', 'name', 'surname', 'username', 'email', 
                  'phone_number', 'location', 'rating', 
-                 'completed_task_count', 'is_active', 'profile_photo']
-        read_only_fields = ['id', 'rating', 'completed_task_count', 'is_active', 'profile_photo']
+                 'completed_task_count', 'is_active', 'profile_photo',
+                 'followers_count', 'following_count', 'is_following']
+        read_only_fields = ['id', 'rating', 'completed_task_count', 'is_active', 
+                          'profile_photo', 'followers_count', 'following_count', 'is_following']
     
     def get_profile_photo(self, obj):
         """Get the absolute URL for the profile photo"""
@@ -23,6 +28,25 @@ class UserSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(obj.profile_photo.url)
             return obj.profile_photo.url
         return None
+    
+    def get_followers_count(self, obj):
+        """Get the number of followers"""
+        return obj.followers_set.count()
+    
+    def get_following_count(self, obj):
+        """Get the number of users this user is following"""
+        return obj.following_set.count()
+    
+    def get_is_following(self, obj):
+        """Check if the current user is following this user"""
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            from core.models import UserFollows
+            return UserFollows.objects.filter(
+                follower=request.user, 
+                following=obj
+            ).exists()
+        return False
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
