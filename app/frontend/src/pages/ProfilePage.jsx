@@ -471,13 +471,15 @@ const ProfilePage = () => {
   };
 
   const handleUserReportSuccess = () => {
-    alert("Thank you for reporting this user! Our team will review it shortly.");
+    alert(
+      "Thank you for reporting this user! Our team will review it shortly."
+    );
   };
 
   // Handler for follow/unfollow
   const handleFollowToggle = async () => {
     if (followLoading) return;
-    
+
     setFollowLoading(true);
     try {
       if (isFollowing) {
@@ -683,9 +685,11 @@ const ProfilePage = () => {
                 >
                   {user.name} {user.surname}
                 </Typography>
-                
+
                 {/* Followers and Following counts */}
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
+                <Box
+                  sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}
+                >
                   <Box
                     onClick={handleFollowersClick}
                     sx={{
@@ -756,7 +760,7 @@ const ProfilePage = () => {
                     }}
                   />
                 </Box>
-                
+
                 {/* Follow/Unfollow and Report buttons - only show for other users */}
                 {!canEdit && !isUserBanned && (
                   <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
