@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import CategoryCard from "../components/CategoryCard";
 import RequestCard from "../components/RequestCard";
 import * as categoryService from "../features/category/services/categoryService";
@@ -11,6 +12,7 @@ import { useTheme } from "../hooks/useTheme";
 const Home = () => {
   const navigate = useNavigate();
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const handleCategoryClick = (categoryId) => {
     // Navigate to requests filtered by this category
     navigate(`/requests?category=${categoryId}`);
@@ -44,7 +46,7 @@ const Home = () => {
       console.error("Failed to fetch categories:", err);
       setError((prev) => ({
         ...prev,
-        categories: "Failed to load categories",
+        categories: "failedToLoadCategories",
       }));
     } finally {
       setLoading((prev) => ({ ...prev, categories: false }));
@@ -70,7 +72,7 @@ const Home = () => {
       console.error("Failed to fetch popular requests:", err);
       setError((prev) => ({
         ...prev,
-        requests: "Failed to load popular requests",
+        requests: "failedToLoadPopularRequests",
       }));
       // Clear requests on error
       setRequests([]);
@@ -105,7 +107,7 @@ const Home = () => {
             style={{ color: colors.text.primary }}
             id="popular-categories-title"
           >
-            Popular Categories
+            {t("popularCategories")}
           </h2>
           {categories.length > 4 && (
             <button
@@ -127,9 +129,9 @@ const Home = () => {
               onBlur={(e) => {
                 e.currentTarget.style.outline = "none";
               }}
-              aria-label="View all categories"
+              aria-label={t("viewAllCategories")}
             >
-              See All
+              {t("seeAll")}
             </button>
           )}
         </div>
@@ -139,7 +141,7 @@ const Home = () => {
             className="flex justify-center py-12"
             role="status"
             aria-live="polite"
-            aria-label="Loading popular categories"
+            aria-label={t("loadingPopularCategories")}
             aria-busy="true"
           >
             <div
@@ -155,7 +157,7 @@ const Home = () => {
               style={{ color: colors.semantic.error }}
               id="categories-error"
             >
-              {error.categories}
+              {t(error.categories)}
             </p>
             <button
               className="px-4 py-2 rounded transition-colors"
@@ -180,7 +182,7 @@ const Home = () => {
               }}
               onClick={fetchCategories}
             >
-              Try Again
+              {t("tryAgain")}
             </button>
           </div>
         ) : (
@@ -199,7 +201,7 @@ const Home = () => {
             ) : (
               <div className="col-span-full text-center py-8">
                 <p style={{ color: colors.text.secondary }}>
-                  No categories available
+                  {t("noCategoriesAvailable")}
                 </p>
               </div>
             )}
@@ -218,7 +220,7 @@ const Home = () => {
             style={{ color: colors.text.primary }}
             id="popular-requests-title"
           >
-            Popular Requests
+            {t("popularRequests")}
           </h2>
           {requests.length > 6 && (
             <button
@@ -240,9 +242,9 @@ const Home = () => {
               onBlur={(e) => {
                 e.currentTarget.style.outline = "none";
               }}
-              aria-label="View all requests"
+              aria-label={t("viewAllRequests")}
             >
-              See All
+              {t("seeAll")}
             </button>
           )}
         </div>
@@ -252,7 +254,7 @@ const Home = () => {
             className="flex justify-center py-12"
             role="status"
             aria-live="polite"
-            aria-label="Loading popular requests"
+            aria-label={t("loadingPopularRequests")}
             aria-busy="true"
           >
             <div
@@ -268,7 +270,7 @@ const Home = () => {
               style={{ color: colors.semantic.error }}
               id="requests-error"
             >
-              {error.requests}
+              {t(error.requests)}
             </p>
             <button
               className="px-4 py-2 rounded transition-colors"
@@ -293,7 +295,7 @@ const Home = () => {
               }}
               onClick={fetchRequests}
             >
-              Try Again
+              {t("tryAgain")}
             </button>
           </div>
         ) : (
@@ -310,7 +312,7 @@ const Home = () => {
             ) : (
               <div className="col-span-full text-center py-8">
                 <p style={{ color: colors.text.secondary }}>
-                  No requests available
+                  {t("noRequestsAvailable")}
                 </p>
               </div>
             )}
@@ -319,7 +321,7 @@ const Home = () => {
       </div>
       {/* Page Title for landmark association */}
       <h1 id="home-page-title" className="sr-only">
-        Home
+        {t("home")}
       </h1>
     </main>
   );
