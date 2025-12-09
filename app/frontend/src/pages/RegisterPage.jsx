@@ -291,13 +291,13 @@ const RegisterPage = () => {
                           border: 0,
                         }}
                       >
-                        First Name
+                        {t("firstNameLabel")}
                       </label>
                       <input
                         type="text"
                         id="firstName"
                         name="firstName"
-                        placeholder="First Name"
+                        placeholder={t("firstNamePlaceholder")}
                         autoComplete="given-name"
                         autoFocus
                         required
@@ -341,13 +341,13 @@ const RegisterPage = () => {
                           border: 0,
                         }}
                       >
-                        Last Name
+                        {t("lastNameLabel")}
                       </label>
                       <input
                         type="text"
                         id="lastName"
                         name="lastName"
-                        placeholder="Surname"
+                        placeholder={t("surnamePlaceholder")}
                         autoComplete="family-name"
                         required
                         value={lastName}
@@ -393,13 +393,13 @@ const RegisterPage = () => {
                         border: 0,
                       }}
                     >
-                      Username
+                      {t("usernameLabel")}
                     </label>
                     <input
                       type="text"
                       id="username"
                       name="username"
-                      placeholder="Username"
+                      placeholder={t("usernamePlaceholder")}
                       required
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
@@ -442,13 +442,13 @@ const RegisterPage = () => {
                         border: 0,
                       }}
                     >
-                      Phone
+                      {t("phoneLabel")}
                     </label>
                     <input
                       type="tel"
                       id="phone"
                       name="phone"
-                      placeholder="Phone"
+                      placeholder={t("phonePlaceholder")}
                       required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
@@ -491,13 +491,13 @@ const RegisterPage = () => {
                         border: 0,
                       }}
                     >
-                      Email
+                      {t("emailLabel")}
                     </label>
                     <input
                       type="email"
                       id="email"
                       name="email"
-                      placeholder="Email"
+                      placeholder={t("emailPlaceholder")}
                       autoComplete="email"
                       required
                       value={email}
@@ -541,13 +541,13 @@ const RegisterPage = () => {
                         border: 0,
                       }}
                     >
-                      Password
+                      {t("passwordLabel")}
                     </label>
                     <input
                       type={showPassword ? "text" : "password"}
                       id="password"
                       name="password"
-                      placeholder="Password"
+                      placeholder={t("passwordPlaceholder")}
                       autoComplete="new-password"
                       required
                       value={password}
@@ -569,7 +569,7 @@ const RegisterPage = () => {
                         onClick={() => setShowPassword(!showPassword)}
                         className="focus:outline-none"
                         aria-label={
-                          showPassword ? "Hide password" : "Show password"
+                          showPassword ? t("hidePassword") : t("showPassword")
                         }
                         style={{ color: colors.text.tertiary }}
                         onMouseOver={(e) =>
@@ -614,13 +614,13 @@ const RegisterPage = () => {
                         border: 0,
                       }}
                     >
-                      Confirm Password
+                      {t("confirmPasswordLabel")}
                     </label>
                     <input
                       type={showConfirmPassword ? "text" : "password"}
                       id="confirmPassword"
                       name="confirmPassword"
-                      placeholder="Confirm Password"
+                      placeholder={t("confirmPasswordPlaceholder")}
                       autoComplete="new-password"
                       required
                       value={confirmPassword}
@@ -645,8 +645,8 @@ const RegisterPage = () => {
                         className="focus:outline-none"
                         aria-label={
                           showConfirmPassword
-                            ? "Hide confirm password"
-                            : "Show confirm password"
+                            ? t("hideConfirmPassword")
+                            : t("showConfirmPassword")
                         }
                         style={{ color: colors.text.tertiary }}
                         onMouseOver={(e) =>
@@ -684,7 +684,7 @@ const RegisterPage = () => {
                       className="text-sm"
                       style={{ color: colors.text.primary }}
                     >
-                      I agree with{" "}
+                      {t("iAgreeWith")}{" "}
                       <button
                         type="button"
                         className="underline"
@@ -696,7 +696,7 @@ const RegisterPage = () => {
                           (e.currentTarget.style.color = colors.brand.primary)
                         }
                       >
-                        Terms & Conditions
+                        {t("termsAndConditions")}
                       </button>
                     </span>
                   </label>
@@ -728,7 +728,7 @@ const RegisterPage = () => {
                   }
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
                 >
-                  Sign Up
+                  {t("signUp")}
                 </button>
               </form>
             </div>
@@ -737,7 +737,7 @@ const RegisterPage = () => {
 
         <div className="text-center my-4">
           <p className="text-sm" style={{ color: colors.text.secondary }}>
-            OR
+            {t("or")}
           </p>
         </div>
 
@@ -753,7 +753,7 @@ const RegisterPage = () => {
               (e.currentTarget.style.color = colors.brand.primary)
             }
           >
-            Continue as a guest
+            {t("continueAsGuest")}
           </RouterLink>
         </div>
       </main>
