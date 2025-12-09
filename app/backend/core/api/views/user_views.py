@@ -4,9 +4,12 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.conf import settings
 from django.db.models import Q
-from core.models import RegisteredUser
+from core.models import RegisteredUser, UserFollows
 from core.api.serializers.user_serializers import (
     UserSerializer, UserUpdateSerializer, PasswordChangeSerializer
+)
+from core.api.serializers.follow_serializers import (
+    FollowUserSerializer, FollowerSerializer, FollowingSerializer
 )
 from core.permissions import IsOwner
 from core.utils import format_response
@@ -194,3 +197,107 @@ class UserViewSet(viewsets.ModelViewSet):
             status='success',
             message='Profile photo deleted successfully.'
         ), status=status.HTTP_200_OK)
+    
+    @action(detail=True, methods=['post'], url_path='follow')
+    def follow(self, request, pk=None):
+        """Follow a user"""
+        user_to_follow = self.get_object()
+        current_user = request.user
+        
+        # Check if trying to follow themselves
+        if current_user == user_to_follow:
+            return Response(format_response(
+                status='error',
+                message='You cannot follow yourself.'
+            ), status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if already following
+        if UserFollows.objects.filter(follower=current_user, following=user_to_follow).exists():
+            return Response(format_response(
+                status='error',
+                message='You are already following this user.'
+            ), status=status.HTTP_400_BAD_REQUEST)
+        
+        # Create follow relationship
+        try:
+            current_user.follow_user(user_to_follow)
+            return Response(format_response(
+                status='success',
+                message=f'You are now following {user_to_follow.username}.'
+            ), status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response(format_response(
+                status='error',
+                message=str(e)
+            ), status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=True, methods=['post'], url_path='unfollow')
+    def unfollow(self, request, pk=None):
+        """Unfollow a user"""
+        user_to_unfollow = self.get_object()
+        current_user = request.user
+        
+        # Check if trying to unfollow themselves
+        if current_user == user_to_unfollow:
+            return Response(format_response(
+                status='error',
+                message='You cannot unfollow yourself.'
+            ), status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if not following
+        if not UserFollows.objects.filter(follower=current_user, following=user_to_unfollow).exists():
+            return Response(format_response(
+                status='error',
+                message='You are not following this user.'
+            ), status=status.HTTP_400_BAD_REQUEST)
+        
+        # Remove follow relationship
+        try:
+            current_user.unfollow_user(user_to_unfollow)
+            return Response(format_response(
+                status='success',
+                message=f'You have unfollowed {user_to_unfollow.username}.'
+            ), status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(format_response(
+                status='error',
+                message=str(e)
+            ), status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=True, methods=['get'], url_path='followers')
+    def followers(self, request, pk=None):
+        """Get list of followers for a user"""
+        user = self.get_object()
+        followers = UserFollows.objects.filter(following=user)
+        
+        # Paginate the results
+        page = self.paginate_queryset(followers)
+        if page is not None:
+            serializer = FollowerSerializer(page, many=True, context={'request': request})
+            return self.get_paginated_response(serializer.data)
+        
+        serializer = FollowerSerializer(followers, many=True, context={'request': request})
+        return Response(format_response(
+            status='success',
+            message='Followers retrieved successfully.',
+            data=serializer.data
+        ))
+    
+    @action(detail=True, methods=['get'], url_path='following')
+    def following(self, request, pk=None):
+        """Get list of users that this user is following"""
+        user = self.get_object()
+        following = UserFollows.objects.filter(follower=user)
+        
+        # Paginate the results
+        page = self.paginate_queryset(following)
+        if page is not None:
+            serializer = FollowingSerializer(page, many=True, context={'request': request})
+            return self.get_paginated_response(serializer.data)
+        
+        serializer = FollowingSerializer(following, many=True, context={'request': request})
+        return Response(format_response(
+            status='success',
+            message='Following list retrieved successfully.',
+            data=serializer.data
+        ))
