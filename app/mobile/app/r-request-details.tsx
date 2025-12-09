@@ -542,30 +542,30 @@ export default function RequestDetails() {
       if (editingCommentId) {
         // Update existing comment
         const response = await updateComment(editingCommentId, commentText);
-        
+
         // Update the comment in the list
-        setComments((prev) => 
+        setComments((prev) =>
           prev.map((c) => (c.id === editingCommentId ? response.data : c))
         );
-        
+
         // Clear editing state
         setEditingCommentId(null);
       } else {
         // Create new comment
         const response = await createTaskComment(id, commentText);
-        
+
         // Add the new comment to the end of the list (oldest to newest order)
         setComments((prev) => [...prev, response.data]);
-        
+
         // Scroll to bottom to show the new comment
         setTimeout(() => {
           scrollViewRef.current?.scrollToEnd({ animated: true });
         }, 100);
       }
-      
+
       // Clear the input
       setCommentText('');
-      
+
       // Dismiss keyboard
       Keyboard.dismiss();
     } catch (err: any) {
@@ -605,10 +605,10 @@ export default function RequestDetails() {
           onPress: async () => {
             try {
               await deleteComment(commentId);
-              
+
               // Remove the comment from the list
               setComments((prev) => prev.filter((c) => c.id !== commentId));
-              
+
               // Clear editing state if deleting the comment being edited
               if (editingCommentId === commentId) {
                 setCommentText('');
@@ -752,7 +752,7 @@ export default function RequestDetails() {
           </Text>
         </View>
       </View>
-      <ScrollView 
+      <ScrollView
         ref={scrollViewRef}
         contentContainerStyle={{ paddingBottom: user ? 100 : 40 }}
       >
