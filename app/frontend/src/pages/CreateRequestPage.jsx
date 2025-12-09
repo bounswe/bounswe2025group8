@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   fetchCategories,
   nextStep,
@@ -17,18 +18,19 @@ import { useAttachTaskPhoto } from "../features/photo";
 import { useTheme } from "../hooks/useTheme";
 import useAuth from "../features/authentication/hooks/useAuth";
 
-const steps = [
-  "General Information",
-  "Upload Photos",
-  "Determine Deadline",
-  "Setup Address",
-];
-
 const CreateRequestPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation();
+
+  const steps = [
+    t("generalInformation"),
+    t("uploadPhotos"),
+    t("determineDeadline"),
+    t("setupAddress"),
+  ];
   const { currentStep, loading, success, error, formData } = useSelector(
     (state) => state.createRequest
   );
@@ -170,7 +172,7 @@ const CreateRequestPage = () => {
               }}
               id="create-request-title"
             >
-              Create Request &gt; {steps[currentStep]}
+              {t("createRequest")} &gt; {steps[currentStep]}
             </h1>
           </div>
 
@@ -412,7 +414,7 @@ const CreateRequestPage = () => {
                     (e.currentTarget.style.color = colors.text.secondary)
                   }
                 >
-                  Back
+                  {t("back")}
                 </button>
               )}
             </div>
@@ -444,7 +446,9 @@ const CreateRequestPage = () => {
                   (e.currentTarget.style.backgroundColor = colors.brand.primary)
                 }
               >
-                {currentStep === steps.length - 1 ? "Create Request" : "Next"}
+                {currentStep === steps.length - 1
+                  ? t("createRequest")
+                  : t("next")}
               </button>
             </div>
           </div>

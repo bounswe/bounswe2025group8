@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import CategoryCardDetailed from "../components/CategoryCardDetailed";
 import * as categoryService from "../features/category/services/categoryService.js";
 import { getCategoryImage, categoryMapping } from "../constants/categories";
 
 const Categories = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -28,7 +30,7 @@ const Categories = () => {
         setError(null);
       } catch (err) {
         console.error("Failed to fetch categories:", err);
-        setError("Failed to load categories. Please try again later.");
+        setError("failedToLoadCategoriesLater");
         // Clear categories on error
         setCategories([]);
       } finally {
@@ -48,11 +50,9 @@ const Categories = () => {
     <main role="main" aria-labelledby="categories-title">
       <div className="">
         <h1 className="text-4xl font-normal mb-4" id="categories-title">
-          Categories
+          {t("categories")}
         </h1>
-        <p className="text-base text-gray-600 mb-4">
-          Browse available service categories and find help with your tasks
-        </p>
+        <p className="text-base text-gray-600 mb-4">{t("browseCategories")}</p>
       </div>
 
       <hr className="my-8 border-gray-200" />
@@ -71,7 +71,7 @@ const Categories = () => {
       ) : error ? (
         <div className="mt-8" role="alert" aria-live="assertive">
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-            {error}
+            {t(error)}
           </div>
         </div>
       ) : (
@@ -91,7 +91,7 @@ const Categories = () => {
             ))
           ) : (
             <div className="col-span-full w-full text-center py-12">
-              <p className="text-gray-500">No categories available</p>
+              <p className="text-gray-500">{t("noCategoriesAvailable")}</p>
             </div>
           )}
         </div>
