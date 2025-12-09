@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import RequestCardForHomePage from "../components/RequestCardForHomePage";
 import {
   fetchAllTasks,
@@ -21,6 +22,7 @@ const AllRequests = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
   const { tasks, pagination, loading, error } = useSelector(
     (state) => state.allRequests
@@ -216,9 +218,9 @@ const AllRequests = () => {
             onMouseOut={(e) =>
               (e.currentTarget.style.backgroundColor = colors.brand.primary)
             }
-            aria-label="Retry loading requests"
+            aria-label={t("retryLoadingRequests")}
           >
-            Try Again
+            {t("tryAgain")}
           </button>
         </div>
       </div>
@@ -252,12 +254,14 @@ const AllRequests = () => {
             id="all-requests-title"
           >
             {categoryFilter
-              ? `${categoryMapping[categoryFilter] || categoryFilter} Requests`
+              ? `${categoryMapping[categoryFilter] || categoryFilter} ${t(
+                  "requests"
+                )}`
               : urgencyFilter
-              ? `${
-                  urgencyLevels[urgencyFilter]?.name || urgencyFilter
-                } Priority Requests`
-              : "All Requests"}
+              ? `${urgencyLevels[urgencyFilter]?.name || urgencyFilter} ${t(
+                  "priorityRequests"
+                )}`
+              : t("allRequests")}
           </h1>
           {(categoryFilter || urgencyFilter || locationFilter) && (
             <p
@@ -268,17 +272,17 @@ const AllRequests = () => {
               }}
             >
               {categoryFilter &&
-                `Showing requests in ${
+                `${t("showingRequestsIn")} ${
                   categoryMapping[categoryFilter] || categoryFilter
-                } category`}
+                } ${t("category")}`}
               {urgencyFilter &&
-                `${categoryFilter ? " • " : ""}Showing ${
+                `${categoryFilter ? " • " : ""}${t("showing")} ${
                   urgencyLevels[urgencyFilter]?.name || urgencyFilter
-                } priority requests`}
+                } ${t("priorityRequests")}`}
               {locationFilter &&
-                `${
-                  categoryFilter || urgencyFilter ? " • " : ""
-                }Near: ${locationFilter}`}
+                `${categoryFilter || urgencyFilter ? " • " : ""}${t(
+                  "near"
+                )}: ${locationFilter}`}
               <button
                 onClick={() => navigate("/requests")}
                 style={{
@@ -297,7 +301,7 @@ const AllRequests = () => {
                   (e.currentTarget.style.color = colors.brand.primary)
                 }
               >
-                Clear filters
+                {t("clearFilters")}
               </button>
             </p>
           )}
@@ -318,7 +322,7 @@ const AllRequests = () => {
           >
             <input
               type="text"
-              placeholder="Filter by location (district/city)"
+              placeholder={t("filterByLocation")}
               style={{
                 padding: "8px 16px",
                 fontSize: "0.875rem",
@@ -333,7 +337,7 @@ const AllRequests = () => {
               onKeyDown={(e) => {
                 if (e.key === "Enter") applyLocationFilter();
               }}
-              aria-label="Filter by location (district or city)"
+              aria-label={t("filterByLocation")}
             />
             <button
               onClick={applyLocationFilter}
@@ -353,9 +357,9 @@ const AllRequests = () => {
               onMouseOut={(e) =>
                 (e.currentTarget.style.backgroundColor = colors.brand.primary)
               }
-              aria-label="Apply location filter"
+              aria-label={t("applyLocationFilter")}
             >
-              Apply
+              {t("apply")}
             </button>
           </div>
           {/* Sort Icon */}
@@ -376,7 +380,7 @@ const AllRequests = () => {
             onMouseOut={(e) =>
               (e.currentTarget.style.color = colors.text.primary)
             }
-            aria-label="Sort requests"
+            aria-label={t("sortRequests")}
           >
             <img
               src={sortIcon}
@@ -410,7 +414,7 @@ const AllRequests = () => {
             onMouseOut={(e) =>
               (e.currentTarget.style.color = colors.text.primary)
             }
-            aria-label="Open address filter"
+            aria-label={t("openAddressFilter")}
           >
             <img
               src={filterIcon}
