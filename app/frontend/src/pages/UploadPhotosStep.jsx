@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import AddAPhotoIcon from "@mui/icons-material/AddAPhoto";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -15,6 +16,7 @@ const MAX_SIZE_MB = 10; // keep in sync with backend limit
 const UploadPhotosStep = () => {
   const dispatch = useDispatch();
   const fileInputRef = useRef(null);
+  const { t } = useTranslation();
   const { uploadedPhotos, loading } = useSelector(
     (state) => state.createRequest
   );
