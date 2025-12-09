@@ -1,6 +1,7 @@
 import React, { forwardRef, useImperativeHandle } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import {
   updateFormData,
   incrementRequiredPeople,
@@ -16,6 +17,7 @@ const GeneralInformationStep = (props, ref) => {
   const dispatch = useDispatch();
   const { formData, categories } = useSelector((state) => state.createRequest);
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
   const {
     control,
@@ -75,16 +77,16 @@ const GeneralInformationStep = (props, ref) => {
                 className="text-sm font-bold mb-2"
                 style={{ color: colors.text.primary }}
               >
-                Title
+                {t("title")}
               </label>
               <Controller
                 name="title"
                 control={control}
                 rules={{
-                  required: { value: true, message: "Title is required" },
+                  required: { value: true, message: t("titleRequired") },
                   minLength: {
                     value: 3,
-                    message: "Title must be at least 3 characters",
+                    message: t("titleMinLength"),
                   },
                 }}
                 render={({ field }) => (
@@ -110,7 +112,7 @@ const GeneralInformationStep = (props, ref) => {
                             ? colors.semantic.error
                             : colors.border.primary,
                         }}
-                        placeholder="Help me to see a doctor"
+                        placeholder={t("titlePlaceholder")}
                         onChange={(e) => {
                           field.onChange(e);
                           handleFieldChange("title", e.target.value);
