@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../hooks/useTheme';
 import {
     useNotifications,
@@ -15,6 +16,7 @@ import {
 import type { Notification } from '../features/notification';
 
 const Notifications = () => {
+    const { t } = useTranslation();
     const { colors } = useTheme();
     const navigate = useNavigate();
     const [showUnreadOnly, setShowUnreadOnly] = useState(true);
@@ -105,7 +107,7 @@ const Notifications = () => {
                             color: colors.text.primary,
                         }}
                     >
-                        Notifications
+                        {t('notifications.title')}
                     </h1>
                     <p
                         style={{
@@ -113,7 +115,7 @@ const Notifications = () => {
                             color: colors.text.secondary,
                         }}
                     >
-                        Stay updated with your latest activity
+                        {t('notifications.subtitle')}
                     </p>
                 </div>
 
@@ -149,7 +151,7 @@ const Notifications = () => {
                                 {unreadCount}
                             </span>
                             <span style={{ color: colors.text.secondary, fontSize: '0.875rem' }}>
-                                unread
+                                {t('notifications.unread')}
                             </span>
                         </div>
 
@@ -171,7 +173,7 @@ const Notifications = () => {
                             }}
                             aria-pressed={showUnreadOnly}
                         >
-                            {showUnreadOnly ? '📬 Unread Only' : '📭 All Notifications'}
+                            {showUnreadOnly ? `📬 ${t('notifications.unreadOnly')}` : `📭 ${t('notifications.allNotifications')}`}
                         </button>
                     </div>
 
@@ -190,9 +192,9 @@ const Notifications = () => {
                                 fontSize: '0.875rem',
                                 opacity: loading ? 0.6 : 1,
                             }}
-                            aria-label="Refresh notifications"
+                            aria-label={t('notifications.actions.refresh')}
                         >
-                            {loading ? '⏳ Loading...' : '🔄 Refresh'}
+                            {loading ? `⏳ ${t('notifications.loading')}` : `🔄 ${t('notifications.actions.refresh')}`}
                         </button>
 
                         {/* Mark All Read Button */}
@@ -245,7 +247,7 @@ const Notifications = () => {
                                 fontSize: '1.25rem',
                                 padding: '0.25rem',
                             }}
-                            aria-label="Dismiss error"
+                            aria-label={t('notifications.actions.dismissError')}
                         >
                             ✕
                         </button>
@@ -262,7 +264,7 @@ const Notifications = () => {
                         }}
                     >
                         <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏳</div>
-                        <p>Loading notifications...</p>
+                        <p>{t('notifications.loadingNotifications')}</p>
                     </div>
                 )}
 
@@ -286,12 +288,12 @@ const Notifications = () => {
                                 color: colors.text.primary,
                             }}
                         >
-                            {showUnreadOnly ? 'No Unread Notifications' : 'No Notifications'}
+                            {showUnreadOnly ? t('notifications.empty.noUnread') : t('notifications.empty.noNotifications')}
                         </h3>
                         <p style={{ color: colors.text.secondary }}>
                             {showUnreadOnly
-                                ? "You're all caught up! Check back later for updates."
-                                : 'When you receive notifications, they will appear here.'}
+                                ? t('notifications.empty.allCaughtUp')
+                                : t('notifications.empty.willAppearHere')}
                         </p>
                     </div>
                 )}
@@ -418,7 +420,7 @@ const Notifications = () => {
                                                                     fontWeight: '500',
                                                                 }}
                                                             >
-                                                                {isExpanded ? '▲ Show less' : '▼ Show more'}
+                                                                {isExpanded ? `▲ ${t('notifications.showLess')}` : `▼ ${t('notifications.showMore')}`}
                                                             </button>
                                                         )}
 
@@ -467,16 +469,16 @@ const Notifications = () => {
                                                             }}
                                                             aria-label={
                                                                 notification.is_read
-                                                                    ? 'Mark as unread'
-                                                                    : 'Mark as read'
+                                                                    ? t('notifications.actions.markAsUnread')
+                                                                    : t('notifications.actions.markAsRead')
                                                             }
                                                             title={
                                                                 notification.is_read
-                                                                    ? 'Mark as unread'
-                                                                    : 'Mark as read'
+                                                                    ? t('notifications.actions.markAsUnread')
+                                                                    : t('notifications.actions.markAsRead')
                                                             }
                                                         >
-                                                            {notification.is_read ? '📭 Unread' : '✓ Read'}
+                                                            {notification.is_read ? `📭 ${t('notifications.unread')}` : `✓ ${t('notifications.read')}`}
                                                         </button>
 
                                                         {/* Unread indicator */}
@@ -488,7 +490,7 @@ const Notifications = () => {
                                                                     borderRadius: '50%',
                                                                     backgroundColor: colors.brand.primary,
                                                                 }}
-                                                                aria-label="Unread notification"
+                                                                aria-label={t('notifications.unreadNotification')}
                                                             />
                                                         )}
                                                     </div>
