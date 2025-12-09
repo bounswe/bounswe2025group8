@@ -66,6 +66,27 @@ export const getPopularTasks = async (limit = 6) => {
 };
 
 /**
+ * Get tasks from followed users
+ *
+ * @param {number} limit - Maximum number of tasks to return
+ * @returns {Promise} Promise that resolves to an array of tasks from followed users
+ */
+export const getFollowedUsersTasks = async (limit = 6) => {
+  try {
+    console.log("getFollowedUsersTasks called with limit:", limit);
+    const response = await api.get("/tasks/followed/", {
+      params: { limit },
+    });
+    console.log("getFollowedUsersTasks API response:", response.data);
+    return response.data.data || [];
+  } catch (error) {
+    console.error("Error fetching followed users tasks:", error);
+    console.error("Error details:", error.response?.data);
+    throw error;
+  }
+};
+
+/**
  * Get a single task by ID
  *
  * @param {string|number} taskId - ID of the task to retrieve
