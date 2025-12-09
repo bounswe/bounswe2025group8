@@ -276,7 +276,11 @@ const Home = () => {
               ></div>
             </div>
           ) : error.followedRequests ? (
-            <div className="text-center py-8" role="alert" aria-live="assertive">
+            <div
+              className="text-center py-8"
+              role="alert"
+              aria-live="assertive"
+            >
               <p
                 className="mb-4"
                 style={{ color: colors.semantic.error }}
