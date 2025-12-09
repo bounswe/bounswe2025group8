@@ -39,14 +39,18 @@ const FollowingPage = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await userService.getFollowing(userId, page, itemsPerPage);
+        const response = await userService.getFollowing(
+          userId,
+          page,
+          itemsPerPage
+        );
         console.log("Following API response:", response);
-        
+
         // Backend returns format: {status, message, data: [...]}
         // OR paginated: {status, message, results: [...], count: X, next, previous}
         let followingData = [];
         let count = 0;
-        
+
         if (response.data) {
           // Check if it's a paginated response (has results field)
           if (response.data.results) {
@@ -70,7 +74,7 @@ const FollowingPage = () => {
           followingData = response;
           count = followingData.length;
         }
-        
+
         console.log("Processed following data:", followingData);
         setFollowing(followingData);
         setTotalCount(count);
@@ -132,7 +136,11 @@ const FollowingPage = () => {
           minHeight: "100vh",
         }}
       >
-        <Typography variant="h6" gutterBottom sx={{ color: colors.semantic.error }}>
+        <Typography
+          variant="h6"
+          gutterBottom
+          sx={{ color: colors.semantic.error }}
+        >
           Error loading following
         </Typography>
         <Typography paragraph sx={{ color: colors.text.secondary }}>
