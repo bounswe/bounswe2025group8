@@ -136,8 +136,7 @@ export default function Requests() {
     return base
       .toLowerCase()
       .split(/[\s_]+/)
-      .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
-      .join(' ');
+      .join('_');
   };
 
   const formatTimeAgo = (dateString: string) => {
@@ -285,7 +284,7 @@ export default function Requests() {
                     ]}
                   >
                     <Text style={[styles.urgencyText, { color: statusPalette.text }]} numberOfLines={1} ellipsizeMode="tail">
-                      {formatStatusLabel(task.status, task.status_display)}
+                      {t(`requestDetails.status.${formatStatusLabel(task.status, task.status_display)}`)}
                     </Text>
                   </View>
                   <View

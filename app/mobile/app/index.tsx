@@ -40,7 +40,7 @@ export default function Index() {
 
       {/* Main title */}
       <Text style={[styles.title, { color: colors.text }]}>
-        Neighborhood Assistance Board
+        {t('common.app')}
       </Text>
 
       {/* Buttons side by side */}
@@ -81,7 +81,7 @@ export default function Index() {
       </View>
 
       {/* OR separator */}
-      <Text style={[styles.orText, { color: colors.text }]}>OR</Text>
+      <Text style={[styles.orText, { color: colors.text }]}>{t('common.or')}</Text>
 
       {/* Continue as guest */}
       <TouchableOpacity

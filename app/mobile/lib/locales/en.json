@@ -1,9 +1,13 @@
 {
     "common": {
+        "app": "Neighborhood Asistance Board",
         "success": "Success",
         "error": "Error",
         "ok": "OK",
+        "or": "OR",
+        "confirm": "Confirm",
         "cancel": "Cancel",
+        "delete": "Delete",
         "save": "Save",
         "back": "Back",
         "next": "Next",
@@ -89,6 +93,8 @@
         "successCreated": "Task created successfully!",
         "errorFailed": "Failed to create task. Please try again.",
         "forgotPassword": "Forgot Password?",
+        "sendResetLink": "Send Reset Link",
+        "passwordResetPrompt": "Enter your email address and we'll send you a link to reset your password.",        "passwordResetNotice": "If your email exists in our system, you will receive a password reset link shortly.",
         "fillAllFields": "Please fill in all fields",
         "invalidCredentials": "Invalid credentials",
         "signInError": "Failed to sign in",

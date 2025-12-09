@@ -305,6 +305,11 @@ export default function ProfileScreen() {
     }
   };
 
+    const formatStatusLabel = (status?: string) => {
+      const base = status || 'Status';
+      return t(`requestDetails.status.${base.toLowerCase().replace(/\s+/g, '_')}`);
+  };
+
   const renderTaskSection = (
     title: string,
     tasks: Task[],
@@ -323,7 +328,7 @@ export default function ProfileScreen() {
               title={task.title}
               category={t(`categories.${task.category}`, { defaultValue: task.category_display || task.category })}
               urgencyLevel={getUrgencyLabel(task)}
-              status={task.status_display || task.status}
+              status={formatStatusLabel(task.status)}
               distance={task.location || 'N/A'}
               time={task.deadline ? new Date(task.deadline).toLocaleDateString() : ''}
               onPress={() => {

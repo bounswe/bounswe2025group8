@@ -3,6 +3,9 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import type { ThemeTokens } from '../../constants/Colors';
+import { useTranslation } from 'react-i18next';
+
+
 
 export interface RequestCardProps {
   title?: string;
@@ -17,6 +20,7 @@ export interface RequestCardProps {
 const RequestCard: React.FC<RequestCardProps> = (props) => {
   const { colors } = useTheme();
   const themeColors = colors as ThemeTokens;
+   const { t } = useTranslation();
 
   const displayTitle =
     typeof props.title === 'string' && props.title.trim() !== '' ? props.title.trim() : 'Untitled Request';
@@ -89,7 +93,7 @@ const RequestCard: React.FC<RequestCardProps> = (props) => {
             },
           ]}
         >
-          {displayUrgencyLevel === 'Past' ? displayUrgencyLevel : `${displayUrgencyLevel} Urgency`}
+          {displayUrgencyLevel === 'Past' ? displayUrgencyLevel : `${displayUrgencyLevel} ${t("requestDetails.urgency")}`}
         </Text>
 
         {displayUrgencyLevel !== 'Past' && (

@@ -31,7 +31,7 @@ const port = Constants.expoConfig?.extra?.apiPort ?? '8000';
 // Find your LAN IP with: ipconfig getifaddr en0
 // use the first one returned by the command
 // Can be set via Constants.expoConfig?.extra?.localLanIp from .env file
-const LOCAL_LAN_IP = Constants.expoConfig?.extra?.localLanIp ?? '192.168.4.23'; // Default fallback if not set
+const LOCAL_LAN_IP = Constants.expoConfig?.extra?.localLanIp ?? '172.20.10.2'; // Default fallback if not set
 
 const API_HOST = Platform.select({
   web: 'localhost',           // Web uses localhost

@@ -38,7 +38,7 @@ export default function ForgotPassword() {
       const response = await forgotPassword(email);
       Alert.alert(
         t('common.ok'), // Using OK as success title placeholder or add success key
-        'If your email exists in our system, you will receive a password reset link shortly.', // Needs translation key if not present
+        t('auth.passwordResetNotice'), // Needs translation key if not present
         [
           {
             text: t('common.ok'),
@@ -77,7 +77,7 @@ export default function ForgotPassword() {
 
           <Text style={[styles.title, { color: colors.primary }]}>{t('auth.forgotPassword')}</Text>
           <Text style={[styles.subtitle, { color: colors.text }]}>
-            Enter your email address and we'll send you a link to reset your password.
+            {t('auth.passwordResetPrompt')}
           </Text>
 
           <View style={styles.inputContainer}>
@@ -108,7 +108,7 @@ export default function ForgotPassword() {
             accessibilityState={{ disabled: isLoading }}
           >
             <Text style={[styles.buttonText, { color: themeColors.onPrimary }]}>
-              {isLoading ? t('common.loading') : 'Send Reset Link'}
+              {isLoading ? t('common.loading') : t('auth.sendResetLink')}
             </Text>
           </TouchableOpacity>
         </ScrollView>
