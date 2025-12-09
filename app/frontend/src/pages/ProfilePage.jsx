@@ -27,6 +27,8 @@ import {
   People,
   EmojiEvents,
   Flag as FlagIcon,
+  PersonAdd,
+  PersonRemove,
 } from "@mui/icons-material";
 import {
   fetchUserProfile,
@@ -54,6 +56,7 @@ import RatingCategoriesModal from "../components/RatingCategoriesModal";
 import UserReportModal from "../components/UserReportModal";
 import { useTheme } from "../hooks/useTheme";
 import { toAbsoluteUrl } from "../utils/url";
+import userService from "../services/userService";
 // No need for CSS module import as we're using Material UI's sx prop
 
 const ProfilePage = () => {
@@ -134,6 +137,10 @@ const ProfilePage = () => {
   const [ratingCategoriesOpen, setRatingCategoriesOpen] = useState(false); // Empty array for badges since we'll use API data
   const [userReportDialogOpen, setUserReportDialogOpen] = useState(false);
   const [mockBadges] = useState([]);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
 
   const loadProfileData = useCallback(async () => {
     try {
@@ -289,6 +296,15 @@ const ProfilePage = () => {
       setReviewPage(1); // Reset to first page when user changes
     }
   }, [userId]);
+
+  // Update follow state when user data changes
+  useEffect(() => {
+    if (user) {
+      setIsFollowing(user.is_following || false);
+      setFollowersCount(user.followers_count || 0);
+      setFollowingCount(user.following_count || 0);
+    }
+  }, [user]);
 
   // Sync user data with editProfile slice when user data changes
   useEffect(() => {
@@ -456,6 +472,39 @@ const ProfilePage = () => {
 
   const handleUserReportSuccess = () => {
     alert("Thank you for reporting this user! Our team will review it shortly.");
+  };
+
+  // Handler for follow/unfollow
+  const handleFollowToggle = async () => {
+    if (followLoading) return;
+    
+    setFollowLoading(true);
+    try {
+      if (isFollowing) {
+        await userService.unfollowUser(effectiveProfileId);
+        setIsFollowing(false);
+        setFollowersCount((prev) => Math.max(0, prev - 1));
+      } else {
+        await userService.followUser(effectiveProfileId);
+        setIsFollowing(true);
+        setFollowersCount((prev) => prev + 1);
+      }
+    } catch (error) {
+      console.error("Error toggling follow:", error);
+      alert(error.message || "Failed to update follow status");
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
+  // Handler for navigating to followers page
+  const handleFollowersClick = () => {
+    navigate(`/profile/${effectiveProfileId}/followers`);
+  };
+
+  // Handler for navigating to following page
+  const handleFollowingClick = () => {
+    navigate(`/profile/${effectiveProfileId}/following`);
   };
 
   if (loading) {
@@ -634,6 +683,47 @@ const ProfilePage = () => {
                 >
                   {user.name} {user.surname}
                 </Typography>
+                
+                {/* Followers and Following counts */}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
+                  <Box
+                    onClick={handleFollowersClick}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      "&:hover": {
+                        opacity: 0.7,
+                      },
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{ color: colors.text.secondary }}
+                    >
+                      <strong>{followersCount}</strong> followers
+                    </Typography>
+                  </Box>
+                  <Box
+                    onClick={handleFollowingClick}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      "&:hover": {
+                        opacity: 0.7,
+                      },
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      sx={{ color: colors.text.secondary }}
+                    >
+                      <strong>{followingCount}</strong> following
+                    </Typography>
+                  </Box>
+                </Box>
+
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Rating
                     value={user.rating}
@@ -666,25 +756,61 @@ const ProfilePage = () => {
                     }}
                   />
                 </Box>
-                {/* Report button - only show for other users, not own profile, and not for banned users */}
+                
+                {/* Follow/Unfollow and Report buttons - only show for other users */}
                 {!canEdit && !isUserBanned && (
-                  <Button
-                    onClick={handleUserReport}
-                    startIcon={<FlagIcon />}
-                    sx={{
-                      color: colors.semantic.error,
-                      borderColor: colors.semantic.error,
-                      mt: 0.5,
-                      textTransform: "none",
-                      "&:hover": {
-                        backgroundColor: `${colors.semantic.error}15`,
+                  <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
+                    <Button
+                      onClick={handleFollowToggle}
+                      disabled={followLoading}
+                      startIcon={isFollowing ? <PersonRemove /> : <PersonAdd />}
+                      variant={isFollowing ? "outlined" : "contained"}
+                      sx={{
+                        textTransform: "none",
+                        borderRadius: "20px",
+                        px: 3,
+                        ...(isFollowing
+                          ? {
+                              color: colors.brand.primary,
+                              borderColor: colors.brand.primary,
+                              "&:hover": {
+                                backgroundColor: `${colors.brand.primary}0A`,
+                                borderColor: colors.brand.secondary,
+                              },
+                            }
+                          : {
+                              backgroundColor: colors.brand.primary,
+                              color: colors.text.inverse,
+                              "&:hover": {
+                                backgroundColor: colors.brand.secondary,
+                              },
+                            }),
+                      }}
+                    >
+                      {followLoading
+                        ? "..."
+                        : isFollowing
+                        ? "Unfollow"
+                        : "Follow"}
+                    </Button>
+                    <Button
+                      onClick={handleUserReport}
+                      startIcon={<FlagIcon />}
+                      sx={{
+                        color: colors.semantic.error,
                         borderColor: colors.semantic.error,
-                      },
-                    }}
-                    variant="outlined"
-                  >
-                    Report
-                  </Button>
+                        textTransform: "none",
+                        borderRadius: "20px",
+                        "&:hover": {
+                          backgroundColor: `${colors.semantic.error}15`,
+                          borderColor: colors.semantic.error,
+                        },
+                      }}
+                      variant="outlined"
+                    >
+                      Report
+                    </Button>
+                  </Box>
                 )}
               </Box>
             </Box>
