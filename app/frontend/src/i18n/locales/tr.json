@@ -359,5 +359,18 @@
     "emailCannotBeChanged": "E-posta değiştirilemez",
     "phoneCannotBeChanged": "Telefon numarası değiştirilemez",
     "saveChanges": "Değişiklikleri Kaydet"
+  },
+  "editRequestModal": {
+    "title": "İsteği Güncelle",
+    "failedToUpdate": "İstek güncellenemedi.",
+    "titleLabel": "Başlık",
+    "descriptionLabel": "Açıklama",
+    "categoryLabel": "Kategori",
+    "urgencyLabel": "Aciliyet",
+    "locationLabel": "Konum",
+    "deadlineLabel": "Son Tarih",
+    "volunteersNeeded": "Gönüllü Sayısı",
+    "saving": "Kaydediliyor…",
+    "requiredField": "Zorunlu alan"
   }
 }

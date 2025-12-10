@@ -1,5 +1,6 @@
 // ...existing code...
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getCategories } from '../features/category/services/categoryService';
 import { urgencyLevels } from "../constants/urgency_level";
 
@@ -28,6 +29,7 @@ type Category = {
 };
 
 const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, onSubmit }) => {
+  const { t } = useTranslation();
   const dialogRef = useRef<HTMLDialogElement | null>(null);
 
   const [formState, setFormState] = useState({
@@ -144,7 +146,7 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
       await onSubmit(payload);
     } catch (error: unknown) {
       // Try to extract a meaningful message safely without using `any`
-      let message = 'Failed to update request.';
+      let message = t('editRequestModal.failedToUpdate');
       if (typeof error === 'object' && error !== null) {
         const maybeMessage = (error as { message?: string }).message;
         if (maybeMessage) message = maybeMessage;
@@ -175,7 +177,7 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
         className="flex h-full max-h-[92vh] flex-col bg-white text-gray-900"
       >
         <header className="border-b border-gray-200 px-6 py-4">
-          <h2 id="edit-request-title" className="text-lg font-semibold">Update Request</h2>
+          <h2 id="edit-request-title" className="text-lg font-semibold">{t('editRequestModal.title')}</h2>
         </header>
 
         <section className="flex-1 overflow-y-auto px-6 py-5">
@@ -187,7 +189,7 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
             )}
 
             <label className="flex flex-col gap-2 text-sm font-medium text-gray-700">
-              Title <span className="sr-only">*</span>
+              {t('editRequestModal.titleLabel')} <span className="sr-only">*</span>
               <input
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                 value={formState.title}
@@ -197,7 +199,7 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
             </label>
 
             <label className="flex flex-col gap-2 text-sm font-medium text-gray-700">
-              Description
+              {t('editRequestModal.descriptionLabel')}
               <textarea
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                 value={formState.description}
@@ -207,12 +209,12 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
             </label>
 
             <label className="flex flex-col gap-2 text-sm font-medium text-gray-700">
-              Category
+              {t('editRequestModal.categoryLabel')}
               <select
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                 value={formState.category}
                 onChange={handleChange('category')}
-                aria-label="Category"
+                aria-label={t('editRequestModal.categoryLabel')}
               >
 
                 {categories.map((category) => (
@@ -224,12 +226,12 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
             </label>
 
             <label className="flex flex-col gap-2 text-sm font-medium text-gray-700">
-              Urgency
+              {t('editRequestModal.urgencyLabel')}
               <select
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                 value={formState.urgency_level}
                 onChange={handleChange('urgency_level')}
-                aria-label="Urgency"
+                aria-label={t('editRequestModal.urgencyLabel')}
               >
                 {Object.entries(urgencyLevels).map(([key, value]) => (
                   <option key={key} value={key}>
@@ -240,35 +242,35 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
             </label>
 
             <label className="flex flex-col gap-2 text-sm font-medium text-gray-700">
-              Location
+              {t('editRequestModal.locationLabel')}
               <input
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                 value={formState.location}
                 onChange={handleChange('location')}
-                aria-label="Location"
+                aria-label={t('editRequestModal.locationLabel')}
               />
             </label>
 
             <label className="flex flex-col gap-2 text-sm font-medium text-gray-700">
-              Deadline
+              {t('editRequestModal.deadlineLabel')}
               <input
                 type="datetime-local"
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                 value={formState.deadline}
                 onChange={handleChange('deadline')}
-                aria-label="Deadline"
+                aria-label={t('editRequestModal.deadlineLabel')}
               />
             </label>
 
             <label className="flex flex-col gap-2 text-sm font-medium text-gray-700">
-              Volunteers Needed
+              {t('editRequestModal.volunteersNeeded')}
               <input
                 type="number"
                 min={1}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                 value={formState.volunteer_number}
                 onChange={handleChange('volunteer_number')}
-                aria-label="Volunteers needed"
+                aria-label={t('editRequestModal.volunteersNeeded')}
               />
             </label>
           </div>
@@ -281,14 +283,14 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
             disabled={saving}
             className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Cancel
+            {t('cancel')}
           </button>
           <button
             type="submit"
             disabled={saving}
             className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {saving ? 'Saving…' : 'Save Changes'}
+            {saving ? t('editRequestModal.saving') : t('saveChanges')}
           </button>
         </footer>
       </form>

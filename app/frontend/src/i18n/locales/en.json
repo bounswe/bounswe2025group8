@@ -359,5 +359,18 @@
     "emailCannotBeChanged": "Email cannot be changed",
     "phoneCannotBeChanged": "Phone number cannot be changed",
     "saveChanges": "Save Changes"
+  },
+  "editRequestModal": {
+    "title": "Update Request",
+    "failedToUpdate": "Failed to update request.",
+    "titleLabel": "Title",
+    "descriptionLabel": "Description",
+    "categoryLabel": "Category",
+    "urgencyLabel": "Urgency",
+    "locationLabel": "Location",
+    "deadlineLabel": "Deadline",
+    "volunteersNeeded": "Volunteers Needed",
+    "saving": "Saving…",
+    "requiredField": "Required field"
   }
 }
