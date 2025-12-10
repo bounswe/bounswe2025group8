@@ -17,12 +17,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { getTasks, type Task, type Category as ApiCategory } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import { useTranslation } from 'react-i18next';
 
 export default function Categories() {
   const { colors } = useTheme();
   const themeColors = colors as any; // Cast to any to access custom theme properties
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [derivedCategories, setDerivedCategories] = useState<ApiCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -53,7 +55,7 @@ export default function Categories() {
       }
     } catch (error) {
       console.error('Error fetching tasks for categories page:', error);
-      Alert.alert('Error', 'Failed to load categories. Please try again.');
+      Alert.alert(t('common.error'), t('search.loadError'));
       setDerivedCategories([]);
     } finally {
       setLoading(false);
@@ -117,7 +119,7 @@ export default function Categories() {
         testID="categories-search-bar"
       >
         <Ionicons name="search-outline" size={20} color={themeColors.icon} />
-        <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>Search a Category</Text>
+        <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>{t('search.placeholder', { tab: t('search.tabs.category') })}</Text>
       </TouchableOpacity>
 
       {/* Category list */}
@@ -128,7 +130,7 @@ export default function Categories() {
       >
         {derivedCategories.length === 0 && !loading && (
           <Text style={{ textAlign: 'center', marginTop: 20, color: colors.text }}>
-            No categories found based on current tasks.
+            {t('search.noResults')}
           </Text>
         )}
         {derivedCategories.map((cat) => (
@@ -144,7 +146,7 @@ export default function Categories() {
           >
             <Image source={require('../assets/images/help.png')} style={styles.catImage} />
             <View>
-              <Text style={[styles.catTitle, { color: colors.text }]}>{cat.name}</Text>
+              <Text style={[styles.catTitle, { color: colors.text }]}>{t(`categories.${cat.id}`, cat.name)}</Text>
             </View>
           </TouchableOpacity>
         ))}
@@ -162,7 +164,7 @@ export default function Categories() {
           testID="tab-home"
         >
           <Ionicons name="home" size={24} color={colors.text} />
-          <Text style={[styles.tabLabel, { color: colors.text }]}>Home</Text>
+          <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.home')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.tabItem}
@@ -174,7 +176,7 @@ export default function Categories() {
           testID="tab-categories"
         >
           <Ionicons name="pricetag-outline" size={24} color={colors.primary} />
-          <Text style={[styles.tabLabel, { color: colors.primary }]}>Categories</Text>
+          <Text style={[styles.tabLabel, { color: colors.primary }]}>{t('feed.categories')}</Text>
         </TouchableOpacity>
         {user ? (
           <TouchableOpacity
@@ -187,7 +189,7 @@ export default function Categories() {
             testID="tab-create"
           >
             <Ionicons name="add-circle-outline" size={24} color={colors.text} />
-            <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
+            <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.create')}</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
@@ -201,7 +203,7 @@ export default function Categories() {
             testID="tab-create-disabled"
           >
             <Ionicons name="add-circle-outline" size={24} color={colors.text} />
-            <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
+            <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.create')}</Text>
           </TouchableOpacity>
         )}
         <TouchableOpacity
@@ -214,7 +216,7 @@ export default function Categories() {
           testID="tab-requests"
         >
           <Ionicons name="list-outline" size={24} color={colors.text} />
-          <Text style={[styles.tabLabel, { color: colors.text }]}>Requests</Text>
+          <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.requests')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.tabItem}
@@ -226,7 +228,7 @@ export default function Categories() {
           testID="tab-profile"
         >
           <Ionicons name="person-outline" size={24} color={colors.text} />
-          <Text style={[styles.tabLabel, { color: colors.text }]}>Profile</Text>
+          <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.profile')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

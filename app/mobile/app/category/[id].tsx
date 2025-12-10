@@ -5,6 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
 import { getTasks, type Task } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../lib/i18n';
 
 export default function CategoryPage() {
   const { colors } = useTheme();
@@ -15,6 +17,7 @@ export default function CategoryPage() {
   const [loading, setLoading] = useState(true);
   const [categoryName, setCategoryName] = useState('');
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   // Filter out completed and cancelled tasks
   const filterActiveTasks = (tasksList: Task[]): Task[] => {
@@ -27,6 +30,13 @@ export default function CategoryPage() {
   useEffect(() => {
     fetchTasks();
   }, [categoryId]);
+
+    const formatUrgency = (level?: number) => {
+    if (level === 3) return t('urgency.high');
+    if (level === 2) return t('urgency.medium');
+    if (level === 1) return t('urgency.low');
+    return t('urgency.medium');
+  };
 
   const fetchTasks = async () => {
     try {
@@ -74,7 +84,9 @@ export default function CategoryPage() {
         {tasks.length === 0 ? (
           <Text style={[styles.noTasks, { color: colors.text }]}>No requests found for this category.</Text>
         ) : (
-          tasks.map((task) => (
+          tasks.map((task) => {
+            const urgencyLabel = formatUrgency(task.urgency_level);
+            return (
             <TouchableOpacity
               key={task.id}
               style={[styles.card, { backgroundColor: colors.card }]}
@@ -108,17 +120,17 @@ export default function CategoryPage() {
                     ]}
                   >
                     <Text style={styles.urgencyText}>
-                      {task.urgency_level === 3 ? 'High' : task.urgency_level === 2 ? 'Medium' : 'Low'}
+                      {`${urgencyLabel} ${t('createRequest.urgency')}`}
                     </Text>
                   </View>
                   <View style={[styles.categoryPill, { backgroundColor: colors.primary }]}>
-                    <Text style={styles.categoryText}>{task.category_display || task.category}</Text>
+                    <Text style={styles.categoryText}>{t(`categories.${task.category}`, { defaultValue: task.category })}</Text>
                   </View>
                 </View>
               </View>
               <Ionicons name="chevron-forward" size={20} color={colors.text} />
             </TouchableOpacity>
-          ))
+          )})
         )}
       </ScrollView>
     </SafeAreaView>

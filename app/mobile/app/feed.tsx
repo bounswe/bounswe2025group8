@@ -20,11 +20,14 @@ import { getTasks, getPopularTasks, getUserProfile, getTaskPhotos, BACKEND_BASE_
 import type { ThemeTokens } from '@/constants/Colors';
 import { useAuth } from '../lib/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
+import i18n from '../lib/i18n';
 
 export default function Feed() {
   const { colors } = useTheme();
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [popularTasks, setPopularTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,10 +38,10 @@ export default function Feed() {
   const themeColors = colors as unknown as ThemeTokens;
 
   const formatUrgency = (level?: number) => {
-    if (level === 3) return 'High';
-    if (level === 2) return 'Medium';
-    if (level === 1) return 'Low';
-    return 'Medium';
+    if (level === 3) return t('urgency.high');
+    if (level === 2) return t('urgency.medium');
+    if (level === 1) return t('urgency.low');
+    return t('urgency.medium');
   };
 
   const getUrgencyColors = (level?: number) => {
@@ -112,7 +115,7 @@ export default function Feed() {
 
     } catch (error) {
       console.error('Error fetching tasks:', error);
-      Alert.alert('Error', 'Failed to load tasks. Please try again.');
+      Alert.alert(t('common.error'), t('feed.errorLoadingTasks') || 'Failed to load tasks. Please try again.');
       setTasks([]);
       setPopularTasks([]);
       setTaskDerivedCategories([]);
@@ -158,11 +161,27 @@ export default function Feed() {
               accessibilityLabel="AccessEase logo"
             />
             <View>
-              <Text style={[styles.welcomeText, { color: colors.text }]}>{user ? 'Welcome back' : 'Welcome Guest'}</Text>
+              <Text style={[styles.welcomeText, { color: colors.text }]}>
+                {user ? t('feed.welcome') : t('feed.welcome') + ' ' + t('feed.guest')}
+              </Text>
             </View>
           </View>
           {/* Always show notifications and settings buttons */}
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity
+              onPress={() => {
+                const newLang = i18n.language === 'en' ? 'tr' : 'en';
+                i18n.changeLanguage(newLang);
+              }}
+              style={{ marginRight: 12, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel="Change language"
+            >
+              <Text style={{ color: colors.text, fontWeight: 'bold', fontSize: 12 }}>
+                {i18n.language === 'en' ? 'TR' : 'EN'}
+              </Text>
+            </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push('/notifications')}
               style={{ marginRight: 12 }}
@@ -215,12 +234,12 @@ export default function Feed() {
             accessible={false}
             importantForAccessibility="no"
           />
-          <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>What are you looking for?</Text>
+          <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>{t('feed.searchPlaceholder')}</Text>
         </TouchableOpacity>
 
         {/* — Categories — */}
         <Text style={[styles.sectionTitle, { color: colors.text }]}>
-          Popular Categories
+          {t('feed.popularCategories')}
         </Text>
         <View style={styles.categories}>
           {taskDerivedCategories.map((cat) => (
@@ -240,7 +259,7 @@ export default function Feed() {
                 accessibilityRole="image"
                 accessibilityLabel={`${cat.name} category illustration`}
               />
-              <Text style={[styles.cardTitle, { color: colors.text }]}> {cat.name} </Text>
+              <Text style={[styles.cardTitle, { color: colors.text }]}> {t(`categories.${cat.id}`, { defaultValue: cat.name })} </Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -252,12 +271,12 @@ export default function Feed() {
           accessibilityRole="button"
           accessibilityLabel="See all categories"
         >
-          <Text style={[styles.seeAllText, { color: colors.primary }]}>See all categories</Text>
+          <Text style={[styles.seeAllText, { color: colors.primary }]}>{t('feed.seeAllCategories')}</Text>
         </TouchableOpacity>
 
         {/* — Requests — */}
         <Text style={[styles.sectionTitle, { color: colors.text }]}>
-          Popular Requests
+          {t('feed.popularRequests')}
         </Text>
         {popularTasks.map((task) => {
           const photos = taskPhotos.get(task.id) || [];
@@ -310,14 +329,14 @@ export default function Feed() {
                         ]}
                       >
                         <Text style={[styles.urgencyText, { color: urgencyPalette.text }]} numberOfLines={1} ellipsizeMode="tail">
-                          {`${urgencyLabel} Urgency`}
+                          {`${urgencyLabel} ${t('createRequest.urgency')}`}
                         </Text>
                       </View>
                     );
                   })()}
                   <View style={[styles.requestCategory, { borderColor: colors.border }]}>
                     <Text style={[styles.requestCategoryText, { color: colors.text }]} numberOfLines={1} ellipsizeMode="tail">
-                      {task.category}
+                      {t(`categories.${task.category}`, { defaultValue: task.category })}
                     </Text>
                   </View>
                 </View>
@@ -340,7 +359,7 @@ export default function Feed() {
           accessibilityRole="button"
           accessibilityLabel="See all requests"
         >
-          <Text style={[styles.seeAllText, { color: colors.primary }]}>See all requests</Text>
+          <Text style={[styles.seeAllText, { color: colors.primary }]}>{t('feed.seeAllRequests')}</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -364,7 +383,7 @@ export default function Feed() {
             accessible={false}
             importantForAccessibility="no"
           />
-          <Text style={[styles.tabLabel, { color: colors.primary }]}>Home</Text>
+          <Text style={[styles.tabLabel, { color: colors.primary }]}>{t('feed.home')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -384,7 +403,7 @@ export default function Feed() {
             importantForAccessibility="no"
           />
           <Text style={[styles.tabLabel, { color: colors.text }]}>
-            Categories
+            {t('feed.categories')}
           </Text>
         </TouchableOpacity>
 
@@ -405,7 +424,7 @@ export default function Feed() {
               accessible={false}
               importantForAccessibility="no"
             />
-            <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
+            <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.create')}</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
@@ -424,7 +443,7 @@ export default function Feed() {
               accessible={false}
               importantForAccessibility="no"
             />
-            <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
+            <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.create')}</Text>
           </TouchableOpacity>
         )}
 
@@ -444,7 +463,7 @@ export default function Feed() {
             accessible={false}
             importantForAccessibility="no"
           />
-          <Text style={[styles.tabLabel, { color: colors.text }]}>Requests</Text>
+          <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.requests')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -463,7 +482,7 @@ export default function Feed() {
             accessible={false}
             importantForAccessibility="no"
           />
-          <Text style={[styles.tabLabel, { color: colors.text }]}>Profile</Text>
+          <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.profile')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

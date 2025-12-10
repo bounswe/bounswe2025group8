@@ -5,6 +5,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAppTheme } from '@/theme/ThemeProvider';
+import { useTranslation } from 'react-i18next';
 
 export default function CRDeadline() {
   const { colors } = useTheme();
@@ -12,6 +13,7 @@ export default function CRDeadline() {
   const { resolvedTheme } = useAppTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { t } = useTranslation();
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -76,9 +78,9 @@ export default function CRDeadline() {
           >
             <Ionicons name="arrow-back" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
           </TouchableOpacity>
-          <Text style={[styles.pageTitle, { color: colors.text }]}>Create Request</Text>
+          <Text style={[styles.pageTitle, { color: colors.text }]}>{t('createRequest.title')}</Text>
         </View>
-        <Text style={[styles.pageSubtitle, { color: `${colors.text}99` }]}>Determine Deadline</Text>
+        <Text style={[styles.pageSubtitle, { color: `${colors.text}99` }]}>{t('createRequest.determineDeadline')}</Text>
         <View style={styles.tabBar}>
           <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
           <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
@@ -86,14 +88,14 @@ export default function CRDeadline() {
           <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
         </View>
 
-        <Text style={[styles.label, { color: colors.text }]}>Select date</Text>
+        <Text style={[styles.label, { color: colors.text }]}>{t('createRequest.selectDate')}</Text>
         <TouchableOpacity
           style={[styles.dateBox, { backgroundColor: colors.card, borderColor: colors.border }]}
           onPress={() => setShowDatePicker(true)}
           accessible
 
           accessibilityRole="button"
-          accessibilityLabel={`Select date. Currently ${formattedDate}`}
+          accessibilityLabel={t('createRequest.selectDateA11y', { date: formattedDate })}
           testID="create-request-date-selector"
         >
           <Text style={[styles.dateText, { color: colors.text }]}>{formattedDate}</Text>
@@ -111,14 +113,14 @@ export default function CRDeadline() {
           />
         )}
 
-        <Text style={[styles.label, { color: colors.text }]}>Select time</Text>
+        <Text style={[styles.label, { color: colors.text }]}>{t('createRequest.selectTime')}</Text>
         <TouchableOpacity
           style={[styles.timeBox, { backgroundColor: colors.card, borderColor: colors.primary }]}
           onPress={() => setShowTimePicker(true)}
           accessible
 
           accessibilityRole="button"
-          accessibilityLabel={`Select time. Currently ${formattedTime}`}
+          accessibilityLabel={t('createRequest.selectTimeA11y', { time: formattedTime })}
           testID="create-request-time-selector"
         >
           <Text style={[styles.timeText, { color: colors.text }]}>{formattedTime}</Text>
@@ -149,7 +151,7 @@ export default function CRDeadline() {
           accessibilityLabel="Next step set address"
           testID="create-request-deadline-next-button"
         >
-          <Text style={[styles.nextBtnText, { color: themeColors.onPrimary }]}>Next</Text>
+          <Text style={[styles.nextBtnText, { color: themeColors.onPrimary }]}>{t('createRequest.next')}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

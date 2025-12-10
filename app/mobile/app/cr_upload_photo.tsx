@@ -4,12 +4,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 export default function CRUploadPhoto() {
   const { colors } = useTheme();
   const themeColors = colors as any;
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { t } = useTranslation();
   const [photos, setPhotos] = useState<{ uri: string; name: string }[]>([]);
   const MAX_PHOTOS = 5;
 
@@ -22,7 +24,7 @@ export default function CRUploadPhoto() {
     if (Platform.OS !== 'web') {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        alert('Sorry, we need camera roll permissions to make this work!');
+        alert(t('createRequest.permissionError'));
         return;
       }
     }
@@ -81,9 +83,9 @@ export default function CRUploadPhoto() {
           >
             <Ionicons name="arrow-back" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
           </TouchableOpacity>
-          <Text style={[styles.pageTitle, { color: colors.text }]}>Create Request</Text>
+          <Text style={[styles.pageTitle, { color: colors.text }]}>{t('createRequest.title')}</Text>
         </View>
-        <Text style={[styles.pageSubtitle, { color: `${colors.text}99` }]}>Upload Photos</Text>
+        <Text style={[styles.pageSubtitle, { color: `${colors.text}99` }]}>{t('createRequest.uploadPhotos')}</Text>
 
         <View style={styles.tabBar}>
           <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
@@ -106,7 +108,7 @@ export default function CRUploadPhoto() {
           accessibilityState={{ disabled: photos.length >= MAX_PHOTOS }}
           testID="create-request-browse-photos"
         >
-          <Text style={[styles.browseBtnText, { color: colors.primary }]}>+ Browse photos</Text>
+          <Text style={[styles.browseBtnText, { color: colors.primary }]}>{t('createRequest.browsePhotos')}</Text>
         </TouchableOpacity>
 
         {photos.map((photo) => (
@@ -146,7 +148,7 @@ export default function CRUploadPhoto() {
           accessibilityLabel="Next step set deadline"
           testID="create-request-upload-next-button"
         >
-          <Text style={[styles.nextBtnText, { color: themeColors.onPrimary }]}>Next</Text>
+          <Text style={[styles.nextBtnText, { color: themeColors.onPrimary }]}>{t('createRequest.next')}</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

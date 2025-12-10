@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useTheme } from '@react-navigation/native';
 import { useAuth } from '../lib/auth';
 import { CategoryPicker } from '../components/forms/CategoryPicker';
+import { useTranslation } from 'react-i18next';
 
 const urgencies = ['Low', 'Medium', 'High'];
 
@@ -13,6 +14,7 @@ export default function CreateRequest() {
   const themeColors = colors as any;
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [urgency, setUrgency] = useState(urgencies[0]);
@@ -23,7 +25,7 @@ export default function CreateRequest() {
 
   useEffect(() => {
     if (!user) {
-      Alert.alert('Authentication Required', 'You need to be logged in to create a request.', [
+      Alert.alert(t('createRequest.authRequiredTitle'), t('createRequest.authRequiredMessage'), [
         { text: 'OK', onPress: () => router.replace('/signin') },
       ]);
     }
@@ -37,7 +39,7 @@ export default function CreateRequest() {
           { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' },
         ]}
       >
-        <Text style={{ color: colors.text, fontSize: 18 }}>Redirecting to login...</Text>
+        <Text style={{ color: colors.text, fontSize: 18 }}>{t('createRequest.redirecting')}</Text>
       </SafeAreaView>
     );
   }
@@ -58,7 +60,7 @@ export default function CreateRequest() {
         >
           <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: colors.text }]}>Select an option</Text>
+              <Text style={[styles.modalTitle, { color: colors.text }]}>{t('createRequest.selectOption')}</Text>
               <TouchableOpacity
                 onPress={() => setVisible(false)}
                 accessible
@@ -78,6 +80,11 @@ export default function CreateRequest() {
             {options.map((option) => {
               const value = typeof option === 'string' ? option : option.value;
               const label = typeof option === 'string' ? option : option.label;
+              // Localize urgency labels if they match known keys
+              const displayLabel = ['Low', 'Medium', 'High'].includes(label)
+                ? t(`urgency.${label.toLowerCase()}`)
+                : label;
+
               return (
                 <TouchableOpacity
                   key={value}
@@ -97,7 +104,7 @@ export default function CreateRequest() {
                   accessible
 
                   accessibilityRole="button"
-                  accessibilityLabel={`Select ${label}`}
+                  accessibilityLabel={`Select ${displayLabel}`}
                   accessibilityState={{ selected: selectedValue === value }}
                 >
                   <Text
@@ -107,7 +114,7 @@ export default function CreateRequest() {
                       selectedValue === value && { color: colors.primary, fontWeight: 'bold' },
                     ]}
                   >
-                    {label}
+                    {displayLabel}
                   </Text>
                 </TouchableOpacity>
               );
@@ -159,9 +166,9 @@ export default function CreateRequest() {
           >
             <Ionicons name="arrow-back" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
           </TouchableOpacity>
-          <Text style={[styles.pageTitle, { color: colors.text }]}>Create Request</Text>
+          <Text style={[styles.pageTitle, { color: colors.text }]}>{t('createRequest.title')}</Text>
         </View>
-        <Text style={[styles.pageSubtitle, { color: `${colors.text}99` }]}>General Information</Text>
+        <Text style={[styles.pageSubtitle, { color: `${colors.text}99` }]}>{t('createRequest.generalInfo')}</Text>
         <View style={styles.tabBar}>
           <View style={[styles.activeTab, { backgroundColor: colors.primary }]} />
           <View style={styles.inactiveTab} />
@@ -169,7 +176,7 @@ export default function CreateRequest() {
           <View style={styles.inactiveTab} />
         </View>
 
-        <Text style={[styles.label, { color: colors.text }]}>Title</Text>
+        <Text style={[styles.label, { color: colors.text }]}>{t('createRequest.requestTitle')}</Text>
         <View style={[styles.inputRow, { backgroundColor: colors.card }]}>
           <Ionicons
             name="pencil-outline"
@@ -181,7 +188,7 @@ export default function CreateRequest() {
           />
           <TextInput
             style={[styles.input, { color: colors.text }]}
-            placeholder="Title of your request"
+            placeholder={t('createRequest.requestTitlePlaceholder')}
             placeholderTextColor={colors.border}
             value={title}
             onChangeText={setTitle}
@@ -190,10 +197,10 @@ export default function CreateRequest() {
           />
         </View>
 
-        <Text style={[styles.label, { color: colors.text }]}>Description</Text>
+        <Text style={[styles.label, { color: colors.text }]}>{t('createRequest.description')}</Text>
         <TextInput
           style={[styles.textArea, { backgroundColor: colors.card, color: colors.text }]}
-          placeholder="Describe your request"
+          placeholder={t('createRequest.descriptionPlaceholder')}
           placeholderTextColor={colors.border}
           value={description}
           onChangeText={setDescription}
@@ -204,7 +211,7 @@ export default function CreateRequest() {
 
         <CategoryPicker value={category} onChange={setCategory} />
 
-        <Text style={[styles.label, { color: colors.text }]}>Urgency</Text>
+        <Text style={[styles.label, { color: colors.text }]}>{t('createRequest.urgency')}</Text>
         <Pressable
           style={[styles.selectorBtn, { backgroundColor: colors.card }]}
           onPress={() => setShowUrgencyModal(true)}
@@ -214,7 +221,7 @@ export default function CreateRequest() {
           accessibilityLabel="Select urgency"
           testID="create-request-urgency-selector"
         >
-          <Text style={[styles.selectorText, { color: colors.text }]}>{urgency}</Text>
+          <Text style={[styles.selectorText, { color: colors.text }]}>{t(`urgency.${urgency.toLowerCase()}`)}</Text>
           <Ionicons
             name="chevron-down"
             size={20}
@@ -224,7 +231,7 @@ export default function CreateRequest() {
           />
         </Pressable>
 
-        <Text style={[styles.label, { color: colors.text }]}>Number of People Needed</Text>
+        <Text style={[styles.label, { color: colors.text }]}>{t('createRequest.peopleNeeded')}</Text>
         <View style={styles.peopleRow}>
           <TouchableOpacity
             style={[styles.peopleBtn, { backgroundColor: colors.card }]}
@@ -267,11 +274,11 @@ export default function CreateRequest() {
           style={[styles.nextBtn, { backgroundColor: colors.primary }]}
           onPress={() => {
             if (!description) {
-              Alert.alert('Error', 'Description cannot be empty.');
+              Alert.alert(t('common.error'), t('createRequest.errorDescription'));
               return;
             }
             if (!title) {
-              Alert.alert('Error', 'Please fill in all required fields');
+              Alert.alert(t('common.error'), t('createRequest.errorFields'));
               return;
             }
             router.push({
@@ -291,7 +298,7 @@ export default function CreateRequest() {
           accessibilityLabel="Next step upload photos"
           testID="create-request-next-button"
         >
-          <Text style={[styles.nextBtnText, { color: themeColors.onPrimary }]}>Next</Text>
+          <Text style={[styles.nextBtnText, { color: themeColors.onPrimary }]}>{t('createRequest.next')}</Text>
         </TouchableOpacity>
 
         {renderPickerModal(showUrgencyModal, setShowUrgencyModal, urgencies, urgency, setUrgency)}
