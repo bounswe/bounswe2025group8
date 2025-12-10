@@ -6,8 +6,9 @@ import RatingPill from '../components/ui/RatingPill';
 import ReviewCard from '../components/ui/ReviewCard';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../lib/auth';
-import { getUserProfile, type UserProfile, getTasks, type Task, getUserReviews, type Review, listVolunteers, type Volunteer, uploadProfilePhoto, deleteProfilePhoto, submitUserReport, BACKEND_BASE_URL } from '../lib/api';
+import { getUserProfile, type UserProfile, getTasks, type Task, getUserReviews, type Review, listVolunteers, type Volunteer, uploadProfilePhoto, deleteProfilePhoto, submitUserReport, BACKEND_BASE_URL, followUser, unfollowUser, getFollowers, getFollowing, type FollowerInfo, type FollowingInfo } from '../lib/api';
 import { ReportModal } from '../components/ReportModal';
+import FollowListModal from '../components/ui/FollowListModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RequestCard from '../components/ui/RequestCard';
 import { Ionicons } from '@expo/vector-icons';
@@ -39,6 +40,16 @@ export default function ProfileScreen() {
   const [reviewsError, setReviewsError] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
+
+  // Follow-related state
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [followers, setFollowers] = useState<FollowerInfo[]>([]);
+  const [following, setFollowing] = useState<FollowingInfo[]>([]);
+  const [followersModalVisible, setFollowersModalVisible] = useState(false);
+  const [followingModalVisible, setFollowingModalVisible] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
 
   const [selectedTab, setSelectedTab] = useState<'volunteer' | 'requester'>(initialTab);
 
@@ -181,6 +192,45 @@ export default function ProfileScreen() {
     loadProfileForTargetUser();
   }, [targetUserId, user?.id, viewedUserId]);
 
+  // Fetch follower and following data
+  useEffect(() => {
+    if (!profile?.id) {
+      setFollowers([]);
+      setFollowing([]);
+      setFollowersCount(0);
+      setFollowingCount(0);
+      setIsFollowing(false);
+      return;
+    }
+
+    const fetchFollowData = async () => {
+      try {
+        const [followersList, followingList] = await Promise.all([
+          getFollowers(profile.id),
+          getFollowing(profile.id),
+        ]);
+
+        setFollowers(followersList);
+        setFollowing(followingList);
+        setFollowersCount(followersList.length);
+        setFollowingCount(followingList.length);
+
+        // Check if current user is following this profile
+        if (user?.id && profile.id !== user.id) {
+          const currentUserFollowing = await getFollowing(user.id);
+          const isCurrentlyFollowing = currentUserFollowing.some(
+            (followedUser) => followedUser.id === profile.id
+          );
+          setIsFollowing(isCurrentlyFollowing);
+        }
+      } catch (error) {
+        console.error('Error fetching follow data:', error);
+      }
+    };
+
+    fetchFollowData();
+  }, [profile?.id, user?.id]);
+
   useEffect(() => {
     if (!targetUserId) {
       setAllTasks([]);
@@ -305,9 +355,9 @@ export default function ProfileScreen() {
     }
   };
 
-    const formatStatusLabel = (status?: string) => {
-      const base = status || 'Status';
-      return t(`requestDetails.status.${base.toLowerCase().replace(/\s+/g, '_')}`);
+  const formatStatusLabel = (status?: string) => {
+    const base = status || 'Status';
+    return t(`requestDetails.status.${base.toLowerCase().replace(/\s+/g, '_')}`);
   };
 
   const renderTaskSection = (
@@ -454,6 +504,49 @@ export default function ProfileScreen() {
   }
   const usernameLabel = profile.username ? `@${profile.username}` : '';
 
+  const handleFollowToggle = async () => {
+    if (!profile?.id || !user?.id) return;
+
+    setFollowLoading(true);
+    try {
+      if (isFollowing) {
+        await unfollowUser(profile.id);
+        setIsFollowing(false);
+        setFollowersCount((prev) => Math.max(0, prev - 1));
+        // Update followers list
+        setFollowers((prev) => prev.filter((f) => f.id !== user.id));
+        Alert.alert(t('common.success'), t('profile.unfollowSuccess', { defaultValue: 'You have unfollowed this user.' }));
+      } else {
+        await followUser(profile.id);
+        setIsFollowing(true);
+        setFollowersCount((prev) => prev + 1);
+        // Optionally add current user to followers list
+        if (user.id) {
+          // Get current user profile from AsyncStorage
+          const currentUserProfileData = await AsyncStorage.getItem('userProfile');
+          if (currentUserProfileData) {
+            const currentUserProfile: UserProfile = JSON.parse(currentUserProfileData);
+            const newFollower: FollowerInfo = {
+              id: user.id,
+              username: currentUserProfile.username || '',
+              name: currentUserProfile.name || '',
+              surname: currentUserProfile.surname || '',
+              profile_photo: currentUserProfile.profile_photo || null,
+              followed_at: new Date().toISOString(),
+            };
+            setFollowers((prev) => [newFollower, ...prev]);
+          }
+        }
+        Alert.alert(t('common.success'), t('profile.followSuccess', { defaultValue: 'You are now following this user.' }));
+      }
+    } catch (error: any) {
+      console.error('Follow toggle error:', error);
+      Alert.alert(t('common.error'), error.message || t('profile.followError'));
+    } finally {
+      setFollowLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background }}>
       <ScrollView contentContainerStyle={[styles.container, { backgroundColor: themeColors.background }]}>
@@ -540,6 +633,68 @@ export default function ProfileScreen() {
               <Ionicons name="flag-outline" size={28} color={themeColors.error} />
             </TouchableOpacity>
           )}
+        </View>
+
+        {/* Follow button and follower/following counts */}
+        <View style={styles.followSection}>
+          {!isOwnProfile && (
+            <TouchableOpacity
+              style={[
+                styles.followButton,
+                {
+                  backgroundColor: isFollowing ? themeColors.card : themeColors.primary,
+                  borderColor: themeColors.primary,
+                  borderWidth: isFollowing ? 1 : 0,
+                },
+              ]}
+              onPress={handleFollowToggle}
+              disabled={followLoading}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={isFollowing ? 'Unfollow user' : 'Follow user'}
+            >
+              {followLoading ? (
+                <ActivityIndicator size="small" color={isFollowing ? themeColors.primary : themeColors.card} />
+              ) : (
+                <Text
+                  style={[
+                    styles.followButtonText,
+                    { color: isFollowing ? themeColors.primary : themeColors.card },
+                  ]}
+                >
+                  {isFollowing ? t('profile.unfollow', { defaultValue: 'Unfollow' }) : t('profile.follow', { defaultValue: 'Follow' })}
+                </Text>
+              )}
+            </TouchableOpacity>
+          )}
+
+          <View style={styles.statsRow}>
+            <TouchableOpacity
+              style={styles.statButton}
+              onPress={() => setFollowersModalVisible(true)}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={`${followersCount} followers`}
+            >
+              <Text style={[styles.statCount, { color: themeColors.text }]}>{followersCount}</Text>
+              <Text style={[styles.statLabel, { color: themeColors.textMuted }]}>
+                {t('profile.followers', { defaultValue: 'Followers' })}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.statButton}
+              onPress={() => setFollowingModalVisible(true)}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={`${followingCount} following`}
+            >
+              <Text style={[styles.statCount, { color: themeColors.text }]}>{followingCount}</Text>
+              <Text style={[styles.statLabel, { color: themeColors.textMuted }]}>
+                {t('profile.following', { defaultValue: 'Following' })}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={[styles.tabSelectorContainer, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
@@ -641,6 +796,20 @@ export default function ProfileScreen() {
             );
           })}
         </View>
+
+        <FollowListModal
+          visible={followersModalVisible}
+          onClose={() => setFollowersModalVisible(false)}
+          users={followers}
+          title={t('profile.followers', { defaultValue: 'Followers' })}
+        />
+
+        <FollowListModal
+          visible={followingModalVisible}
+          onClose={() => setFollowingModalVisible(false)}
+          users={following}
+          title={t('profile.following', { defaultValue: 'Following' })}
+        />
 
         <ReportModal
           visible={reportModalVisible}
@@ -749,5 +918,38 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 15,
     marginVertical: 16,
-  }
+  },
+  followSection: {
+    marginTop: 16,
+    marginBottom: 16,
+  },
+  followButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  followButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 8,
+  },
+  statButton: {
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  statCount: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  statLabel: {
+    fontSize: 14,
+  },
 }); 

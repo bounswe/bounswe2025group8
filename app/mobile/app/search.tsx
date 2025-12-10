@@ -149,10 +149,10 @@ export default function SearchPage() {
         locations={locations}
         onSelect={(item, type: string) => {
           let mappedType: 'category' | 'request' | 'profile' | 'location' = type as any;
-          if (type === 'Categories') mappedType = 'category';
-          else if (type === 'Requests') mappedType = 'request';
-          else if (type === 'Profiles') mappedType = 'profile';
-          else if (type === 'Locations') mappedType = 'location';
+          if (type === 'Category') mappedType = 'category';
+          else if (type === 'Request') mappedType = 'request';
+          else if (type === 'Profile') mappedType = 'profile';
+          else if (type === 'Location') mappedType = 'location';
           if (mappedType === 'category') router.push(('/category/' + item.id) as any);
           else if (mappedType === 'request') {
             // Find the full task object to check if user is creator

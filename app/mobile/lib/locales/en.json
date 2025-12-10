@@ -94,7 +94,8 @@
         "errorFailed": "Failed to create task. Please try again.",
         "forgotPassword": "Forgot Password?",
         "sendResetLink": "Send Reset Link",
-        "passwordResetPrompt": "Enter your email address and we'll send you a link to reset your password.",        "passwordResetNotice": "If your email exists in our system, you will receive a password reset link shortly.",
+        "passwordResetPrompt": "Enter your email address and we'll send you a link to reset your password.",
+        "passwordResetNotice": "If your email exists in our system, you will receive a password reset link shortly.",
         "fillAllFields": "Please fill in all fields",
         "invalidCredentials": "Invalid credentials",
         "signInError": "Failed to sign in",
@@ -295,7 +296,14 @@
         "photoPermission": "Please grant permission to access your photo library.",
         "photoSuccess": "Profile photo updated successfully!",
         "photoError": "Failed to upload profile photo. Please try again.",
-        "logout": "Logout"
+        "logout": "Logout",
+        "follow": "Follow",
+        "unfollow": "Unfollow",
+        "following": "Following",
+        "followers": "Followers",
+        "followError": "Failed to follow/unfollow user. Please try again.",
+        "followSuccess": "You are now following this user.",
+        "unfollowSuccess": "You have unfollowed this user."
     },
     "volunteers": {
         "title": "Select Volunteers",
