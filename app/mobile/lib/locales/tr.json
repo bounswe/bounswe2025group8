@@ -284,7 +284,14 @@
         "photoPermission": "Lütfen fotoğraf kitaplığınıza erişim izni verin.",
         "photoSuccess": "Profil fotoğrafı başarıyla güncellendi!",
         "photoError": "Profil fotoğrafı yüklenemedi. Lütfen tekrar deneyin.",
-        "logout": "Çıkış Yap"
+        "logout": "Çıkış Yap",
+        "follow": "Takip Et",
+        "unfollow": "Takibi Bırak",
+        "following": "Takip Ediliyor",
+        "followers": "Takipçiler",
+        "followError": "Kullanıcı takip edilemedi/takipten çıkılamadı. Lütfen tekrar deneyin.",
+        "followSuccess": "Bu kullanıcıyı takip ediyorsunuz.",
+        "unfollowSuccess": "Bu kullanıcıyı takip etmeyi bıraktınız."
     },
     "report": {
         "title": "{{target}} Raporla",
