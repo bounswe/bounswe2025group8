@@ -344,5 +344,20 @@
     "report": {
       "successMessage": "Thank you for reporting this user! Our team will review it shortly."
     }
+  },
+  "editProfileDialog": {
+    "title": "Edit Profile",
+    "closeDialog": "Close",
+    "profilePictureClick": "Click the camera icon to change your profile picture",
+    "uploadProfilePicture": "Upload profile picture",
+    "chooseProfilePicture": "Choose profile picture file",
+    "profilePictureTooLarge": "Profile picture must be 5MB or smaller.",
+    "errorUpdatingProfile": "An error occurred while updating your profile",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "phoneNumber": "Phone Number",
+    "emailCannotBeChanged": "Email cannot be changed",
+    "phoneCannotBeChanged": "Phone number cannot be changed",
+    "saveChanges": "Save Changes"
   }
 }

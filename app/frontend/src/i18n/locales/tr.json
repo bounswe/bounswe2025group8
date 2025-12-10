@@ -344,5 +344,20 @@
     "report": {
       "successMessage": "Bu kullanıcıyı bildirdiğiniz için teşekkürler! Ekibimiz kısa süre içinde inceleyecektir."
     }
+  },
+  "editProfileDialog": {
+    "title": "Profili Düzenle",
+    "closeDialog": "Kapat",
+    "profilePictureClick": "Profil fotoğrafınızı değiştirmek için kamera simgesine tıklayın",
+    "uploadProfilePicture": "Profil fotoğrafı yükle",
+    "chooseProfilePicture": "Profil fotoğrafı dosyası seçin",
+    "profilePictureTooLarge": "Profil fotoğrafı 5MB veya daha küçük olmalıdır.",
+    "errorUpdatingProfile": "Profiliniz güncellenirken bir hata oluştu",
+    "firstName": "Ad",
+    "lastName": "Soyad",
+    "phoneNumber": "Telefon Numarası",
+    "emailCannotBeChanged": "E-posta değiştirilemez",
+    "phoneCannotBeChanged": "Telefon numarası değiştirilemez",
+    "saveChanges": "Değişiklikleri Kaydet"
   }
 }
