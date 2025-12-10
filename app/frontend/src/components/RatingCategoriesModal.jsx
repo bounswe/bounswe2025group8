@@ -10,6 +10,7 @@ import {
   Divider,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { useTranslation } from "react-i18next";
 import { useTheme } from "../hooks/useTheme";
 
 /**
@@ -17,6 +18,7 @@ import { useTheme } from "../hooks/useTheme";
  * Displays detailed rating breakdown by categories for volunteers and requesters
  */
 const RatingCategoriesModal = ({ open, onClose, user, role = "volunteer" }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
 
   // Define all 7 rating dimensions from Review interface
@@ -24,45 +26,45 @@ const RatingCategoriesModal = ({ open, onClose, user, role = "volunteer" }) => {
     // Requester -> Volunteer ratings (when user is volunteer)
     {
       key: "reliability",
-      label: "Reliability",
-      description: "Arrives at agreed-upon time",
+      labelKey: "ratingCategoriesModal.reliability",
+      descriptionKey: "ratingCategoriesModal.reliabilityDesc",
       section: "As Volunteer",
     },
     {
       key: "task_completion",
-      label: "Task Completion",
-      description: "Completes assigned tasks",
+      labelKey: "ratingCategoriesModal.taskCompletion",
+      descriptionKey: "ratingCategoriesModal.taskCompletionDesc",
       section: "As Volunteer",
     },
     {
       key: "communication_requester_to_volunteer",
-      label: "Communication (from Requesters)",
-      description: "Clear and polite communication",
+      labelKey: "ratingCategoriesModal.communicationFromRequesters",
+      descriptionKey: "ratingCategoriesModal.communicationFromRequestersDesc",
       section: "As Volunteer",
     },
     {
       key: "safety_and_respect",
-      label: "Safety & Respect",
-      description: "Respectful and safe interactions",
+      labelKey: "ratingCategoriesModal.safetyAndRespect",
+      descriptionKey: "ratingCategoriesModal.safetyAndRespectDesc",
       section: "As Volunteer",
     },
     // Volunteer -> Requester ratings (when user is requester)
     {
       key: "accuracy_of_request",
-      label: "Accuracy of Request",
-      description: "Task matches description",
+      labelKey: "ratingCategoriesModal.accuracyOfRequest",
+      descriptionKey: "ratingCategoriesModal.accuracyOfRequestDesc",
       section: "As Requester",
     },
     {
       key: "communication_volunteer_to_requester",
-      label: "Communication (from Volunteers)",
-      description: "Easy to communicate with",
+      labelKey: "ratingCategoriesModal.communicationFromVolunteers",
+      descriptionKey: "ratingCategoriesModal.communicationFromVolunteersDesc",
       section: "As Requester",
     },
     {
       key: "safety_and_preparedness",
-      label: "Safety & Preparedness",
-      description: "Safe location and prepared",
+      labelKey: "ratingCategoriesModal.safetyAndPreparedness",
+      descriptionKey: "ratingCategoriesModal.safetyAndPreparednessDesc",
       section: "As Requester",
     },
   ];
@@ -98,8 +100,12 @@ const RatingCategoriesModal = ({ open, onClose, user, role = "volunteer" }) => {
   const overallRating = calculateOverallRating();
 
   // Group categories by section (As Volunteer / As Requester)
-  const volunteerCategories = allCategories.filter(cat => cat.section === "As Volunteer");
-  const requesterCategories = allCategories.filter(cat => cat.section === "As Requester");
+  const volunteerCategories = allCategories.filter(
+    (cat) => cat.section === "As Volunteer"
+  );
+  const requesterCategories = allCategories.filter(
+    (cat) => cat.section === "As Requester"
+  );
 
   return (
     <Dialog
@@ -122,7 +128,7 @@ const RatingCategoriesModal = ({ open, onClose, user, role = "volunteer" }) => {
         sx={{ pb: 1, pr: 6, color: colors.text.primary }}
       >
         <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
-          Rating Breakdown
+          {t("ratingCategoriesModal.title")}
         </Typography>
         <IconButton
           onClick={onClose}
@@ -132,7 +138,7 @@ const RatingCategoriesModal = ({ open, onClose, user, role = "volunteer" }) => {
             top: 8,
             color: colors.text.secondary,
           }}
-          aria-label="Close"
+          aria-label={t("ratingCategoriesModal.close")}
         >
           <CloseIcon />
         </IconButton>
@@ -156,7 +162,7 @@ const RatingCategoriesModal = ({ open, onClose, user, role = "volunteer" }) => {
             variant="subtitle2"
             sx={{ mb: 1, color: colors.text.secondary }}
           >
-            Overall Rating
+            {t("ratingCategoriesModal.overallRating")}
           </Typography>
           <Typography
             variant="h2"
@@ -182,25 +188,29 @@ const RatingCategoriesModal = ({ open, onClose, user, role = "volunteer" }) => {
             variant="caption"
             sx={{ mt: 1, color: colors.text.secondary }}
           >
-            Based on {user?.reviewCount || 0} reviews
+            {t("ratingCategoriesModal.basedOnReviews", {
+              count: user?.reviewCount || 0,
+            })}
           </Typography>
         </Box>
 
         <Divider sx={{ mb: 3, borderColor: colors.border.secondary }} />
 
         {/* All 7 Rating Dimensions */}
-        
+
         {/* As Volunteer Section */}
-        {volunteerCategories.some(cat => getCategoryRating(cat.key) > 0) && (
+        {volunteerCategories.some((cat) => getCategoryRating(cat.key) > 0) && (
           <>
             <Typography
               variant="subtitle2"
               sx={{ mb: 2, fontWeight: 600, color: colors.text.primary }}
             >
-              Performance as Volunteer
+              {t("ratingCategoriesModal.performanceAsVolunteer")}
             </Typography>
 
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5, mb: 3 }}>
+            <Box
+              sx={{ display: "flex", flexDirection: "column", gap: 2.5, mb: 3 }}
+            >
               {volunteerCategories.map((category) => {
                 const categoryRating = getCategoryRating(category.key);
                 if (categoryRating === 0) return null; // Skip if no rating
@@ -219,13 +229,13 @@ const RatingCategoriesModal = ({ open, onClose, user, role = "volunteer" }) => {
                           variant="body2"
                           sx={{ fontWeight: 600, color: colors.text.primary }}
                         >
-                          {category.label}
+                          {t(category.labelKey)}
                         </Typography>
                         <Typography
                           variant="caption"
                           sx={{ color: colors.text.secondary }}
                         >
-                          {category.description}
+                          {t(category.descriptionKey)}
                         </Typography>
                       </Box>
                       <Typography
@@ -264,13 +274,13 @@ const RatingCategoriesModal = ({ open, onClose, user, role = "volunteer" }) => {
         )}
 
         {/* As Requester Section */}
-        {requesterCategories.some(cat => getCategoryRating(cat.key) > 0) && (
+        {requesterCategories.some((cat) => getCategoryRating(cat.key) > 0) && (
           <>
             <Typography
               variant="subtitle2"
               sx={{ mb: 2, fontWeight: 600, color: colors.text.primary }}
             >
-              Performance as Requester
+              {t("ratingCategoriesModal.performanceAsRequester")}
             </Typography>
 
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
@@ -292,13 +302,13 @@ const RatingCategoriesModal = ({ open, onClose, user, role = "volunteer" }) => {
                           variant="body2"
                           sx={{ fontWeight: 600, color: colors.text.primary }}
                         >
-                          {category.label}
+                          {t(category.labelKey)}
                         </Typography>
                         <Typography
                           variant="caption"
                           sx={{ color: colors.text.secondary }}
                         >
-                          {category.description}
+                          {t(category.descriptionKey)}
                         </Typography>
                       </Box>
                       <Typography
@@ -347,7 +357,7 @@ const RatingCategoriesModal = ({ open, onClose, user, role = "volunteer" }) => {
             fontStyle: "italic",
           }}
         >
-          Category ratings are based on individual review feedback
+          {t("ratingCategoriesModal.categoryRatingsInfo")}
         </Typography>
       </DialogContent>
     </Dialog>

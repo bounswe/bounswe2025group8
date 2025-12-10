@@ -372,5 +372,28 @@
     "volunteersNeeded": "Volunteers Needed",
     "saving": "Saving…",
     "requiredField": "Required field"
+  },
+  "ratingCategoriesModal": {
+    "title": "Rating Breakdown",
+    "close": "Close",
+    "overallRating": "Overall Rating",
+    "basedOnReviews": "Based on {{count}} reviews",
+    "performanceAsVolunteer": "Performance as Volunteer",
+    "performanceAsRequester": "Performance as Requester",
+    "reliability": "Reliability",
+    "reliabilityDesc": "Arrives at agreed-upon time",
+    "taskCompletion": "Task Completion",
+    "taskCompletionDesc": "Completes assigned tasks",
+    "communicationFromRequesters": "Communication (from Requesters)",
+    "communicationFromRequestersDesc": "Clear and polite communication",
+    "safetyAndRespect": "Safety & Respect",
+    "safetyAndRespectDesc": "Respectful and safe interactions",
+    "accuracyOfRequest": "Accuracy of Request",
+    "accuracyOfRequestDesc": "Task matches description",
+    "communicationFromVolunteers": "Communication (from Volunteers)",
+    "communicationFromVolunteersDesc": "Easy to communicate with",
+    "safetyAndPreparedness": "Safety & Preparedness",
+    "safetyAndPreparednessDesc": "Safe location and prepared",
+    "categoryRatingsInfo": "Category ratings are based on individual review feedback"
   }
 }

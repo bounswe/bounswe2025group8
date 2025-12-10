@@ -372,5 +372,28 @@
     "volunteersNeeded": "Gönüllü Sayısı",
     "saving": "Kaydediliyor…",
     "requiredField": "Zorunlu alan"
+  },
+  "ratingCategoriesModal": {
+    "title": "Değerlendirme Detayları",
+    "close": "Kapat",
+    "overallRating": "Genel Puan",
+    "basedOnReviews": "{{count}} değerlendirmeye dayanarak",
+    "performanceAsVolunteer": "Gönüllü Olarak Performans",
+    "performanceAsRequester": "İstek Sahibi Olarak Performans",
+    "reliability": "Güvenilirlik",
+    "reliabilityDesc": "Belirlenen zamanda gelir",
+    "taskCompletion": "Görev Tamamlama",
+    "taskCompletionDesc": "Atanan görevleri tamamlar",
+    "communicationFromRequesters": "İletişim (İstek Sahiplerinden)",
+    "communicationFromRequestersDesc": "Açık ve nazik iletişim",
+    "safetyAndRespect": "Güvenlik ve Saygı",
+    "safetyAndRespectDesc": "Saygılı ve güvenli etkileşimler",
+    "accuracyOfRequest": "İsteğin Doğruluğu",
+    "accuracyOfRequestDesc": "Görev açıklamayla eşleşir",
+    "communicationFromVolunteers": "İletişim (Gönüllülerden)",
+    "communicationFromVolunteersDesc": "İletişim kurmak kolay",
+    "safetyAndPreparedness": "Güvenlik ve Hazırlık",
+    "safetyAndPreparednessDesc": "Güvenli konum ve hazırlıklı",
+    "categoryRatingsInfo": "Kategori puanları bireysel değerlendirme geri bildirimlerine dayanır"
   }
 }
