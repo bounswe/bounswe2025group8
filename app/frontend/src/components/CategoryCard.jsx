@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useTheme } from "../hooks/useTheme";
 
 /**
@@ -10,6 +11,7 @@ import { useTheme } from "../hooks/useTheme";
  * @param {string} props.className - Additional CSS classes to apply
  */
 const CategoryCard = ({ title, image, onClick, className = "" }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
 
   return (
@@ -44,7 +46,7 @@ const CategoryCard = ({ title, image, onClick, className = "" }) => {
       onBlur={(e) => {
         e.currentTarget.style.outline = "none";
       }}
-      aria-label={`View ${title} category`}
+      aria-label={`${t("viewCategory")} ${title}`}
     >
       {/* Title at top with proper padding and styling */}
       <div className="p-6 pt-8 pb-0 pl-12 h-28 flex items-start justify-start">
