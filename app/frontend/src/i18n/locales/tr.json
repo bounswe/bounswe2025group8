@@ -1027,6 +1027,65 @@
       "moreOptions": "Daha fazla seçenek"
     }
   },
+  "settingsPage": {
+    "title": "Ayarlar",
+    "subtitle": "Deneyiminizi özelleştirin",
+    "appearance": {
+      "title": "Görünüm",
+      "description": "Tercih ettiğiniz temayı seçin. Seçiminiz kaydedilecek ve tüm sayfalarda uygulanacaktır.",
+      "light": {
+        "label": "Aydınlık",
+        "description": "Gündüz kullanımı için temiz, parlak arayüz"
+      },
+      "dark": {
+        "label": "Karanlık",
+        "description": "Düşük ışıklı ortamlarda gözleri yormaz"
+      },
+      "highContrast": {
+        "label": "Yüksek Kontrast",
+        "description": "Maksimum görünürlük ve erişilebilirlik (WCAG AAA)"
+      },
+      "active": "(Aktif)"
+    },
+    "accessibility": {
+      "title": "Erişilebilirlik:",
+      "description": "Tüm temalar WCAG standartlarını karşılar. Aydınlık ve Karanlık modlar AA uyumluluğunu karşılar (4.5:1 kontrast). Yüksek Kontrast modu, görme engelli kullanıcılar için AAA uyumluluğunu karşılar (7:1 kontrast)."
+    },
+    "aria": {
+      "main": "Ayarlar sayfası",
+      "selectTheme": "{{label}} temasını seç: {{description}}"
+    }
+  },
+  "settingsPage": {
+    "title": "Ayarlar",
+    "subtitle": "Deneyiminizi özelleştirin",
+    "appearance": {
+      "title": "Görünüm",
+      "description": "Tercih ettiğiniz temayı seçin. Seçiminiz kaydedilecek ve tüm sayfalarda uygulanacaktır."
+    },
+    "themes": {
+      "light": {
+        "label": "Açık",
+        "description": "Gündüz kullanımı için temiz, parlak arayüz"
+      },
+      "dark": {
+        "label": "Koyu",
+        "description": "Düşük ışıklı ortamlarda gözleri yormaz"
+      },
+      "highContrast": {
+        "label": "Yüksek Kontrast",
+        "description": "Maksimum görünürlük ve erişilebilirlik (WCAG AAA)"
+      },
+      "active": "(Aktif)"
+    },
+    "accessibility": {
+      "title": "Erişilebilirlik:",
+      "description": "Tüm temalar WCAG standartlarını karşılar. Açık ve Koyu modlar AA uyumluluğunu karşılar (4.5:1 kontrast). Yüksek Kontrast modu, görme engelli kullanıcılar için AAA uyumluluğunu karşılar (7:1 kontrast)."
+    },
+    "aria": {
+      "selectTheme": "{{label}} temasını seç: {{description}}"
+    }
+  },
   "common": {
     "retry": "Tekrar Dene"
   }

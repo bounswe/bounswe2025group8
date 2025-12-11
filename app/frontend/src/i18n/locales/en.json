@@ -1031,6 +1031,65 @@
       "moreOptions": "More options"
     }
   },
+  "settingsPage": {
+    "title": "Settings",
+    "subtitle": "Customize your experience",
+    "appearance": {
+      "title": "Appearance",
+      "description": "Select your preferred theme. Your choice will be saved and applied across all pages.",
+      "light": {
+        "label": "Light",
+        "description": "Clean, bright interface for daytime use"
+      },
+      "dark": {
+        "label": "Dark",
+        "description": "Easy on the eyes in low-light environments"
+      },
+      "highContrast": {
+        "label": "High Contrast",
+        "description": "Maximum visibility and accessibility (WCAG AAA)"
+      },
+      "active": "(Active)"
+    },
+    "accessibility": {
+      "title": "Accessibility:",
+      "description": "All themes meet WCAG standards. Light and Dark modes meet AA compliance (4.5:1 contrast). High Contrast mode meets AAA compliance (7:1 contrast) for users with visual impairments."
+    },
+    "aria": {
+      "main": "Settings page",
+      "selectTheme": "Select {{label}} theme: {{description}}"
+    }
+  },
+  "settingsPage": {
+    "title": "Settings",
+    "subtitle": "Customize your experience",
+    "appearance": {
+      "title": "Appearance",
+      "description": "Select your preferred theme. Your choice will be saved and applied across all pages."
+    },
+    "themes": {
+      "light": {
+        "label": "Light",
+        "description": "Clean, bright interface for daytime use"
+      },
+      "dark": {
+        "label": "Dark",
+        "description": "Easy on the eyes in low-light environments"
+      },
+      "highContrast": {
+        "label": "High Contrast",
+        "description": "Maximum visibility and accessibility (WCAG AAA)"
+      },
+      "active": "(Active)"
+    },
+    "accessibility": {
+      "title": "Accessibility:",
+      "description": "All themes meet WCAG standards. Light and Dark modes meet AA compliance (4.5:1 contrast). High Contrast mode meets AAA compliance (7:1 contrast) for users with visual impairments."
+    },
+    "aria": {
+      "selectTheme": "Select {{label}} theme: {{description}}"
+    }
+  },
   "common": {
     "retry": "Retry"
   }
