@@ -580,5 +580,11 @@
     "pageInfo": "(Page {{current}} of {{total}})",
     "locationNotSpecified": "Location not specified",
     "timeUnknown": "Time unknown"
+  },
+  "categories": {
+    "categories": "Categories",
+    "browseCategories": "Browse help requests by category",
+    "failedToLoadCategoriesLater": "Failed to load categories. Please try again later.",
+    "noCategoriesAvailable": "No categories available"
   }
 }

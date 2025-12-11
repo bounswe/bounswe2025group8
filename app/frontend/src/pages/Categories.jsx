@@ -30,7 +30,7 @@ const Categories = () => {
         setError(null);
       } catch (err) {
         console.error("Failed to fetch categories:", err);
-        setError("failedToLoadCategoriesLater");
+        setError("categories.failedToLoadCategoriesLater");
         // Clear categories on error
         setCategories([]);
       } finally {
@@ -50,9 +50,11 @@ const Categories = () => {
     <main role="main" aria-labelledby="categories-title">
       <div className="">
         <h1 className="text-4xl font-normal mb-4" id="categories-title">
-          {t("categories")}
+          {t("categories.categories")}
         </h1>
-        <p className="text-base text-gray-600 mb-4">{t("browseCategories")}</p>
+        <p className="text-base text-gray-600 mb-4">
+          {t("categories.browseCategories")}
+        </p>
       </div>
 
       <hr className="my-8 border-gray-200" />
@@ -91,7 +93,9 @@ const Categories = () => {
             ))
           ) : (
             <div className="col-span-full w-full text-center py-12">
-              <p className="text-gray-500">{t("noCategoriesAvailable")}</p>
+              <p className="text-gray-500">
+                {t("categories.noCategoriesAvailable")}
+              </p>
             </div>
           )}
         </div>
