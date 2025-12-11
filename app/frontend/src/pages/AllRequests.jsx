@@ -7,8 +7,12 @@ import {
   fetchAllTasks,
   clearError,
 } from "../features/request/store/allRequestsSlice";
-import { categoryMapping, getCategoryImage } from "../constants/categories";
-import { urgencyLevels } from "../constants/urgency_level";
+import {
+  categoryMapping,
+  getCategoryImage,
+  getCategoryName,
+} from "../constants/categories";
+import { urgencyLevels, getUrgencyLevelName } from "../constants/urgency_level";
 import { formatRelativeTime } from "../utils/dateUtils";
 import { extractRegionFromLocation } from "../utils/taskUtils";
 import { toAbsoluteUrl } from "../utils/url";
@@ -141,9 +145,8 @@ const AllRequests = () => {
 
   // Format task data for RequestCardForHomePage component
   const formatTaskForCard = (task) => {
-    const categoryDisplayName = categoryMapping[task.category] || task.category;
-    const urgencyDisplayName =
-      urgencyLevels[task.urgency_level]?.name || "Unknown";
+    const categoryDisplayName = getCategoryName(task.category, t);
+    const urgencyDisplayName = getUrgencyLevelName(task.urgency_level, t);
 
     // Get task image the same way as Home page - check photos array and primary_photo_url
     const photoFromList =
@@ -254,11 +257,11 @@ const AllRequests = () => {
             id="all-requests-title"
           >
             {categoryFilter
-              ? `${categoryMapping[categoryFilter] || categoryFilter} ${t(
+              ? `${getCategoryName(categoryFilter, t)} ${t(
                   "allRequests.requests"
                 )}`
               : urgencyFilter
-              ? `${urgencyLevels[urgencyFilter]?.name || urgencyFilter} ${t(
+              ? `${getUrgencyLevelName(Number(urgencyFilter), t)} ${t(
                   "allRequests.priorityRequests"
                 )}`
               : t("allRequests.allRequests")}
@@ -272,13 +275,16 @@ const AllRequests = () => {
               }}
             >
               {categoryFilter &&
-                `${t("allRequests.showingRequestsIn")} ${
-                  categoryMapping[categoryFilter] || categoryFilter
-                } ${t("allRequests.category")}`}
+                `${t("allRequests.showingRequestsIn")} ${getCategoryName(
+                  categoryFilter,
+                  t
+                )} ${t("allRequests.category")}`}
               {urgencyFilter &&
-                `${categoryFilter ? " • " : ""}${t("allRequests.showing")} ${
-                  urgencyLevels[urgencyFilter]?.name || urgencyFilter
-                } ${t("allRequests.priorityRequests")}`}
+                `${categoryFilter ? " • " : ""}${t(
+                  "allRequests.showing"
+                )} ${getUrgencyLevelName(Number(urgencyFilter), t)} ${t(
+                  "allRequests.priorityRequests"
+                )}`}
               {locationFilter &&
                 `${categoryFilter || urgencyFilter ? " • " : ""}${t(
                   "allRequests.near"
