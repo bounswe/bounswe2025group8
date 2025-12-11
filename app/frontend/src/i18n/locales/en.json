@@ -553,5 +553,32 @@
     "provideDetailsError": "Please provide details about your report",
     "minCharactersError": "Please provide at least 10 characters in your report",
     "submitFailedError": "Failed to submit report. Please try again."
+  },
+  "allRequests": {
+    "errorLoadingRequests": "Error Loading Requests",
+    "retryLoadingRequests": "Retry loading requests",
+    "tryAgain": "Try Again",
+    "requests": "Requests",
+    "priorityRequests": "Priority Requests",
+    "allRequests": "All Requests",
+    "showingRequestsIn": "Showing requests in",
+    "category": "category",
+    "showing": "Showing",
+    "near": "Near",
+    "clearFilters": "Clear Filters",
+    "filterByLocation": "Filter by location",
+    "applyLocationFilter": "Apply location filter",
+    "apply": "Apply",
+    "sortRequests": "Sort requests",
+    "openAddressFilter": "Open address filter",
+    "noRequestsAvailable": "No Requests Available",
+    "noRequestsDescription": "There are currently no requests to display.",
+    "previous": "Previous",
+    "next": "Next",
+    "goToPage": "Go to page {{page}}",
+    "showingRequests": "Showing {{showing}} of {{count}} requests",
+    "pageInfo": "(Page {{current}} of {{total}})",
+    "locationNotSpecified": "Location not specified",
+    "timeUnknown": "Time unknown"
   }
 }

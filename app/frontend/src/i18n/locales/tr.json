@@ -553,5 +553,32 @@
     "provideDetailsError": "Lütfen raporunuz hakkında detay sağlayın",
     "minCharactersError": "Lütfen raporunuzda en az 10 karakter sağlayın",
     "submitFailedError": "Rapor gönderilemedi. Lütfen tekrar deneyin."
+  },
+  "allRequests": {
+    "errorLoadingRequests": "İstekler Yüklenirken Hata",
+    "retryLoadingRequests": "İstekleri tekrar yükle",
+    "tryAgain": "Tekrar Dene",
+    "requests": "İstekler",
+    "priorityRequests": "Öncelikli İstekler",
+    "allRequests": "Tüm İstekler",
+    "showingRequestsIn": "İstekler gösteriliyor:",
+    "category": "kategorisi",
+    "showing": "Gösteriliyor",
+    "near": "Yakın",
+    "clearFilters": "Filtreleri Temizle",
+    "filterByLocation": "Konuma göre filtrele",
+    "applyLocationFilter": "Konum filtresini uygula",
+    "apply": "Uygula",
+    "sortRequests": "İstekleri sırala",
+    "openAddressFilter": "Adres filtresini aç",
+    "noRequestsAvailable": "Müsait İstek Yok",
+    "noRequestsDescription": "Şu anda görüntülenecek istek bulunmuyor.",
+    "previous": "Önceki",
+    "next": "Sonraki",
+    "goToPage": "Sayfa {{page}}'ye git",
+    "showingRequests": "{{count}} istekten {{showing}} gösteriliyor",
+    "pageInfo": "(Sayfa {{current}} / {{total}})",
+    "locationNotSpecified": "Konum belirtilmedi",
+    "timeUnknown": "Zaman bilinmiyor"
   }
 }

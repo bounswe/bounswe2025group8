@@ -157,12 +157,12 @@ const AllRequests = () => {
     // Format location (fallback to "Location not specified")
     const location = task.location
       ? extractRegionFromLocation(task.location)
-      : "Location not specified";
+      : t("allRequests.locationNotSpecified");
 
     // Format time ago
     const timeAgo = task.created_at
       ? formatRelativeTime(task.created_at)
-      : "Time unknown";
+      : t("allRequests.timeUnknown");
 
     return {
       id: task.id,
@@ -195,7 +195,7 @@ const AllRequests = () => {
               marginBottom: "8px",
             }}
           >
-            Error Loading Requests
+            {t("allRequests.errorLoadingRequests")}
           </h3>
           <p style={{ color: colors.text.secondary, marginBottom: "16px" }}>
             {error}
@@ -218,9 +218,9 @@ const AllRequests = () => {
             onMouseOut={(e) =>
               (e.currentTarget.style.backgroundColor = colors.brand.primary)
             }
-            aria-label={t("retryLoadingRequests")}
+            aria-label={t("allRequests.retryLoadingRequests")}
           >
-            {t("tryAgain")}
+            {t("allRequests.tryAgain")}
           </button>
         </div>
       </div>
@@ -255,13 +255,13 @@ const AllRequests = () => {
           >
             {categoryFilter
               ? `${categoryMapping[categoryFilter] || categoryFilter} ${t(
-                  "requests"
+                  "allRequests.requests"
                 )}`
               : urgencyFilter
               ? `${urgencyLevels[urgencyFilter]?.name || urgencyFilter} ${t(
-                  "priorityRequests"
+                  "allRequests.priorityRequests"
                 )}`
-              : t("allRequests")}
+              : t("allRequests.allRequests")}
           </h1>
           {(categoryFilter || urgencyFilter || locationFilter) && (
             <p
@@ -272,16 +272,16 @@ const AllRequests = () => {
               }}
             >
               {categoryFilter &&
-                `${t("showingRequestsIn")} ${
+                `${t("allRequests.showingRequestsIn")} ${
                   categoryMapping[categoryFilter] || categoryFilter
-                } ${t("category")}`}
+                } ${t("allRequests.category")}`}
               {urgencyFilter &&
-                `${categoryFilter ? " • " : ""}${t("showing")} ${
+                `${categoryFilter ? " • " : ""}${t("allRequests.showing")} ${
                   urgencyLevels[urgencyFilter]?.name || urgencyFilter
-                } ${t("priorityRequests")}`}
+                } ${t("allRequests.priorityRequests")}`}
               {locationFilter &&
                 `${categoryFilter || urgencyFilter ? " • " : ""}${t(
-                  "near"
+                  "allRequests.near"
                 )}: ${locationFilter}`}
               <button
                 onClick={() => navigate("/requests")}
@@ -301,7 +301,7 @@ const AllRequests = () => {
                   (e.currentTarget.style.color = colors.brand.primary)
                 }
               >
-                {t("clearFilters")}
+                {t("allRequests.clearFilters")}
               </button>
             </p>
           )}
@@ -322,7 +322,7 @@ const AllRequests = () => {
           >
             <input
               type="text"
-              placeholder={t("filterByLocation")}
+              placeholder={t("allRequests.filterByLocation")}
               style={{
                 padding: "8px 16px",
                 fontSize: "0.875rem",
@@ -337,7 +337,7 @@ const AllRequests = () => {
               onKeyDown={(e) => {
                 if (e.key === "Enter") applyLocationFilter();
               }}
-              aria-label={t("filterByLocation")}
+              aria-label={t("allRequests.filterByLocation")}
             />
             <button
               onClick={applyLocationFilter}
@@ -357,9 +357,9 @@ const AllRequests = () => {
               onMouseOut={(e) =>
                 (e.currentTarget.style.backgroundColor = colors.brand.primary)
               }
-              aria-label={t("applyLocationFilter")}
+              aria-label={t("allRequests.applyLocationFilter")}
             >
-              {t("apply")}
+              {t("allRequests.apply")}
             </button>
           </div>
           {/* Sort Icon */}
@@ -380,7 +380,7 @@ const AllRequests = () => {
             onMouseOut={(e) =>
               (e.currentTarget.style.color = colors.text.primary)
             }
-            aria-label={t("sortRequests")}
+            aria-label={t("allRequests.sortRequests")}
           >
             <img
               src={sortIcon}
@@ -414,7 +414,7 @@ const AllRequests = () => {
             onMouseOut={(e) =>
               (e.currentTarget.style.color = colors.text.primary)
             }
-            aria-label={t("openAddressFilter")}
+            aria-label={t("allRequests.openAddressFilter")}
           >
             <img
               src={filterIcon}
@@ -579,10 +579,10 @@ const AllRequests = () => {
                   marginBottom: "8px",
                 }}
               >
-                No Requests Available
+                {t("allRequests.noRequestsAvailable")}
               </h3>
               <p style={{ color: colors.text.secondary }}>
-                There are currently no requests to display.
+                {t("allRequests.noRequestsDescription")}
               </p>
             </div>
           </div>
@@ -630,7 +630,7 @@ const AllRequests = () => {
               }
             }}
           >
-            Previous
+            {t("allRequests.previous")}
           </button>
 
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -681,7 +681,7 @@ const AllRequests = () => {
                           colors.background.secondary;
                       }
                     }}
-                    aria-label={`Go to page ${pageNumber}`}
+                    aria-label={t("allRequests.goToPage", { page: pageNumber })}
                     aria-current={isActive ? "page" : undefined}
                   >
                     {pageNumber}
@@ -721,7 +721,7 @@ const AllRequests = () => {
               }
             }}
           >
-            Next
+            {t("allRequests.next")}
           </button>
         </div>
       )}
@@ -736,11 +736,17 @@ const AllRequests = () => {
             color: colors.text.secondary,
           }}
         >
-          Showing {tasks.length} of {pagination.totalItems} requests
+          {t("allRequests.showingRequests", {
+            showing: tasks.length,
+            count: pagination.totalItems,
+          })}
           {pagination.totalPages > 1 && (
             <span>
               {" "}
-              (Page {currentPage} of {pagination.totalPages})
+              {t("allRequests.pageInfo", {
+                current: currentPage,
+                total: pagination.totalPages,
+              })}
             </span>
           )}
         </div>
