@@ -710,5 +710,26 @@
     "tryAgain": "Tekrar Dene",
     "noCategoriesAvailable": "Kategori bulunamadı",
     "noRequestsAvailable": "İstek bulunamadı"
+  },
+  "loginPage": {
+    "pageTitle": "Neighborhood\nAssistance Board",
+    "logoAlt": "Logo",
+    "changeLanguage": "Dil değiştir",
+    "themeSelection": "Tema seçimi",
+    "login": "Giriş Yap",
+    "register": "Kayıt Ol",
+    "welcomeBack": "Tekrar Hoş Geldiniz",
+    "enterDetailsToSignIn": "Hesabınıza giriş yapmak için bilgilerinizi girin",
+    "registrationSuccessful": "Kayıt başarılı! Artık giriş yapabilirsiniz.",
+    "invalidCredentials": "Geçersiz bilgiler. Lütfen e-posta ve şifrenizi kontrol edin.",
+    "failedToSignIn": "Giriş yapılamadı",
+    "email": "E-posta",
+    "password": "Şifre",
+    "hidePassword": "Şifreyi gizle",
+    "showPassword": "Şifreyi göster",
+    "rememberMe": "Beni hatırla",
+    "forgotMyPassword": "Şifremi unuttum",
+    "or": "veya",
+    "continueAsGuest": "Misafir olarak devam et"
   }
 }

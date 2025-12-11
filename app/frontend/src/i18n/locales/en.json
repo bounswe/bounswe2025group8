@@ -710,5 +710,26 @@
     "tryAgain": "Try Again",
     "noCategoriesAvailable": "No categories available",
     "noRequestsAvailable": "No requests available"
+  },
+  "loginPage": {
+    "pageTitle": "Neighborhood\nAssistance Board",
+    "logoAlt": "Logo",
+    "changeLanguage": "Change language",
+    "themeSelection": "Theme selection",
+    "login": "Login",
+    "register": "Register",
+    "welcomeBack": "Welcome Back",
+    "enterDetailsToSignIn": "Enter your details to sign in to your account",
+    "registrationSuccessful": "Registration successful! You can now sign in.",
+    "invalidCredentials": "Invalid credentials. Please check your email and password.",
+    "failedToSignIn": "Failed to sign in",
+    "email": "Email",
+    "password": "Password",
+    "hidePassword": "Hide password",
+    "showPassword": "Show password",
+    "rememberMe": "Remember me",
+    "forgotMyPassword": "Forgot my password",
+    "or": "or",
+    "continueAsGuest": "Continue as guest"
   }
 }

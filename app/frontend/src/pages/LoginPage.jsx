@@ -34,11 +34,13 @@ const LoginPage = () => {
       if (success) {
         navigate("/"); // Only redirect on successful login
       } else {
-        setLoginError(t("invalidCredentials"));
+        setLoginError(t("loginPage.invalidCredentials"));
       }
     } catch (error) {
       setLoginError(
-        t("failedToSignIn") + ": " + (error.message || t("invalidCredentials"))
+        t("loginPage.failedToSignIn") +
+          ": " +
+          (error.message || t("loginPage.invalidCredentials"))
       );
     }
   };
@@ -56,7 +58,7 @@ const LoginPage = () => {
           value={i18n.language}
           onChange={(e) => i18n.changeLanguage(e.target.value)}
           className="px-3 py-2 rounded-md border text-sm focus:outline-none"
-          aria-label={t("changeLanguage")}
+          aria-label={t("loginPage.changeLanguage")}
           style={{
             backgroundColor: colors.background.secondary,
             color: colors.text.primary,
@@ -76,7 +78,7 @@ const LoginPage = () => {
           value={theme}
           onChange={(e) => setTheme(e.target.value)}
           className="px-3 py-2 rounded-md border text-sm focus:outline-none"
-          aria-label={t("themeSelection")}
+          aria-label={t("loginPage.themeSelection")}
           style={{
             backgroundColor: colors.background.secondary,
             color: colors.text.primary,
@@ -100,15 +102,25 @@ const LoginPage = () => {
       >
         {/* Logo and Title updated to be side by side */}
         <div className="flex flex-row items-center justify-center mb-1">
-          <img src={logoImage} alt="Logo" width="160" height="160" />
+          <img
+            src={logoImage}
+            alt={t("loginPage.logoAlt")}
+            width="160"
+            height="160"
+          />
           <h1
             className="text-4xl font-bold ml-2"
             style={{ color: colors.text.primary }}
             id="login-page-title"
           >
-            Neighborhood
-            <br />
-            Assistance Board
+            {t("loginPage.pageTitle")
+              .split("\n")
+              .map((line, i) => (
+                <span key={i}>
+                  {line}
+                  {i === 0 && <br />}
+                </span>
+              ))}
           </h1>
         </div>
 
@@ -143,7 +155,7 @@ const LoginPage = () => {
                       colors.brand.primary)
                   }
                 >
-                  {t("login").toUpperCase()}
+                  {t("loginPage.login").toUpperCase()}
                 </RouterLink>
                 <RouterLink
                   to="/register"
@@ -161,7 +173,7 @@ const LoginPage = () => {
                       colors.background.secondary)
                   }
                 >
-                  {t("register").toUpperCase()}
+                  {t("loginPage.register").toUpperCase()}
                 </RouterLink>
               </div>
             </div>
@@ -170,13 +182,13 @@ const LoginPage = () => {
                 className="text-lg font-bold mb-1"
                 style={{ color: colors.text.primary }}
               >
-                {t("welcomeBack")}
+                {t("loginPage.welcomeBack")}
               </h2>
               <p
                 className="text-sm mb-6"
                 style={{ color: colors.text.secondary }}
               >
-                {t("enterDetailsToSignIn")}
+                {t("loginPage.enterDetailsToSignIn")}
               </p>
 
               {/* Show registration success message if applicable */}
@@ -191,7 +203,7 @@ const LoginPage = () => {
                   role="alert"
                   aria-live="assertive"
                 >
-                  {t("registrationSuccessful")}
+                  {t("loginPage.registrationSuccessful")}
                 </div>
               )}
 
@@ -239,13 +251,13 @@ const LoginPage = () => {
                         border: 0,
                       }}
                     >
-                      {t("email")}
+                      {t("loginPage.email")}
                     </label>
                     <input
                       type="email"
                       id="email"
                       name="email"
-                      placeholder={t("email")}
+                      placeholder={t("loginPage.email")}
                       autoComplete="email"
                       autoFocus
                       required
@@ -290,13 +302,13 @@ const LoginPage = () => {
                         border: 0,
                       }}
                     >
-                      {t("password")}
+                      {t("loginPage.password")}
                     </label>
                     <input
                       type={showPassword ? "text" : "password"}
                       id="password"
                       name="password"
-                      placeholder={t("password")}
+                      placeholder={t("loginPage.password")}
                       autoComplete="current-password"
                       required
                       value={password}
@@ -319,7 +331,9 @@ const LoginPage = () => {
                         onClick={() => setShowPassword(!showPassword)}
                         className="focus:outline-none"
                         aria-label={
-                          showPassword ? t("hidePassword") : t("showPassword")
+                          showPassword
+                            ? t("loginPage.hidePassword")
+                            : t("loginPage.showPassword")
                         }
                         style={{ color: colors.text.tertiary }}
                         onMouseOver={(e) =>
@@ -355,7 +369,7 @@ const LoginPage = () => {
                       className="ml-2 text-sm"
                       style={{ color: colors.text.primary }}
                     >
-                      {t("rememberMe")}
+                      {t("loginPage.rememberMe")}
                     </span>
                   </label>
                 </div>
@@ -385,7 +399,7 @@ const LoginPage = () => {
                   }
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
                 >
-                  {t("login")}
+                  {t("loginPage.login")}
                 </button>
 
                 <div className="text-center mb-4">
@@ -400,7 +414,7 @@ const LoginPage = () => {
                       (e.currentTarget.style.color = colors.brand.primary)
                     }
                   >
-                    {t("forgotMyPassword")}
+                    {t("loginPage.forgotMyPassword")}
                   </RouterLink>
                 </div>
               </form>
@@ -410,7 +424,7 @@ const LoginPage = () => {
 
         <div className="text-center my-4">
           <p className="text-sm" style={{ color: colors.text.secondary }}>
-            {t("or")}
+            {t("loginPage.or")}
           </p>
         </div>
 
@@ -426,7 +440,7 @@ const LoginPage = () => {
               (e.currentTarget.style.color = colors.brand.primary)
             }
           >
-            {t("continueAsGuest")}
+            {t("loginPage.continueAsGuest")}
           </RouterLink>
         </div>
       </main>
