@@ -978,6 +978,55 @@
       "retryLoading": "Arama sonuçlarını yeniden yükleme"
     }
   },
+  "selectVolunteer": {
+    "title": "Gönüllü Seç",
+    "loading": "Gönüllüler yükleniyor...",
+    "errorLoading": "Gönüllüler yüklenirken hata oluştu",
+    "backToRequest": "İsteğe Dön",
+    "accessDenied": "Erişim Reddedildi",
+    "onlyCreatorCanSelect": "Yalnızca görev oluşturan gönüllü seçebilir.",
+    "moreOptions": "Daha fazla seçenek",
+    "info": {
+      "peopleVolunteered": "{{count}} kişi bu görev için gönüllü oldu",
+      "selectUpTo": "Bu göreve atamak için en fazla {{max}} gönüllü seçin",
+      "volunteer_one": "gönüllü",
+      "volunteer_other": "gönüllü",
+      "currentlySelecting": "Şu anda seçiliyor: {{selected}} / {{max}}",
+      "selectedBadgeNote": "\"Seçildi\" rozetine sahip gönüllüler şu anda atanmıştır. Seçiminizi istediğiniz zaman değiştirebilirsiniz."
+    },
+    "badges": {
+      "selected": "Seçildi",
+      "previouslyRejected": "Daha Önce Reddedildi"
+    },
+    "volunteer": {
+      "rating": "{{rating}}, {{count}} değerlendirme",
+      "tasksCompleted": "{{count}} görev tamamlandı",
+      "viewProfile": "Profili Görüntüle",
+      "viewFullProfile": "Tam profili görüntüle",
+      "ariaLabel": "{{name}} {{surname}}, değerlendirme {{rating}}, {{tasks}} görev tamamlandı",
+      "viewProfileOf": "{{name}} {{surname}} profilini görüntüle"
+    },
+    "empty": {
+      "noVolunteers": "Henüz gönüllü yok",
+      "waitForVolunteers": "Onları seçebilmek için insanların bu görev için gönüllü olmasını bekleyin."
+    },
+    "buttons": {
+      "updateSelection": "Seçimi Güncelle",
+      "assignVolunteers": "Gönüllüleri Ata",
+      "updateSelectionCount": "Seçimi Güncelle ({{count}})",
+      "assignVolunteersCount": "Gönüllüleri Ata ({{count}})"
+    },
+    "messages": {
+      "selectAtLeastOne": "Lütfen en az bir gönüllü seçin",
+      "updateSuccess": "Gönüllü seçimi başarıyla güncellendi. {{count}} gönüllü atandı.",
+      "assignSuccess": "Bu göreve başarıyla {{count}} gönüllü atandı.",
+      "assignFailed": "Gönüllüler atanamadı. Lütfen tekrar deneyin."
+    },
+    "aria": {
+      "backToRequest": "İsteğe dön",
+      "moreOptions": "Daha fazla seçenek"
+    }
+  },
   "common": {
     "retry": "Tekrar Dene"
   }

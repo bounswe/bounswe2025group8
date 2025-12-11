@@ -979,6 +979,58 @@
       "retryLoading": "Retry loading search results"
     }
   },
+  "selectVolunteer": {
+    "title": "Select Volunteer",
+    "loading": "Loading volunteers...",
+    "errorLoading": "Error loading volunteers",
+    "backToRequest": "Back to Request",
+    "accessDenied": "Access Denied",
+    "onlyCreatorCanSelect": "Only the task creator can select volunteers.",
+    "moreOptions": "More options",
+    "info": {
+      "peopleVolunteered": "{{count}} people have volunteered for this task",
+      "selectUpTo": "Select up to {{max}} volunteer to assign to this task",
+      "selectUpTo_other": "Select up to {{max}} volunteers to assign to this task",
+      "volunteer_one": "volunteer",
+      "volunteer_other": "volunteers",
+      "currentlySelecting": "Currently selecting: {{selected}} of {{max}}",
+      "selectedBadgeNote": "Volunteers with \"Selected\" badge are currently assigned. You can change your selection anytime."
+    },
+    "badges": {
+      "selected": "Selected",
+      "previouslyRejected": "Previously Rejected"
+    },
+    "volunteer": {
+      "rating": "{{rating}}, {{count}} review",
+      "rating_other": "{{rating}}, {{count}} reviews",
+      "tasksCompleted": "{{count}} task completed",
+      "tasksCompleted_other": "{{count}} tasks completed",
+      "viewProfile": "View Profile",
+      "viewFullProfile": "View full profile",
+      "ariaLabel": "{{name}} {{surname}}, rating {{rating}}, {{tasks}} tasks completed",
+      "viewProfileOf": "View profile of {{name}} {{surname}}"
+    },
+    "empty": {
+      "noVolunteers": "No volunteers yet",
+      "waitForVolunteers": "Wait for people to volunteer for this task before you can select them."
+    },
+    "buttons": {
+      "updateSelection": "Update Selection",
+      "assignVolunteers": "Assign Volunteers",
+      "updateSelectionCount": "Update Selection ({{count}})",
+      "assignVolunteersCount": "Assign Volunteers ({{count}})"
+    },
+    "messages": {
+      "selectAtLeastOne": "Please select at least one volunteer",
+      "updateSuccess": "Successfully updated volunteer selection. {{count}} volunteer(s) assigned.",
+      "assignSuccess": "Successfully assigned {{count}} volunteer(s) to this task.",
+      "assignFailed": "Failed to assign volunteers. Please try again."
+    },
+    "aria": {
+      "backToRequest": "Back to request",
+      "moreOptions": "More options"
+    }
+  },
   "common": {
     "retry": "Retry"
   }
