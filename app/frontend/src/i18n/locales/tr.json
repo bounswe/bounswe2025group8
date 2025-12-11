@@ -525,5 +525,33 @@
   "userCard": {
     "unknownUser": "Bilinmeyen Kullanıcı",
     "viewProfileOf": "{{name}} profilini görüntüle"
+  },
+  "userReportModal": {
+    "reportUser": "Kullanıcıyı Bildir",
+    "reportSubmittedSuccess": "Rapor başarıyla gönderildi! Topluluğumuzu güvenli tutmaya yardımcı olduğunuz için teşekkür ederiz.",
+    "reportingUser": "Bildirilen Kullanıcı",
+    "unknownUser": "Bilinmeyen Kullanıcı",
+    "reasonForReport": "Bildirim Nedeni",
+    "required": "*",
+    "selectReason": "Bildirim için bir neden seçin",
+    "spam": "Spam",
+    "inappropriateContent": "Uygunsuz İçerik",
+    "harassment": "Taciz",
+    "fraud": "Dolandırıcılık",
+    "fakeRequest": "Sahte İstek",
+    "noShow": "Gelmedi",
+    "safetyConcern": "Güvenlik Endişesi",
+    "other": "Diğer",
+    "details": "Detaylar",
+    "detailsPlaceholder": "Lütfen bu kullanıcıyı neden bildirdiğinizi açıklayın. Raporunuzu incelememize yardımcı olmak için davranışları hakkında belirli ayrıntılar sağlayın (minimum 10 karakter)...",
+    "characters": "{{count}} karakter",
+    "submittingReport": "Rapor gönderiliyor...",
+    "reportSubmitted": "Rapor Gönderildi!",
+    "submitReport": "Raporu Gönder",
+    "infoText": "Raporunuz güvenli ve güvenilir bir topluluk sağlamamıza yardımcı olur",
+    "selectReasonError": "Lütfen bildirim için bir neden seçin",
+    "provideDetailsError": "Lütfen raporunuz hakkında detay sağlayın",
+    "minCharactersError": "Lütfen raporunuzda en az 10 karakter sağlayın",
+    "submitFailedError": "Rapor gönderilemedi. Lütfen tekrar deneyin."
   }
 }

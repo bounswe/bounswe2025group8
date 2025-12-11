@@ -525,5 +525,33 @@
   "userCard": {
     "unknownUser": "Unknown User",
     "viewProfileOf": "View profile of {{name}}"
+  },
+  "userReportModal": {
+    "reportUser": "Report User",
+    "reportSubmittedSuccess": "Report submitted successfully! Thank you for helping keep our community safe.",
+    "reportingUser": "Reporting User",
+    "unknownUser": "Unknown User",
+    "reasonForReport": "Reason for Report",
+    "required": "*",
+    "selectReason": "Select a reason for reporting",
+    "spam": "Spam",
+    "inappropriateContent": "Inappropriate Content",
+    "harassment": "Harassment",
+    "fraud": "Fraud",
+    "fakeRequest": "Fake Request",
+    "noShow": "No Show",
+    "safetyConcern": "Safety Concern",
+    "other": "Other",
+    "details": "Details",
+    "detailsPlaceholder": "Please explain why you're reporting this user. Provide specific details about their behavior to help us review your report (minimum 10 characters)...",
+    "characters": "{{count}} characters",
+    "submittingReport": "Submitting Report...",
+    "reportSubmitted": "Report Submitted!",
+    "submitReport": "Submit Report",
+    "infoText": "Your report helps us maintain a safe and trustworthy community",
+    "selectReasonError": "Please select a reason for reporting",
+    "provideDetailsError": "Please provide details about your report",
+    "minCharactersError": "Please provide at least 10 characters in your report",
+    "submitFailedError": "Failed to submit report. Please try again."
   }
 }
