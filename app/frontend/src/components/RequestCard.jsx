@@ -1,9 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { categoryMapping } from "../constants/categories";
+import { categoryMapping, getCategoryName } from "../constants/categories";
 import { formatRelativeTime } from "../utils/dateUtils";
-import { urgencyLevels } from "../constants/urgency_level";
+import { urgencyLevels, getUrgencyLevelName } from "../constants/urgency_level";
 import { extractRegionFromLocation } from "../utils/taskUtils";
 import { useTheme } from "../hooks/useTheme";
 
@@ -221,10 +221,10 @@ const RequestCard = ({ request, onClick, className = "" }) => {
                 e.currentTarget.style.outline = "none";
               }}
               aria-label={t("requestCard.filterByCategory", {
-                category: categoryMapping[request.category] || request.category,
+                category: getCategoryName(request.category, t),
               })}
             >
-              {categoryMapping[request.category] || request.category}
+              {getCategoryName(request.category, t)}
             </button>
           )}
 
@@ -281,20 +281,17 @@ const RequestCard = ({ request, onClick, className = "" }) => {
               e.currentTarget.style.outline = "none";
             }}
             aria-label={t("requestCard.filterByUrgency", {
-              level:
-                urgencyLevels[
-                  request?.task?.urgency_level || request?.urgency_level
-                ]?.name || t("requestCard.unknown"),
+              level: getUrgencyLevelName(
+                request?.task?.urgency_level || request?.urgency_level,
+                t
+              ),
             })}
           >
             {t("requestCard.urgency", {
-              level: urgencyLevels[
-                request?.task?.urgency_level || request?.urgency_level
-              ]
-                ? urgencyLevels[
-                    request?.task?.urgency_level || request?.urgency_level
-                  ].name
-                : t("requestCard.unknown"),
+              level: getUrgencyLevelName(
+                request?.task?.urgency_level || request?.urgency_level,
+                t
+              ),
             })}
           </button>
         </div>

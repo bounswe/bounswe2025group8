@@ -2,7 +2,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getCategories } from '../features/category/services/categoryService';
-import { urgencyLevels } from "../constants/urgency_level";
+import { urgencyLevels, getUrgencyLevelName } from "../constants/urgency_level";
+import { getCategoryName } from '../constants/categories';
 
 type Request = {
   id: number | string;
@@ -219,7 +220,7 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
 
                 {categories.map((category) => (
                   <option key={category.value} value={category.value}>
-                    {category.name}
+                    {getCategoryName(category.value, t)}
                   </option>
                 ))}
               </select>
@@ -235,7 +236,7 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
               >
                 {Object.entries(urgencyLevels).map(([key, value]) => (
                   <option key={key} value={key}>
-                    {value.name}
+                    {getUrgencyLevelName(Number(key), t)}
                   </option>
                 ))}
               </select>
