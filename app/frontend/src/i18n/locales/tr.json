@@ -802,6 +802,47 @@
       "successMessage": "Rapor başarıyla gönderildi"
     }
   },
+  "registerPage": {
+    "title": "Hesap Oluştur",
+    "description": "Kayıt olmak için bilgilerinizi girin",
+    "firstNameLabel": "Ad",
+    "firstNamePlaceholder": "Adınız",
+    "lastNameLabel": "Soyad",
+    "surnamePlaceholder": "Soyadınız",
+    "usernameLabel": "Kullanıcı Adı",
+    "usernamePlaceholder": "Kullanıcı adınızı girin",
+    "phoneLabel": "Telefon",
+    "phonePlaceholder": "Telefon numaranızı girin",
+    "emailLabel": "E-posta",
+    "emailPlaceholder": "E-posta adresinizi girin",
+    "passwordLabel": "Şifre",
+    "passwordPlaceholder": "Şifrenizi girin",
+    "confirmPasswordLabel": "Şifreyi Onayla",
+    "confirmPasswordPlaceholder": "Şifrenizi tekrar girin",
+    "showPassword": "Şifreyi göster",
+    "hidePassword": "Şifreyi gizle",
+    "showConfirmPassword": "Onay şifresini göster",
+    "hideConfirmPassword": "Onay şifresini gizle",
+    "agreeTerms": "Aşağıdakilerle hemfikirim",
+    "termsAndConditions": "Şartlar ve Koşullar",
+    "signUp": "Kayıt Ol",
+    "or": "veya",
+    "continueAsGuest": "Misafir olarak devam et",
+    "validation": {
+      "youMustAgreeToTerms": "Şartları ve koşulları kabul etmelisiniz",
+      "passwordsMustMatch": "Şifreler eşleşmelidir",
+      "passwordRequirements": "Şifre en az 8 karakter uzunluğunda olmalı ve en az bir küçük harf, bir büyük harf, bir rakam ve bir özel karakter içermelidir",
+      "invalidEmailAddress": "Geçersiz e-posta adresi",
+      "phoneNumberMustBe": "Telefon numarası 10-15 rakam arasında olmalıdır",
+      "allFieldsRequired": "Tüm alanlar zorunludur",
+      "registrationFailed": "Kayıt başarısız oldu",
+      "failedToCreateAccount": "Hesap oluşturulamadı"
+    },
+    "themeSelection": "Tema seçimi",
+    "lightMode": "Açık Mod",
+    "darkMode": "Koyu Mod",
+    "highContrast": "Yüksek Kontrast"
+  },
   "common": {
     "retry": "Tekrar Dene"
   }

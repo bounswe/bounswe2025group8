@@ -802,6 +802,47 @@
       "successMessage": "Report submitted successfully"
     }
   },
+  "registerPage": {
+    "title": "Create an Account",
+    "description": "Enter your details to register",
+    "firstNameLabel": "First Name",
+    "firstNamePlaceholder": "Your first name",
+    "lastNameLabel": "Last Name",
+    "surnamePlaceholder": "Your surname",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "Enter your username",
+    "phoneLabel": "Phone",
+    "phonePlaceholder": "Enter your phone number",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Enter your email address",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "confirmPasswordLabel": "Confirm Password",
+    "confirmPasswordPlaceholder": "Re-enter your password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "showConfirmPassword": "Show confirm password",
+    "hideConfirmPassword": "Hide confirm password",
+    "agreeTerms": "I agree with",
+    "termsAndConditions": "Terms and Conditions",
+    "signUp": "Sign Up",
+    "or": "or",
+    "continueAsGuest": "Continue as guest",
+    "validation": {
+      "youMustAgreeToTerms": "You must agree to the terms and conditions",
+      "passwordsMustMatch": "Passwords must match",
+      "passwordRequirements": "Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase letter, one digit, and one special character",
+      "invalidEmailAddress": "Invalid email address",
+      "phoneNumberMustBe": "Phone number must be between 10-15 digits",
+      "allFieldsRequired": "All fields are required",
+      "registrationFailed": "Registration failed",
+      "failedToCreateAccount": "Failed to create account"
+    },
+    "themeSelection": "Theme selection",
+    "lightMode": "Light Mode",
+    "darkMode": "Dark Mode",
+    "highContrast": "High Contrast"
+  },
   "common": {
     "retry": "Retry"
   }
