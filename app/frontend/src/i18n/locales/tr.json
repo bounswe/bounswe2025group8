@@ -478,5 +478,16 @@
     "noImage": "Resim Yok",
     "viewRequestDetails": "İstek detaylarını görüntüle",
     "filterByCategory": "{{category}} kategorisine göre filtrele"
+  },
+  "reviewCard": {
+    "anonymousUser": "Anonim Kullanıcı",
+    "noComment": "Yorum eklenmedi",
+    "notAvailable": "Mevcut Değil",
+    "accuracy": "Doğruluk",
+    "communication": "İletişim",
+    "safetyAndPreparedness": "Güvenlik ve Hazırlık",
+    "reliability": "Güvenilirlik",
+    "taskCompletion": "Görev Tamamlama",
+    "safetyAndRespect": "Güvenlik ve Saygı"
   }
 }

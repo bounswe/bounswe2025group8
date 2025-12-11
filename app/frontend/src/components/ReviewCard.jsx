@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Box, Typography, Avatar, Rating, Paper, Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { formatDate } from "../utils/dateUtils";
@@ -6,6 +7,7 @@ import { useTheme } from "../hooks/useTheme";
 import { toAbsoluteUrl } from "../utils/url";
 
 const ReviewCard = ({ review }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const navigate = useNavigate();
 
@@ -47,17 +49,26 @@ const ReviewCard = ({ review }) => {
     if (review.is_volunteer_to_requester) {
       // Volunteer -> Requester ratings
       return [
-        { key: "accuracy_of_request", label: "Accuracy" },
-        { key: "communication_volunteer_to_requester", label: "Communication" },
-        { key: "safety_and_preparedness", label: "Safety & Preparedness" },
+        { key: "accuracy_of_request", label: t("reviewCard.accuracy") },
+        {
+          key: "communication_volunteer_to_requester",
+          label: t("reviewCard.communication"),
+        },
+        {
+          key: "safety_and_preparedness",
+          label: t("reviewCard.safetyAndPreparedness"),
+        },
       ];
     } else {
       // Requester -> Volunteer ratings (default)
       return [
-        { key: "reliability", label: "Reliability" },
-        { key: "task_completion", label: "Task Completion" },
-        { key: "communication_requester_to_volunteer", label: "Communication" },
-        { key: "safety_and_respect", label: "Safety & Respect" },
+        { key: "reliability", label: t("reviewCard.reliability") },
+        { key: "task_completion", label: t("reviewCard.taskCompletion") },
+        {
+          key: "communication_requester_to_volunteer",
+          label: t("reviewCard.communication"),
+        },
+        { key: "safety_and_respect", label: t("reviewCard.safetyAndRespect") },
       ];
     }
   };
@@ -141,7 +152,7 @@ const ReviewCard = ({ review }) => {
                   : {},
               }}
             >
-              {review.reviewer?.name || "Anonymous User"}
+              {review.reviewer?.name || t("reviewCard.anonymousUser")}
             </Typography>
           </Box>
         </Box>
@@ -218,7 +229,9 @@ const ReviewCard = ({ review }) => {
             minWidth: "fit-content",
           }}
         >
-          {review.timestamp ? formatDate(review.timestamp) : "N/A"}
+          {review.timestamp
+            ? formatDate(review.timestamp)
+            : t("reviewCard.notAvailable")}
         </Typography>
       </Box>
 
@@ -230,7 +243,7 @@ const ReviewCard = ({ review }) => {
           color: colors.text.primary,
         }}
       >
-        {review.comment || "No comment provided"}
+        {review.comment || t("reviewCard.noComment")}
       </Typography>
     </Paper>
   );

@@ -478,5 +478,16 @@
     "noImage": "No Image",
     "viewRequestDetails": "View request details",
     "filterByCategory": "Filter by {{category}} category"
+  },
+  "reviewCard": {
+    "anonymousUser": "Anonymous User",
+    "noComment": "No comment provided",
+    "notAvailable": "N/A",
+    "accuracy": "Accuracy",
+    "communication": "Communication",
+    "safetyAndPreparedness": "Safety & Preparedness",
+    "reliability": "Reliability",
+    "taskCompletion": "Task Completion",
+    "safetyAndRespect": "Safety & Respect"
   }
 }
