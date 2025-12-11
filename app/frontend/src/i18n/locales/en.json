@@ -695,5 +695,20 @@
     "pageTitle": "Neighborhood\nAssistance Board",
     "changeLanguage": "Change language",
     "themeSelection": "Theme selection"
+  },
+  "home": {
+    "pageTitle": "Home",
+    "popularCategories": "Popular Categories",
+    "popularRequests": "Popular Requests",
+    "seeAll": "See All",
+    "viewAllCategories": "View all categories",
+    "viewAllRequests": "View all requests",
+    "loadingPopularCategories": "Loading popular categories",
+    "loadingPopularRequests": "Loading popular requests",
+    "failedToLoadCategories": "Failed to load categories",
+    "failedToLoadPopularRequests": "Failed to load popular requests",
+    "tryAgain": "Try Again",
+    "noCategoriesAvailable": "No categories available",
+    "noRequestsAvailable": "No requests available"
   }
 }

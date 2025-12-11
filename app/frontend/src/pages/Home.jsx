@@ -107,7 +107,7 @@ const Home = () => {
             style={{ color: colors.text.primary }}
             id="popular-categories-title"
           >
-            {t("popularCategories")}
+            {t("home.popularCategories")}
           </h2>
           {categories.length > 4 && (
             <button
@@ -129,9 +129,9 @@ const Home = () => {
               onBlur={(e) => {
                 e.currentTarget.style.outline = "none";
               }}
-              aria-label={t("viewAllCategories")}
+              aria-label={t("home.viewAllCategories")}
             >
-              {t("seeAll")}
+              {t("home.seeAll")}
             </button>
           )}
         </div>
@@ -141,7 +141,7 @@ const Home = () => {
             className="flex justify-center py-12"
             role="status"
             aria-live="polite"
-            aria-label={t("loadingPopularCategories")}
+            aria-label={t("home.loadingPopularCategories")}
             aria-busy="true"
           >
             <div
@@ -157,7 +157,7 @@ const Home = () => {
               style={{ color: colors.semantic.error }}
               id="categories-error"
             >
-              {t(error.categories)}
+              {t(`home.${error.categories}`)}
             </p>
             <button
               className="px-4 py-2 rounded transition-colors"
@@ -182,7 +182,7 @@ const Home = () => {
               }}
               onClick={fetchCategories}
             >
-              {t("tryAgain")}
+              {t("home.tryAgain")}
             </button>
           </div>
         ) : (
@@ -201,7 +201,7 @@ const Home = () => {
             ) : (
               <div className="col-span-full text-center py-8">
                 <p style={{ color: colors.text.secondary }}>
-                  {t("noCategoriesAvailable")}
+                  {t("home.noCategoriesAvailable")}
                 </p>
               </div>
             )}
@@ -220,7 +220,7 @@ const Home = () => {
             style={{ color: colors.text.primary }}
             id="popular-requests-title"
           >
-            {t("popularRequests")}
+            {t("home.popularRequests")}
           </h2>
           {requests.length > 6 && (
             <button
@@ -242,9 +242,9 @@ const Home = () => {
               onBlur={(e) => {
                 e.currentTarget.style.outline = "none";
               }}
-              aria-label={t("viewAllRequests")}
+              aria-label={t("home.viewAllRequests")}
             >
-              {t("seeAll")}
+              {t("home.seeAll")}
             </button>
           )}
         </div>
@@ -254,7 +254,7 @@ const Home = () => {
             className="flex justify-center py-12"
             role="status"
             aria-live="polite"
-            aria-label={t("loadingPopularRequests")}
+            aria-label={t("home.loadingPopularRequests")}
             aria-busy="true"
           >
             <div
@@ -270,7 +270,7 @@ const Home = () => {
               style={{ color: colors.semantic.error }}
               id="requests-error"
             >
-              {t(error.requests)}
+              {t(`home.${error.requests}`)}
             </p>
             <button
               className="px-4 py-2 rounded transition-colors"
@@ -295,7 +295,7 @@ const Home = () => {
               }}
               onClick={fetchRequests}
             >
-              {t("tryAgain")}
+              {t("home.tryAgain")}
             </button>
           </div>
         ) : (
@@ -312,7 +312,7 @@ const Home = () => {
             ) : (
               <div className="col-span-full text-center py-8">
                 <p style={{ color: colors.text.secondary }}>
-                  {t("noRequestsAvailable")}
+                  {t("home.noRequestsAvailable")}
                 </p>
               </div>
             )}
@@ -321,7 +321,7 @@ const Home = () => {
       </div>
       {/* Page Title for landmark association */}
       <h1 id="home-page-title" className="sr-only">
-        {t("home")}
+        {t("home.pageTitle")}
       </h1>
     </main>
   );

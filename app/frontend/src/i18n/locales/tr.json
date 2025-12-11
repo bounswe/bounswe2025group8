@@ -692,8 +692,23 @@
     "failedToResetPassword": "Şifre sıfırlanamadı",
     "requestFailed": "İstek başarısız",
     "logoAlt": "Logo",
-    "pageTitle": "Neighborhood Assistance Board",
+    "pageTitle": "Neighborhood\nAssistance Board",
     "changeLanguage": "Dil değiştir",
     "themeSelection": "Tema seçimi"
+  },
+  "home": {
+    "pageTitle": "Ana Sayfa",
+    "popularCategories": "Popüler Kategoriler",
+    "popularRequests": "Popüler İstekler",
+    "seeAll": "Tümünü Gör",
+    "viewAllCategories": "Tüm kategorileri görüntüle",
+    "viewAllRequests": "Tüm istekleri görüntüle",
+    "loadingPopularCategories": "Popüler kategoriler yükleniyor",
+    "loadingPopularRequests": "Popüler istekler yükleniyor",
+    "failedToLoadCategories": "Kategoriler yüklenemedi",
+    "failedToLoadPopularRequests": "Popüler istekler yüklenemedi",
+    "tryAgain": "Tekrar Dene",
+    "noCategoriesAvailable": "Kategori bulunamadı",
+    "noRequestsAvailable": "İstek bulunamadı"
   }
 }
