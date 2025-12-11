@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { LocalizationProvider, TimePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import {
@@ -27,6 +28,7 @@ import { deserializeDate } from "../utils/dateUtils";
 import { useTheme } from "../hooks/useTheme";
 
 const DetermineDeadlineStep = () => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const dispatch = useDispatch();
   const { formData } = useSelector((state) => state.createRequest);
@@ -188,7 +190,15 @@ const DetermineDeadlineStep = () => {
     const gridEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
     const days = eachDayOfInterval({ start: gridStart, end: gridEnd });
 
-    const dayOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const dayOfWeek = [
+      t("determineDeadlineStep.monday"),
+      t("determineDeadlineStep.tuesday"),
+      t("determineDeadlineStep.wednesday"),
+      t("determineDeadlineStep.thursday"),
+      t("determineDeadlineStep.friday"),
+      t("determineDeadlineStep.saturday"),
+      t("determineDeadlineStep.sunday"),
+    ];
     const minSelectableDate = startOfDay(minDeadline);
 
     const weeks = [];
@@ -204,7 +214,9 @@ const DetermineDeadlineStep = () => {
           borderColor: colors.border.primary,
         }}
         role="group"
-        aria-label={`Calendar for ${format(currentMonth, "MMMM yyyy")}`}
+        aria-label={t("determineDeadlineStep.calendarFor", {
+          month: format(currentMonth, "MMMM yyyy"),
+        })}
       >
         <table className="w-full" aria-labelledby="calendar-caption">
           <caption id="calendar-caption" className="sr-only">
@@ -288,9 +300,17 @@ const DetermineDeadlineStep = () => {
                           aria-pressed={isSelected}
                           tabIndex={isClickable ? 0 : -1}
                           aria-label={`${format(date, "MMMM d, yyyy")}${
-                            isSelected ? ", selected" : ""
-                          }${isTodayCell ? ", today" : ""}${
-                            !isClickable ? ", unavailable" : ""
+                            isSelected
+                              ? `, ${t("determineDeadlineStep.selected")}`
+                              : ""
+                          }${
+                            isTodayCell
+                              ? `, ${t("determineDeadlineStep.today")}`
+                              : ""
+                          }${
+                            !isClickable
+                              ? `, ${t("determineDeadlineStep.unavailable")}`
+                              : ""
                           }`}
                           onClick={() => {
                             if (isClickable) {
@@ -351,7 +371,7 @@ const DetermineDeadlineStep = () => {
             className="text-sm font-bold mb-2"
             style={{ color: colors.text.primary }}
           >
-            Select Date
+            {t("determineDeadlineStep.selectDate")}
           </h3>
 
           <div className="mb-4">
@@ -372,7 +392,7 @@ const DetermineDeadlineStep = () => {
                     backgroundColor: colors.background.secondary,
                     color: colors.text.primary,
                   }}
-                  aria-label="Previous month"
+                  aria-label={t("determineDeadlineStep.previousMonth")}
                   onMouseOver={(e) =>
                     (e.currentTarget.style.backgroundColor =
                       colors.background.tertiary)
@@ -392,7 +412,7 @@ const DetermineDeadlineStep = () => {
                     backgroundColor: colors.background.secondary,
                     color: colors.text.primary,
                   }}
-                  aria-label="Next month"
+                  aria-label={t("determineDeadlineStep.nextMonth")}
                   onMouseOver={(e) =>
                     (e.currentTarget.style.backgroundColor =
                       colors.background.tertiary)
@@ -417,7 +437,7 @@ const DetermineDeadlineStep = () => {
             className="text-sm font-bold mb-2"
             style={{ color: colors.text.primary }}
           >
-            Select Time
+            {t("determineDeadlineStep.selectTime")}
           </h3>
 
           <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -428,7 +448,7 @@ const DetermineDeadlineStep = () => {
               referenceDate={effectiveSelectedDate}
               slotProps={{
                 textField: {
-                  label: "Select time",
+                  label: t("determineDeadlineStep.selectTimeLabel"),
                   variant: "outlined",
                   fullWidth: true,
                   size: "medium",

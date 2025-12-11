@@ -71,15 +71,16 @@ const UploadPhotosStep = () => {
     // Decide on a single, accurate message (do not overwrite with a later generic one)
     let message = "";
     if (availableSlots === 0) {
-      message = `You can upload up to ${MAX_PHOTOS} photos.`;
+      message = t("uploadPhotosStep.maxPhotosError", { max: MAX_PHOTOS });
     } else if (invalidTypeCount > 0) {
-      message = "Only image files are supported.";
+      message = t("uploadPhotosStep.onlyImagesError");
     } else if (oversizedCount > 0) {
-      message = `Some files exceed ${MAX_SIZE_MB}MB and were skipped.`;
+      message = t("uploadPhotosStep.fileSizeError", { max: MAX_SIZE_MB });
     } else if (capacityTruncated) {
-      message = `Only the first ${availableSlots} image${
-        availableSlots === 1 ? "" : "s"
-      } were added.`;
+      message =
+        availableSlots === 1
+          ? t("uploadPhotosStep.firstImageAdded")
+          : t("uploadPhotosStep.firstImagesAdded", { count: availableSlots });
     }
 
     setLocalError(message);
@@ -142,7 +143,7 @@ const UploadPhotosStep = () => {
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         role="button"
-        aria-label="Upload photos by dragging and dropping or selecting files"
+        aria-label={t("uploadPhotosStep.uploadPhotosLabel")}
       >
         <CloudUploadIcon
           sx={{ fontSize: 52, color: "#2563eb" }}
@@ -150,10 +151,10 @@ const UploadPhotosStep = () => {
         />
         <div>
           <h3 className="text-lg font-semibold text-gray-800">
-            Drag & drop photos here
+            {t("uploadPhotosStep.dragAndDrop")}
           </h3>
           <p className="text-sm text-gray-600">
-            Upload up to {MAX_PHOTOS} images to showcase your request better.
+            {t("uploadPhotosStep.uploadDescription", { max: MAX_PHOTOS })}
           </p>
         </div>
 
@@ -165,12 +166,14 @@ const UploadPhotosStep = () => {
           aria-disabled={remainingSlots === 0 || loading}
           aria-label={
             remainingSlots === 0
-              ? "Maximum photos reached"
-              : "Select photos to upload"
+              ? t("uploadPhotosStep.maximumPhotosReached")
+              : t("uploadPhotosStep.selectPhotosToUpload")
           }
         >
           <AddAPhotoIcon fontSize="small" aria-hidden="true" />
-          {remainingSlots === 0 ? "Maximum reached" : "Select photos"}
+          {remainingSlots === 0
+            ? t("uploadPhotosStep.maximumReached")
+            : t("uploadPhotosStep.selectPhotos")}
         </button>
 
         <input
@@ -180,15 +183,15 @@ const UploadPhotosStep = () => {
           multiple
           className="hidden"
           onChange={handleFileChange}
-          aria-label="Select photos"
+          aria-label={t("uploadPhotosStep.selectPhotosInput")}
         />
 
         <p className="text-xs text-gray-500" id="photos-remaining-hint">
           {remainingSlots === 0
-            ? "You cannot add more photos."
-            : `You can add ${remainingSlots} more photo${
-                remainingSlots === 1 ? "" : "s"
-              }.`}
+            ? t("uploadPhotosStep.cannotAddMore")
+            : remainingSlots === 1
+            ? t("uploadPhotosStep.canAddMoreSingular")
+            : t("uploadPhotosStep.canAddMore", { count: remainingSlots })}
         </p>
       </div>
 
@@ -206,7 +209,10 @@ const UploadPhotosStep = () => {
       {uploadedPhotos.length > 0 ? (
         <div>
           <h4 className="mb-3 text-sm font-semibold text-gray-700">
-            Selected photos ({uploadedPhotos.length}/{MAX_PHOTOS})
+            {t("uploadPhotosStep.selectedPhotos", {
+              count: uploadedPhotos.length,
+              max: MAX_PHOTOS,
+            })}
           </h4>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -231,10 +237,12 @@ const UploadPhotosStep = () => {
                     type="button"
                     onClick={() => handleRemovePhoto(photo.id)}
                     className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600 transition hover:border-red-200 hover:text-red-600"
-                    aria-label={`Remove photo ${photo.name}`}
+                    aria-label={t("uploadPhotosStep.removePhoto", {
+                      name: photo.name,
+                    })}
                   >
                     <DeleteOutlineIcon fontSize="inherit" aria-hidden="true" />
-                    Remove
+                    {t("uploadPhotosStep.remove")}
                   </button>
                 </div>
               </div>
@@ -243,10 +251,7 @@ const UploadPhotosStep = () => {
         </div>
       ) : (
         <div className="rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-600">
-          <p>
-            Adding photos helps volunteers understand your request quickly. You
-            can continue without photos if needed.
-          </p>
+          <p>{t("uploadPhotosStep.helpText")}</p>
         </div>
       )}
     </div>

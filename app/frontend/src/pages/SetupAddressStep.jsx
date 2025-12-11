@@ -6,11 +6,13 @@ import React, {
 } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { updateFormData } from "../features/request/store/createRequestSlice";
 import { Country, State, City } from "country-state-city";
 import { useTheme } from "../hooks/useTheme";
 
 const SetupAddressStep = (props, ref) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const dispatch = useDispatch();
   const { formData } = useSelector((state) => state.createRequest);
@@ -60,10 +62,10 @@ const SetupAddressStep = (props, ref) => {
       setStates(statesData);
     } catch (err) {
       console.error("Error loading states/provinces:", err);
-      setError("Failed to load states/provinces. Please try again later.");
+      setError(t("setupAddressStep.failedToLoadStates"));
       setStates([]);
     }
-  }, [watchCountryIsoCode]);
+  }, [watchCountryIsoCode, t]);
 
   // Update cities when state changes
   useEffect(() => {
@@ -74,14 +76,17 @@ const SetupAddressStep = (props, ref) => {
 
     try {
       setError(null);
-      const citiesData = City.getCitiesOfState(watchCountryIsoCode, watchStateIsoCode);
+      const citiesData = City.getCitiesOfState(
+        watchCountryIsoCode,
+        watchStateIsoCode
+      );
       setCities(citiesData);
     } catch (err) {
       console.error("Error loading cities:", err);
-      setError("Failed to load cities. Please try again later.");
+      setError(t("setupAddressStep.failedToLoadCities"));
       setCities([]);
     }
-  }, [watchCountryIsoCode, watchStateIsoCode]);
+  }, [watchCountryIsoCode, watchStateIsoCode, t]);
   // Auto-save form data happens when fields change (handled by handleFieldChange)
   // Auto-save form data when fields change
   const handleFieldChange = (field, value) => {
@@ -124,18 +129,25 @@ const SetupAddressStep = (props, ref) => {
               className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
-              Country
+              {t("setupAddressStep.country")}
             </label>
             <Controller
               name="country"
               control={control}
-              rules={{ required: "Country is required" }}
+              rules={{ required: t("setupAddressStep.countryRequired") }}
               render={({ field }) => (
                 <div>
                   <div className="relative">
                     <select
                       {...field}
-                      value={field.value ? JSON.stringify({name: field.value, isoCode: watch("countryIsoCode")}) : ""}
+                      value={
+                        field.value
+                          ? JSON.stringify({
+                              name: field.value,
+                              isoCode: watch("countryIsoCode"),
+                            })
+                          : ""
+                      }
                       id="country-select"
                       className="w-full px-3 py-3 border rounded-md focus:outline-none"
                       style={{
@@ -164,7 +176,10 @@ const SetupAddressStep = (props, ref) => {
                           field.onChange(countryData.name);
                           setValue("countryIsoCode", countryData.isoCode);
                           handleFieldChange("country", countryData.name);
-                          handleFieldChange("countryIsoCode", countryData.isoCode);
+                          handleFieldChange(
+                            "countryIsoCode",
+                            countryData.isoCode
+                          );
                         } else {
                           field.onChange("");
                           setValue("countryIsoCode", "");
@@ -180,9 +195,17 @@ const SetupAddressStep = (props, ref) => {
                         handleFieldChange("city", "");
                       }}
                     >
-                      <option value="">Select Country</option>
+                      <option value="">
+                        {t("setupAddressStep.selectCountry")}
+                      </option>
                       {countries.map((country) => (
-                        <option key={country.isoCode} value={JSON.stringify({name: country.name, isoCode: country.isoCode})}>
+                        <option
+                          key={country.isoCode}
+                          value={JSON.stringify({
+                            name: country.name,
+                            isoCode: country.isoCode,
+                          })}
+                        >
                           {country.name}
                         </option>
                       ))}
@@ -209,18 +232,25 @@ const SetupAddressStep = (props, ref) => {
               className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
-              State/Province
+              {t("setupAddressStep.state")}
             </label>
             <Controller
               name="state"
               control={control}
-              rules={{ required: "State/Province is required" }}
+              rules={{ required: t("setupAddressStep.stateRequired") }}
               render={({ field }) => (
                 <div>
                   <div className="relative">
                     <select
                       {...field}
-                      value={field.value ? JSON.stringify({name: field.value, isoCode: watch("stateIsoCode")}) : ""}
+                      value={
+                        field.value
+                          ? JSON.stringify({
+                              name: field.value,
+                              isoCode: watch("stateIsoCode"),
+                            })
+                          : ""
+                      }
                       id="state-select"
                       className="w-full px-3 py-3 border rounded-md focus:outline-none"
                       style={{
@@ -262,11 +292,16 @@ const SetupAddressStep = (props, ref) => {
                         handleFieldChange("city", "");
                       }}
                     >
-                      <option value="">Select State/Province</option>
+                      <option value="">
+                        {t("setupAddressStep.selectState")}
+                      </option>
                       {states.map((state) => (
                         <option
                           key={state.isoCode}
-                          value={JSON.stringify({name: state.name, isoCode: state.isoCode})}
+                          value={JSON.stringify({
+                            name: state.name,
+                            isoCode: state.isoCode,
+                          })}
                         >
                           {state.name}
                         </option>
@@ -295,12 +330,12 @@ const SetupAddressStep = (props, ref) => {
               className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
-              City/District
+              {t("setupAddressStep.city")}
             </label>
             <Controller
               name="city"
               control={control}
-              rules={{ required: "City/District is required" }}
+              rules={{ required: t("setupAddressStep.cityRequired") }}
               render={({ field }) => (
                 <div>
                   <div className="relative">
@@ -331,7 +366,9 @@ const SetupAddressStep = (props, ref) => {
                         handleFieldChange("city", e.target.value);
                       }}
                     >
-                      <option value="">Select City</option>
+                      <option value="">
+                        {t("setupAddressStep.selectCity")}
+                      </option>
                       {cities.map((city) => (
                         <option key={city.name} value={city.name}>
                           {city.name}
@@ -362,7 +399,7 @@ const SetupAddressStep = (props, ref) => {
               className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
-              Neighborhood
+              {t("setupAddressStep.neighborhood")}
             </label>
             <Controller
               name="neighborhood"
@@ -384,7 +421,7 @@ const SetupAddressStep = (props, ref) => {
                     (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
                   }
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
-                  placeholder="Enter neighborhood"
+                  placeholder={t("setupAddressStep.neighborhoodPlaceholder")}
                   disabled={!watchCity}
                   onChange={(e) => {
                     field.onChange(e);
@@ -402,7 +439,7 @@ const SetupAddressStep = (props, ref) => {
               className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
-              Street
+              {t("setupAddressStep.street")}
             </label>
             <Controller
               name="street"
@@ -424,7 +461,7 @@ const SetupAddressStep = (props, ref) => {
                     (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
                   }
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
-                  placeholder="Enter street"
+                  placeholder={t("setupAddressStep.streetPlaceholder")}
                   disabled={!watchCity}
                   onChange={(e) => {
                     field.onChange(e);
@@ -444,7 +481,7 @@ const SetupAddressStep = (props, ref) => {
               className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
-              Building Number
+              {t("setupAddressStep.buildingNo")}
             </label>
             <Controller
               name="buildingNo"
@@ -464,7 +501,7 @@ const SetupAddressStep = (props, ref) => {
                     (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
                   }
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
-                  placeholder="e.g. 14"
+                  placeholder={t("setupAddressStep.buildingNoPlaceholder")}
                   onChange={(e) => {
                     field.onChange(e);
                     handleFieldChange("buildingNo", e.target.value);
@@ -481,7 +518,7 @@ const SetupAddressStep = (props, ref) => {
               className="text-sm font-bold mb-2 block"
               style={{ color: colors.text.primary }}
             >
-              Door / Apartment Number
+              {t("setupAddressStep.doorNo")}
             </label>
             <Controller
               name="doorNo"
@@ -501,7 +538,7 @@ const SetupAddressStep = (props, ref) => {
                     (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
                   }
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
-                  placeholder="e.g. 5"
+                  placeholder={t("setupAddressStep.doorNoPlaceholder")}
                   onChange={(e) => {
                     field.onChange(e);
                     handleFieldChange("doorNo", e.target.value);
@@ -518,7 +555,7 @@ const SetupAddressStep = (props, ref) => {
             className="text-sm font-bold mb-2 block"
             style={{ color: colors.text.primary }}
           >
-            Additional Address Details
+            {t("setupAddressStep.addressDescription")}
           </label>
           <Controller
             name="addressDescription"
@@ -538,7 +575,9 @@ const SetupAddressStep = (props, ref) => {
                   (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
                 }
                 onBlur={(e) => (e.target.style.boxShadow = "none")}
-                placeholder="Add any additional details for finding the address..."
+                placeholder={t(
+                  "setupAddressStep.addressDescriptionPlaceholder"
+                )}
                 onChange={(e) => {
                   field.onChange(e);
                   handleFieldChange("addressDescription", e.target.value);
