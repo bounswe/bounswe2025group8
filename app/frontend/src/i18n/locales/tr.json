@@ -495,5 +495,31 @@
     "search": "Ara",
     "searchInput": "Arama girişi",
     "clearSearch": "Aramayı temizle"
+  },
+  "sidebar": {
+    "home": "Ana Sayfa",
+    "categories": "Kategoriler",
+    "requests": "İstekler",
+    "adminPanel": "Yönetim Paneli",
+    "createRequest": "İstek Oluştur",
+    "login": "Giriş Yap",
+    "signUp": "Kayıt Ol",
+    "notifications": "Bildirimler",
+    "settings": "Ayarlar",
+    "logout": "Çıkış Yap",
+    "goToHomePage": "Ana sayfaya git",
+    "primaryNavigation": "Ana navigasyon",
+    "createNewRequest": "Yeni istek oluştur",
+    "loginToAccount": "Hesabınıza giriş yapın",
+    "signUpForAccount": "Yeni hesap oluşturun",
+    "viewProfile": "Profilinizi görüntüleyin",
+    "viewNotifications": "Bildirimleri görüntüle",
+    "viewNotificationsUnread": "Bildirimleri görüntüle ({{count}} okunmamış)",
+    "unreadNotifications": "{{count}} okunmamış bildirim",
+    "goToSettings": "Ayarlara git",
+    "logoutFromAccount": "Hesabınızdan çıkış yapın",
+    "logoAlt": "Komşu Yardımlaşma Panosu Logosu",
+    "userAvatar": "{{name}} avatarı",
+    "user": "Kullanıcı"
   }
 }

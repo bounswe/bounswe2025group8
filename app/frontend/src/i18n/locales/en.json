@@ -495,5 +495,31 @@
     "search": "Search",
     "searchInput": "Search input",
     "clearSearch": "Clear search"
+  },
+  "sidebar": {
+    "home": "Home",
+    "categories": "Categories",
+    "requests": "Requests",
+    "adminPanel": "Admin Panel",
+    "createRequest": "Create Request",
+    "login": "Login",
+    "signUp": "Sign Up",
+    "notifications": "Notifications",
+    "settings": "Settings",
+    "logout": "Logout",
+    "goToHomePage": "Go to home page",
+    "primaryNavigation": "Primary navigation",
+    "createNewRequest": "Create new request",
+    "loginToAccount": "Login to your account",
+    "signUpForAccount": "Sign up for a new account",
+    "viewProfile": "View your profile",
+    "viewNotifications": "View notifications",
+    "viewNotificationsUnread": "View notifications ({{count}} unread)",
+    "unreadNotifications": "{{count}} unread notifications",
+    "goToSettings": "Go to settings",
+    "logoutFromAccount": "Logout from your account",
+    "logoAlt": "Neighborhood Assistance Board Logo",
+    "userAvatar": "{{name}}'s avatar",
+    "user": "User"
   }
 }
