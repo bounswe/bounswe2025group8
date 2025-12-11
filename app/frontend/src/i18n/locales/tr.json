@@ -843,6 +843,73 @@
     "darkMode": "Koyu Mod",
     "highContrast": "Yüksek Kontrast"
   },
+  "requestDetail": {
+    "loading": "İstek detayları yükleniyor...",
+    "errorLoadingRequest": "İstek yüklenirken hata oluştu",
+    "backToRequests": "İsteklere Dön",
+    "requestNotFound": "İstek bulunamadı",
+    "requestNotFoundDescription": "Aradığınız istek mevcut değil veya kaldırılmış.",
+    "urgency": "Aciliyet",
+    "moreOptions": "Daha fazla seçenek",
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "report": "Bildir",
+    "viewProfile": "{{name}} {{surname}} profilini görüntüle",
+    "timeAgo": {
+      "justNow": "Şimdi",
+      "oneHourAgo": "1 saat önce",
+      "hoursAgo": "{{hours}} saat önce",
+      "oneDayAgo": "1 gün önce",
+      "daysAgo": "{{days}} gün önce"
+    },
+    "showPhoto": "Fotoğraf {{number}} göster",
+    "personsRequired": "{{count}} kişi gerekli",
+    "status": {
+      "taskCompletedSuccessfully": "Görev Başarıyla Tamamlandı!",
+      "dontForgetToReview": "Gönüllülerinizi değerlendirmeyi ve yorum yapmayı unutmayın, topluluğa yardımcı olun.",
+      "waitingForVolunteers": "Gönüllüler Bekleniyor",
+      "readyToMarkComplete": "Tamamlandı olarak işaretlemeye hazır",
+      "taskAssignedToYou": "Görev Size Atandı",
+      "waitingForMoreVolunteers": "Daha Fazla Gönüllü Bekleniyor",
+      "taskAssigned": "Görev Atandı",
+      "inProgress": "Devam Ediyor",
+      "unknownStatus": "Bilinmeyen Durum"
+    },
+    "buttons": {
+      "rateReviewVolunteers": "Gönüllüleri Değerlendir ve Yorum Yap",
+      "changeVolunteers": "Gönüllüleri Değiştir",
+      "selectVolunteer": "Gönüllü Seç",
+      "markAsComplete": "Tamamlandı Olarak İşaretle",
+      "marking": "İşaretleniyor...",
+      "markingComplete": "Tamamlandı olarak işaretleniyor...",
+      "volunteerForTask": "Bu Görev İçin Gönüllü Ol",
+      "volunteering": "Gönüllü oluyor...",
+      "volunteeringUnavailable": "Gönüllülük Mevcut Değil",
+      "withdrawFromTask": "Görevden Çekil",
+      "withdrawing": "Çekiliyor...",
+      "rateReviewRequester": "İstek Sahibini Değerlendir ve Yorum Yap",
+      "loginToVolunteer": "Gönüllü Olmak İçin Giriş Yap",
+      "deleting": "Siliniyor..."
+    },
+    "messages": {
+      "deleteConfirm": "Bu görevi silmek istediğinizden emin misiniz?",
+      "deleteSuccess": "İstek başarıyla silindi! Yönlendiriliyor...",
+      "deleteError": "İstek silinirken hata oluştu",
+      "volunteerSuccess": "Bu görev için başarıyla gönüllü oldunuz!",
+      "volunteerError": "Hata: {{message}}",
+      "withdrawSuccess": "Bu görevden başarıyla çekildiniz",
+      "withdrawError": "Hata: {{message}}",
+      "markCompleteError": "Hata: {{message}}",
+      "reviewSubmitted": "{{name}} {{surname}} için değerlendirme gönderildi!",
+      "reportSuccess": "Bu görevi bildirdiğiniz için teşekkürler! Ekibimiz kısa süre içinde inceleyecek.",
+      "updateError": "Görev güncellenemedi.",
+      "bannedUserTooltip": "Bu istek silinen bir kullanıcı tarafından oluşturuldu"
+    },
+    "aria": {
+      "backToRequests": "İsteklere Dön",
+      "moreOptions": "Daha fazla seçenek"
+    }
+  },
   "common": {
     "retry": "Tekrar Dene"
   }

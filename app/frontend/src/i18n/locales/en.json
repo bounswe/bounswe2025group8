@@ -843,6 +843,74 @@
     "darkMode": "Dark Mode",
     "highContrast": "High Contrast"
   },
+  "requestDetail": {
+    "loading": "Loading request details...",
+    "errorLoadingRequest": "Error loading request",
+    "backToRequests": "Back to Requests",
+    "requestNotFound": "Request not found",
+    "requestNotFoundDescription": "The request you're looking for doesn't exist or has been removed.",
+    "urgency": "Urgency",
+    "moreOptions": "More options",
+    "edit": "Edit",
+    "delete": "Delete",
+    "report": "Report",
+    "viewProfile": "View profile of {{name}} {{surname}}",
+    "timeAgo": {
+      "justNow": "Just now",
+      "oneHourAgo": "1 hour ago",
+      "hoursAgo": "{{hours}} hours ago",
+      "oneDayAgo": "1 day ago",
+      "daysAgo": "{{days}} days ago"
+    },
+    "showPhoto": "Show photo {{number}}",
+    "personsRequired": "{{count}} person required",
+    "personsRequired_other": "{{count}} persons required",
+    "status": {
+      "taskCompletedSuccessfully": "Task Completed Successfully!",
+      "dontForgetToReview": "Don't forget to rate and review your volunteers to help the community.",
+      "waitingForVolunteers": "Waiting for Volunteers",
+      "readyToMarkComplete": "Ready to mark as complete",
+      "taskAssignedToYou": "Task Assigned to You",
+      "waitingForMoreVolunteers": "Waiting for More Volunteers",
+      "taskAssigned": "Task Assigned",
+      "inProgress": "In Progress",
+      "unknownStatus": "Unknown Status"
+    },
+    "buttons": {
+      "rateReviewVolunteers": "Rate & Review Volunteers",
+      "changeVolunteers": "Change Volunteers",
+      "selectVolunteer": "Select Volunteer",
+      "markAsComplete": "Mark as Complete",
+      "marking": "Marking...",
+      "markingComplete": "Marking Complete...",
+      "volunteerForTask": "Volunteer for this Task",
+      "volunteering": "Volunteering...",
+      "volunteeringUnavailable": "Volunteering Unavailable",
+      "withdrawFromTask": "Withdraw from Task",
+      "withdrawing": "Withdrawing...",
+      "rateReviewRequester": "Rate & Review Requester",
+      "loginToVolunteer": "Login to Volunteer",
+      "deleting": "Deleting..."
+    },
+    "messages": {
+      "deleteConfirm": "Are you sure you want to delete this task?",
+      "deleteSuccess": "Request deleted successfully! Redirecting...",
+      "deleteError": "Failed to delete request",
+      "volunteerSuccess": "Successfully volunteered for this task!",
+      "volunteerError": "Error: {{message}}",
+      "withdrawSuccess": "Successfully withdrew from this task",
+      "withdrawError": "Error: {{message}}",
+      "markCompleteError": "Error: {{message}}",
+      "reviewSubmitted": "Review submitted for {{name}} {{surname}}!",
+      "reportSuccess": "Thank you for reporting this task! Our team will review it shortly.",
+      "updateError": "Failed to update task.",
+      "bannedUserTooltip": "This request was created by a deleted user"
+    },
+    "aria": {
+      "backToRequests": "Back to Requests",
+      "moreOptions": "More options"
+    }
+  },
   "common": {
     "retry": "Retry"
   }
