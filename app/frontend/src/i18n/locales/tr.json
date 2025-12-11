@@ -586,5 +586,20 @@
     "browseCategories": "Yardım isteklerini kategoriye göre gözatın",
     "failedToLoadCategoriesLater": "Kategoriler yüklenemedi. Lütfen daha sonra tekrar deneyin.",
     "noCategoriesAvailable": "Mevcut kategori yok"
+  },
+  "createRequestPage": {
+    "generalInformation": "Genel Bilgiler",
+    "uploadPhotos": "Fotoğraf Yükle",
+    "determineDeadline": "Son Tarihi Belirle",
+    "setupAddress": "Adresi Ayarla",
+    "createRequest": "İstek Oluştur",
+    "createRequestSteps": "İstek oluşturma adımları",
+    "unknownStep": "Bilinmeyen adım",
+    "requestSubmittedSuccess": "İsteğiniz başarıyla gönderildi!",
+    "redirectingHome": "Kısa süre içinde ana sayfaya yönlendirileceksiniz.",
+    "error": "Hata",
+    "validationError": "Lütfen isteği oluşturmadan önce konumunuzu (ülke, şehir ve ilçe) seçin.",
+    "back": "Geri",
+    "next": "Sonraki"
   }
 }

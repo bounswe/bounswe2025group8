@@ -586,5 +586,20 @@
     "browseCategories": "Browse help requests by category",
     "failedToLoadCategoriesLater": "Failed to load categories. Please try again later.",
     "noCategoriesAvailable": "No categories available"
+  },
+  "createRequestPage": {
+    "generalInformation": "General Information",
+    "uploadPhotos": "Upload Photos",
+    "determineDeadline": "Determine Deadline",
+    "setupAddress": "Setup Address",
+    "createRequest": "Create Request",
+    "createRequestSteps": "Create request steps",
+    "unknownStep": "Unknown step",
+    "requestSubmittedSuccess": "Your request has been submitted successfully!",
+    "redirectingHome": "You will be redirected to the home page shortly.",
+    "error": "Error",
+    "validationError": "Please select your location (country, city, and district) before creating the request.",
+    "back": "Back",
+    "next": "Next"
   }
 }
