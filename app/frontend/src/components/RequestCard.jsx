@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { categoryMapping } from "../constants/categories";
 import { formatRelativeTime } from "../utils/dateUtils";
 import { urgencyLevels } from "../constants/urgency_level";
@@ -61,6 +62,7 @@ const PriorityHighIcon = ({ className }) => (
  */
 const RequestCard = ({ request, onClick, className = "" }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { colors } = useTheme();
 
   const handleCategoryClick = (category, event) => {
@@ -109,7 +111,7 @@ const RequestCard = ({ request, onClick, className = "" }) => {
       onBlur={(e) => {
         e.currentTarget.style.outline = "none";
       }}
-      aria-label={`View request: ${request.title}`}
+      aria-label={t("requestCard.viewRequest", { title: request.title })}
     >
       {/* Top section with image on left, title and time on right */}
       <div className="flex p-2">
@@ -131,7 +133,7 @@ const RequestCard = ({ request, onClick, className = "" }) => {
             // Placeholder when no image
             <div className="w-full h-full flex items-center justify-center">
               <p className="text-sm" style={{ color: colors.text.tertiary }}>
-                No Image
+                {t("requestCard.noImage")}
               </p>
             </div>
           )}
@@ -153,10 +155,10 @@ const RequestCard = ({ request, onClick, className = "" }) => {
               style={{ color: colors.text.secondary }}
             />
             <p className="text-sm" style={{ color: colors.text.secondary }}>
-              Deadline{" "}
+              {t("requestCard.deadline")}{" "}
               {request.deadline
                 ? formatRelativeTime(request.deadline)
-                : "time is unknown"}
+                : t("requestCard.timeIsUnknown")}
             </p>
           </div>
 
@@ -167,10 +169,10 @@ const RequestCard = ({ request, onClick, className = "" }) => {
               style={{ color: colors.text.secondary }}
             />
             <p className="text-sm" style={{ color: colors.text.secondary }}>
-              Posted{" "}
+              {t("requestCard.posted")}{" "}
               {request.created_at
                 ? formatRelativeTime(request.created_at)
-                : "time is unknown"}
+                : t("requestCard.timeIsUnknown")}
             </p>
           </div>
         </div>
@@ -218,9 +220,9 @@ const RequestCard = ({ request, onClick, className = "" }) => {
               onBlur={(e) => {
                 e.currentTarget.style.outline = "none";
               }}
-              aria-label={`Filter by ${
-                categoryMapping[request.category] || request.category
-              } category`}
+              aria-label={t("requestCard.filterByCategory", {
+                category: categoryMapping[request.category] || request.category,
+              })}
             >
               {categoryMapping[request.category] || request.category}
             </button>
@@ -278,20 +280,22 @@ const RequestCard = ({ request, onClick, className = "" }) => {
             onBlur={(e) => {
               e.currentTarget.style.outline = "none";
             }}
-            aria-label={`Filter by ${
-              urgencyLevels[
-                request?.task?.urgency_level || request?.urgency_level
-              ]?.name || "Unknown"
-            } urgency level`}
+            aria-label={t("requestCard.filterByUrgency", {
+              level:
+                urgencyLevels[
+                  request?.task?.urgency_level || request?.urgency_level
+                ]?.name || t("requestCard.unknown"),
+            })}
           >
-            {"Urgency: " +
-              (urgencyLevels[
+            {t("requestCard.urgency", {
+              level: urgencyLevels[
                 request?.task?.urgency_level || request?.urgency_level
               ]
                 ? urgencyLevels[
                     request?.task?.urgency_level || request?.urgency_level
                   ].name
-                : "Unknown")}
+                : t("requestCard.unknown"),
+            })}
           </button>
         </div>
         {/* Location if available */}

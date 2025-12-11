@@ -461,5 +461,16 @@
     "submitReport": "Submit Report",
     "reportHelpsInfo": "Your report helps us maintain a safe and trustworthy community",
     "failedToSubmit": "Failed to submit report. Please try again."
+  },
+  "requestCard": {
+    "viewRequest": "View request: {{title}}",
+    "noImage": "No Image",
+    "deadline": "Deadline",
+    "timeIsUnknown": "time is unknown",
+    "posted": "Posted",
+    "urgency": "Urgency: {{level}}",
+    "unknown": "Unknown",
+    "filterByCategory": "Filter by {{category}} category",
+    "filterByUrgency": "Filter by {{level}} urgency level"
   }
 }

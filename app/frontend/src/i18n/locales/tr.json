@@ -461,5 +461,16 @@
     "submitReport": "Bildirimi Gönder",
     "reportHelpsInfo": "Bildirimimiz güvenli ve güvenilir bir topluluk sürdürmemize yardımcı olur",
     "failedToSubmit": "Bildirim gönderilemedi. Lütfen tekrar deneyin."
+  },
+  "requestCard": {
+    "viewRequest": "İsteği görüntüle: {{title}}",
+    "noImage": "Resim Yok",
+    "deadline": "Son Tarih",
+    "timeIsUnknown": "zaman bilinmiyor",
+    "posted": "Yayınlandı",
+    "urgency": "Aciliyet: {{level}}",
+    "unknown": "Bilinmiyor",
+    "filterByCategory": "{{category}} kategorisine göre filtrele",
+    "filterByUrgency": "{{level}} aciliyet seviyesine göre filtrele"
   }
 }
