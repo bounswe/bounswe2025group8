@@ -435,5 +435,31 @@
     "submitReview": "Submit Review",
     "reviewsHelpTrust": "Reviews help build trust in our community",
     "failedToSubmit": "Failed to submit review. Please try again."
+  },
+  "reportModal": {
+    "title": "Report This Task",
+    "close": "Close",
+    "reportSubmittedSuccess": "Report submitted successfully! Thank you for helping keep our community safe.",
+    "reasonForReport": "Reason for Report",
+    "selectReason": "Select a reason for reporting",
+    "spam": "Spam",
+    "inappropriateContent": "Inappropriate Content",
+    "harassment": "Harassment",
+    "fraud": "Fraud",
+    "fakeRequest": "Fake Request",
+    "noShow": "No Show",
+    "safetyConcern": "Safety Concern",
+    "other": "Other",
+    "details": "Details",
+    "detailsPlaceholder": "Please explain why you're reporting this task. Provide specific details to help us review your report (minimum 10 characters)...",
+    "charactersCount": "{{count}} characters",
+    "pleaseSelectReason": "Please select a reason for reporting",
+    "pleaseProvideDetails": "Please provide details about your report",
+    "pleaseProvideAtLeast10Chars": "Please provide at least 10 characters in your report",
+    "submittingReport": "Submitting Report...",
+    "reportSubmitted": "Report Submitted!",
+    "submitReport": "Submit Report",
+    "reportHelpsInfo": "Your report helps us maintain a safe and trustworthy community",
+    "failedToSubmit": "Failed to submit report. Please try again."
   }
 }

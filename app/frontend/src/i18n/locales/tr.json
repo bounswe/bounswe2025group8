@@ -435,5 +435,31 @@
     "submitReview": "Değerlendirmeyi Gönder",
     "reviewsHelpTrust": "Değerlendirmeler topluluğumuzda güven oluşturmaya yardımcı olur",
     "failedToSubmit": "Değerlendirme gönderilemedi. Lütfen tekrar deneyin."
+  },
+  "reportModal": {
+    "title": "Bu Görevi Bildir",
+    "close": "Kapat",
+    "reportSubmittedSuccess": "Bildirim başarıyla gönderildi! Topluluğumuzu güvenli tutmaya yardımcı olduğunuz için teşekkürler.",
+    "reasonForReport": "Bildirim Nedeni",
+    "selectReason": "Bildirim nedeni seçin",
+    "spam": "Spam",
+    "inappropriateContent": "Uygunsuz İçerik",
+    "harassment": "Taciz",
+    "fraud": "Dolandırıcılık",
+    "fakeRequest": "Sahte İstek",
+    "noShow": "Gelmedi",
+    "safetyConcern": "Güvenlik Endişesi",
+    "other": "Diğer",
+    "details": "Detaylar",
+    "detailsPlaceholder": "Lütfen bu görevi neden bildirdiğinizi açıklayın. Bildirimimizi incelememize yardımcı olmak için belirli detaylar sağlayın (minimum 10 karakter)...",
+    "charactersCount": "{{count}} karakter",
+    "pleaseSelectReason": "Lütfen bildirim nedeni seçin",
+    "pleaseProvideDetails": "Lütfen bildirimimiz hakkında detaylar sağlayın",
+    "pleaseProvideAtLeast10Chars": "Lütfen bildirimimizde en az 10 karakter sağlayın",
+    "submittingReport": "Bildirim gönderiliyor...",
+    "reportSubmitted": "Bildirim Gönderildi!",
+    "submitReport": "Bildirimi Gönder",
+    "reportHelpsInfo": "Bildirimimiz güvenli ve güvenilir bir topluluk sürdürmemize yardımcı olur",
+    "failedToSubmit": "Bildirim gönderilemedi. Lütfen tekrar deneyin."
   }
 }
