@@ -472,5 +472,11 @@
     "unknown": "Unknown",
     "filterByCategory": "Filter by {{category}} category",
     "filterByUrgency": "Filter by {{level}} urgency level"
+  },
+  "requestCardForHomePage": {
+    "viewRequest": "View request: {{title}}",
+    "noImage": "No Image",
+    "viewRequestDetails": "View request details",
+    "filterByCategory": "Filter by {{category}} category"
   }
 }

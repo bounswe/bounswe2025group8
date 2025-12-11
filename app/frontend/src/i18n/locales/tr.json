@@ -472,5 +472,11 @@
     "unknown": "Bilinmiyor",
     "filterByCategory": "{{category}} kategorisine göre filtrele",
     "filterByUrgency": "{{level}} aciliyet seviyesine göre filtrele"
+  },
+  "requestCardForHomePage": {
+    "viewRequest": "İsteği görüntüle: {{title}}",
+    "noImage": "Resim Yok",
+    "viewRequestDetails": "İstek detaylarını görüntüle",
+    "filterByCategory": "{{category}} kategorisine göre filtrele"
   }
 }
