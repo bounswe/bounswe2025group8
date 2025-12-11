@@ -680,5 +680,20 @@
     "addressDescriptionPlaceholder": "Enter any additional description for your address (optional)",
     "failedToLoadStates": "Failed to load states/provinces. Please try again later.",
     "failedToLoadCities": "Failed to load cities. Please try again later."
+  },
+  "forgotPassword": {
+    "title": "Forgot Password",
+    "description": "Enter your email and we'll send you a link to reset your password",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Email",
+    "sendResetLink": "Send Reset Link",
+    "backToLogin": "Back to Login",
+    "passwordResetLinkSent": "Password reset link sent to your email!",
+    "failedToResetPassword": "Failed to reset password",
+    "requestFailed": "Request failed",
+    "logoAlt": "Logo",
+    "pageTitle": "Neighborhood\nAssistance Board",
+    "changeLanguage": "Change language",
+    "themeSelection": "Theme selection"
   }
 }

@@ -23,7 +23,7 @@ const ForgotPassword = () => {
       const result = await forgotPassword(email);
 
       if (result && result.success) {
-        setSuccessMessage(t("passwordResetLinkSent"));
+        setSuccessMessage(t("forgotPassword.passwordResetLinkSent"));
 
         // In development mode, if token is returned, show it
         if (result.token) {
@@ -33,9 +33,9 @@ const ForgotPassword = () => {
       }
     } catch (error) {
       setForgotError(
-        t("failedToResetPassword") +
+        t("forgotPassword.failedToResetPassword") +
           ": " +
-          (error.message || t("requestFailed"))
+          (error.message || t("forgotPassword.requestFailed"))
       );
     }
   };
@@ -52,7 +52,7 @@ const ForgotPassword = () => {
           value={i18n.language}
           onChange={(e) => i18n.changeLanguage(e.target.value)}
           className="px-3 py-2 rounded-md border text-sm focus:outline-none"
-          aria-label={t("changeLanguage")}
+          aria-label={t("forgotPassword.changeLanguage")}
           style={{
             backgroundColor: colors.background.secondary,
             color: colors.text.primary,
@@ -72,7 +72,7 @@ const ForgotPassword = () => {
           value={theme}
           onChange={(e) => setTheme(e.target.value)}
           className="px-3 py-2 rounded-md border text-sm focus:outline-none"
-          aria-label={t("themeSelection")}
+          aria-label={t("forgotPassword.themeSelection")}
           style={{
             backgroundColor: colors.background.secondary,
             color: colors.text.primary,
@@ -96,15 +96,25 @@ const ForgotPassword = () => {
       >
         {/* Logo and Title updated to be side by side */}
         <div className="flex flex-row items-center justify-center mb-1">
-          <img src={logoImage} alt="Logo" width="160" height="160" />
+          <img
+            src={logoImage}
+            alt={t("forgotPassword.logoAlt")}
+            width="160"
+            height="160"
+          />
           <h1
             className="text-4xl font-bold ml-2"
             style={{ color: colors.text.primary }}
             id="forgot-page-title"
           >
-            Neighborhood
-            <br />
-            Assistance Board
+            {t("forgotPassword.pageTitle")
+              .split("\n")
+              .map((line, i) => (
+                <span key={i}>
+                  {line}
+                  {i === 0 && <br />}
+                </span>
+              ))}
           </h1>
         </div>
 
@@ -121,13 +131,13 @@ const ForgotPassword = () => {
                 className="font-bold text-base mb-1.5"
                 style={{ color: colors.text.primary }}
               >
-                {t("forgotPasswordTitle")}
+                {t("forgotPassword.title")}
               </p>
               <p
                 className="text-sm mb-3"
                 style={{ color: colors.text.secondary }}
               >
-                {t("forgotPasswordDescription")}
+                {t("forgotPassword.description")}
               </p>
 
               {/* Show either the forgot error or the Redux error */}
@@ -189,7 +199,7 @@ const ForgotPassword = () => {
                       border: 0,
                     }}
                   >
-                    {t("emailLabel")}
+                    {t("forgotPassword.emailLabel")}
                   </label>
                   <input
                     required
@@ -204,7 +214,7 @@ const ForgotPassword = () => {
                     }
                     onBlur={(e) => (e.target.style.boxShadow = "none")}
                     id="email"
-                    placeholder={t("emailPlaceholder")}
+                    placeholder={t("forgotPassword.emailPlaceholder")}
                     name="email"
                     type="email"
                     autoComplete="email"
@@ -240,7 +250,7 @@ const ForgotPassword = () => {
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
                   disabled={loading}
                 >
-                  {t("sendResetLink")}
+                  {t("forgotPassword.sendResetLink")}
                 </button>
 
                 <div className="text-center mb-2">
@@ -255,7 +265,7 @@ const ForgotPassword = () => {
                       (e.currentTarget.style.color = colors.brand.primary)
                     }
                   >
-                    {t("backToLogin")}
+                    {t("forgotPassword.backToLogin")}
                   </RouterLink>
                 </div>
               </form>

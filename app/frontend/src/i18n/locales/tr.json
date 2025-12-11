@@ -680,5 +680,20 @@
     "addressDescriptionPlaceholder": "Adresiniz için ek açıklama girin (opsiyonel)",
     "failedToLoadStates": "Şehirler/Eyaletler yüklenemedi. Lütfen daha sonra tekrar deneyin.",
     "failedToLoadCities": "İlçeler/Şehirler yüklenemedi. Lütfen daha sonra tekrar deneyin."
+  },
+  "forgotPassword": {
+    "title": "Şifremi Unuttum",
+    "description": "E-posta adresinizi girin, size şifre sıfırlama bağlantısı gönderelim",
+    "emailLabel": "E-posta",
+    "emailPlaceholder": "E-posta",
+    "sendResetLink": "Sıfırlama Bağlantısı Gönder",
+    "backToLogin": "Giriş Sayfasına Dön",
+    "passwordResetLinkSent": "Şifre sıfırlama bağlantısı e-postanıza gönderildi!",
+    "failedToResetPassword": "Şifre sıfırlanamadı",
+    "requestFailed": "İstek başarısız",
+    "logoAlt": "Logo",
+    "pageTitle": "Neighborhood Assistance Board",
+    "changeLanguage": "Dil değiştir",
+    "themeSelection": "Tema seçimi"
   }
 }
