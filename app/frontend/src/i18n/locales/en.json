@@ -1090,6 +1090,60 @@
       "selectTheme": "Select {{label}} theme: {{description}}"
     }
   },
+  "adminAllRequests": {
+    "title": "All Requests",
+    "totalRequests": "Total requests: {{count}}",
+    "backToDashboard": "Back to Dashboard",
+    "loading": "Loading...",
+    "noRequestsFound": "No requests found",
+    "table": {
+      "id": "ID",
+      "title": "Title",
+      "creator": "Creator",
+      "status": "Status",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "actions": {
+      "view": "View",
+      "delete": "Delete"
+    },
+    "deleteDialog": {
+      "title": "Delete Request",
+      "message": "Are you sure you want to delete this request? This action cannot be undone.",
+      "reasonLabel": "Reason for deletion (optional)",
+      "reasonPlaceholder": "Explain why this request is being deleted...",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    }
+  },
+  "adminDashboard": {
+    "title": "Admin Dashboard",
+    "welcome": "Welcome back, {{name}}. Manage reports and content here.",
+    "adminAccessAlert": "You have admin access to manage all requests and reports. Please handle reports responsibly.",
+    "sections": {
+      "allRequests": {
+        "title": "All Requests",
+        "description": "View and manage all requests/tasks in the system"
+      },
+      "taskReports": {
+        "title": "Task Reports",
+        "description": "View and manage reports filed against tasks/requests"
+      },
+      "reportedUsers": {
+        "title": "Reported Users",
+        "description": "View users who have been reported and need review"
+      }
+    },
+    "viewButton": "View",
+    "quickStats": {
+      "title": "Quick Stats",
+      "totalRequests": "Total Requests",
+      "pendingReports": "Pending Reports",
+      "reportedUsers": "Reported Users",
+      "totalUsers": "Total Users"
+    }
+  },
   "common": {
     "retry": "Retry"
   }

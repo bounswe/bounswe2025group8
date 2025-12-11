@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import useAuth from '../../features/authentication/hooks/useAuth';
-import { useTheme } from '../../hooks/useTheme';
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import useAuth from "../../features/authentication/hooks/useAuth";
+import { useTheme } from "../../hooks/useTheme";
 import {
   Container,
   Paper,
@@ -24,15 +25,15 @@ import {
   Alert,
   CircularProgress,
   Pagination,
-} from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import VisibilityIcon from '@mui/icons-material/Visibility';
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import {
   fetchAllAdminRequests,
   deleteTaskThunk,
   clearError,
   clearSuccess,
-} from '../../features/admin/store/adminSlice';
+} from "../../features/admin/store/adminSlice";
 
 const AdminAllRequests = () => {
   const dispatch = useDispatch();
@@ -40,6 +41,7 @@ const AdminAllRequests = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { userRole } = useAuth();
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
   const {
     allRequests,
@@ -50,16 +52,16 @@ const AdminAllRequests = () => {
     successMessage,
   } = useSelector((state) => state.admin);
 
-  const currentPage = parseInt(searchParams.get('page') || '1', 10);
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [deleteReason, setDeleteReason] = useState('');
+  const [deleteReason, setDeleteReason] = useState("");
 
   // Check admin access
   useEffect(() => {
-    if (userRole !== 'admin') {
-      navigate('/');
+    if (userRole !== "admin") {
+      navigate("/");
     }
   }, [userRole, navigate]);
 
@@ -85,72 +87,94 @@ const AdminAllRequests = () => {
 
   const handleDeleteClick = (task) => {
     setSelectedTask(task);
-    setDeleteReason('');
+    setDeleteReason("");
     setDeleteDialogOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
     if (selectedTask) {
-      dispatch(deleteTaskThunk({ taskId: selectedTask.id, reason: deleteReason }));
+      dispatch(
+        deleteTaskThunk({ taskId: selectedTask.id, reason: deleteReason })
+      );
       setDeleteDialogOpen(false);
       setSelectedTask(null);
-      setDeleteReason('');
+      setDeleteReason("");
     }
   };
 
   const handleDeleteCancel = () => {
     setDeleteDialogOpen(false);
     setSelectedTask(null);
-    setDeleteReason('');
+    setDeleteReason("");
   };
 
   const getStatusColor = (status) => {
     const statusColors = {
-      POSTED: 'primary',
-      IN_PROGRESS: 'warning',
-      COMPLETED: 'success',
-      CANCELLED: 'error',
-      EXPIRED: 'default',
+      POSTED: "primary",
+      IN_PROGRESS: "warning",
+      COMPLETED: "success",
+      CANCELLED: "error",
+      EXPIRED: "default",
     };
-    return statusColors[status] || 'default';
+    return statusColors[status] || "default";
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
-  if (userRole !== 'admin') {
+  if (userRole !== "admin") {
     return null;
   }
 
   return (
-    <Box sx={{ backgroundColor: colors.background.primary, minHeight: '100vh', py: 4 }}>
+    <Box
+      sx={{
+        backgroundColor: colors.background.primary,
+        minHeight: "100vh",
+        py: 4,
+      }}
+    >
       <Container maxWidth="lg">
         {/* Header */}
-        <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box
+          sx={{
+            mb: 4,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <div>
-            <h1 style={{ color: colors.text.primary, marginBottom: '8px' }}>All Requests</h1>
-            <p style={{ color: colors.text.secondary, fontSize: '14px' }}>
-              Total requests: {pagination.totalItems}
+            <h1 style={{ color: colors.text.primary, marginBottom: "8px" }}>
+              {t("adminAllRequests.title")}
+            </h1>
+            <p style={{ color: colors.text.secondary, fontSize: "14px" }}>
+              {t("adminAllRequests.totalRequests", {
+                count: pagination.totalItems,
+              })}
             </p>
           </div>
           <Button
             variant="outlined"
-            onClick={() => navigate('/admin')}
-            sx={{ color: colors.brand.primary, borderColor: colors.brand.primary }}
+            onClick={() => navigate("/admin")}
+            sx={{
+              color: colors.brand.primary,
+              borderColor: colors.brand.primary,
+            }}
           >
-            Back to Dashboard
+            {t("adminAllRequests.backToDashboard")}
           </Button>
         </Box>
 
         {/* Alerts */}
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
-            {typeof error === 'string' ? error : 'An error occurred'}
+            {typeof error === "string" ? error : "An error occurred"}
           </Alert>
         )}
         {successMessage && (
@@ -161,7 +185,7 @@ const AdminAllRequests = () => {
 
         {/* Loading State */}
         {loading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
             <CircularProgress />
           </Box>
         )}
@@ -173,10 +197,10 @@ const AdminAllRequests = () => {
             sx={{
               backgroundColor: colors.background.elevated,
               color: colors.text.primary,
-              '& .MuiTable-root': {
+              "& .MuiTable-root": {
                 backgroundColor: colors.background.elevated,
               },
-              '& .MuiTableCell-root': {
+              "& .MuiTableCell-root": {
                 backgroundColor: colors.background.elevated,
                 color: colors.text.primary,
               },
@@ -185,19 +209,47 @@ const AdminAllRequests = () => {
             <Table>
               <TableHead>
                 <TableRow sx={{ backgroundColor: colors.brand.primary }}>
-                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>ID</TableCell>
-                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Title</TableCell>
-                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Creator</TableCell>
-                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Status</TableCell>
-                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Created</TableCell>
-                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Actions</TableCell>
+                  <TableCell
+                    sx={{ color: colors.text.inverse, fontWeight: "bold" }}
+                  >
+                    {t("adminAllRequests.table.id")}
+                  </TableCell>
+                  <TableCell
+                    sx={{ color: colors.text.inverse, fontWeight: "bold" }}
+                  >
+                    {t("adminAllRequests.table.title")}
+                  </TableCell>
+                  <TableCell
+                    sx={{ color: colors.text.inverse, fontWeight: "bold" }}
+                  >
+                    {t("adminAllRequests.table.creator")}
+                  </TableCell>
+                  <TableCell
+                    sx={{ color: colors.text.inverse, fontWeight: "bold" }}
+                  >
+                    {t("adminAllRequests.table.status")}
+                  </TableCell>
+                  <TableCell
+                    sx={{ color: colors.text.inverse, fontWeight: "bold" }}
+                  >
+                    {t("adminAllRequests.table.created")}
+                  </TableCell>
+                  <TableCell
+                    sx={{ color: colors.text.inverse, fontWeight: "bold" }}
+                  >
+                    {t("adminAllRequests.table.actions")}
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {allRequests.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 3, color: colors.text.secondary }}>
-                      No requests found
+                    <TableCell
+                      colSpan={6}
+                      align="center"
+                      sx={{ py: 3, color: colors.text.secondary }}
+                    >
+                      {t("adminAllRequests.noRequestsFound")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -206,13 +258,24 @@ const AdminAllRequests = () => {
                       key={task.id}
                       hover
                       sx={{
-                        '&:hover': { backgroundColor: colors.interactive.hover },
+                        "&:hover": {
+                          backgroundColor: colors.interactive.hover,
+                        },
                         borderBottom: `1px solid ${colors.border.secondary}`,
                       }}
                     >
-                      <TableCell sx={{ color: colors.text.primary }}>{task.id}</TableCell>
-                      <TableCell sx={{ color: colors.text.primary, maxWidth: 200 }}>
-                        <div style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                      <TableCell sx={{ color: colors.text.primary }}>
+                        {task.id}
+                      </TableCell>
+                      <TableCell
+                        sx={{ color: colors.text.primary, maxWidth: 200 }}
+                      >
+                        <div
+                          style={{
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                          }}
+                        >
                           {task.title}
                         </div>
                       </TableCell>
@@ -230,13 +293,13 @@ const AdminAllRequests = () => {
                         {formatDate(task.created_at)}
                       </TableCell>
                       <TableCell>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Box sx={{ display: "flex", gap: 1 }}>
                           <Button
                             size="small"
                             startIcon={<VisibilityIcon />}
                             onClick={() => navigate(`/requests/${task.id}`)}
                           >
-                            View
+                            {t("adminAllRequests.actions.view")}
                           </Button>
                           <Button
                             size="small"
@@ -244,7 +307,7 @@ const AdminAllRequests = () => {
                             startIcon={<DeleteIcon />}
                             onClick={() => handleDeleteClick(task)}
                           >
-                            Delete
+                            {t("adminAllRequests.actions.delete")}
                           </Button>
                         </Box>
                       </TableCell>
@@ -258,7 +321,7 @@ const AdminAllRequests = () => {
 
         {/* Pagination */}
         {!loading && pagination.totalPages > 1 && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
             <Pagination
               count={pagination.totalPages}
               page={currentPage}
@@ -270,14 +333,21 @@ const AdminAllRequests = () => {
       </Container>
 
       {/* Delete Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={handleDeleteCancel} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ color: colors.text.primary }}>Delete Request</DialogTitle>
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ color: colors.text.primary }}>
+          {t("adminAllRequests.deleteDialog.title")}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ color: colors.text.secondary, mb: 2 }}>
-            Are you sure you want to delete this request? This action cannot be undone.
+            {t("adminAllRequests.deleteDialog.message")}
           </DialogContentText>
           {selectedTask && (
-            <div style={{ marginBottom: '16px', color: colors.text.primary }}>
+            <div style={{ marginBottom: "16px", color: colors.text.primary }}>
               <strong>{selectedTask.title}</strong>
             </div>
           )}
@@ -285,15 +355,15 @@ const AdminAllRequests = () => {
             fullWidth
             multiline
             rows={3}
-            label="Reason for deletion (optional)"
+            label={t("adminAllRequests.deleteDialog.reasonLabel")}
             value={deleteReason}
             onChange={(e) => setDeleteReason(e.target.value)}
-            placeholder="Explain why this request is being deleted..."
+            placeholder={t("adminAllRequests.deleteDialog.reasonPlaceholder")}
             sx={{
-              '& .MuiOutlinedInput-root': {
+              "& .MuiOutlinedInput-root": {
                 color: colors.text.primary,
               },
-              '& .MuiInputBase-input::placeholder': {
+              "& .MuiInputBase-input::placeholder": {
                 color: colors.text.secondary,
                 opacity: 0.7,
               },
@@ -301,14 +371,20 @@ const AdminAllRequests = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDeleteCancel}>Cancel</Button>
+          <Button onClick={handleDeleteCancel}>
+            {t("adminAllRequests.deleteDialog.cancel")}
+          </Button>
           <Button
             onClick={handleDeleteConfirm}
             color="error"
             variant="contained"
             disabled={actionLoading}
           >
-            {actionLoading ? <CircularProgress size={24} /> : 'Delete'}
+            {actionLoading ? (
+              <CircularProgress size={24} />
+            ) : (
+              t("adminAllRequests.deleteDialog.confirm")
+            )}
           </Button>
         </DialogActions>
       </Dialog>

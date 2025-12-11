@@ -1086,6 +1086,60 @@
       "selectTheme": "{{label}} temasını seç: {{description}}"
     }
   },
+  "adminAllRequests": {
+    "title": "Tüm İstekler",
+    "totalRequests": "Toplam istek: {{count}}",
+    "backToDashboard": "Panoya Dön",
+    "loading": "Yükleniyor...",
+    "noRequestsFound": "İstek bulunamadı",
+    "table": {
+      "id": "ID",
+      "title": "Başlık",
+      "creator": "Oluşturan",
+      "status": "Durum",
+      "created": "Oluşturulma",
+      "actions": "İşlemler"
+    },
+    "actions": {
+      "view": "Görüntüle",
+      "delete": "Sil"
+    },
+    "deleteDialog": {
+      "title": "İsteği Sil",
+      "message": "Bu isteği silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+      "reasonLabel": "Silme nedeni (isteğe bağlı)",
+      "reasonPlaceholder": "Bu isteğin neden silindiğini açıklayın...",
+      "cancel": "İptal",
+      "confirm": "Sil"
+    }
+  },
+  "adminDashboard": {
+    "title": "Yönetici Paneli",
+    "welcome": "Tekrar hoş geldiniz, {{name}}. Raporları ve içeriği buradan yönetin.",
+    "adminAccessAlert": "Tüm istekleri ve raporları yönetmek için yönetici erişiminiz var. Lütfen raporları sorumlu bir şekilde ele alın.",
+    "sections": {
+      "allRequests": {
+        "title": "Tüm İstekler",
+        "description": "Sistemdeki tüm istekleri/görevleri görüntüleyin ve yönetin"
+      },
+      "taskReports": {
+        "title": "Görev Raporları",
+        "description": "Görevler/istekler hakkında yapılan şikayetleri görüntüleyin ve yönetin"
+      },
+      "reportedUsers": {
+        "title": "Bildirilen Kullanıcılar",
+        "description": "Bildirilmiş ve incelenmesi gereken kullanıcıları görüntüleyin"
+      }
+    },
+    "viewButton": "Görüntüle",
+    "quickStats": {
+      "title": "Hızlı İstatistikler",
+      "totalRequests": "Toplam İstek",
+      "pendingReports": "Bekleyen Raporlar",
+      "reportedUsers": "Bildirilen Kullanıcılar",
+      "totalUsers": "Toplam Kullanıcı"
+    }
+  },
   "common": {
     "retry": "Tekrar Dene"
   }
