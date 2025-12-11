@@ -34,7 +34,7 @@ const Categories = () => {
         setError(null);
       } catch (err) {
         console.error("Failed to fetch categories:", err);
-        setError("categories.failedToLoadCategoriesLater");
+        setError("categoriesPage.failedToLoadCategoriesLater");
         // Clear categories on error
         setCategories([]);
       } finally {
@@ -43,7 +43,7 @@ const Categories = () => {
     };
 
     fetchCategories();
-  }, []);
+  }, [t]);
 
   const handleCategoryClick = (categoryId) => {
     // Navigate to requests filtered by this category
@@ -54,10 +54,10 @@ const Categories = () => {
     <main role="main" aria-labelledby="categories-title">
       <div className="">
         <h1 className="text-4xl font-normal mb-4" id="categories-title">
-          {t("categories.categories")}
+          {t("categoriesPage.categories")}
         </h1>
         <p className="text-base text-gray-600 mb-4">
-          {t("categories.browseCategories")}
+          {t("categoriesPage.browseCategories")}
         </p>
       </div>
 
@@ -98,7 +98,7 @@ const Categories = () => {
           ) : (
             <div className="col-span-full w-full text-center py-12">
               <p className="text-gray-500">
-                {t("categories.noCategoriesAvailable")}
+                {t("categoriesPage.noCategoriesAvailable")}
               </p>
             </div>
           )}

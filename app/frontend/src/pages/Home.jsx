@@ -85,7 +85,7 @@ const Home = () => {
   useEffect(() => {
     fetchCategories();
     fetchRequests();
-  }, []);
+  }, [t]);
   // Using the centralized getCategoryImage function from constants/categories.js
 
   return (

@@ -581,7 +581,7 @@
     "locationNotSpecified": "Konum belirtilmedi",
     "timeUnknown": "Zaman bilinmiyor"
   },
-  "categories": {
+  "categoriesPage": {
     "categories": "Kategoriler",
     "browseCategories": "Yardım isteklerini kategoriye göre gözatın",
     "failedToLoadCategoriesLater": "Kategoriler yüklenemedi. Lütfen daha sonra tekrar deneyin.",

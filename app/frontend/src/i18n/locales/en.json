@@ -581,7 +581,7 @@
     "locationNotSpecified": "Location not specified",
     "timeUnknown": "Time unknown"
   },
-  "categories": {
+  "categoriesPage": {
     "categories": "Categories",
     "browseCategories": "Browse help requests by category",
     "failedToLoadCategoriesLater": "Failed to load categories. Please try again later.",
