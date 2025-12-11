@@ -1292,6 +1292,43 @@
       "confirm": "Kullanıcıyı Yasakla"
     }
   },
+  "categories": {
+    "GROCERY_SHOPPING": "Market Alışverişi",
+    "TUTORING": "Özel Ders",
+    "HOME_REPAIR": "Ev Tamiri",
+    "MOVING_HELP": "Taşınma Yardımı",
+    "HOUSE_CLEANING": "Ev Temizliği",
+    "HOME_CLEANING": "Ev Temizliği",
+    "TECHNICAL_SUPPORT": "Teknik Destek",
+    "PROFESSIONAL_ADVICE": "Profesyonel Danışmanlık",
+    "ELDERLY_CARE": "Yaşlı Bakımı",
+    "EDUCATION": "Eğitim",
+    "HEALTHCARE": "Sağlık Hizmetleri",
+    "HOME_MAINTENANCE": "Ev Bakımı",
+    "OTHER": "Diğer Hizmetler"
+  },
+  "taskStatuses": {
+    "POSTED": "Yayınlandı",
+    "ASSIGNED": "Atandı",
+    "IN_PROGRESS": "Devam Ediyor",
+    "COMPLETED": "Tamamlandı",
+    "CANCELLED": "İptal Edildi",
+    "EXPIRED": "Süresi Doldu"
+  },
+  "volunteerStatuses": {
+    "PENDING": "Beklemede",
+    "ACCEPTED": "Kabul Edildi",
+    "REJECTED": "Reddedildi",
+    "WITHDRAWN": "Geri Çekildi"
+  },
+  "urgencyLevels": {
+    "1": "Çok Düşük",
+    "2": "Düşük",
+    "3": "Orta",
+    "4": "Yüksek",
+    "5": "Kritik",
+    "unknown": "Bilinmeyen"
+  },
   "common": {
     "retry": "Tekrar Dene"
   }

@@ -1296,6 +1296,43 @@
       "confirm": "Ban User"
     }
   },
+  "categories": {
+    "GROCERY_SHOPPING": "Grocery Shopping",
+    "TUTORING": "Tutoring",
+    "HOME_REPAIR": "Home Repair",
+    "MOVING_HELP": "Moving Help",
+    "HOUSE_CLEANING": "House Cleaning",
+    "HOME_CLEANING": "Home Cleaning",
+    "TECHNICAL_SUPPORT": "Technical Support",
+    "PROFESSIONAL_ADVICE": "Professional Advice",
+    "ELDERLY_CARE": "Elderly Care",
+    "EDUCATION": "Education",
+    "HEALTHCARE": "Healthcare",
+    "HOME_MAINTENANCE": "Home Maintenance",
+    "OTHER": "Other Services"
+  },
+  "taskStatuses": {
+    "POSTED": "Posted",
+    "ASSIGNED": "Assigned",
+    "IN_PROGRESS": "In Progress",
+    "COMPLETED": "Completed",
+    "CANCELLED": "Cancelled",
+    "EXPIRED": "Expired"
+  },
+  "volunteerStatuses": {
+    "PENDING": "Pending",
+    "ACCEPTED": "Accepted",
+    "REJECTED": "Rejected",
+    "WITHDRAWN": "Withdrawn"
+  },
+  "urgencyLevels": {
+    "1": "Very Low",
+    "2": "Low",
+    "3": "Medium",
+    "4": "High",
+    "5": "Critical",
+    "unknown": "Unknown"
+  },
   "common": {
     "retry": "Retry"
   }
