@@ -489,5 +489,11 @@
     "reliability": "Reliability",
     "taskCompletion": "Task Completion",
     "safetyAndRespect": "Safety & Respect"
+  },
+  "searchbar": {
+    "placeholder": "What do you need help with",
+    "search": "Search",
+    "searchInput": "Search input",
+    "clearSearch": "Clear search"
   }
 }

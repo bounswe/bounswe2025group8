@@ -489,5 +489,11 @@
     "reliability": "Güvenilirlik",
     "taskCompletion": "Görev Tamamlama",
     "safetyAndRespect": "Güvenlik ve Saygı"
+  },
+  "searchbar": {
+    "placeholder": "Hangi konuda yardıma ihtiyacınız var",
+    "search": "Ara",
+    "searchInput": "Arama girişi",
+    "clearSearch": "Aramayı temizle"
   }
 }
