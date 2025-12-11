@@ -9,8 +9,12 @@ import {
   clearError,
 } from "../features/request/store/allRequestsSlice";
 import { searchUsers } from "../features/user/services/userSearchService";
-import { categoryMapping, getCategoryImage } from "../constants/categories";
-import { urgencyLevels } from "../constants/urgency_level";
+import {
+  categoryMapping,
+  getCategoryImage,
+  getCategoryName,
+} from "../constants/categories";
+import { urgencyLevels, getUrgencyLevelName } from "../constants/urgency_level";
 import { formatRelativeTime } from "../utils/dateUtils";
 import { extractRegionFromLocation } from "../utils/taskUtils";
 import sortIcon from "../assets/sort.svg";
@@ -207,9 +211,8 @@ const SearchResults = () => {
 
   // Format task data for RequestCardForHomePage component
   const formatTaskForCard = (task) => {
-    const categoryDisplayName = categoryMapping[task.category] || task.category;
-    const urgencyDisplayName =
-      urgencyLevels[task.urgency_level]?.name || "Unknown";
+    const categoryDisplayName = getCategoryName(task.category, t);
+    const urgencyDisplayName = getUrgencyLevelName(task.urgency_level, t);
     const imageUrl = getCategoryImage(task.category);
 
     // Format location (fallback to "Location not specified")
@@ -405,12 +408,11 @@ const SearchResults = () => {
               >
                 {categoryFilter &&
                   t("searchResults.showingResultsIn", {
-                    category: categoryMapping[categoryFilter] || categoryFilter,
+                    category: getCategoryName(categoryFilter, t),
                   })}
                 {urgencyFilter &&
                   `${categoryFilter ? " • " : ""}${t("searchResults.priority", {
-                    urgency:
-                      urgencyLevels[urgencyFilter]?.name || urgencyFilter,
+                    urgency: getUrgencyLevelName(Number(urgencyFilter), t),
                   })}`}
                 {locationFilter &&
                   `${categoryFilter || urgencyFilter ? " • " : ""}${t(

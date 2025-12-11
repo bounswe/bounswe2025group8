@@ -36,8 +36,8 @@ import EditRequestModal from "../components/EditRequestModal";
 import RatingReviewModal from "../components/RatingReviewModal";
 import ReportModal from "../components/ReportModal";
 import CommentSection from "../components/CommentSection";
-import { urgencyLevels } from "../constants/urgency_level";
-import { getCategoryImage } from "../constants/categories";
+import { urgencyLevels, getUrgencyLevelName } from "../constants/urgency_level";
+import { getCategoryImage, getCategoryName } from "../constants/categories";
 import { toAbsoluteUrl } from "../utils/url";
 import { getReviewableUsers } from "../services/reviewService";
 import { useTheme } from "../hooks/useTheme";
@@ -918,7 +918,7 @@ const RequestDetail = () => {
                 color: colors.brand.primary,
               }}
             >
-              {request.category_display}
+              {getCategoryName(request.category, t)}
             </span>
             <span
               className="px-3 py-1 text-sm font-medium rounded-full"
@@ -927,7 +927,8 @@ const RequestDetail = () => {
                 color: colors.text.inverse,
               }}
             >
-              {urgency.name} {t("requestDetail.urgency")}
+              {getUrgencyLevelName(request.urgency_level, t)}{" "}
+              {t("requestDetail.urgency")}
             </span>
             <button
               onClick={handleMenuOpen}
@@ -1042,7 +1043,7 @@ const RequestDetail = () => {
                     color: colors.text.inverse,
                   }}
                 >
-                  {request.category_display}
+                  {getCategoryName(request.category, t)}
                 </span>
               </div>
             </div>

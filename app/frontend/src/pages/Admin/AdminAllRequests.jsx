@@ -34,6 +34,7 @@ import {
   clearError,
   clearSuccess,
 } from "../../features/admin/store/adminSlice";
+import { getTaskStatusInfo } from "../../utils/formatUtils";
 
 const AdminAllRequests = () => {
   const dispatch = useDispatch();
@@ -284,7 +285,7 @@ const AdminAllRequests = () => {
                       </TableCell>
                       <TableCell>
                         <Chip
-                          label={task.status_display || task.status}
+                          label={getTaskStatusInfo(task.status, t).text}
                           color={getStatusColor(task.status)}
                           size="small"
                         />
