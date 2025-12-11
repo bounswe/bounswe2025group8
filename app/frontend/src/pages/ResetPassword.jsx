@@ -76,12 +76,12 @@ const ResetPassword = () => {
         } catch (error) {
           setIsTokenValid(false);
           setTokenChecked(true);
-          setResetError(t("invalidOrExpiredToken"));
+          setResetError(t("resetPassword.validation.invalidOrExpiredToken"));
         }
       } else {
         setIsTokenValid(false);
         setTokenChecked(true);
-        setResetError(t("noResetTokenProvided"));
+        setResetError(t("resetPassword.validation.noResetTokenProvided"));
       }
     };
 
@@ -92,11 +92,11 @@ const ResetPassword = () => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      return setResetError(t("passwordsDontMatch"));
+      return setResetError(t("resetPassword.validation.passwordsDontMatch"));
     }
 
     if (!isTokenValid) {
-      return setResetError(t("invalidOrExpiredToken"));
+      return setResetError(t("resetPassword.validation.invalidOrExpiredToken"));
     }
 
     try {
@@ -105,16 +105,18 @@ const ResetPassword = () => {
       const result = await resetPassword(password, token);
 
       if (result && result.success) {
-        setSuccessMessage(t("passwordResetSuccessfully"));
+        setSuccessMessage(
+          t("resetPassword.validation.passwordResetSuccessfully")
+        );
         setTimeout(() => {
           navigate("/login");
         }, 3000);
       }
     } catch (error) {
       setResetError(
-        t("failedToResetPasswordColon") +
+        t("resetPassword.validation.failedToResetPasswordColon") +
           ": " +
-          (error.message || t("resetFailed"))
+          (error.message || t("resetPassword.validation.resetFailed"))
       );
     }
   };
@@ -152,7 +154,7 @@ const ResetPassword = () => {
           value={theme}
           onChange={(e) => setTheme(e.target.value)}
           className="px-3 py-2 rounded-md border text-sm focus:outline-none"
-          aria-label={t("themeSelection")}
+          aria-label={t("resetPassword.themeSelection")}
           style={{
             backgroundColor: colors.background.secondary,
             color: colors.text.primary,
@@ -163,9 +165,11 @@ const ResetPassword = () => {
           }
           onBlur={(e) => (e.target.style.boxShadow = "none")}
         >
-          <option value="light">{t("lightMode")}</option>
-          <option value="dark">{t("darkMode")}</option>
-          <option value="high-contrast">{t("highContrast")}</option>
+          <option value="light">{t("resetPassword.lightMode")}</option>
+          <option value="dark">{t("resetPassword.darkMode")}</option>
+          <option value="high-contrast">
+            {t("resetPassword.highContrast")}
+          </option>
         </select>
       </div>
 
@@ -201,13 +205,13 @@ const ResetPassword = () => {
                 className="text-base mb-1.5"
                 style={{ color: colors.text.primary }}
               >
-                {t("resetPasswordTitle")}
+                {t("resetPassword.title")}
               </p>
               <p
                 className="text-sm mb-3"
                 style={{ color: colors.text.secondary }}
               >
-                {t("enterNewPasswordDescription")}
+                {t("resetPassword.description")}
               </p>
 
               {/* Show either the reset error or the Redux error */}
@@ -266,7 +270,7 @@ const ResetPassword = () => {
                       border: 0,
                     }}
                   >
-                    {t("newPasswordLabel")}
+                    {t("resetPassword.newPasswordLabel")}
                   </label>
                   <input
                     required
@@ -281,7 +285,7 @@ const ResetPassword = () => {
                     }
                     onBlur={(e) => (e.target.style.boxShadow = "none")}
                     name="password"
-                    placeholder={t("newPasswordPlaceholder")}
+                    placeholder={t("resetPassword.newPasswordPlaceholder")}
                     type={showPassword ? "text" : "password"}
                     id="password"
                     value={password}
@@ -300,7 +304,9 @@ const ResetPassword = () => {
                     }
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={
-                      showPassword ? t("hidePassword") : t("showPassword")
+                      showPassword
+                        ? t("resetPassword.hidePassword")
+                        : t("resetPassword.showPassword")
                     }
                   >
                     {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
@@ -323,7 +329,7 @@ const ResetPassword = () => {
                       border: 0,
                     }}
                   >
-                    {t("confirmPasswordLabel")}
+                    {t("resetPassword.confirmPasswordLabel")}
                   </label>
                   <input
                     required
@@ -338,7 +344,7 @@ const ResetPassword = () => {
                     }
                     onBlur={(e) => (e.target.style.boxShadow = "none")}
                     name="confirmPassword"
-                    placeholder={t("confirmPasswordPlaceholder")}
+                    placeholder={t("resetPassword.confirmPasswordPlaceholder")}
                     type={showPassword ? "text" : "password"}
                     id="confirmPassword"
                     value={confirmPassword}
@@ -358,8 +364,8 @@ const ResetPassword = () => {
                     onClick={() => setShowPassword(!showPassword)}
                     aria-label={
                       showPassword
-                        ? t("hideConfirmPassword")
-                        : t("showConfirmPassword")
+                        ? t("resetPassword.hideConfirmPassword")
+                        : t("resetPassword.showConfirmPassword")
                     }
                   >
                     {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
@@ -391,7 +397,7 @@ const ResetPassword = () => {
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
                   disabled={loading}
                 >
-                  {t("resetPasswordButton")}
+                  {t("resetPassword.resetPasswordButton")}
                 </button>
 
                 <div className="text-center mb-2">
@@ -406,7 +412,7 @@ const ResetPassword = () => {
                       (e.currentTarget.style.color = colors.brand.primary)
                     }
                   >
-                    {t("backToLogin")}
+                    {t("resetPassword.backToLogin")}
                   </RouterLink>
                 </div>
               </form>

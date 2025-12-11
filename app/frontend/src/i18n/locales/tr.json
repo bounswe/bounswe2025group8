@@ -910,6 +910,32 @@
       "moreOptions": "Daha fazla seçenek"
     }
   },
+  "resetPassword": {
+    "title": "Şifre Sıfırla",
+    "description": "Yeni şifrenizi girin",
+    "newPasswordLabel": "Yeni Şifre",
+    "newPasswordPlaceholder": "Yeni şifrenizi girin",
+    "confirmPasswordLabel": "Şifreyi Onayla",
+    "confirmPasswordPlaceholder": "Yeni şifrenizi tekrar girin",
+    "showPassword": "Şifreyi göster",
+    "hidePassword": "Şifreyi gizle",
+    "showConfirmPassword": "Onay şifresini göster",
+    "hideConfirmPassword": "Onay şifresini gizle",
+    "resetPasswordButton": "Şifreyi Sıfırla",
+    "backToLogin": "Girişe Dön",
+    "validation": {
+      "passwordsDontMatch": "Şifreler eşleşmiyor",
+      "invalidOrExpiredToken": "Geçersiz veya süresi dolmuş sıfırlama bağlantısı",
+      "noResetTokenProvided": "Sıfırlama bağlantısı sağlanmadı",
+      "passwordResetSuccessfully": "Şifreniz başarıyla sıfırlandı! Giriş sayfasına yönlendiriliyorsunuz...",
+      "failedToResetPasswordColon": "Şifre sıfırlanamadı",
+      "resetFailed": "Sıfırlama başarısız oldu"
+    },
+    "themeSelection": "Tema seçimi",
+    "lightMode": "Açık Mod",
+    "darkMode": "Koyu Mod",
+    "highContrast": "Yüksek Kontrast"
+  },
   "common": {
     "retry": "Tekrar Dene"
   }

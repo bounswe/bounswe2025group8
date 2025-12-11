@@ -911,6 +911,32 @@
       "moreOptions": "More options"
     }
   },
+  "resetPassword": {
+    "title": "Reset Password",
+    "description": "Enter your new password",
+    "newPasswordLabel": "New Password",
+    "newPasswordPlaceholder": "Enter your new password",
+    "confirmPasswordLabel": "Confirm Password",
+    "confirmPasswordPlaceholder": "Re-enter your new password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "showConfirmPassword": "Show confirm password",
+    "hideConfirmPassword": "Hide confirm password",
+    "resetPasswordButton": "Reset Password",
+    "backToLogin": "Back to Login",
+    "validation": {
+      "passwordsDontMatch": "Passwords don't match",
+      "invalidOrExpiredToken": "Invalid or expired reset link",
+      "noResetTokenProvided": "No reset token provided",
+      "passwordResetSuccessfully": "Your password has been reset successfully! Redirecting to login...",
+      "failedToResetPasswordColon": "Failed to reset password",
+      "resetFailed": "Reset failed"
+    },
+    "themeSelection": "Theme selection",
+    "lightMode": "Light Mode",
+    "darkMode": "Dark Mode",
+    "highContrast": "High Contrast"
+  },
   "common": {
     "retry": "Retry"
   }
