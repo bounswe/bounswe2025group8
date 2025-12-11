@@ -3,7 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import CategoryCardDetailed from "../components/CategoryCardDetailed";
 import * as categoryService from "../features/category/services/categoryService.js";
-import { getCategoryImage, categoryMapping } from "../constants/categories";
+import {
+  getCategoryImage,
+  categoryMapping,
+  getCategoryName,
+} from "../constants/categories";
 
 const Categories = () => {
   const navigate = useNavigate();
@@ -21,7 +25,7 @@ const Categories = () => {
         // Transform API response to match UI component expectations
         const formattedCategories = categoriesData.map((category) => ({
           id: category.value,
-          title: categoryMapping[category.value] || category.name,
+          title: getCategoryName(category.value, t),
           image: getCategoryImage(category.value),
           requestCount: category.task_count || 0,
         }));
