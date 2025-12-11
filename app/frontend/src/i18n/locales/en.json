@@ -731,5 +731,33 @@
     "forgotMyPassword": "Forgot my password",
     "or": "or",
     "continueAsGuest": "Continue as guest"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "Manage all your notifications here",
+    "unread": "Unread",
+    "read": "Read",
+    "unreadOnly": "Unread Only",
+    "allNotifications": "All Notifications",
+    "loading": "Loading...",
+    "loadingNotifications": "Loading notifications...",
+    "showMore": "Show more",
+    "showLess": "Show less",
+    "unreadNotification": "Unread notification",
+    "marking": "Marking...",
+    "markAllRead": "Mark All Read",
+    "actions": {
+      "refresh": "Refresh",
+      "markAsRead": "Mark as read",
+      "markAsUnread": "Mark as unread",
+      "markAllRead": "Mark all as read",
+      "dismissError": "Dismiss error"
+    },
+    "empty": {
+      "noUnread": "No unread notifications",
+      "noNotifications": "No notifications",
+      "allCaughtUp": "Great! You're all caught up.",
+      "willAppearHere": "Your notifications will appear here."
+    }
   }
 }

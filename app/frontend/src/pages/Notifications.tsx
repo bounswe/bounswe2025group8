@@ -213,9 +213,9 @@ const Notifications = () => {
                                     fontWeight: '500',
                                     opacity: markingAll ? 0.6 : 1,
                                 }}
-                                aria-label="Mark all notifications as read"
+                                aria-label={t('notifications.actions.markAllRead')}
                             >
-                                {markingAll ? '⏳ Marking...' : '✓ Mark All Read'}
+                                {markingAll ? `⏳ ${t('notifications.marking')}` : `✓ ${t('notifications.markAllRead')}`}
                             </button>
                         )}
                     </div>

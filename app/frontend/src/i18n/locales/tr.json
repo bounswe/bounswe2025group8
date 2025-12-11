@@ -731,5 +731,33 @@
     "forgotMyPassword": "Şifremi unuttum",
     "or": "veya",
     "continueAsGuest": "Misafir olarak devam et"
+  },
+  "notifications": {
+    "title": "Bildirimler",
+    "subtitle": "Tüm bildirimlerinizi burada yönetin",
+    "unread": "Okunmamış",
+    "read": "Okundu",
+    "unreadOnly": "Yalnızca okunmamışlar",
+    "allNotifications": "Tüm bildirimler",
+    "loading": "Yükleniyor...",
+    "loadingNotifications": "Bildirimler yükleniyor...",
+    "showMore": "Daha fazla göster",
+    "showLess": "Daha az göster",
+    "unreadNotification": "Okunmamış bildirim",
+    "marking": "İşaretleniyor...",
+    "markAllRead": "Tümünü Okundu İşaretle",
+    "actions": {
+      "refresh": "Yenile",
+      "markAsRead": "Okundu olarak işaretle",
+      "markAsUnread": "Okunmadı olarak işaretle",
+      "markAllRead": "Tümünü okundu işaretle",
+      "dismissError": "Hatayı kapat"
+    },
+    "empty": {
+      "noUnread": "Okunmamış bildirim yok",
+      "noNotifications": "Bildirim yok",
+      "allCaughtUp": "Harika! Tüm bildirimleri okudunuz.",
+      "willAppearHere": "Bildirimleriniz burada görünecek."
+    }
   }
 }
