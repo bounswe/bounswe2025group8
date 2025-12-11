@@ -759,5 +759,50 @@
       "allCaughtUp": "Great! You're all caught up.",
       "willAppearHere": "Your notifications will appear here."
     }
+  },
+  "profile": {
+    "reviews": {
+      "title": "Reviews",
+      "noReviewsYet": "No reviews yet"
+    },
+    "badges": {
+      "title": "Badges",
+      "earned": "Earned",
+      "earnedAchievements": "Earned Achievements",
+      "noBadgesYet": "No badges earned yet",
+      "inProgress": "In Progress"
+    },
+    "tabs": {
+      "volunteer": "Volunteer",
+      "requester": "Requester"
+    },
+    "requests": {
+      "activeVolunteering": "Active Volunteering",
+      "activeRequests": "Active Requests",
+      "pastVolunteering": "Past Volunteering",
+      "pastRequests": "Past Requests",
+      "noRequestsYet": "You haven't created any requests yet",
+      "noVolunteeringYet": "You haven't volunteered yet",
+      "createNewRequest": "Create New Request",
+      "findTasks": "Find Tasks",
+      "noPastVolunteering": "No past volunteering",
+      "noPastRequests": "No past requests"
+    },
+    "actions": {
+      "editProfile": "Edit Profile",
+      "uploadProfilePicture": "Upload profile picture",
+      "report": "Report",
+      "retryLoading": "Retry loading",
+      "backToActiveRequests": "Back to active requests"
+    },
+    "error": {
+      "failedToLoad": "Failed to load profile"
+    },
+    "report": {
+      "successMessage": "Report submitted successfully"
+    }
+  },
+  "common": {
+    "retry": "Retry"
   }
 }

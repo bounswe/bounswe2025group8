@@ -759,5 +759,50 @@
       "allCaughtUp": "Harika! Tüm bildirimleri okudunuz.",
       "willAppearHere": "Bildirimleriniz burada görünecek."
     }
+  },
+  "profile": {
+    "reviews": {
+      "title": "Değerlendirmeler",
+      "noReviewsYet": "Henüz değerlendirme yok"
+    },
+    "badges": {
+      "title": "Rozetler",
+      "earned": "Kazanılan",
+      "earnedAchievements": "Kazanılan Başarılar",
+      "noBadgesYet": "Henüz rozet kazanılmadı",
+      "inProgress": "Devam Eden"
+    },
+    "tabs": {
+      "volunteer": "Gönüllü",
+      "requester": "Talep Eden"
+    },
+    "requests": {
+      "activeVolunteering": "Aktif Gönüllülükler",
+      "activeRequests": "Aktif Talepler",
+      "pastVolunteering": "Geçmiş Gönüllülükler",
+      "pastRequests": "Geçmiş Talepler",
+      "noRequestsYet": "Henüz talep oluşturmadınız",
+      "noVolunteeringYet": "Henüz gönüllü olmadınız",
+      "createNewRequest": "Yeni Talep Oluştur",
+      "findTasks": "Görevleri Bul",
+      "noPastVolunteering": "Geçmiş gönüllülük yok",
+      "noPastRequests": "Geçmiş talep yok"
+    },
+    "actions": {
+      "editProfile": "Profili Düzenle",
+      "uploadProfilePicture": "Profil fotoğrafı yükle",
+      "report": "Bildir",
+      "retryLoading": "Yüklemeyi tekrar dene",
+      "backToActiveRequests": "Aktif taleplere dön"
+    },
+    "error": {
+      "failedToLoad": "Profil yüklenemedi"
+    },
+    "report": {
+      "successMessage": "Rapor başarıyla gönderildi"
+    }
+  },
+  "common": {
+    "retry": "Tekrar Dene"
   }
 }
