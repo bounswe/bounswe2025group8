@@ -521,5 +521,9 @@
     "logoAlt": "Komşu Yardımlaşma Panosu Logosu",
     "userAvatar": "{{name}} avatarı",
     "user": "Kullanıcı"
+  },
+  "userCard": {
+    "unknownUser": "Bilinmeyen Kullanıcı",
+    "viewProfileOf": "{{name}} profilini görüntüle"
   }
 }

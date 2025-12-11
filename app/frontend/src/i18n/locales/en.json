@@ -521,5 +521,9 @@
     "logoAlt": "Neighborhood Assistance Board Logo",
     "userAvatar": "{{name}}'s avatar",
     "user": "User"
+  },
+  "userCard": {
+    "unknownUser": "Unknown User",
+    "viewProfileOf": "View profile of {{name}}"
   }
 }
