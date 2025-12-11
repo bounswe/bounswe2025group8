@@ -1144,6 +1144,158 @@
       "totalUsers": "Total Users"
     }
   },
+  "adminReportedUsers": {
+    "title": "Reported Users",
+    "totalReportedUsers": "Total reported users: {{count}}",
+    "backToDashboard": "Back to Dashboard",
+    "loading": "Loading...",
+    "noUsersFound": "No reported users found",
+    "table": {
+      "id": "ID",
+      "username": "Username",
+      "email": "Email",
+      "reportCount": "Report Count",
+      "lastReport": "Last Report",
+      "actions": "Actions"
+    },
+    "actions": {
+      "view": "View",
+      "dismiss": "Dismiss",
+      "ban": "Ban"
+    },
+    "dismissDialog": {
+      "title": "Dismiss Reports",
+      "user": "User:",
+      "email": "Email:",
+      "reports": "Reports:",
+      "message": "All reports against this user will be marked as dismissed.",
+      "cancel": "Cancel",
+      "confirm": "Dismiss Reports"
+    },
+    "banDialog": {
+      "title": "Ban User",
+      "warning": "You are about to ban {{username}}. This user will no longer be able to access their account.",
+      "user": "User:",
+      "email": "Email:",
+      "reasonLabel": "Ban Reason",
+      "reasonPlaceholder": "Explain why this user is being banned...",
+      "cancel": "Cancel",
+      "confirm": "Ban User"
+    },
+    "reportsDialog": {
+      "title": "Reports Against {{username}}",
+      "loading": "Loading...",
+      "noReports": "No reports found for this user.",
+      "reportId": "Report #{{id}}",
+      "type": "Type:",
+      "description": "Description:",
+      "reportedBy": "Reported by:",
+      "close": "Close"
+    }
+  },
+  "adminTaskReports": {
+    "title": "Task Reports",
+    "totalReports": "Total reports: {{count}}",
+    "backToDashboard": "Back to Dashboard",
+    "filterByStatus": "Filter by Status",
+    "allStatuses": "All Statuses",
+    "pending": "Pending",
+    "underReview": "Under Review",
+    "resolved": "Resolved",
+    "dismissed": "Dismissed",
+    "loading": "Loading...",
+    "noReportsFound": "No reports found",
+    "table": {
+      "id": "ID",
+      "request": "Request",
+      "reportType": "Report Type",
+      "reportedBy": "Reported By",
+      "status": "Status",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "taskDeleted": "Task Deleted",
+    "actions": {
+      "view": "View",
+      "delete": "Delete",
+      "dismiss": "Dismiss"
+    },
+    "dismissDialog": {
+      "title": "Dismiss Report",
+      "request": "Request:",
+      "reportType": "Report Type:",
+      "description": "Description:",
+      "message": "This report will be marked as dismissed.",
+      "cancel": "Cancel",
+      "confirm": "Dismiss Report"
+    },
+    "deleteDialog": {
+      "title": "Delete Task",
+      "request": "Request:",
+      "warning": "Are you sure you want to delete this task? This action cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete Task"
+    },
+    "detailsDialog": {
+      "title": "Report Details",
+      "reportId": "Report ID:",
+      "request": "Request:",
+      "reportType": "Report Type:",
+      "status": "Status:",
+      "reportedBy": "Reported By:",
+      "created": "Created:",
+      "description": "Description:",
+      "close": "Close",
+      "viewRequest": "View Request"
+    }
+  },
+  "adminUserReports": {
+    "title": "User Reports",
+    "totalReports": "Total reports: {{count}}",
+    "backToDashboard": "Back to Dashboard",
+    "filterByStatus": "Filter by Status",
+    "allStatuses": "All Statuses",
+    "pending": "Pending",
+    "underReview": "Under Review",
+    "resolved": "Resolved",
+    "dismissed": "Dismissed",
+    "loading": "Loading...",
+    "noReportsFound": "No reports found",
+    "table": {
+      "id": "ID",
+      "reportedUser": "Reported User",
+      "reportType": "Report Type",
+      "reportedBy": "Reported By",
+      "status": "Status",
+      "created": "Created",
+      "actions": "Actions"
+    },
+    "userDeleted": "User Deleted",
+    "actions": {
+      "view": "View",
+      "dismiss": "Dismiss",
+      "ban": "Ban"
+    },
+    "dismissDialog": {
+      "title": "Dismiss Report",
+      "reportedUser": "Reported User:",
+      "reportType": "Report Type:",
+      "description": "Description:",
+      "message": "This report will be marked as dismissed.",
+      "cancel": "Cancel",
+      "confirm": "Dismiss Report"
+    },
+    "banDialog": {
+      "title": "Ban User",
+      "warning": "You are about to ban {{name}}. This user will no longer be able to access their account.",
+      "user": "User:",
+      "email": "Email:",
+      "reasonLabel": "Ban Reason",
+      "reasonPlaceholder": "Explain why this user is being banned...",
+      "cancel": "Cancel",
+      "confirm": "Ban User"
+    }
+  },
   "common": {
     "retry": "Retry"
   }

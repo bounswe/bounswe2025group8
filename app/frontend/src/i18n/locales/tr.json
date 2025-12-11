@@ -1140,6 +1140,158 @@
       "totalUsers": "Toplam Kullanıcı"
     }
   },
+  "adminReportedUsers": {
+    "title": "Bildirilen Kullanıcılar",
+    "totalReportedUsers": "Toplam bildirilen kullanıcı: {{count}}",
+    "backToDashboard": "Panoya Dön",
+    "loading": "Yükleniyor...",
+    "noUsersFound": "Bildirilen kullanıcı bulunamadı",
+    "table": {
+      "id": "ID",
+      "username": "Kullanıcı Adı",
+      "email": "E-posta",
+      "reportCount": "Rapor Sayısı",
+      "lastReport": "Son Rapor",
+      "actions": "İşlemler"
+    },
+    "actions": {
+      "view": "Görüntüle",
+      "dismiss": "Reddet",
+      "ban": "Yasakla"
+    },
+    "dismissDialog": {
+      "title": "Raporları Reddet",
+      "user": "Kullanıcı:",
+      "email": "E-posta:",
+      "reports": "Raporlar:",
+      "message": "Bu kullanıcıya karşı tüm raporlar reddedildi olarak işaretlenecek.",
+      "cancel": "İptal",
+      "confirm": "Raporları Reddet"
+    },
+    "banDialog": {
+      "title": "Kullanıcıyı Yasakla",
+      "warning": "{{username}} kullanıcısını yasaklamak üzeresiniz. Bu kullanıcı artık hesabına erişemeyecek.",
+      "user": "Kullanıcı:",
+      "email": "E-posta:",
+      "reasonLabel": "Yasaklama Nedeni",
+      "reasonPlaceholder": "Bu kullanıcının neden yasaklandığını açıklayın...",
+      "cancel": "İptal",
+      "confirm": "Kullanıcıyı Yasakla"
+    },
+    "reportsDialog": {
+      "title": "{{username}} Hakkındaki Raporlar",
+      "loading": "Yükleniyor...",
+      "noReports": "Bu kullanıcı için rapor bulunamadı.",
+      "reportId": "Rapor #{{id}}",
+      "type": "Tür:",
+      "description": "Açıklama:",
+      "reportedBy": "Bildiren:",
+      "close": "Kapat"
+    }
+  },
+  "adminTaskReports": {
+    "title": "Görev Raporları",
+    "totalReports": "Toplam rapor: {{count}}",
+    "backToDashboard": "Panoya Dön",
+    "filterByStatus": "Duruma Göre Filtrele",
+    "allStatuses": "Tüm Durumlar",
+    "pending": "Bekliyor",
+    "underReview": "İnceleniyor",
+    "resolved": "Çözüldü",
+    "dismissed": "Reddedildi",
+    "loading": "Yükleniyor...",
+    "noReportsFound": "Rapor bulunamadı",
+    "table": {
+      "id": "ID",
+      "request": "İstek",
+      "reportType": "Rapor Türü",
+      "reportedBy": "Bildiren",
+      "status": "Durum",
+      "created": "Oluşturulma",
+      "actions": "İşlemler"
+    },
+    "taskDeleted": "Görev Silindi",
+    "actions": {
+      "view": "Görüntüle",
+      "delete": "Sil",
+      "dismiss": "Reddet"
+    },
+    "dismissDialog": {
+      "title": "Raporu Reddet",
+      "request": "İstek:",
+      "reportType": "Rapor Türü:",
+      "description": "Açıklama:",
+      "message": "Bu rapor reddedildi olarak işaretlenecek.",
+      "cancel": "İptal",
+      "confirm": "Raporu Reddet"
+    },
+    "deleteDialog": {
+      "title": "Görevi Sil",
+      "request": "İstek:",
+      "warning": "Bu görevi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+      "cancel": "İptal",
+      "confirm": "Görevi Sil"
+    },
+    "detailsDialog": {
+      "title": "Rapor Detayları",
+      "reportId": "Rapor ID:",
+      "request": "İstek:",
+      "reportType": "Rapor Türü:",
+      "status": "Durum:",
+      "reportedBy": "Bildiren:",
+      "created": "Oluşturulma:",
+      "description": "Açıklama:",
+      "close": "Kapat",
+      "viewRequest": "İsteği Görüntüle"
+    }
+  },
+  "adminUserReports": {
+    "title": "Kullanıcı Raporları",
+    "totalReports": "Toplam rapor: {{count}}",
+    "backToDashboard": "Panoya Dön",
+    "filterByStatus": "Duruma Göre Filtrele",
+    "allStatuses": "Tüm Durumlar",
+    "pending": "Bekliyor",
+    "underReview": "İnceleniyor",
+    "resolved": "Çözüldü",
+    "dismissed": "Reddedildi",
+    "loading": "Yükleniyor...",
+    "noReportsFound": "Rapor bulunamadı",
+    "table": {
+      "id": "ID",
+      "reportedUser": "Bildirilen Kullanıcı",
+      "reportType": "Rapor Türü",
+      "reportedBy": "Bildiren",
+      "status": "Durum",
+      "created": "Oluşturulma",
+      "actions": "İşlemler"
+    },
+    "userDeleted": "Kullanıcı Silindi",
+    "actions": {
+      "view": "Görüntüle",
+      "dismiss": "Reddet",
+      "ban": "Yasakla"
+    },
+    "dismissDialog": {
+      "title": "Raporu Reddet",
+      "reportedUser": "Bildirilen Kullanıcı:",
+      "reportType": "Rapor Türü:",
+      "description": "Açıklama:",
+      "message": "Bu rapor reddedildi olarak işaretlenecek.",
+      "cancel": "İptal",
+      "confirm": "Raporu Reddet"
+    },
+    "banDialog": {
+      "title": "Kullanıcıyı Yasakla",
+      "warning": "{{name}} kullanıcısını yasaklamak üzeresiniz. Bu kullanıcı artık hesabına erişemeyecek.",
+      "user": "Kullanıcı:",
+      "email": "E-posta:",
+      "reasonLabel": "Yasaklama Nedeni",
+      "reasonPlaceholder": "Bu kullanıcının neden yasaklandığını açıklayın...",
+      "cancel": "İptal",
+      "confirm": "Kullanıcıyı Yasakla"
+    }
+  },
   "common": {
     "retry": "Tekrar Dene"
   }
