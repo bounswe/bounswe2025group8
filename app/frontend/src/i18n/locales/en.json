@@ -937,6 +937,48 @@
     "darkMode": "Dark Mode",
     "highContrast": "High Contrast"
   },
+  "searchResults": {
+    "title": "Search Results",
+    "resultsFor": "Results for \"{{query}}\"",
+    "clearFilters": "Clear filters",
+    "showingResultsIn": "Showing results in {{category}} category",
+    "priority": "{{urgency}} priority",
+    "near": "Near: {{location}}",
+    "filterByLocation": "Filter by location (district/city)",
+    "applyFilter": "Apply",
+    "sortRequests": "Sort requests",
+    "openAddressFilter": "Open address filter",
+    "tabs": {
+      "tasks": "Tasks",
+      "users": "Users"
+    },
+    "errors": {
+      "loadingSearchResults": "Error Loading Search Results",
+      "tryAgain": "Try Again",
+      "retryLoading": "Retry loading search results",
+      "loadingUsers": "Error Loading Users"
+    },
+    "empty": {
+      "noResultsFound": "No Results Found",
+      "noRequestsMatching": "No requests matching \"{{query}}\"",
+      "withSelectedFilters": "with the selected filters",
+      "noUsersFound": "No Users Found",
+      "noUsersMatching": "No users matching \"{{query}}\". Try a different name or username.",
+      "backToAllRequests": "Back to All Requests"
+    },
+    "pagination": {
+      "previous": "Previous",
+      "next": "Next",
+      "goToPage": "Go to page {{page}}",
+      "showingResults": "Showing {{count}} of {{total}} results",
+      "page": "Page {{current}} of {{total}}",
+      "showingUsers": "Showing {{count}} of {{total}} users"
+    },
+    "aria": {
+      "searchResultType": "Search result type",
+      "retryLoading": "Retry loading search results"
+    }
+  },
   "common": {
     "retry": "Retry"
   }

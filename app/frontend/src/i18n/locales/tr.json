@@ -936,6 +936,48 @@
     "darkMode": "Koyu Mod",
     "highContrast": "Yüksek Kontrast"
   },
+  "searchResults": {
+    "title": "Arama Sonuçları",
+    "resultsFor": "{{query}} için sonuçlar",
+    "clearFilters": "Filtreleri temizle",
+    "showingResultsIn": "{{category}} kategorisinde sonuçlar gösteriliyor",
+    "priority": "{{urgency}} öncelik",
+    "near": "Yakın: {{location}}",
+    "filterByLocation": "Konuma göre filtrele (ilçe/şehir)",
+    "applyFilter": "Uygula",
+    "sortRequests": "İstekleri sırala",
+    "openAddressFilter": "Adres filtresini aç",
+    "tabs": {
+      "tasks": "Görevler",
+      "users": "Kullanıcılar"
+    },
+    "errors": {
+      "loadingSearchResults": "Arama Sonuçları Yüklenirken Hata Oluştu",
+      "tryAgain": "Tekrar Dene",
+      "retryLoading": "Arama sonuçlarını yükle",
+      "loadingUsers": "Kullanıcılar Yüklenirken Hata Oluştu"
+    },
+    "empty": {
+      "noResultsFound": "Sonuç Bulunamadı",
+      "noRequestsMatching": "{{query}} ile eşleşen istek bulunamadı",
+      "withSelectedFilters": "seçili filtrelerle",
+      "noUsersFound": "Kullanıcı Bulunamadı",
+      "noUsersMatching": "{{query}} ile eşleşen kullanıcı bulunamadı. Farklı bir isim veya kullanıcı adı deneyin.",
+      "backToAllRequests": "Tüm İsteklere Dön"
+    },
+    "pagination": {
+      "previous": "Önceki",
+      "next": "Sonraki",
+      "goToPage": "{{page}} sayfasına git",
+      "showingResults": "{{total}} sonuçtan {{count}} gösteriliyor",
+      "page": "Sayfa {{current}} / {{total}}",
+      "showingUsers": "{{total}} kullanıcıdan {{count}} gösteriliyor"
+    },
+    "aria": {
+      "searchResultType": "Arama sonucu türü",
+      "retryLoading": "Arama sonuçlarını yeniden yükleme"
+    }
+  },
   "common": {
     "retry": "Tekrar Dene"
   }
