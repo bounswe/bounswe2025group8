@@ -6,7 +6,7 @@ import RequestCard from "../components/RequestCard";
 import * as categoryService from "../features/category/services/categoryService";
 import * as requestService from "../features/request/services/requestService";
 import { toAbsoluteUrl } from "../utils/url";
-import { getCategoryImage } from "../constants/categories";
+import { getCategoryImage, getCategoryName } from "../constants/categories";
 import { useTheme } from "../hooks/useTheme";
 
 const Home = () => {
@@ -36,7 +36,7 @@ const Home = () => {
       // Transform API response to match UI component expectations
       const formattedCategories = popularCategories.map((category) => ({
         id: category.value,
-        title: category.name,
+        title: getCategoryName(category.value, t),
         image: getCategoryImage(category.value),
         requestCount: category.task_count,
       }));

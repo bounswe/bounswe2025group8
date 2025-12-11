@@ -10,7 +10,8 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import CreateIcon from "@mui/icons-material/Create";
-import { urgencyLevels } from "../constants/urgency_level";
+import { urgencyLevels, getUrgencyLevelName } from "../constants/urgency_level";
+import { getCategoryName } from "../constants/categories";
 import { useTheme } from "../hooks/useTheme";
 
 const GeneralInformationStep = (props, ref) => {
@@ -190,7 +191,7 @@ const GeneralInformationStep = (props, ref) => {
                     </option>
                     {categories.map((category) => (
                       <option key={category.value} value={category.value}>
-                        {category.name}
+                        {getCategoryName(category.value, t)}
                       </option>
                     ))}
                   </select>
@@ -311,7 +312,7 @@ const GeneralInformationStep = (props, ref) => {
                   >
                     {Object.entries(urgencyLevels).map(([key, value]) => (
                       <option key={key} value={key}>
-                        {value.name}
+                        {getUrgencyLevelName(Number(key), t)}
                       </option>
                     ))}
                   </select>
