@@ -30,6 +30,9 @@ class BadgeType(models.TextChoices):
     # Task creation badges
     FAR_SIGHTED = 'FAR_SIGHTED', 'Far Sighted'
     FULL_GALLERY = 'FULL_GALLERY', 'Full Gallery'
+    
+    # Engagement badges
+    THE_ICEBREAKER = 'THE_ICEBREAKER', 'The Icebreaker'
 
 
 class Badge(models.Model):

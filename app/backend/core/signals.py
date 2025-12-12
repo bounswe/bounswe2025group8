@@ -3,7 +3,7 @@ Django signals for automatic badge checking and awarding.
 """
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from core.models import Volunteer, Task, Review, UserFollows
+from core.models import Volunteer, Task, Review, UserFollows, Comment
 from core.services.badge_service import BadgeService
 
 
@@ -63,3 +63,11 @@ def check_follower_badges(sender, instance, created, **kwargs):
     if created:
         user = instance.following  # The user being followed
         BadgeService.check_people_trust_you(user)
+
+
+@receiver(post_save, sender=Comment)
+def check_comment_badges(sender, instance, created, **kwargs):
+    """Check and award badges when a comment is created"""
+    if created:
+        user = instance.user
+        BadgeService.check_icebreaker(user)

@@ -39,6 +39,7 @@ class BadgeServiceTestCase(TestCase):
             BadgeType.PLATE_NOT_EMPTY: "Both created requests and volunteered",
             BadgeType.FAR_SIGHTED: "Created request with deadline more than one month away",
             BadgeType.FULL_GALLERY: "Created request with all 4 photos",
+            BadgeType.THE_ICEBREAKER: "Posted your first comment on the platform",
         }
         
         for badge_type, label in BadgeType.choices:
@@ -1322,4 +1323,57 @@ class BadgeServiceTestCase(TestCase):
             )
         
         result = BadgeService.check_full_gallery(self.user1, task)
+        self.assertFalse(result)
+    
+    def test_icebreaker_badge(self):
+        """Test The Icebreaker badge (first comment)"""
+        from core.models import Comment
+        
+        task = Task.objects.create(
+            title='Comment Task',
+            description='Test task',
+            category=TaskCategory.OTHER,
+            location='Istanbul',
+            deadline=timezone.now() + timedelta(days=7),
+            creator=self.user2
+        )
+        
+        # Create first comment
+        Comment.objects.create(
+            user=self.user1,
+            task=task,
+            content='First comment!'
+        )
+        
+        BadgeService.check_icebreaker(self.user1)
+        self.assertBadgeAwarded(self.user1, BadgeType.THE_ICEBREAKER)
+    
+    def test_icebreaker_not_first_comment(self):
+        """Test badge not awarded for second comment"""
+        from core.models import Comment
+        
+        task = Task.objects.create(
+            title='Comment Task',
+            description='Test task',
+            category=TaskCategory.OTHER,
+            location='Istanbul',
+            deadline=timezone.now() + timedelta(days=7),
+            creator=self.user2
+        )
+        
+        # Create two comments
+        Comment.objects.create(
+            user=self.user1,
+            task=task,
+            content='First comment'
+        )
+        
+        Comment.objects.create(
+            user=self.user1,
+            task=task,
+            content='Second comment'
+        )
+        
+        # Check should return False for second comment
+        result = BadgeService.check_icebreaker(self.user1)
         self.assertFalse(result)

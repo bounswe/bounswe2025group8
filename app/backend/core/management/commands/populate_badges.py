@@ -130,6 +130,14 @@ class Command(BaseCommand):
                 'description': 'Created a request using all 4 allowed photos',
                 'icon_url': ''
             },
+            
+            # Engagement badges
+            {
+                'badge_type': BadgeType.THE_ICEBREAKER,
+                'name': 'The Icebreaker',
+                'description': 'Posted your first comment on the platform',
+                'icon_url': ''
+            },
         ]
         
         created_count = 0

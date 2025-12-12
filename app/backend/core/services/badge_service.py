@@ -303,6 +303,18 @@ class BadgeService:
         return False
     
     @staticmethod
+    def check_icebreaker(user):
+        """Check if user posted their first comment"""
+        from core.models import Comment
+        
+        # Check if this is user's first comment
+        comment_count = Comment.objects.filter(user=user).count()
+        
+        if comment_count == 1:  # Just posted first comment
+            return BadgeService.award_badge(user, BadgeType.THE_ICEBREAKER)
+        return False
+    
+    @staticmethod
     def check_all_badges_for_user(user):
         """Check all applicable badges for a user"""
         badges_awarded = []
