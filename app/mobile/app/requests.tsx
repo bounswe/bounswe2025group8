@@ -15,7 +15,7 @@ import {
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { getTasks, getTaskPhotos, getFollowing, BACKEND_BASE_URL, type Task, type Photo } from '../lib/api';
+import { getTasks, getFollowing, BACKEND_BASE_URL, type Task } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { locationMatches, normalizedLocationLabel } from '../utils/address';
@@ -31,7 +31,6 @@ export default function Requests() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [taskPhotos, setTaskPhotos] = useState<Map<number, Photo[]>>(new Map());
 
   const locationLabel = (Array.isArray(params.location) ? params.location[0]?.trim() : params.location)?.trim() || undefined;
   const filterType = (Array.isArray(params.filter) ? params.filter[0] : params.filter) || undefined;
@@ -70,23 +69,6 @@ export default function Requests() {
       }
 
       setTasks(filteredTasks);
-
-      // Fetch photos for filtered tasks
-      const photosMap = new Map<number, Photo[]>();
-      await Promise.all(
-        filteredTasks.map(async (task) => {
-          try {
-            const photosResponse = await getTaskPhotos(task.id);
-            if (photosResponse.status === 'success' && photosResponse.data.photos.length > 0) {
-              photosMap.set(task.id, photosResponse.data.photos);
-            }
-          } catch (error) {
-            // Silently fail for individual photo fetches
-            console.warn(`Failed to fetch photos for task ${task.id}`);
-          }
-        })
-      );
-      setTaskPhotos(photosMap);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       Alert.alert(t('common.error'), t('search.loadError'));
@@ -270,14 +252,6 @@ export default function Requests() {
       >
         {tasks.map((task) => {
           const statusPalette = getStatusPalette(task.status_display || task.status);
-          const photos = taskPhotos.get(task.id) || [];
-          const primaryPhoto = photos.length > 0 ? photos[0] : null;
-          const photoUrl = primaryPhoto ? (primaryPhoto.photo_url || primaryPhoto.url || primaryPhoto.image) : null;
-          const absolutePhotoUrl = photoUrl && photoUrl.startsWith('http')
-            ? photoUrl
-            : photoUrl
-              ? `${BACKEND_BASE_URL}${photoUrl}`
-              : null;
 
           return (
             <TouchableOpacity
@@ -295,10 +269,10 @@ export default function Requests() {
               accessibilityLabel={`View request ${task.title}`}
             >
               <Image
-                source={absolutePhotoUrl ? { uri: absolutePhotoUrl } : require('../assets/images/help.png')}
+                source={task.primary_photo_url ? { uri: task.primary_photo_url } : require('../assets/images/help.png')}
                 style={styles.cardImage}
                 accessibilityRole="image"
-                accessibilityLabel={absolutePhotoUrl ? `Photo for ${task.title}` : `Default illustration for ${task.title}`}
+                accessibilityLabel={task.primary_photo_url ? `Photo for ${task.title}` : `Default illustration for ${task.title}`}
               />
 
               <View style={styles.cardContent}>
