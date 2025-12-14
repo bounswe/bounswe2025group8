@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from core.models import UserFollows, RegisteredUser
+from core.models import UserFollows
 
 
 class FollowUserSerializer(serializers.Serializer):

@@ -39,8 +39,8 @@ class TaskViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         """Return appropriate queryset based on filters"""
-        # Exclude tasks created by banned users
-        queryset = Task.objects.filter(creator__is_active=True)
+        # Include all tasks, even from banned users (their contributions remain visible)
+        queryset = Task.objects.all()
 
         # Filter by status
         status_param = self.request.query_params.get('status')

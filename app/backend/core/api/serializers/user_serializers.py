@@ -12,6 +12,9 @@ class UserSerializer(serializers.ModelSerializer):
     is_following = serializers.SerializerMethodField()
     badges = serializers.SerializerMethodField()
     badges_count = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    surname = serializers.SerializerMethodField()
+    username = serializers.SerializerMethodField()
     
     class Meta:
         model = RegisteredUser
@@ -24,8 +27,23 @@ class UserSerializer(serializers.ModelSerializer):
                           'profile_photo', 'followers_count', 'following_count', 
                           'is_following', 'badges', 'badges_count']
     
+    def get_name(self, obj):
+        """Return *deleted if user is banned"""
+        return '*deleted' if not obj.is_active else obj.name
+    
+    def get_surname(self, obj):
+        """Return empty string if user is banned"""
+        return '' if not obj.is_active else obj.surname
+    
+    def get_username(self, obj):
+        """Return *deleted if user is banned"""
+        return '*deleted' if not obj.is_active else obj.username
+    
     def get_profile_photo(self, obj):
         """Get the absolute URL for the profile photo"""
+        # Return None if user is banned
+        if not obj.is_active:
+            return None
         if obj.profile_photo:
             request = self.context.get('request')
             if request is not None:
