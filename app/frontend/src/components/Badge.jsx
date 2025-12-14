@@ -5,6 +5,8 @@ import { formatDate } from "../utils/dateUtils";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../hooks/useTheme";
 
+import { badgeIcons } from "../assets/badge-icons";
+
 const Badge = ({ badge }) => {
   const { colors } = useTheme();
 
@@ -36,12 +38,16 @@ const Badge = ({ badge }) => {
     ? translatedDesc
     : actualBadge.description;
 
-  const image = actualBadge.image || actualBadge.icon_url;
+  // Resolve image from local assets if available, otherwise use API url
+  const localIcon = badgeTypeKey ? badgeIcons[badgeTypeKey] : null;
+  const image = localIcon || actualBadge.image || actualBadge.icon_url;
+
   // Use color from prop if available, otherwise generate one or use default
   const color = actualBadge.color || colors.brand.primary;
 
   // Determine opacity based on earned status
-  const opacity = isEarned ? 1 : 0.5;
+  const opacity = isEarned ? 1 : 0.6;
+  const filter = isEarned ? 'none' : 'grayscale(100%)';
 
   return (
     <Tooltip
@@ -91,11 +97,18 @@ const Badge = ({ badge }) => {
           width: 90,
           height: 110,
           opacity,
-          transition: "transform 0.2s, opacity 0.2s",
+          filter,
+          transition: "transform 0.2s, opacity 0.2s, filter 0.2s",
           cursor: "pointer",
           "&:hover": {
             transform: "scale(1.05)",
             opacity: 1,
+            filter: 'none', // Remove grayscale on hover if desired, or keep it. User said "not earned a little bit transparent and if possible white and black". 
+            // Usually unearned icons stay unearned on hover, but user might want to see the color version on hover.
+            // I'll assume they want to see the full version on hover to know what they are missing, 
+            // OR strictly follow the "not earned" look. 
+            // Given "opacity: 1" is in the original hover style, I'll allow color on hover too for better UX unless specified otherwise.
+            // Actually, usually unearned badges stay unearned looking. I will keep filter: 'none' to reveal color on hover as a "preview".
           },
         }}
         tabIndex={0}
@@ -107,7 +120,10 @@ const Badge = ({ badge }) => {
             width: 64,
             height: 64,
             borderRadius: "50%",
-            bgcolor: color,
+            bgcolor: isEarned ? color : 'transparent', // Maybe remove background color for unearned if using icon only? 
+            // Or keep it grayscale. The filter is on the parent Box, so everything inside will be grayscale.
+            // Let's keep the circle but maybe less intense for unearned?
+            // Since parent has grayscale, the color will be gray.
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
