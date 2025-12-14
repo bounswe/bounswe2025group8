@@ -120,7 +120,7 @@ export default function SearchPage() {
         }
       } catch (error) {
         console.error('Error loading search data:', error);
-        Alert.alert('Error', 'Failed to load search data. Please try again.');
+        Alert.alert(t('common.error'), t('search.loadError'));
         setRequests([]);
         setCategories([]);
         setProfiles([]);

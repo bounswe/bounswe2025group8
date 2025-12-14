@@ -82,7 +82,7 @@ export default function CategoryPage() {
       </View>
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 80 }]}>
         {tasks.length === 0 ? (
-          <Text style={[styles.noTasks, { color: colors.text }]}>No requests found for this category.</Text>
+          <Text style={[styles.noTasks, { color: colors.text }]}>{t('category.noRequests')}</Text>
         ) : (
           tasks.map((task) => {
             const urgencyLabel = formatUrgency(task.urgency_level);

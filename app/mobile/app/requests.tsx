@@ -356,7 +356,7 @@ export default function Requests() {
             accessibilityState={{ disabled: true }}
           >
             <Ionicons name="add-circle-outline" size={24} color={colors.text} />
-            <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
+            <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.create')}</Text>
           </TouchableOpacity>
         )}
         <TouchableOpacity
