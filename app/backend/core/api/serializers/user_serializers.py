@@ -10,6 +10,8 @@ class UserSerializer(serializers.ModelSerializer):
     followers_count = serializers.SerializerMethodField()
     following_count = serializers.SerializerMethodField()
     is_following = serializers.SerializerMethodField()
+    badges = serializers.SerializerMethodField()
+    badges_count = serializers.SerializerMethodField()
     name = serializers.SerializerMethodField()
     surname = serializers.SerializerMethodField()
     username = serializers.SerializerMethodField()
@@ -19,9 +21,11 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'surname', 'username', 'email', 
                  'phone_number', 'location', 'rating', 
                  'completed_task_count', 'is_active', 'profile_photo',
-                 'followers_count', 'following_count', 'is_following']
+                 'followers_count', 'following_count', 'is_following',
+                 'badges', 'badges_count']
         read_only_fields = ['id', 'rating', 'completed_task_count', 'is_active', 
-                          'profile_photo', 'followers_count', 'following_count', 'is_following']
+                          'profile_photo', 'followers_count', 'following_count', 
+                          'is_following', 'badges', 'badges_count']
     
     def get_name(self, obj):
         """Return *deleted if user is banned"""
@@ -65,6 +69,16 @@ class UserSerializer(serializers.ModelSerializer):
                 following=obj
             ).exists()
         return False
+    
+    def get_badges(self, obj):
+        """Get user's badges"""
+        from core.api.serializers.badge_serializers import UserBadgeSimpleSerializer
+        badges = obj.earned_badges.select_related('badge').all()[:10]  # Limit to 10 most recent
+        return UserBadgeSimpleSerializer(badges, many=True).data
+    
+    def get_badges_count(self, obj):
+        """Get total number of badges earned"""
+        return obj.earned_badges.count()
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
