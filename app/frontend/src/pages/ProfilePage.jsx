@@ -34,7 +34,9 @@ import {
   fetchUserReviews,
   fetchUserCreatedRequests,
   fetchUserVolunteeredRequests,
+
   fetchUserBadges,
+  fetchAllBadges,
   uploadProfilePicture,
   clearUpdateSuccess,
   clearUploadSuccess,
@@ -56,6 +58,7 @@ import UserReportModal from "../components/UserReportModal";
 import { useTheme } from "../hooks/useTheme";
 import { toAbsoluteUrl } from "../utils/url";
 // No need for CSS module import as we're using Material UI's sx prop
+import { checkBadges } from "../features/badges/services/badgeService";
 
 const ProfilePage = () => {
   const { t } = useTranslation();
@@ -91,9 +94,9 @@ const ProfilePage = () => {
   console.log(
     "Condition check for Edit button:",
     userId === "current" ||
-      userId === "me" ||
-      !userId ||
-      userId === loggedInUserId
+    userId === "me" ||
+    !userId ||
+    userId === loggedInUserId
   );
 
   const dispatch = useDispatch();
@@ -103,9 +106,11 @@ const ProfilePage = () => {
     createdRequests,
     volunteeredRequests,
     badges = [],
+    allBadges = [],
     loading,
     error,
   } = useSelector((state) => state.profile || {});
+
   const auth = useSelector((s) => s.auth);
   const authUserId = auth?.user?.id != null ? String(auth.user.id) : null;
   const lsUserRaw = localStorage.getItem("user");
@@ -211,7 +216,11 @@ const ProfilePage = () => {
         ).unwrap();
       }
 
+
+
+      // Fetch user badges AND all available badges
       await dispatch(fetchUserBadges(currentId)).unwrap();
+      await dispatch(fetchAllBadges()).unwrap();
     } catch (err) {
       console.error("Failed to fetch profile data:", err);
     }
@@ -416,10 +425,44 @@ const ProfilePage = () => {
 
   // No need for client-side pagination since we're using server pagination now
 
+  // Handle badge manuall check
+  const handleCheckBadges = async () => {
+    try {
+      await checkBadges();
+      setRefreshData(true); // Trigger reload to get new badges
+      alert(t("profile.badges.checkSuccess") || "Badges refreshed successfully!");
+    } catch (error) {
+      console.error("Error checking badges:", error);
+    }
+  };
+
   // Get earned and in-progress badges
-  const badgesToUse = badges.length > 0 ? badges : mockBadges;
-  const earnedBadges = badgesToUse.filter((badge) => badge.earned);
-  const inProgressBadges = badgesToUse.filter((badge) => !badge.earned);
+  // badges = UserBadge objects { id, user_id, badge: {}, earned_at }
+  // allBadges = BadgeDefinition objects { id, badge_type, ... }
+
+  // If badges array is empty but we have allBadges, it means user has 0 badges
+  // If both are empty, we might be loading or failed
+  // Ensure badges is an array before mapping
+  // Handle pagination in badges/allBadges if present
+  const safeBadges = Array.isArray(badges) ? badges : (badges?.results || badges?.data || []);
+  const safeAllBadges = Array.isArray(allBadges) ? allBadges : (allBadges?.results || allBadges?.data || []);
+
+  const earnedBadges = safeBadges.map(userBadge => ({
+    ...(userBadge.badge || userBadge), // Handle if badge is nested or flat
+    earned_at: userBadge.earned_at || userBadge.earnedDate, // Add earned date
+    user_badge_id: userBadge.id,
+    earned: true
+  }));
+
+  const earnedBadgeIds = new Set(earnedBadges.map(b => b.id));
+
+  // In progress = All badges that are NOT in earned badges
+  const inProgressBadges = safeAllBadges
+    .filter(badge => !earnedBadgeIds.has(badge.id))
+    .map(badge => ({
+      ...badge,
+      earned: false
+    }));
 
   // Check if the profile being viewed belongs to a banned user
   const isUserBanned = user?.name === "*deleted";
@@ -553,8 +596,8 @@ const ProfilePage = () => {
                   <Avatar
                     src={toAbsoluteUrl(
                       user.profile_photo ||
-                        user.profilePhoto ||
-                        user.profilePicture
+                      user.profilePhoto ||
+                      user.profilePicture
                     )}
                     alt={user.name}
                     sx={{ width: 80, height: 80 }}
@@ -653,9 +696,8 @@ const ProfilePage = () => {
                   <Chip
                     label={`${(
                       Math.round((user.rating || 0) * 10) / 10
-                    ).toFixed(1)} (${
-                      user.reviewCount || reviews?.reviews?.length || 0
-                    } ${t("profile.reviews.title")})`}
+                    ).toFixed(1)} (${user.reviewCount || reviews?.reviews?.length || 0
+                      } ${t("profile.reviews.title")})`}
                     onClick={() => setRatingCategoriesOpen(true)}
                     sx={{
                       backgroundColor: colors.brand.primary,
@@ -744,10 +786,20 @@ const ProfilePage = () => {
                     color: colors.text.inverse,
                   },
                 }}
-                aria-label={`${t("profile.badges.earned")}: ${
-                  earnedBadges.length
-                }`}
+                aria-label={`${t("profile.badges.earned")}: ${earnedBadges.length
+                  }`}
               />
+              {/* Manual Check Button - Only for own profile */}
+              {canEdit && (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={handleCheckBadges}
+                  sx={{ ml: 'auto' }}
+                >
+                  {t("profile.badges.refreshBadges")}
+                </Button>
+              )}
             </Box>
 
             {/* Earned badges */}

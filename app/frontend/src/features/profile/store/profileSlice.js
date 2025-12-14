@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import * as profileService from '../services/profileService';
+// Import badge service for fetching all badges
+import * as badgeService from '../../badges/services/badgeService';
 
 // Async thunks using our service
 export const fetchUserProfile = createAsyncThunk(
@@ -9,7 +11,7 @@ export const fetchUserProfile = createAsyncThunk(
       // For 'current' user, replace with the actual ID from local storage
       const currentUserId = localStorage.getItem('userId');
       const actualUserId = userId === 'current' && currentUserId ? currentUserId : userId;
-      
+
       return await profileService.getUserProfile(actualUserId);
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.response?.data || 'Error fetching profile');
@@ -24,7 +26,7 @@ export const fetchUserReviews = createAsyncThunk(
       // For 'current' user, replace with the actual ID from local storage
       const currentUserId = localStorage.getItem('userId');
       const actualUserId = userId === 'current' && currentUserId ? currentUserId : userId;
-      
+
       const response = await profileService.getUserReviews(actualUserId, page, limit, 'createdAt', 'desc', role);
       return response;
     } catch (error) {
@@ -40,7 +42,7 @@ export const fetchUserCreatedRequests = createAsyncThunk(
       // For 'current' user, replace with the actual ID from local storage
       const currentUserId = localStorage.getItem('userId');
       const actualUserId = userId === 'current' && currentUserId ? currentUserId : userId;
-      
+
       const response = await profileService.getUserCreatedRequests(actualUserId, page, limit, status);
       return response;
     } catch (error) {
@@ -56,11 +58,23 @@ export const fetchUserVolunteeredRequests = createAsyncThunk(
       // For 'current' user, replace with the actual ID from local storage
       const currentUserId = localStorage.getItem('userId');
       const actualUserId = userId === 'current' && currentUserId ? currentUserId : userId;
-      
+
       const response = await profileService.getUserVolunteeredRequests(actualUserId, page, limit, taskStatus);
       return response;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.response?.data || 'Error fetching volunteered requests');
+    }
+  }
+);
+
+// Thunk to fetch all available badge definitions
+export const fetchAllBadges = createAsyncThunk(
+  'profile/fetchAllBadges',
+  async (_, { rejectWithValue }) => {
+    try {
+      return await badgeService.getAllBadges();
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.response?.data || 'Error fetching all badges');
     }
   }
 );
@@ -72,7 +86,7 @@ export const fetchUserBadges = createAsyncThunk(
       // For 'current' user, replace with the actual ID from local storage
       const currentUserId = localStorage.getItem('userId');
       const actualUserId = userId === 'current' && currentUserId ? currentUserId : userId;
-      
+
       return await profileService.getUserBadges(actualUserId);
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.response?.data || 'Error fetching badges');
@@ -88,7 +102,7 @@ export const updateUserProfileDetails = createAsyncThunk(
       if (!currentUserId) {
         throw new Error('User ID not found. Please log in again.');
       }
-      
+
       const response = await profileService.updateUserProfile(userData);
       return response;
     } catch (error) {
@@ -105,7 +119,7 @@ export const uploadProfilePicture = createAsyncThunk(
       if (!currentUserId) {
         throw new Error('User ID not found. Please log in again.');
       }
-      
+
       const response = await profileService.uploadProfilePicture(file);
       return response;
     } catch (error) {
@@ -120,9 +134,9 @@ const profileSlice = createSlice({
   initialState: {
     user: {},
     reviews: [],
-    createdRequests: [],
     volunteeredRequests: [],
     badges: [],
+    allBadges: [],
     loading: false,
     error: null,
     updateSuccess: false,
@@ -154,14 +168,14 @@ const profileSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      
+
       // Reviews cases
       .addCase(fetchUserReviews.pending, (state) => {
         state.loading = true;
       })
       .addCase(fetchUserReviews.fulfilled, (state, action) => {
         state.loading = false;
-        
+
         // Ensure we're not storing Date objects in Redux
         // The backend returns timestamp as string (ISO format)
         state.reviews = action.payload;
@@ -171,7 +185,7 @@ const profileSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      
+
       // Created Requests cases
       .addCase(fetchUserCreatedRequests.pending, (state) => {
         state.loading = true;
@@ -215,7 +229,7 @@ const profileSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      
+
       // Update profile cases
       .addCase(updateUserProfileDetails.pending, (state) => {
         state.loading = true;
@@ -223,7 +237,7 @@ const profileSlice = createSlice({
       })
       .addCase(updateUserProfileDetails.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = {...state.user, ...action.payload};
+        state.user = { ...state.user, ...action.payload };
         state.error = null;
         state.updateSuccess = true;
       })
@@ -232,7 +246,7 @@ const profileSlice = createSlice({
         state.error = action.payload;
         state.updateSuccess = false;
       })
-      
+
       // Upload profile picture cases
       .addCase(uploadProfilePicture.pending, (state) => {
         state.loading = true;
@@ -259,6 +273,18 @@ const profileSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
         state.uploadSuccess = false;
+      })
+
+      // All Badges cases
+      .addCase(fetchAllBadges.pending, (state) => {
+        // Silent loading
+      })
+      .addCase(fetchAllBadges.fulfilled, (state, action) => {
+        state.allBadges = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchAllBadges.rejected, (state, action) => {
+        state.error = action.payload;
       });
   },
 });
