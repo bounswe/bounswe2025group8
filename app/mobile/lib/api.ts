@@ -928,6 +928,38 @@ export const getPopularTasks = async (limit: number = 6): Promise<Task[]> => {
   }
 };
 
+export const getFollowedTasks = async (limit: number = 6): Promise<Task[]> => {
+  try {
+    console.log(`[API Request] GET /tasks/followed/ with limit=${limit}`);
+    const response = await api.get('/tasks/followed/', {
+      params: { limit },
+    });
+    console.log('Followed tasks response:', response.data);
+
+    // Handle format_response structure: {status, message, data}
+    if (response.data?.status === 'success' && response.data?.data) {
+      return Array.isArray(response.data.data) ? response.data.data as Task[] : [];
+    }
+    // Fallback for direct array response
+    if (Array.isArray(response.data)) {
+      return response.data as Task[];
+    }
+    return [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get followed tasks error details:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+    }
+    // Return empty array on error instead of throwing
+    return [];
+  }
+};
+
 export const getCategories = async (): Promise<CategoriesResponse> => {
   try {
     const response = await api.get<CategoriesResponse>('/tasks/categories/');

@@ -16,7 +16,7 @@ import {
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { getTasks, getPopularTasks, getUserProfile, getTaskPhotos, getFollowing, BACKEND_BASE_URL, type Task, type UserProfile, type Category as ApiCategory, type Photo } from '../lib/api';
+import { getTasks, getPopularTasks, getUserProfile, getTaskPhotos, getFollowedTasks, BACKEND_BASE_URL, type Task, type UserProfile, type Category as ApiCategory, type Photo } from '../lib/api';
 import type { ThemeTokens } from '@/constants/Colors';
 import { useAuth } from '../lib/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -74,31 +74,10 @@ export default function Feed() {
     try {
       setFollowingLoading(true);
 
-      // Get list of users the current user is following
-      const followingUsers = await getFollowing(user.id);
-      const followingUserIds = followingUsers.map(f => f.id);
+      // Call backend endpoint for followed tasks (much more efficient!)
+      const tasks = await getFollowedTasks(6);
 
-      if (followingUserIds.length === 0) {
-        setFollowingTasks([]);
-        setFollowingLoading(false);
-        return;
-      }
-
-      // Fetch all tasks
-      const response = await getTasks();
-      const fetchedTasks = response.results || [];
-      const activeTasks = filterActiveTasks(fetchedTasks);
-
-      // Filter tasks created by followed users
-      const filtered = activeTasks.filter(task =>
-        task.creator && followingUserIds.includes(task.creator.id)
-      );
-
-      // Sort by created_at descending (most recent first)
-      filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-      // Take top 6 tasks
-      setFollowingTasks(filtered.slice(0, 6));
+      setFollowingTasks(tasks);
     } catch (error) {
       console.error('Error fetching following tasks:', error);
       setFollowingTasks([]);
@@ -700,3 +679,4 @@ const styles = StyleSheet.create({
   urgencyText: { fontSize: 12, fontWeight: 'bold' },
   requestCategoryRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
 });
+
