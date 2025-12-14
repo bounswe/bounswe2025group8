@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import useAuth from "../features/authentication/hooks/useAuth";
 import { useTheme } from "../hooks/useTheme";
 import logoImage from "../assets/logo.png";
@@ -12,6 +13,7 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 const RegisterPage = () => {
   const { colors, theme, setTheme } = useTheme();
+  const { t, i18n } = useTranslation();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
@@ -32,11 +34,11 @@ const RegisterPage = () => {
 
     // Frontend validation before API call
     if (!agreeTerms) {
-      return setRegisterError("You must agree to the Terms & Conditions");
+      return setRegisterError(t("registerPage.validation.youMustAgreeToTerms"));
     }
 
     if (password !== confirmPassword) {
-      return setRegisterError("Passwords do not match");
+      return setRegisterError(t("registerPage.validation.passwordsMustMatch"));
     }
 
     // Password strength validation (matching backend requirements)
@@ -44,20 +46,20 @@ const RegisterPage = () => {
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
     if (!passwordRegex.test(password)) {
       return setRegisterError(
-        "Password must be at least 8 characters and include uppercase, lowercase, number, and special character."
+        t("registerPage.validation.passwordRequirements")
       );
     }
 
     // Email format validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return setRegisterError("Please enter a valid email address");
+      return setRegisterError(t("registerPage.validation.invalidEmailAddress"));
     }
 
     // Phone number validation (10-15 digits)
     const phoneRegex = /^\d{10,15}$/;
     if (!phoneRegex.test(phone.replace(/\D/g, ""))) {
-      return setRegisterError("Phone number must be 10-15 digits");
+      return setRegisterError(t("registerPage.validation.phoneNumberMustBe"));
     }
 
     // Required fields validation
@@ -68,7 +70,7 @@ const RegisterPage = () => {
       !email.trim() ||
       !phone.trim()
     ) {
-      return setRegisterError("All fields are required");
+      return setRegisterError(t("registerPage.validation.allFieldsRequired"));
     }
 
     try {
@@ -105,12 +107,15 @@ const RegisterPage = () => {
         } else if (backendErrors.confirm_password) {
           setRegisterError(backendErrors.confirm_password[0]);
         } else {
-          setRegisterError(error.message || "Registration failed");
+          setRegisterError(
+            error.message || t("registerPage.validation.registrationFailed")
+          );
         }
       } else {
         setRegisterError(
-          "Failed to create an account: " +
-            (error.message || "Registration failed")
+          t("registerPage.validation.failedToCreateAccount") +
+            ": " +
+            (error.message || t("registerPage.validation.registrationFailed"))
         );
       }
     }
@@ -121,13 +126,14 @@ const RegisterPage = () => {
       className="flex min-h-screen items-center justify-center"
       style={{ backgroundColor: colors.background.primary }}
     >
-      {/* Theme Toggle Button */}
-      <div className="fixed top-4 right-4 z-50">
+      {/* Theme and Language Toggle Buttons */}
+      <div className="fixed top-4 right-4 z-50 flex gap-2">
+        {/* Language Selector */}
         <select
-          value={theme}
-          onChange={(e) => setTheme(e.target.value)}
+          value={i18n.language}
+          onChange={(e) => i18n.changeLanguage(e.target.value)}
           className="px-3 py-2 rounded-md border text-sm focus:outline-none"
-          aria-label="Theme selection"
+          aria-label={t("changeLanguage")}
           style={{
             backgroundColor: colors.background.secondary,
             color: colors.text.primary,
@@ -138,9 +144,31 @@ const RegisterPage = () => {
           }
           onBlur={(e) => (e.target.style.boxShadow = "none")}
         >
-          <option value="light">Light Mode</option>
-          <option value="dark">Dark Mode</option>
-          <option value="high-contrast">High Contrast</option>
+          <option value="en">{t("english")}</option>
+          <option value="tr">{t("turkish")}</option>
+        </select>
+
+        {/* Theme Selector */}
+        <select
+          value={theme}
+          onChange={(e) => setTheme(e.target.value)}
+          className="px-3 py-2 rounded-md border text-sm focus:outline-none"
+          aria-label={t("registerPage.themeSelection")}
+          style={{
+            backgroundColor: colors.background.secondary,
+            color: colors.text.primary,
+            borderColor: colors.border.primary,
+          }}
+          onFocus={(e) =>
+            (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+          }
+          onBlur={(e) => (e.target.style.boxShadow = "none")}
+        >
+          <option value="light">{t("registerPage.lightMode")}</option>
+          <option value="dark">{t("registerPage.darkMode")}</option>
+          <option value="high-contrast">
+            {t("registerPage.highContrast")}
+          </option>
         </select>
       </div>
 
@@ -194,7 +222,7 @@ const RegisterPage = () => {
                       colors.background.secondary)
                   }
                 >
-                  LOGIN
+                  {t("login").toUpperCase()}
                 </RouterLink>
                 <RouterLink
                   to="/register"
@@ -212,7 +240,7 @@ const RegisterPage = () => {
                       colors.brand.primary)
                   }
                 >
-                  REGISTER
+                  {t("register").toUpperCase()}
                 </RouterLink>
               </div>
             </div>
@@ -221,13 +249,13 @@ const RegisterPage = () => {
                 className="text-lg font-bold mb-1"
                 style={{ color: colors.text.primary }}
               >
-                Create an account
+                {t("registerPage.title")}
               </h2>
               <p
                 className="text-sm mb-6"
                 style={{ color: colors.text.secondary }}
               >
-                Enter your details to register for the app
+                {t("registerPage.description")}
               </p>
 
               {/* Show either the register error or the Redux error */}
@@ -269,13 +297,13 @@ const RegisterPage = () => {
                           border: 0,
                         }}
                       >
-                        First Name
+                        {t("registerPage.firstNameLabel")}
                       </label>
                       <input
                         type="text"
                         id="firstName"
                         name="firstName"
-                        placeholder="First Name"
+                        placeholder={t("registerPage.firstNamePlaceholder")}
                         autoComplete="given-name"
                         autoFocus
                         required
@@ -319,13 +347,13 @@ const RegisterPage = () => {
                           border: 0,
                         }}
                       >
-                        Last Name
+                        {t("registerPage.lastNameLabel")}
                       </label>
                       <input
                         type="text"
                         id="lastName"
                         name="lastName"
-                        placeholder="Surname"
+                        placeholder={t("registerPage.surnamePlaceholder")}
                         autoComplete="family-name"
                         required
                         value={lastName}
@@ -371,13 +399,13 @@ const RegisterPage = () => {
                         border: 0,
                       }}
                     >
-                      Username
+                      {t("usernameLabel")}
                     </label>
                     <input
                       type="text"
                       id="username"
                       name="username"
-                      placeholder="Username"
+                      placeholder={t("usernamePlaceholder")}
                       required
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
@@ -420,13 +448,13 @@ const RegisterPage = () => {
                         border: 0,
                       }}
                     >
-                      Phone
+                      {t("phoneLabel")}
                     </label>
                     <input
                       type="tel"
                       id="phone"
                       name="phone"
-                      placeholder="Phone"
+                      placeholder={t("phonePlaceholder")}
                       required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
@@ -469,13 +497,13 @@ const RegisterPage = () => {
                         border: 0,
                       }}
                     >
-                      Email
+                      {t("emailLabel")}
                     </label>
                     <input
                       type="email"
                       id="email"
                       name="email"
-                      placeholder="Email"
+                      placeholder={t("emailPlaceholder")}
                       autoComplete="email"
                       required
                       value={email}
@@ -519,13 +547,13 @@ const RegisterPage = () => {
                         border: 0,
                       }}
                     >
-                      Password
+                      {t("passwordLabel")}
                     </label>
                     <input
                       type={showPassword ? "text" : "password"}
                       id="password"
                       name="password"
-                      placeholder="Password"
+                      placeholder={t("passwordPlaceholder")}
                       autoComplete="new-password"
                       required
                       value={password}
@@ -547,7 +575,9 @@ const RegisterPage = () => {
                         onClick={() => setShowPassword(!showPassword)}
                         className="focus:outline-none"
                         aria-label={
-                          showPassword ? "Hide password" : "Show password"
+                          showPassword
+                            ? t("registerPage.hidePassword")
+                            : t("registerPage.showPassword")
                         }
                         style={{ color: colors.text.tertiary }}
                         onMouseOver={(e) =>
@@ -592,13 +622,13 @@ const RegisterPage = () => {
                         border: 0,
                       }}
                     >
-                      Confirm Password
+                      {t("confirmPasswordLabel")}
                     </label>
                     <input
                       type={showConfirmPassword ? "text" : "password"}
                       id="confirmPassword"
                       name="confirmPassword"
-                      placeholder="Confirm Password"
+                      placeholder={t("confirmPasswordPlaceholder")}
                       autoComplete="new-password"
                       required
                       value={confirmPassword}
@@ -623,8 +653,8 @@ const RegisterPage = () => {
                         className="focus:outline-none"
                         aria-label={
                           showConfirmPassword
-                            ? "Hide confirm password"
-                            : "Show confirm password"
+                            ? t("registerPage.hideConfirmPassword")
+                            : t("registerPage.showConfirmPassword")
                         }
                         style={{ color: colors.text.tertiary }}
                         onMouseOver={(e) =>
@@ -662,7 +692,7 @@ const RegisterPage = () => {
                       className="text-sm"
                       style={{ color: colors.text.primary }}
                     >
-                      I agree with{" "}
+                      {t("registerPage.agreeTerms")}{" "}
                       <button
                         type="button"
                         className="underline"
@@ -674,7 +704,7 @@ const RegisterPage = () => {
                           (e.currentTarget.style.color = colors.brand.primary)
                         }
                       >
-                        Terms & Conditions
+                        {t("registerPage.termsAndConditions")}
                       </button>
                     </span>
                   </label>
@@ -706,7 +736,7 @@ const RegisterPage = () => {
                   }
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
                 >
-                  Sign Up
+                  {t("registerPage.signUp")}
                 </button>
               </form>
             </div>
@@ -715,7 +745,7 @@ const RegisterPage = () => {
 
         <div className="text-center my-4">
           <p className="text-sm" style={{ color: colors.text.secondary }}>
-            OR
+            {t("registerPage.or")}
           </p>
         </div>
 
@@ -731,7 +761,7 @@ const RegisterPage = () => {
               (e.currentTarget.style.color = colors.brand.primary)
             }
           >
-            Continue as a guest
+            {t("registerPage.continueAsGuest")}
           </RouterLink>
         </div>
       </main>

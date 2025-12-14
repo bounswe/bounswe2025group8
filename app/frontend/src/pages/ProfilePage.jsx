@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Box,
   Container,
@@ -57,6 +58,7 @@ import { toAbsoluteUrl } from "../utils/url";
 // No need for CSS module import as we're using Material UI's sx prop
 
 const ProfilePage = () => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const { userId } = useParams();
   const navigate = useNavigate();
@@ -455,7 +457,7 @@ const ProfilePage = () => {
   };
 
   const handleUserReportSuccess = () => {
-    alert("Thank you for reporting this user! Our team will review it shortly.");
+    alert(t("profile.report.successMessage"));
   };
 
   if (loading) {
@@ -494,7 +496,7 @@ const ProfilePage = () => {
           gutterBottom
           sx={{ color: colors.semantic.error }}
         >
-          Failed to load profile
+          {t("profile.error.failedToLoad")}
         </Typography>
         <Typography paragraph sx={{ color: colors.text.secondary }}>
           {error}
@@ -510,9 +512,9 @@ const ProfilePage = () => {
               backgroundColor: colors.brand.secondary,
             },
           }}
-          aria-label="Retry loading profile"
+          aria-label={t("profile.actions.retryLoading")}
         >
-          Retry
+          {t("common.retry")}
         </Button>
       </Box>
     );
@@ -607,7 +609,7 @@ const ProfilePage = () => {
                         backgroundColor: "rgba(255,255,255,0.8)",
                         "&:hover": { backgroundColor: "rgba(255,255,255,0.9)" },
                       }}
-                      aria-label="Upload profile picture"
+                      aria-label={t("profile.actions.uploadProfilePicture")}
                     >
                       <input
                         type="file"
@@ -653,7 +655,7 @@ const ProfilePage = () => {
                       Math.round((user.rating || 0) * 10) / 10
                     ).toFixed(1)} (${
                       user.reviewCount || reviews?.reviews?.length || 0
-                    } reviews)`}
+                    } ${t("profile.reviews.title")})`}
                     onClick={() => setRatingCategoriesOpen(true)}
                     sx={{
                       backgroundColor: colors.brand.primary,
@@ -683,7 +685,7 @@ const ProfilePage = () => {
                     }}
                     variant="outlined"
                   >
-                    Report
+                    {t("profile.actions.report")}
                   </Button>
                 )}
               </Box>
@@ -707,9 +709,9 @@ const ProfilePage = () => {
                   textTransform: "none",
                   fontWeight: 500,
                 }}
-                aria-label="Edit profile"
+                aria-label={t("profile.actions.editProfile")}
               >
-                Edit Profile
+                {t("profile.actions.editProfile")}
               </Button>
             )}
           </Box>
@@ -731,7 +733,7 @@ const ProfilePage = () => {
                 component="h2"
                 sx={{ fontWeight: "bold", color: colors.text.primary }}
               >
-                Badges
+                {t("profile.badges.title")}
               </Typography>
               <MuiBadge
                 badgeContent={earnedBadges.length}
@@ -742,7 +744,9 @@ const ProfilePage = () => {
                     color: colors.text.inverse,
                   },
                 }}
-                aria-label={`Earned badges: ${earnedBadges.length}`}
+                aria-label={`${t("profile.badges.earned")}: ${
+                  earnedBadges.length
+                }`}
               />
             </Box>
 
@@ -752,7 +756,7 @@ const ProfilePage = () => {
                 variant="subtitle2"
                 sx={{ mb: 1, color: colors.text.secondary }}
               >
-                Earned Achievements
+                {t("profile.badges.earnedAchievements")}
               </Typography>
               <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mb: 2 }}>
                 {earnedBadges.length > 0 ? (
@@ -764,7 +768,7 @@ const ProfilePage = () => {
                     variant="body2"
                     sx={{ color: colors.text.secondary }}
                   >
-                    No badges earned yet. Complete tasks to earn badges!
+                    {t("profile.badges.noBadgesYet")}
                   </Typography>
                 )}
               </Box>
@@ -782,7 +786,7 @@ const ProfilePage = () => {
                   variant="subtitle2"
                   sx={{ mb: 1, color: colors.text.secondary }}
                 >
-                  In Progress
+                  {t("profile.badges.inProgress")}
                 </Typography>
                 <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
                   {inProgressBadges.map((badge) => (
@@ -813,7 +817,7 @@ const ProfilePage = () => {
                 TabIndicatorProps={{ style: { display: "none" } }}
               >
                 <Tab
-                  label="Volunteer"
+                  label={t("profile.tabs.volunteer")}
                   sx={{
                     borderRadius: "4px",
                     backgroundColor:
@@ -835,7 +839,7 @@ const ProfilePage = () => {
                   }}
                 />
                 <Tab
-                  label="Requester"
+                  label={t("profile.tabs.requester")}
                   sx={{
                     borderRadius: "4px",
                     backgroundColor:
@@ -867,7 +871,7 @@ const ProfilePage = () => {
                 <IconButton
                   onClick={() => handleRequestTabChange(0)}
                   sx={{ mr: -1 }}
-                  aria-label="Back to active requests"
+                  aria-label={t("profile.actions.backToActiveRequests")}
                 >
                   <ArrowBack fontSize="small" />
                 </IconButton>
@@ -889,7 +893,9 @@ const ProfilePage = () => {
                   },
                 }}
               >
-                {roleTab === 0 ? "Active Volunteering" : "Active Requests"}
+                {roleTab === 0
+                  ? t("profile.requests.activeVolunteering")
+                  : t("profile.requests.activeRequests")}
               </Typography>
               <Typography
                 variant="h6"
@@ -907,7 +913,9 @@ const ProfilePage = () => {
                   },
                 }}
               >
-                {roleTab === 0 ? "Past Volunteering" : "Past Requests"}
+                {roleTab === 0
+                  ? t("profile.requests.pastVolunteering")
+                  : t("profile.requests.pastRequests")}
               </Typography>
             </Box>
             {/* Requester-specific instructions when no requests */}
@@ -920,7 +928,7 @@ const ProfilePage = () => {
                     gutterBottom
                     sx={{ color: colors.text.secondary }}
                   >
-                    You haven't made any requests yet
+                    {t("profile.requests.noRequestsYet")}
                   </Typography>
                   <Button
                     variant="contained"
@@ -937,7 +945,7 @@ const ProfilePage = () => {
                     }}
                     href="/create-request"
                   >
-                    Create New Request
+                    {t("profile.requests.createNewRequest")}
                   </Button>
                 </Box>
               )}
@@ -951,7 +959,7 @@ const ProfilePage = () => {
                     gutterBottom
                     sx={{ color: colors.text.secondary }}
                   >
-                    You're not volunteering for any tasks yet
+                    {t("profile.requests.noVolunteeringYet")}
                   </Typography>
                   <Button
                     variant="contained"
@@ -968,7 +976,7 @@ const ProfilePage = () => {
                     }}
                     href="/requests"
                   >
-                    Find Tasks to Help With
+                    {t("profile.requests.findTasks")}
                   </Button>
                 </Box>
               )}
@@ -996,7 +1004,9 @@ const ProfilePage = () => {
                         align="center"
                         sx={{ mb: 4, mt: 2, color: colors.text.secondary }}
                       >
-                        No past {roleTab === 0 ? "volunteering" : "requests"}.
+                        {roleTab === 0
+                          ? t("profile.requests.noPastVolunteering")
+                          : t("profile.requests.noPastRequests")}
                       </Typography>
                     )}
                   </Grid>
@@ -1012,12 +1022,14 @@ const ProfilePage = () => {
                 component="h2"
                 sx={{ fontWeight: "bold", mr: 2, color: colors.text.primary }}
               >
-                Reviews
+                {t("profile.reviews.title")}
               </Typography>
               <Chip
                 label={`${(Math.round((user.rating || 0) * 10) / 10).toFixed(
                   1
-                )} (${reviews?.reviews?.length || 0} reviews)`}
+                )} (${reviews?.reviews?.length || 0} ${t(
+                  "profile.reviews.title"
+                )})`}
                 size="small"
                 sx={{
                   backgroundColor: colors.brand.primary,
@@ -1065,7 +1077,7 @@ const ProfilePage = () => {
                 </>
               ) : (
                 <Typography sx={{ color: colors.text.secondary }}>
-                  No reviews yet.
+                  {t("profile.reviews.noReviewsYet")}
                 </Typography>
               )}
             </Box>

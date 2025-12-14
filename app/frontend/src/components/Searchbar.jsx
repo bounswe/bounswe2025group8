@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import { useTheme } from "../hooks/useTheme";
@@ -14,11 +15,12 @@ import { useTheme } from "../hooks/useTheme";
  */
 const Searchbar = ({
   onSearch,
-  placeholder = "What do you need help with",
+  placeholder,
   autoFocus = false,
   defaultValue = "",
   className = "",
 }) => {
+  const { t } = useTranslation();
   const [query, setQuery] = useState(defaultValue);
   const [focused, setFocused] = useState(false);
   const { colors } = useTheme();
@@ -53,7 +55,7 @@ const Searchbar = ({
       <button
         className="p-3 border-0 ml-0 rounded-l-full 
           transition-colors duration-200 flex items-center justify-center"
-        aria-label="Search"
+        aria-label={t("searchbar.search")}
         onClick={handleSubmit}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
@@ -81,8 +83,8 @@ const Searchbar = ({
         type="search"
         className="ml-2 flex-1 bg-transparent py-3 px-4 w-full outline-none text-sm
           [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
-        placeholder={placeholder}
-        aria-label="Search input"
+        placeholder={placeholder || t("searchbar.placeholder")}
+        aria-label={t("searchbar.searchInput")}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => setFocused(true)}
@@ -97,7 +99,7 @@ const Searchbar = ({
         <button
           className="p-2.5 mr-4 transition-colors 
             duration-200 rounded-full"
-          aria-label="Clear search"
+          aria-label={t("searchbar.clearSearch")}
           onClick={handleClear}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {

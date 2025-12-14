@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import SendIcon from "@mui/icons-material/Send";
+import { useTranslation } from "react-i18next";
 import { useTheme } from "../hooks/useTheme";
 
 const CommentInput = ({ onSubmit, disabled = false }) => {
+  const { t } = useTranslation();
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { colors } = useTheme();
@@ -44,7 +46,7 @@ const CommentInput = ({ onSubmit, disabled = false }) => {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={handleKeyPress}
-          placeholder="Write a comment... (Ctrl+Enter to submit)"
+          placeholder={t("writeComment")}
           disabled={disabled || isSubmitting}
           rows={1}
           className="flex-grow px-3 py-2 rounded-md resize-none focus:outline-none focus:ring-2 transition-all"
@@ -54,7 +56,7 @@ const CommentInput = ({ onSubmit, disabled = false }) => {
             border: `1px solid ${colors.border.secondary}`,
             focusRing: colors.brand.primary,
           }}
-          aria-label="Comment input"
+          aria-label={t("commentInput")}
         />
         <button
           type="submit"
@@ -78,7 +80,7 @@ const CommentInput = ({ onSubmit, disabled = false }) => {
               e.currentTarget.style.backgroundColor = colors.brand.primary;
             }
           }}
-          aria-label="Submit comment"
+          aria-label={t("submitComment")}
         >
           {isSubmitting ? (
             <div
@@ -88,7 +90,7 @@ const CommentInput = ({ onSubmit, disabled = false }) => {
           ) : (
             <>
               <SendIcon className="w-5 h-5 mr-1" aria-hidden="true" />
-              Send
+              {t("send")}
             </>
           )}
         </button>

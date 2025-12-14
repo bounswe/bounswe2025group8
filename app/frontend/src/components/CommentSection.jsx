@@ -4,6 +4,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useTheme } from "../hooks/useTheme";
 import {
   getTaskComments,
@@ -15,6 +16,7 @@ import { toAbsoluteUrl } from "../utils/url";
 import CommentInput from "./CommentInput";
 
 const CommentSection = ({ taskId, currentUser, isAuthenticated }) => {
+  const { t } = useTranslation();
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -43,7 +45,7 @@ const CommentSection = ({ taskId, currentUser, isAuthenticated }) => {
       setComments(sortedComments);
     } catch (err) {
       console.error("Error fetching comments:", err);
-      setError("Failed to load comments");
+      setError(t("failedToLoadComments"));
       setComments([]);
     } finally {
       setLoading(false);
@@ -93,7 +95,7 @@ const CommentSection = ({ taskId, currentUser, isAuthenticated }) => {
   };
 
   const handleDeleteComment = async (commentId) => {
-    if (!window.confirm("Are you sure you want to delete this comment?")) {
+    if (!window.confirm(t("deleteCommentConfirm"))) {
       return;
     }
 
@@ -125,13 +127,13 @@ const CommentSection = ({ taskId, currentUser, isAuthenticated }) => {
     const date = new Date(timestamp);
     const diffInSeconds = Math.floor((now - date) / 1000);
 
-    if (diffInSeconds < 60) return "Just now";
+    if (diffInSeconds < 60) return t("justNow");
     if (diffInSeconds < 3600)
-      return `${Math.floor(diffInSeconds / 60)} minutes ago`;
+      return `${Math.floor(diffInSeconds / 60)} ${t("minutesAgo")}`;
     if (diffInSeconds < 86400)
-      return `${Math.floor(diffInSeconds / 3600)} hours ago`;
+      return `${Math.floor(diffInSeconds / 3600)} ${t("hoursAgo")}`;
     if (diffInSeconds < 604800)
-      return `${Math.floor(diffInSeconds / 86400)} days ago`;
+      return `${Math.floor(diffInSeconds / 86400)} ${t("daysAgo")}`;
 
     return date.toLocaleDateString("en-US", {
       month: "short",
@@ -153,7 +155,7 @@ const CommentSection = ({ taskId, currentUser, isAuthenticated }) => {
         className="text-2xl font-bold mb-6"
         style={{ color: colors.text.primary }}
       >
-        Comments ({comments.length})
+        {t("comments")} ({comments.length})
       </h2>
 
       {/* Comment Input */}
@@ -170,15 +172,15 @@ const CommentSection = ({ taskId, currentUser, isAuthenticated }) => {
           }}
         >
           <p style={{ color: colors.text.secondary }}>
-            Please{" "}
+            {t("pleaseLogInToComment")}{" "}
             <button
               onClick={() => navigate("/login")}
               className="font-medium underline"
               style={{ color: colors.brand.primary }}
             >
-              log in
+              {t("logIn")}
             </button>{" "}
-            to post a comment
+            {t("toPostComment")}
           </p>
         </div>
       )}
@@ -217,7 +219,7 @@ const CommentSection = ({ taskId, currentUser, isAuthenticated }) => {
               className="text-center py-8"
               style={{ color: colors.text.secondary }}
             >
-              No comments yet. Be the first to comment!
+              {t("noCommentsYet")}
             </div>
           ) : (
             comments.map((comment) => {
@@ -323,7 +325,7 @@ const CommentSection = ({ taskId, currentUser, isAuthenticated }) => {
                                 e.currentTarget.style.backgroundColor =
                                   "transparent";
                               }}
-                              aria-label="Edit comment"
+                              aria-label={t("editComment")}
                             >
                               <EditIcon
                                 className="w-3.5 h-3.5"
@@ -346,7 +348,7 @@ const CommentSection = ({ taskId, currentUser, isAuthenticated }) => {
                                 e.currentTarget.style.backgroundColor =
                                   "transparent";
                               }}
-                              aria-label="Delete comment"
+                              aria-label={t("deleteComment")}
                             >
                               <DeleteIcon
                                 className="w-3.5 h-3.5"
@@ -391,7 +393,7 @@ const CommentSection = ({ taskId, currentUser, isAuthenticated }) => {
                               colors.brand.primary;
                           }}
                         >
-                          Save
+                          {t("save")}
                         </button>
                         <button
                           onClick={cancelEditing}
@@ -410,7 +412,7 @@ const CommentSection = ({ taskId, currentUser, isAuthenticated }) => {
                               colors.background.primary;
                           }}
                         >
-                          Cancel
+                          {t("cancel")}
                         </button>
                       </div>
                     </div>

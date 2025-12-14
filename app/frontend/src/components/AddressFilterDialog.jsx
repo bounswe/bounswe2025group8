@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme as useMuiTheme } from "@mui/material/styles";
+import { useTranslation } from "react-i18next";
 import { Country, State, City } from "country-state-city";
 import { useTheme } from "../hooks/useTheme";
 
@@ -17,6 +18,7 @@ import { useTheme } from "../hooks/useTheme";
 // Mimics the Country -> State -> City flow of SetupAddressStep.
 // onApply receives a human-friendly location string (City[, State][, Country]).
 const AddressFilterDialog = ({ open, onClose, onApply }) => {
+  const { t } = useTranslation();
   const [countries] = useState(() => Country.getAllCountries());
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);
@@ -52,7 +54,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
       setStates(statesData);
     } catch (err) {
       console.error("Error loading states/provinces:", err);
-      setError("Failed to load states/provinces. Please try again later.");
+      setError(t("failedToLoadStates"));
       setStates([]);
     }
   }, [countryIsoCode]);
@@ -70,7 +72,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
       setCities(citiesData);
     } catch (err) {
       console.error("Error loading cities:", err);
-      setError("Failed to load cities. Please try again later.");
+      setError(t("failedToLoadCities"));
       setCities([]);
     }
   }, [countryIsoCode, stateIsoCode]);
@@ -145,7 +147,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
         id="address-filter-title"
         sx={{ color: colors.text.primary }}
       >
-        Filter by Address
+        {t("filterByAddress")}
       </DialogTitle>
       <DialogContent>
         {error && (
@@ -177,7 +179,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                 display: "block",
               }}
             >
-              Country
+              {t("country")}
             </label>
             <div style={{ position: "relative" }}>
               <select
@@ -190,7 +192,14 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                   backgroundColor: colors.background.secondary,
                   color: colors.text.primary,
                 }}
-                value={countryName && countryIsoCode ? JSON.stringify({name: countryName, isoCode: countryIsoCode}) : ""}
+                value={
+                  countryName && countryIsoCode
+                    ? JSON.stringify({
+                        name: countryName,
+                        isoCode: countryIsoCode,
+                      })
+                    : ""
+                }
                 onChange={(e) => {
                   const selectedValue = e.target.value;
                   if (selectedValue) {
@@ -208,9 +217,15 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                 }}
                 aria-describedby="country-help"
               >
-                <option value="">Select Country</option>
+                <option value="">{t("selectCountry")}</option>
                 {countries.map((country) => (
-                  <option key={country.isoCode} value={JSON.stringify({name: country.name, isoCode: country.isoCode})}>
+                  <option
+                    key={country.isoCode}
+                    value={JSON.stringify({
+                      name: country.name,
+                      isoCode: country.isoCode,
+                    })}
+                  >
                     {country.name}
                   </option>
                 ))}
@@ -223,7 +238,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                   marginTop: 4,
                 }}
               >
-                Choose a country to load states and cities.
+                {t("chooseCountryToLoad")}
               </p>
             </div>
           </div>
@@ -240,7 +255,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                 display: "block",
               }}
             >
-              State/Province
+              {t("stateProvince")}
             </label>
             <div style={{ position: "relative" }}>
               <select
@@ -253,7 +268,11 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                   backgroundColor: colors.background.secondary,
                   color: colors.text.primary,
                 }}
-                value={stateName && stateIsoCode ? JSON.stringify({name: stateName, isoCode: stateIsoCode}) : ""}
+                value={
+                  stateName && stateIsoCode
+                    ? JSON.stringify({ name: stateName, isoCode: stateIsoCode })
+                    : ""
+                }
                 onChange={(e) => {
                   const selectedValue = e.target.value;
                   if (selectedValue) {
@@ -270,9 +289,15 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                 disabled={!countryIsoCode}
                 aria-describedby="state-help"
               >
-                <option value="">Select State/Province</option>
+                <option value="">{t("selectStateProvince")}</option>
                 {states.map((state) => (
-                  <option key={state.isoCode} value={JSON.stringify({name: state.name, isoCode: state.isoCode})}>
+                  <option
+                    key={state.isoCode}
+                    value={JSON.stringify({
+                      name: state.name,
+                      isoCode: state.isoCode,
+                    })}
+                  >
                     {state.name}
                   </option>
                 ))}
@@ -285,7 +310,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                   marginTop: 4,
                 }}
               >
-                Select a state or province to load cities.
+                {t("selectStateToLoadCities")}
               </p>
             </div>
           </div>
@@ -302,7 +327,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                 display: "block",
               }}
             >
-              District or City
+              {t("districtOrCity")}
             </label>
             <div style={{ position: "relative" }}>
               <select
@@ -319,7 +344,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                 onChange={(e) => setCityName(e.target.value)}
                 disabled={!stateIsoCode}
               >
-                <option value="">Select District/City</option>
+                <option value="">{t("selectDistrictCity")}</option>
                 {cities.map((city) => (
                   <option key={city.name} value={city.name}>
                     {city.name}
@@ -340,7 +365,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                 color: colors.text.primary,
               }}
             >
-              Advanced (optional)
+              {t("advancedOptional")}
             </h3>
             <div
               style={{
@@ -359,7 +384,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                   overflow: "hidden",
                 }}
               >
-                Neighborhood
+                {t("neighborhood")}
               </label>
               <input
                 id="neighborhood-input"
@@ -372,7 +397,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                   backgroundColor: colors.background.secondary,
                   color: colors.text.primary,
                 }}
-                placeholder="Neighborhood"
+                placeholder={t("neighborhood")}
                 value={neighborhood}
                 onChange={(e) => setNeighborhood(e.target.value)}
               />
@@ -386,7 +411,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                   overflow: "hidden",
                 }}
               >
-                Street
+                {t("street")}
               </label>
               <input
                 id="street-input"
@@ -399,7 +424,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                   backgroundColor: colors.background.secondary,
                   color: colors.text.primary,
                 }}
-                placeholder="Street"
+                placeholder={t("street")}
                 value={street}
                 onChange={(e) => setStreet(e.target.value)}
               />
@@ -413,7 +438,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                   overflow: "hidden",
                 }}
               >
-                Building Number
+                {t("buildingNumber")}
               </label>
               <input
                 id="building-input"
@@ -426,7 +451,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                   backgroundColor: colors.background.secondary,
                   color: colors.text.primary,
                 }}
-                placeholder="Building No"
+                placeholder={t("buildingNo")}
                 value={buildingNo}
                 onChange={(e) => setBuildingNo(e.target.value)}
               />
@@ -440,7 +465,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                   overflow: "hidden",
                 }}
               >
-                Door Number
+                {t("doorNumber")}
               </label>
               <input
                 id="door-input"
@@ -453,7 +478,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                   backgroundColor: colors.background.secondary,
                   color: colors.text.primary,
                 }}
-                placeholder="Door No"
+                placeholder={t("doorNo")}
                 value={doorNo}
                 onChange={(e) => setDoorNo(e.target.value)}
               />
@@ -481,7 +506,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
                 htmlFor="useExactPhrase"
                 style={{ fontSize: "0.875rem", color: colors.text.primary }}
               >
-                Use exact formatted phrase (stricter match)
+                {t("useExactFormattedPhrase")}
               </label>
             </div>
             <p
@@ -492,10 +517,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
               }}
               id="advanced-help"
             >
-              Broad match uses your most specific entry (e.g., Neighborhood or
-              District). Exact phrase builds a combined string (e.g., "Country:
-              …, State: …, City: …, Neighborhood: …, Street: …") which matches
-              tasks created with the same format.
+              {t("broadMatchDescription")}
             </p>
           </div>
         </Box>
@@ -510,7 +532,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
             },
           }}
         >
-          Clear
+          {t("clear")}
         </Button>
         <Button
           onClick={onClose}
@@ -521,7 +543,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
             },
           }}
         >
-          Cancel
+          {t("cancel")}
         </Button>
         <Button
           variant="contained"
@@ -534,7 +556,7 @@ const AddressFilterDialog = ({ open, onClose, onApply }) => {
             },
           }}
         >
-          Apply
+          {t("apply")}
         </Button>
       </DialogActions>
     </Dialog>
