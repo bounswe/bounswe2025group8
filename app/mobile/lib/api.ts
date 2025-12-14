@@ -112,6 +112,7 @@ export interface Task {
   creator: UserProfile;
   assignee: UserProfile | null;
   photo?: string;
+  primary_photo_url?: string;
   urgency_level: number;
   volunteer_number: number;
   is_recurring: boolean;
