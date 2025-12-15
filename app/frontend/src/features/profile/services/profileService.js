@@ -79,18 +79,18 @@ export const getUserCreatedRequests = async (userId, page = 1, limit = 10, statu
 export const getUserVolunteeredRequests = async (userId, page = 1, limit = 10, taskStatus = null) => {
   try {
     if (!userId) throw new Error('User ID is required');
-    const params = { 
-      volunteer_id: userId, 
-      page, 
+    const params = {
+      volunteer_id: userId,
+      page,
       limit,
       volunteer_status: 'ACCEPTED' // Only show accepted volunteer assignments
     };
-    
+
     // Add task status filter if provided
     if (taskStatus) {
       params.task_status = taskStatus;
     }
-    
+
     const res = await api.get(`/volunteers/`, { params });
     return (res.data && res.data.data) ? res.data.data : res.data;
   } catch (error) {
@@ -100,32 +100,19 @@ export const getUserVolunteeredRequests = async (userId, page = 1, limit = 10, t
 };
 
 /**
- * Fetch badges for a user (mock until backend is ready)
+ * Fetch badges for a user
  */
 export const getUserBadges = async (userId) => {
   try {
     if (!userId) throw new Error('User ID is required');
-    console.warn(`Badge API not implemented in backend yet for user ${userId}. Returning mock data.`);
-    return [
-      {
-        id: 'badge1',
-        title: 'First Steps',
-        description: 'Completed 5 tasks',
-        image: 'https://cdn-icons-png.flaticon.com/128/8382/8382248.png',
-        color: '#FF9800',
-        earned: true,
-        earnedDate: '2025-02-15',
-      },
-      {
-        id: 'badge2',
-        title: 'Helpful Hand',
-        description: 'Volunteered for 10 tasks',
-        image: 'https://cdn-icons-png.flaticon.com/128/2714/2714728.png',
-        color: '#4CAF50',
-        earned: true,
-        earnedDate: '2025-03-01',
-      },
-    ];
+
+    // Import dynamically to avoid circular dependencies if any, 
+    // though straight import is usually fine. 
+    // But since we are in profileService, let's keep it clean.
+    // Actually, let's just use the direct API call here or import the service. 
+    // Importing service is better for consistency.
+    const { getUserBadges: fetchBadges } = await import('../../badges/services/badgeService');
+    return await fetchBadges(userId);
   } catch (error) {
     console.error('Error fetching user badges:', error);
     throw error;
