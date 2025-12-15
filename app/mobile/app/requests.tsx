@@ -15,7 +15,7 @@ import {
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { getTasks, getTaskPhotos, BACKEND_BASE_URL, type Task, type Photo } from '../lib/api';
+import { getTasks, getTaskPhotos, getFollowing, BACKEND_BASE_URL, type Task, type Photo } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { locationMatches, normalizedLocationLabel } from '../utils/address';
@@ -34,6 +34,7 @@ export default function Requests() {
   const [taskPhotos, setTaskPhotos] = useState<Map<number, Photo[]>>(new Map());
 
   const locationLabel = (Array.isArray(params.location) ? params.location[0]?.trim() : params.location)?.trim() || undefined;
+  const filterType = (Array.isArray(params.filter) ? params.filter[0] : params.filter) || undefined;
 
   // Filter out completed and cancelled tasks
   const filterActiveTasks = (tasksList: Task[]): Task[] => {
@@ -53,6 +54,19 @@ export default function Requests() {
       let filteredTasks = activeTasks;
       if (locationLabel) {
         filteredTasks = activeTasks.filter(task => normalizedLocationLabel(task.location) === locationLabel);
+      }
+
+      // Filter by following if filter=following parameter is provided
+      if (filterType === 'following' && user) {
+        try {
+          const followingUsers = await getFollowing(user.id);
+          const followingUserIds = followingUsers.map(f => f.id);
+          filteredTasks = filteredTasks.filter(task =>
+            task.creator && followingUserIds.includes(task.creator.id)
+          );
+        } catch (error) {
+          console.error('Error fetching following users:', error);
+        }
       }
 
       setTasks(filteredTasks);
@@ -84,7 +98,7 @@ export default function Requests() {
 
   useEffect(() => {
     fetchTasks();
-  }, [locationLabel]);
+  }, [locationLabel, filterType, user?.id]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -196,7 +210,11 @@ export default function Requests() {
       <View style={styles.titleRow}>
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            {locationLabel ? t('search.requestsIn', { location: locationLabel }) : t('feed.seeAllRequests')}
+            {filterType === 'following'
+              ? t('feed.followingRequests')
+              : locationLabel
+                ? t('search.requestsIn', { location: locationLabel })
+                : t('feed.seeAllRequests')}
           </Text>
           {locationLabel && (
             <TouchableOpacity
@@ -206,6 +224,17 @@ export default function Requests() {
 
               accessibilityRole="button"
               accessibilityLabel="Clear location filter"
+            >
+              <Ionicons name="close-circle" size={20} color={colors.text} />
+            </TouchableOpacity>
+          )}
+          {filterType === 'following' && (
+            <TouchableOpacity
+              onPress={() => router.replace('/requests')}
+              style={{ marginLeft: 8, padding: 4 }}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel="Clear following filter"
             >
               <Ionicons name="close-circle" size={20} color={colors.text} />
             </TouchableOpacity>

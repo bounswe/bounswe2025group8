@@ -16,7 +16,7 @@ import {
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { getTasks, getPopularTasks, getUserProfile, getTaskPhotos, BACKEND_BASE_URL, type Task, type UserProfile, type Category as ApiCategory, type Photo } from '../lib/api';
+import { getTasks, getPopularTasks, getUserProfile, getTaskPhotos, getFollowedTasks, BACKEND_BASE_URL, type Task, type UserProfile, type Category as ApiCategory, type Photo } from '../lib/api';
 import type { ThemeTokens } from '@/constants/Colors';
 import { useAuth } from '../lib/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -30,8 +30,10 @@ export default function Feed() {
   const { t } = useTranslation();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [popularTasks, setPopularTasks] = useState<Task[]>([]);
+  const [followingTasks, setFollowingTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [followingLoading, setFollowingLoading] = useState(false);
   const [taskDerivedCategories, setTaskDerivedCategories] = useState<ApiCategory[]>([]);
   const [taskPhotos, setTaskPhotos] = useState<Map<number, Photo[]>>(new Map());
   const scrollRef = useRef<ScrollView>(null);
@@ -60,6 +62,28 @@ export default function Feed() {
       const status = task.status?.toUpperCase() || '';
       return status !== 'COMPLETED' && status !== 'CANCELLED';
     });
+  };
+
+  // Fetch tasks from users the current user is following
+  const fetchFollowingTasks = async () => {
+    if (!user) {
+      setFollowingTasks([]);
+      return;
+    }
+
+    try {
+      setFollowingLoading(true);
+
+      // Call backend endpoint for followed tasks (much more efficient!)
+      const tasks = await getFollowedTasks(6);
+
+      setFollowingTasks(tasks);
+    } catch (error) {
+      console.error('Error fetching following tasks:', error);
+      setFollowingTasks([]);
+    } finally {
+      setFollowingLoading(false);
+    }
   };
 
   const fetchTasks = async () => {
@@ -127,11 +151,13 @@ export default function Feed() {
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+    fetchFollowingTasks();
+  }, [user?.id]); // Re-fetch when user changes
 
   const onRefresh = () => {
     setRefreshing(true);
     fetchTasks();
+    fetchFollowingTasks();
   };
 
   if (loading) {
@@ -273,6 +299,98 @@ export default function Feed() {
         >
           <Text style={[styles.seeAllText, { color: colors.primary }]}>{t('feed.seeAllCategories')}</Text>
         </TouchableOpacity>
+
+        {/* — Requests from People You Follow — */}
+        {user && (
+          <>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              {t('feed.followingRequests')}
+            </Text>
+            {followingLoading ? (
+              <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 16 }} />
+            ) : followingTasks.length > 0 ? (
+              <>
+                {followingTasks.map((task) => {
+                  const urgencyLabel = formatUrgency(task.urgency_level);
+                  const urgencyPalette = getUrgencyColors(task.urgency_level);
+
+                  return (
+                    <TouchableOpacity
+                      key={task.id}
+                      style={[styles.requestRow, { backgroundColor: colors.card }]}
+                      onPress={() =>
+                        router.push({
+                          pathname: (task.creator && task.creator.id === user?.id) ? '/r-request-details' : '/v-request-details',
+                          params: { id: task.id }
+                        })
+                      }
+                      accessible
+                      accessibilityRole="button"
+                      accessibilityLabel={`View details for ${task.title}`}
+                      testID={`following-request-item-${task.id}`}
+                    >
+                      <Image
+                        source={require('../assets/images/help.png')}
+                        style={styles.requestImage}
+                        accessibilityRole="image"
+                        accessibilityLabel={`Illustration for ${task.title}`}
+                      />
+                      <View style={styles.requestInfo}>
+                        <Text style={[styles.requestTitle, { color: colors.text }]}>
+                          {task.title}
+                        </Text>
+                        <Text style={[styles.requestMeta, { color: colors.text }]}>
+                          {task.location} • {new Date(task.created_at).toLocaleDateString()}
+                        </Text>
+                        <View style={styles.requestCategoryRow}>
+                          <View
+                            style={[
+                              styles.urgencyBadge,
+                              { backgroundColor: urgencyPalette.background, borderColor: colors.border },
+                            ]}
+                          >
+                            <Text style={[styles.urgencyText, { color: urgencyPalette.text }]} numberOfLines={1} ellipsizeMode="tail">
+                              {`${urgencyLabel} ${t('createRequest.urgency')}`}
+                            </Text>
+                          </View>
+                          <View style={[styles.requestCategory, { borderColor: colors.border }]}>
+                            <Text style={[styles.requestCategoryText, { color: colors.text }]} numberOfLines={1} ellipsizeMode="tail">
+                              {t(`categories.${task.category}`, { defaultValue: task.category })}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                      <Ionicons
+                        name="chevron-forward"
+                        size={20}
+                        color={colors.text}
+                        accessible={false}
+                        importantForAccessibility="no"
+                      />
+                    </TouchableOpacity>
+                  );
+                })}
+              </>
+            ) : (
+              <View style={{ paddingVertical: 16, alignItems: 'center' }}>
+                <Text style={[styles.requestMeta, { color: colors.text, textAlign: 'center' }]}>
+                  {t('feed.noFollowingRequests')}
+                </Text>
+              </View>
+            )}
+          </>
+        )}
+        {user && followingTasks.length > 0 && (
+          <TouchableOpacity
+            onPress={() => router.push('/requests?filter=following')}
+            style={styles.seeAllLink}
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel="See all requests from people you follow"
+          >
+            <Text style={[styles.seeAllText, { color: colors.primary }]}>{t('feed.seeAllFollowing')}</Text>
+          </TouchableOpacity>
+        )}
 
         {/* — Requests — */}
         <Text style={[styles.sectionTitle, { color: colors.text }]}>
@@ -561,3 +679,4 @@ const styles = StyleSheet.create({
   urgencyText: { fontSize: 12, fontWeight: 'bold' },
   requestCategoryRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
 });
+
