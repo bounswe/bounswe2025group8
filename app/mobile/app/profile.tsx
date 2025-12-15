@@ -6,7 +6,7 @@ import RatingPill from '../components/ui/RatingPill';
 import ReviewCard from '../components/ui/ReviewCard';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../lib/auth';
-import { getUserProfile, type UserProfile, getTasks, type Task, getUserReviews, type Review, listVolunteers, type Volunteer, uploadProfilePhoto, deleteProfilePhoto, submitUserReport, BACKEND_BASE_URL, followUser, unfollowUser, getFollowers, getFollowing, type FollowerInfo, type FollowingInfo, getAllBadges, getUserBadges, checkBadges, type Badge, type UserBadge } from '../lib/api';
+import { getUserProfile, type UserProfile, getTasks, getUserTasks, type Task, getUserReviews, type Review, listVolunteers, type Volunteer, uploadProfilePhoto, deleteProfilePhoto, submitUserReport, BACKEND_BASE_URL, followUser, unfollowUser, getFollowers, getFollowing, type FollowerInfo, type FollowingInfo, getAllBadges, getUserBadges, checkBadges, type Badge, type UserBadge } from '../lib/api';
 import { ReportModal } from '../components/ReportModal';
 import FollowListModal from '../components/ui/FollowListModal';
 import BadgeModal from '../components/ui/BadgeModal';
@@ -249,8 +249,8 @@ export default function ProfileScreen() {
       return;
     }
 
-    // Fetch tasks
-    getTasks()
+    // Fetch tasks for this specific user (automatically fetches all pages)
+    getUserTasks(targetUserId)
       .then((res) => {
         setAllTasks(res.results || []);
       })
@@ -285,8 +285,8 @@ export default function ProfileScreen() {
 
       console.log('[ProfileScreen] Screen focused - refreshing task data');
 
-      // Refresh tasks
-      getTasks()
+      // Refresh tasks for this specific user (automatically fetches all pages)
+      getUserTasks(targetUserId)
         .then((res) => {
           setAllTasks(res.results || []);
         })
