@@ -97,10 +97,11 @@
         "phone": "Telefon",
         "agreeWith": "Kabul ediyorum: ",
         "termsAndConditions": "Şartlar ve Koşullar",
+        "communityGuidelines": "Topluluk Kuralları",
         "signingUp": "Kayıt olunuyor...",
         "registrationFailed": "Kayıt Başarısız",
         "registrationSuccess": "Kayıt başarılı! Lütfen giriş yapın.",
-        "agreeTerms": "Lütfen Şartlar ve Koşulları kabul edin",
+        "agreeTerms": "Lütfen Şartlar ve Koşulları ve Topluluk Kurallarını kabul edin",
         "passwordRequirements": "Şifre gereksinimleri karşılanmadı"
     },
     "feed": {
@@ -566,5 +567,91 @@
         "reviewSubmitted": "{{name}} için değerlendirme gönderildi!",
         "reviewError": "Değerlendirme gönderilemedi. Lütfen tekrar deneyin.",
         "rateRequest": "İsteği Puanla"
+    },
+    "communityGuidelines": {
+        "title": "Topluluk Kuralları",
+        "lastUpdated": "Son güncelleme: 15 Aralık 2025",
+        "agreeButton": "Kabul Ediyorum",
+        "intro": {
+            "title": "🌟 Giriş",
+            "para1": "Mahalle Yardımlaşma Panosu topluluğuna hoş geldiniz! Sizi burada görmekten gerçekten mutluyuz.",
+            "para2": "Bu platform basit bir fikir etrafında kuruldu: komşuların birbirlerine her türlü şekilde yardım etmesi. Bazen yardım market alışverişi taşımak veya evde küçük bir sorunu çözmek anlamına gelir, ancak destek aynı zamanda yerel hikayeler paylaşmak, özel ders vermek, çocuklara kitap okumak veya sadece deneyimlerinize dayanarak rehberlik etmek gibi görünebilir.",
+            "para3": "Herkesin katkıda bulunacak değerli bir şeyi vardır. Yaşlı bir komşu mahallenin tarihini paylaşabilir, bir öğrenci ev ödevi konusunda yardım sunabilir, yetenekli bir gönüllü küçük onarımlarda yardımcı olabilir ve bunların hepsi eşit derecede anlamlıdır.",
+            "para4": "Amacımız, her yaştan, geçmişten ve yetenekten insanların kendilerine uygun şekilde katılabileceği kapsayıcı bir alan yaratmaktır. Burada nezaket önemlidir, saygı önemlidir ve büyük veya küçük her katkı topluluğumuzu daha güçlü yapar.",
+            "para5": "Bu kurallar, Mahalle Yardımlaşma Panosu'nun herkes için güvenli, misafirperver ve destekleyici kalmasını sağlamak içindir."
+        },
+        "corePrinciples": {
+            "title": "🤝 Temel İlkeler",
+            "p1Title": "1. Nazik ve Saygılı Olun",
+            "p1Text": "Herkese empati ve anlayışla davranın. Taciz, hakaret veya kaba davranışlara tolerans gösterilmez.",
+            "p2Title": "2. Ayrımcılığa Sıfır Tolerans",
+            "p2Text": "Hiçbir ayrımcılık biçimine izin verilmez:\n• Irk veya etnik köken\n• Cinsiyet veya cinsiyet kimliği\n• Cinsel yönelim\n• Din veya inanç\n• Engellilik\n• Yaş\n• Sosyoekonomik durum\n• Veya diğer kişisel özellikler\n\nHerkes güvenli ve eşit bir deneyimi hak eder.",
+            "p3Title": "3. Gizliliği Koruyun",
+            "p3Text": "Başkalarının kişisel bilgilerine saygı gösterin. Adresleri, telefon numaralarını veya özel tartışmaları platform dışında paylaşmayın. Yerleşik iletişim özelliklerini sorumlu bir şekilde kullanın.",
+            "p4Title": "4. Dürüst ve Şeffaf Olun",
+            "p4Text": "Görev oluştururken veya kabul ederken doğru ayrıntılar sağlayın. Artık bir görevi tamamlayamıyorsanız, talep sahibini derhal bilgilendirin.",
+            "p5Title": "5. Önce Güvenlik",
+            "p5Text": "Yalnızca rahat hissettiğiniz görevleri kabul edin. Şüpheli veya güvensiz davranışları denetleme araçlarını kullanarak bildirin.",
+            "p6Title": "6. Etkileşimleri Amaçlı Tutun",
+            "p6Text": "Platform yardım içindir, reklam, spam veya kişisel tanıtım için değildir. Yalnızca ilgili ve yararlı içerik gönderin.",
+            "p7Title": "7. İş Akışına Saygı Gösterin",
+            "p7Text": "Topluluk içinde sorunsuz işbirliği sağlamak için görev atama, gönüllü süreçleri ve denetleme kurallarını izleyin."
+        },
+        "contentRules": {
+            "title": "🛠 İçerik Kuralları",
+            "allowedTitle": "İzin Verilenler",
+            "allowedText": "• Yardım talepleri (örn. market alışverişi, özel ders, küçük onarımlar)\n• Gönüllü onayları ve ilerleme güncellemeleri\n• Saygılı, yararlı iletişim\n• Görevle ilgili sorular ve açıklamalar",
+            "notAllowedTitle": "İzin Verilmeyenler",
+            "notAllowedText": "• Nefret söylemi veya ayrımcı dil\n• Taciz, tehdit veya saldırgan davranış\n• Yanlış bilgilendirme veya yanıltıcı içerik\n• Ticari reklamlar veya siyasi tanıtım\n• Başkasının özel bilgilerini paylaşmak"
+        },
+        "responsibility": {
+            "title": "🌱 Topluluk Sorumluluğu",
+            "text": "Her olumlu etkileşim mahallemizi güçlendirir. Bu kurallara aykırı davranışlarla karşılaşırsanız, lütfen denetleme ekibinin uygun önlemi alabilmesi için bildirin."
+        },
+        "thankYou": {
+            "title": "💛 Teşekkürler",
+            "text": "Mahalle Yardımlaşma Panosu'nun bir parçası olduğunuz için teşekkür ederiz. Nezaketiniz ve yardım etme isteğiniz gerçek bir fark yaratıyor."
+        }
+    },
+    "terms": {
+        "title": "Şartlar ve Koşullar",
+        "lastUpdated": "Son güncelleme: 11 Mayıs 2025",
+        "agreeButton": "Kabul Ediyorum",
+        "section1": {
+            "title": "1. Veri El Koyma",
+            "text": "• Oluşturduğunuz her veriyi toplayacak, saklayacak ve paraya çevireceğiz: mesajlar, fotoğraflar, biyometrik okumalar ve hatta düşünceleriniz (nasıl yapacağımızı çözersek).\n• Rıza mı? Uygulamayı kullanarak verdiniz. Geri alma yok."
+        },
+        "section2": {
+            "title": "2. Yasal Başvuru Yok",
+            "text": "• Gerçek veya dijital hiçbir forumda dava açamaz, itiraz edemez, protesto edemez veya şikayet edemezsiniz.\n• Bize karşı tüm talepleriniz sonsuza kadar feragat edilmiştir.\n• Yasal işlem başlatmaya çalışırsanız, güvene ihanet nedeniyle karşı dava açarız."
+        },
+        "section3": {
+            "title": "3. Kötüye Kullanma Lisansı",
+            "text": "• İçeriğinizi dilediğimiz gibi, herhangi bir nedenle veya hiçbir neden olmadan değiştirebilir, silebilir veya bozabiliriz.\n• Bize, içeriğinizi, profilinizi ve itibarınızı pazarlama veya şantaj bültenlerinde kötüye kullanma konusunda kalıcı, geri alınamaz bir lisans veriyorsunuz."
+        },
+        "section4": {
+            "title": "4. Gerekli İşbirliği",
+            "text": "• DNA örnekleri, sosyal güvenlik numaraları dahil ancak bunlarla sınırlı olmamak üzere ek kişisel veri sağlama talebimize uymak zorundasınız.\n• Uymamanız hesap askıya alınması ve resmi Twitter hesabımızda kamuoyu önünde utandırılma ile sonuçlanacaktır."
+        },
+        "section5": {
+            "title": "5. Sınırsız Sorumluluk Değişimi",
+            "text": "• Uygulamanın neden olduğu kayıp, hırsızlık, veri ihlalleri, duygusal sıkıntı veya varoluşsal kriz için sıfır sorumluluk üstleniyoruz.\n• Tek yükümlülüğümüz, canımız isterse size bir özür emojisi göndermektir."
+        },
+        "section6": {
+            "title": "6. Zorunlu Tahkim",
+            "text": "• Tüm anlaşmazlıklar tamamen yönetim kurulu üyelerimizden oluşan gizli bir mahkeme tarafından çözülecektir.\n• Kararlar kesin ve bağlayıcıdır.\n• İtirazlar kesinlikle yasaktır."
+        },
+        "section7": {
+            "title": "7. Haber Vermeden Değişiklikler",
+            "text": "• Bu Şartları herhangi bir zamanda, herhangi bir nedenle, size haber vermeden değiştirebiliriz.\n• Devam eden kullanım, yeni, muhtemelen daha sert Şartların kabulü anlamına gelir."
+        },
+        "section8": {
+            "title": "8. Fesih Hakları",
+            "text": "• Hesabınızı kendi takdirimize göre feshedebilir veya askıya alabiliriz.\n• Bu, Uygulamaya emanet ettiğiniz içeriğe veya fonlara erişimi kalıcı olarak engelleyecektir."
+        },
+        "section9": {
+            "title": "9. Geçerli Hukuk",
+            "text": "• Bu Şartlar Muz Cumhuriyeti yasalarına tabidir.\n• Herhangi bir yargı yetkisi muafiyeti veya yerel tüketici koruma haklarından feragat ediyorsunuz."
+        }
     }
 }

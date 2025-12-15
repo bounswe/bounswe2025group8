@@ -52,12 +52,12 @@ export default function Settings() {
         style: 'destructive',
         onPress: async () => {
           try {
-            // Logout and clear session first
-            await apiLogout();
-            await AsyncStorage.removeItem('token');
+            // Clear local session state first
             await contextLogout();
+            await AsyncStorage.removeItem('token');
 
             // Then reset navigation to index/landing page
+            // Do this after clearing auth state so the token is gone before navigation
             resetToLaunch();
           } catch (error) {
             console.error('Error during logout:', error);
