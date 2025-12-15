@@ -43,9 +43,9 @@ const API_HOST = Platform.select({
 // Use environment variable if present (from .env via Constants.expoConfig?.extra?.backendBaseUrl), otherwise fallback to dynamic host
 const ENV_BACKEND_URL = Constants.expoConfig?.extra?.backendBaseUrl;
 
-//export const BACKEND_BASE_URL = ENV_BACKEND_URL ? ENV_BACKEND_URL : `http://${API_HOST}:${port}`;
+export const BACKEND_BASE_URL = ENV_BACKEND_URL ? ENV_BACKEND_URL : `http://${API_HOST}:${port}`;
 
-export const BACKEND_BASE_URL = `http://${API_HOST}:${port}`;
+//export const BACKEND_BASE_URL = `http://${API_HOST}:${port}`;
 
 export const API_BASE_URL = `${BACKEND_BASE_URL}/api`;
 
@@ -1939,6 +1939,193 @@ export const submitUserReport = async (
         errMessage = Object.values(errorData.errors).flat().join(', ');
       }
 
+      throw new Error(errMessage);
+    }
+    throw error;
+  }
+};
+
+// ==================== Badge API Functions ====================
+
+export interface Badge {
+  id: number;
+  badge_type: string;
+  badge_type_display: string;
+  name: string;
+  description: string;
+  icon_url?: string;
+  created_at: string;
+}
+
+export interface UserBadge {
+  id: number;
+  user_id: number;
+  username: string;
+  badge: Badge;
+  earned_at: string;
+}
+
+export interface UserBadgeSimple {
+  badge_name: string;
+  badge_type: string;
+  badge_icon?: string;
+  earned_at: string;
+}
+
+export interface BadgeType {
+  value: string;
+  label: string;
+}
+
+export interface BadgesResponse {
+  status: string;
+  message?: string;
+  data?: Badge[];
+  results?: Badge[];
+}
+
+export interface UserBadgesResponse {
+  status: string;
+  message?: string;
+  data?: UserBadge[];
+  results?: UserBadge[];
+}
+
+export interface UserBadgesSimpleResponse {
+  status: string;
+  message?: string;
+  data?: UserBadgeSimple[];
+}
+
+export interface CheckBadgesResponse {
+  status: string;
+  message: string;
+  data?: {
+    badges_awarded: string[];
+  };
+}
+
+/**
+ * Fetch all available badge definitions
+ * GET /api/badges/
+ */
+export const getAllBadges = async (): Promise<Badge[]> => {
+  try {
+    const response = await api.get<BadgesResponse>('/badges/');
+    const data = response.data;
+    
+    // Handle both direct array and wrapped response formats
+    if (Array.isArray(data)) {
+      return data;
+    }
+    if (data.results && Array.isArray(data.results)) {
+      return data.results;
+    }
+    if (data.data && Array.isArray(data.data)) {
+      return data.data;
+    }
+    
+    return [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get all badges error:', error.response?.data);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Fetch all badge type enums
+ * GET /api/badges/types/
+ */
+export const getBadgeTypes = async (): Promise<BadgeType[]> => {
+  try {
+    const response = await api.get<BadgeType[]>('/badges/types/');
+    return Array.isArray(response.data) ? response.data : [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get badge types error:', error.response?.data);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Fetch earned badges for a specific user
+ * GET /api/user-badges/?user_id={userId}
+ */
+export const getUserBadges = async (userId: number): Promise<UserBadge[]> => {
+  try {
+    const response = await api.get<UserBadgesResponse>('/user-badges/', {
+      params: { user_id: userId },
+    });
+    const data = response.data;
+    
+    // Handle both direct array and wrapped response formats
+    if (Array.isArray(data)) {
+      return data;
+    }
+    if (data.results && Array.isArray(data.results)) {
+      return data.results;
+    }
+    if (data.data && Array.isArray(data.data)) {
+      return data.data;
+    }
+    
+    return [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get user badges error:', error.response?.data);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Fetch authenticated user's badges (simplified format)
+ * GET /api/user-badges/my_badges/
+ */
+export const getMyBadges = async (): Promise<UserBadgeSimple[]> => {
+  try {
+    const response = await api.get<UserBadgesSimpleResponse>('/user-badges/my_badges/');
+    const data = response.data;
+    
+    // Handle both direct array and wrapped response formats
+    if (Array.isArray(data)) {
+      return data;
+    }
+    if (data.data && Array.isArray(data.data)) {
+      return data.data;
+    }
+    
+    return [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get my badges error:', error.response?.data);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Manually trigger badge check for authenticated user
+ * POST /api/user-badges/check_all/
+ */
+export const checkBadges = async (): Promise<CheckBadgesResponse> => {
+  try {
+    const response = await api.post<CheckBadgesResponse>('/user-badges/check_all/');
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const errorData = error.response?.data;
+      let errMessage = 'Failed to check badges.';
+      
+      if (errorData?.message) {
+        errMessage = errorData.message;
+      } else if (errorData?.error) {
+        errMessage = errorData.error;
+      }
+      
       throw new Error(errMessage);
     }
     throw error;
