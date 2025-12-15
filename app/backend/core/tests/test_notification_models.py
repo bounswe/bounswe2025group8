@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.utils import timezone
 import datetime
-from core.models import RegisteredUser, Task, Volunteer, Notification, NotificationType
+from core.models import RegisteredUser, Task, Volunteer, Notification, NotificationType, Comment
 
 
 class NotificationModelTests(TestCase):
@@ -204,6 +204,190 @@ class NotificationModelTests(TestCase):
         self.notification.mark_as_read()
         refreshed = Notification.objects.get(id=self.notification.id)
         self.assertTrue(refreshed.is_read)
+    
+    def test_badge_earned_notification(self):
+        """Test badge earned notification"""
+        from core.models import Badge, BadgeType
+        
+        # Create a badge
+        badge = Badge.objects.create(
+            badge_type=BadgeType.THE_ICEBREAKER,
+            name='Icebreaker',
+            description='Posted your first comment'
+        )
+        
+        # Send badge notification
+        notification = Notification.send_badge_earned_notification(self.user1, badge)
+        
+        # Verify notification
+        self.assertIsNotNone(notification)
+        self.assertEqual(notification.user, self.user1)
+        self.assertEqual(notification.type, NotificationType.BADGE_EARNED)
+        self.assertIsNone(notification.related_task)  # Badge notifications don't have related tasks
+        self.assertIn(badge.name, notification.content)
+        self.assertIn(badge.description, notification.content)
+        self.assertIn('Congratulations', notification.content)
+    
+    def test_comment_added_notification_to_creator(self):
+        """Test comment notification sent to task creator"""
+        # user2 comments on user1's task
+        comment = Comment.objects.create(
+            user=self.user2,
+            task=self.task,
+            content='This is a test comment on your task!'
+        )
+        
+        # Send notification
+        Notification.send_comment_added_notification(comment)
+        
+        # Verify creator received notification
+        creator_notification = Notification.objects.filter(
+            user=self.user1,
+            type=NotificationType.COMMENT_ADDED,
+            related_task=self.task
+        ).first()
+        
+        self.assertIsNotNone(creator_notification)
+        self.assertIn(self.user2.username, creator_notification.content)
+        self.assertIn(self.task.title, creator_notification.content)
+        self.assertIn('commented', creator_notification.content.lower())
+    
+    def test_comment_added_notification_to_assignee(self):
+        """Test comment notification sent to task assignee"""
+        # Create a third user as assignee
+        user3 = RegisteredUser.objects.create_user(
+            email='user3@example.com',
+            name='User',
+            surname='Three',
+            username='userthree',
+            phone_number='1111111111',
+            password='password789'
+        )
+        
+        # Assign task to user3
+        self.task.assignee = user3
+        self.task.save()
+        
+        # user2 comments on the task
+        comment = Comment.objects.create(
+            user=self.user2,
+            task=self.task,
+            content='Comment for both creator and assignee'
+        )
+        
+        # Send notification
+        Notification.send_comment_added_notification(comment)
+        
+        # Verify both creator and assignee received notifications
+        creator_notification = Notification.objects.filter(
+            user=self.user1,  # creator
+            type=NotificationType.COMMENT_ADDED,
+            related_task=self.task
+        ).first()
+        
+        assignee_notification = Notification.objects.filter(
+            user=user3,  # assignee
+            type=NotificationType.COMMENT_ADDED,
+            related_task=self.task
+        ).first()
+        
+        self.assertIsNotNone(creator_notification)
+        self.assertIsNotNone(assignee_notification)
+        self.assertIn(self.user2.username, creator_notification.content)
+        self.assertIn(self.user2.username, assignee_notification.content)
+    
+    def test_comment_added_no_self_notification(self):
+        """Test that user doesn't receive notification for their own comment"""
+        # user1 (creator) comments on their own task
+        comment = Comment.objects.create(
+            user=self.user1,
+            task=self.task,
+            content='I am commenting on my own task'
+        )
+        
+        # Send notification
+        Notification.send_comment_added_notification(comment)
+        
+        # Verify no notification was sent to user1
+        notifications = Notification.objects.filter(
+            user=self.user1,
+            type=NotificationType.COMMENT_ADDED,
+            related_task=self.task
+        )
+        
+        self.assertEqual(notifications.count(), 0)
+    
+    def test_comment_added_notification_truncates_long_content(self):
+        """Test that long comment content is truncated in notification"""
+        # Create a long comment
+        long_content = 'A' * 100  # 100 characters
+        comment = Comment.objects.create(
+            user=self.user2,
+            task=self.task,
+            content=long_content
+        )
+        
+        # Send notification
+        Notification.send_comment_added_notification(comment)
+        
+        # Verify notification content is truncated
+        creator_notification = Notification.objects.filter(
+            user=self.user1,
+            type=NotificationType.COMMENT_ADDED,
+            related_task=self.task
+        ).first()
+        
+        self.assertIsNotNone(creator_notification)
+        self.assertIn('...', creator_notification.content)
+        # The actual comment preview should be 50 characters
+        self.assertTrue(long_content[:50] in creator_notification.content)
+    
+    def test_admin_warning_notification(self):
+        """Test admin warning notification"""
+        # Create an admin user
+        admin = RegisteredUser.objects.create_user(
+            email='admin@example.com',
+            name='Admin',
+            surname='User',
+            username='adminuser',
+            phone_number='9999999999',
+            password='admin123',
+            is_staff=True
+        )
+        
+        # Send warning to user1
+        warning_message = "Please follow community guidelines."
+        notification = Notification.send_admin_warning(
+            user=self.user1,
+            message=warning_message,
+            admin_user=admin
+        )
+        
+        # Verify notification
+        self.assertIsNotNone(notification)
+        self.assertEqual(notification.user, self.user1)
+        self.assertEqual(notification.type, NotificationType.ADMIN_WARNING)
+        self.assertIsNone(notification.related_task)
+        self.assertIn(admin.username, notification.content)
+        self.assertIn(warning_message, notification.content)
+        self.assertIn('⚠️', notification.content)
+        self.assertIn('Warning', notification.content)
+    
+    def test_admin_warning_notification_without_admin_user(self):
+        """Test admin warning notification when admin user is not provided"""
+        warning_message = "This is a system warning."
+        notification = Notification.send_admin_warning(
+            user=self.user1,
+            message=warning_message,
+            admin_user=None
+        )
+        
+        # Verify notification
+        self.assertIsNotNone(notification)
+        self.assertEqual(notification.user, self.user1)
+        self.assertEqual(notification.type, NotificationType.ADMIN_WARNING)
+        self.assertIn('Administrator', notification.content)
+        self.assertIn(warning_message, notification.content)
 
 
 class NotificationTypeEnumTests(TestCase):
@@ -217,9 +401,15 @@ class NotificationTypeEnumTests(TestCase):
         self.assertEqual(NotificationType.TASK_COMPLETED, 'TASK_COMPLETED')
         self.assertEqual(NotificationType.TASK_CANCELLED, 'TASK_CANCELLED')
         self.assertEqual(NotificationType.NEW_REVIEW, 'NEW_REVIEW')
+        self.assertEqual(NotificationType.BADGE_EARNED, 'BADGE_EARNED')
+        self.assertEqual(NotificationType.COMMENT_ADDED, 'COMMENT_ADDED')
+        self.assertEqual(NotificationType.ADMIN_WARNING, 'ADMIN_WARNING')
         self.assertEqual(NotificationType.SYSTEM_NOTIFICATION, 'SYSTEM_NOTIFICATION')
         
         # Test choices format
         choices = NotificationType.choices
         self.assertTrue(('TASK_CREATED', 'Task Created') in choices)
         self.assertTrue(('NEW_REVIEW', 'New Review') in choices)
+        self.assertTrue(('BADGE_EARNED', 'Badge Earned') in choices)
+        self.assertTrue(('COMMENT_ADDED', 'Comment Added') in choices)
+        self.assertTrue(('ADMIN_WARNING', 'Admin Warning') in choices)

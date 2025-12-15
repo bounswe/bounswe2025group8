@@ -1217,7 +1217,19 @@
     "actions": {
       "view": "View",
       "dismiss": "Dismiss",
+      "warn": "Warn",
       "ban": "Ban"
+    },
+    "warningDialog": {
+      "title": "Send Warning to User",
+      "infoMessage": "This will send a warning notification to this user.",
+      "user": "Username:",
+      "email": "Email:",
+      "messageLabel": "Warning Message",
+      "messagePlaceholder": "Enter your warning message (max 500 characters)...",
+      "characters": "characters",
+      "cancel": "Cancel",
+      "confirm": "Send Warning"
     },
     "dismissDialog": {
       "title": "Dismiss Reports",
@@ -1273,8 +1285,20 @@
     "taskDeleted": "Task Deleted",
     "actions": {
       "view": "View",
+      "warn": "Warn",
       "delete": "Delete",
       "dismiss": "Dismiss"
+    },
+    "warningDialog": {
+      "title": "Send Warning to Task Creator",
+      "infoMessage": "This will send a warning notification to the user who created this task.",
+      "taskTitle": "Task:",
+      "creator": "Creator:",
+      "messageLabel": "Warning Message",
+      "messagePlaceholder": "Enter your warning message (max 500 characters)...",
+      "characters": "characters",
+      "cancel": "Cancel",
+      "confirm": "Send Warning"
     },
     "dismissDialog": {
       "title": "Dismiss Report",
