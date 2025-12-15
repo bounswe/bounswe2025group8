@@ -9,6 +9,7 @@ class NotificationType(models.TextChoices):
     TASK_COMPLETED = 'TASK_COMPLETED', 'Task Completed'
     TASK_CANCELLED = 'TASK_CANCELLED', 'Task Cancelled'
     NEW_REVIEW = 'NEW_REVIEW', 'New Review'
+    BADGE_EARNED = 'BADGE_EARNED', 'Badge Earned'
     SYSTEM_NOTIFICATION = 'SYSTEM_NOTIFICATION', 'System Notification'
 
 
@@ -154,3 +155,15 @@ class Notification(models.Model):
                 notification_type=NotificationType.TASK_COMPLETED,
                 related_task=task
             )
+    
+    @classmethod
+    def send_badge_earned_notification(cls, user, badge):
+        """Send notification when a user earns a badge"""
+        content = f"🎉 Congratulations! You've earned the '{badge.name}' badge! {badge.description}"
+        
+        return cls.send_notification(
+            user=user,
+            content=content,
+            notification_type=NotificationType.BADGE_EARNED,
+            related_task=None
+        )

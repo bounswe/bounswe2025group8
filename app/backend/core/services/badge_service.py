@@ -35,6 +35,12 @@ class BadgeService:
                 user=user,
                 badge=badge
             )
+            
+            # Send notification if badge was newly awarded
+            if created:
+                from core.models import Notification
+                Notification.send_badge_earned_notification(user, badge)
+            
             return created
         except Badge.DoesNotExist:
             return False
