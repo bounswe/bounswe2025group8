@@ -31,8 +31,7 @@ const port = Constants.expoConfig?.extra?.apiPort ?? '8000';
 // Find your LAN IP with: ipconfig getifaddr en0
 // use the first one returned by the command
 // Can be set via Constants.expoConfig?.extra?.localLanIp from .env file
-// const LOCAL_LAN_IP = Constants.expoConfig?.extra?.localLanIp ?? '172.20.10.2'; // Default fallback if not set
-const LOCAL_LAN_IP = '192.168.5.27'; // Hardcoded for current session
+const LOCAL_LAN_IP = Constants.expoConfig?.extra?.localLanIp ?? '192.168.1.104'; // Default fallback if not set
 
 const API_HOST = Platform.select({
   web: 'localhost',           // Web uses localhost
@@ -44,7 +43,9 @@ const API_HOST = Platform.select({
 // Use environment variable if present (from .env via Constants.expoConfig?.extra?.backendBaseUrl), otherwise fallback to dynamic host
 const ENV_BACKEND_URL = Constants.expoConfig?.extra?.backendBaseUrl;
 
-export const BACKEND_BASE_URL = ENV_BACKEND_URL ? ENV_BACKEND_URL : `http://${API_HOST}:${port}`;
+//export const BACKEND_BASE_URL = ENV_BACKEND_URL ? ENV_BACKEND_URL : `http://${API_HOST}:${port}`;
+
+export const BACKEND_BASE_URL = `http://${API_HOST}:${port}`;
 
 export const API_BASE_URL = `${BACKEND_BASE_URL}/api`;
 
@@ -111,6 +112,7 @@ export interface Task {
   creator: UserProfile;
   assignee: UserProfile | null;
   photo?: string;
+  primary_photo_url?: string;
   urgency_level: number;
   volunteer_number: number;
   is_recurring: boolean;
@@ -263,6 +265,42 @@ export interface UpdateTaskResponse {
   status: 'success' | 'error';
   message: string;
   data: Task;
+}
+
+// Follow-related interfaces
+export interface FollowerInfo {
+  id: number;
+  username: string;
+  name: string;
+  surname: string;
+  profile_photo: string | null;
+  followed_at: string;
+}
+
+export interface FollowingInfo {
+  id: number;
+  username: string;
+  name: string;
+  surname: string;
+  profile_photo: string | null;
+  followed_at: string;
+}
+
+export interface FollowUserResponse {
+  status: string;
+  message: string;
+}
+
+export interface FollowersResponse {
+  status: string;
+  message?: string;
+  data: FollowerInfo[];
+}
+
+export interface FollowingResponse {
+  status: string;
+  message?: string;
+  data: FollowingInfo[];
 }
 
 
@@ -634,6 +672,148 @@ export const getUserProfile = async (userId: number): Promise<UserProfile> => {
   }
 };
 
+/**
+ * Follow a user
+ * @param userId - ID of the user to follow
+ */
+export const followUser = async (userId: number): Promise<FollowUserResponse> => {
+  try {
+    console.log('Following user:', userId);
+    const response = await api.post<FollowUserResponse>(`/users/${userId}/follow/`);
+    console.log('Follow user response:', response.data);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Follow user error details:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+
+      // Extract error message from backend response
+      const errorData = error.response?.data;
+      if (errorData?.message) {
+        throw new Error(errorData.message);
+      }
+    }
+    throw error;
+  }
+};
+
+/**
+ * Unfollow a user
+ * @param userId - ID of the user to unfollow
+ */
+export const unfollowUser = async (userId: number): Promise<FollowUserResponse> => {
+  try {
+    console.log('Unfollowing user:', userId);
+    const response = await api.post<FollowUserResponse>(`/users/${userId}/unfollow/`);
+    console.log('Unfollow user response:', response.data);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Unfollow user error details:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+
+      // Extract error message from backend response
+      const errorData = error.response?.data;
+      if (errorData?.message) {
+        throw new Error(errorData.message);
+      }
+    }
+    throw error;
+  }
+};
+
+/**
+ * Get list of followers for a user
+ * @param userId - ID of the user to get followers for
+ */
+export const getFollowers = async (userId: number): Promise<FollowerInfo[]> => {
+  try {
+    console.log('Fetching followers for user:', userId);
+    const response = await api.get(`/users/${userId}/followers/`);
+    console.log('Get followers raw response:', JSON.stringify(response.data, null, 2));
+
+    // Handle different response structures
+    // Backend uses pagination: {count, next, previous, results}
+    if (response.data?.results && Array.isArray(response.data.results)) {
+      console.log('Followers found in response.data.results:', response.data.results.length);
+      return response.data.results as FollowerInfo[];
+    }
+    // Backend uses format_response which wraps data in {status, message, data}
+    if (response.data?.data && Array.isArray(response.data.data)) {
+      console.log('Followers found in response.data.data:', response.data.data.length);
+      return response.data.data as FollowerInfo[];
+    }
+    if (Array.isArray(response.data)) {
+      console.log('Followers found as direct array:', response.data.length);
+      return response.data as FollowerInfo[];
+    }
+    console.log('No followers found, returning empty array');
+    return [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get followers error details:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+    }
+    throw error;
+  }
+};
+
+/**
+ * Get list of users that a user is following
+ * @param userId - ID of the user to get following list for
+ */
+export const getFollowing = async (userId: number): Promise<FollowingInfo[]> => {
+  try {
+    console.log('Fetching following list for user:', userId);
+    const response = await api.get(`/users/${userId}/following/`);
+    console.log('Get following raw response:', JSON.stringify(response.data, null, 2));
+
+    // Handle different response structures
+    // Backend uses pagination: {count, next, previous, results}
+    if (response.data?.results && Array.isArray(response.data.results)) {
+      console.log('Following found in response.data.results:', response.data.results.length);
+      return response.data.results as FollowingInfo[];
+    }
+    // Backend uses format_response which wraps data in {status, message, data}
+    if (response.data?.data && Array.isArray(response.data.data)) {
+      console.log('Following found in response.data.data:', response.data.data.length);
+      return response.data.data as FollowingInfo[];
+    }
+    if (Array.isArray(response.data)) {
+      console.log('Following found as direct array:', response.data.length);
+      return response.data as FollowingInfo[];
+    }
+    console.log('No following found, returning empty array');
+    return [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get following error details:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+    }
+    throw error;
+  }
+};
+
 const normalizeTasksResponse = (payload: unknown): TasksResponse => {
   const empty: TasksResponse = {
     count: 0,
@@ -745,6 +925,38 @@ export const getPopularTasks = async (limit: number = 6): Promise<Task[]> => {
         headers: error.response?.headers
       });
     }
+    return [];
+  }
+};
+
+export const getFollowedTasks = async (limit: number = 6): Promise<Task[]> => {
+  try {
+    console.log(`[API Request] GET /tasks/followed/ with limit=${limit}`);
+    const response = await api.get('/tasks/followed/', {
+      params: { limit },
+    });
+    console.log('Followed tasks response:', response.data);
+
+    // Handle format_response structure: {status, message, data}
+    if (response.data?.status === 'success' && response.data?.data) {
+      return Array.isArray(response.data.data) ? response.data.data as Task[] : [];
+    }
+    // Fallback for direct array response
+    if (Array.isArray(response.data)) {
+      return response.data as Task[];
+    }
+    return [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get followed tasks error details:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+    }
+    // Return empty array on error instead of throwing
     return [];
   }
 };

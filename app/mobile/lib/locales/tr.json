@@ -64,6 +64,9 @@
         "CLEANING": "Temizlik",
         "REPAIR": "Tamir"
     },
+    "category": {
+        "noRequests": "Bu kategori için istek bulunamadı."
+    },
     "auth": {
         "signIn": "Giriş Yap",
         "signUp": "Kayıt Ol",
@@ -108,6 +111,10 @@
         "popularRequests": "Popüler İstekler",
         "seeAllCategories": "Tüm kategorileri gör",
         "seeAllRequests": "Tüm istekleri gör",
+        "followingRequests": "Takip Ettiğiniz Kişilerin İstekleri",
+        "noFollowingRequests": "İsteklerini görmek için kullanıcıları takip edin",
+        "seeAllFollowing": "Takip ettiklerinizin tüm isteklerini gör",
+        "errorLoadingTasks": "Görevler yüklenemedi. Lütfen tekrar deneyin.",
         "home": "Ana Sayfa",
         "categories": "Kategoriler",
         "create": "Oluştur",
@@ -142,6 +149,7 @@
         "errorInvalidDeadline": "Geçersiz bitiş tarihi. Lütfen geçerli bir tarih seçin.",
         "errorFutureDeadline": "Lütfen ileri bir tarih ve saat seçin.",
         "errorAddress": "Lütfen adres için ülke, il ve ilçe seçin.",
+        "errorAddressCountry": "Lütfen adres için ülke seçin.",
         "warningPhotos": "İstek oluşturuldu ancak bazı fotoğraflar yüklenemedi.",
         "successCreated": "İstek başarıyla oluşturuldu!",
         "errorFailed": "İstek oluşturulamadı. Lütfen tekrar deneyin.",
@@ -237,7 +245,10 @@
         "noResults": "Sonuç bulunamadı.",
         "urgencySuffix": "aciliyet",
         "requestsSuffix": "istek",
-        "loadError": "Arama verileri yüklenemedi. Lütfen tekrar deneyin."
+        "requestsIn": "{{location}} içindeki İstekler",
+        "loadError": "Arama verileri yüklenemedi. Lütfen tekrar deneyin.",
+        "photoError": "Profil fotoğrafı yüklenemedi. Lütfen tekrar deneyin.",
+        "logout": "Çıkış Yap"
     },
     "profile": {
         "reviewsCount": "{{count}} değerlendirme",
@@ -284,7 +295,14 @@
         "photoPermission": "Lütfen fotoğraf kitaplığınıza erişim izni verin.",
         "photoSuccess": "Profil fotoğrafı başarıyla güncellendi!",
         "photoError": "Profil fotoğrafı yüklenemedi. Lütfen tekrar deneyin.",
-        "logout": "Çıkış Yap"
+        "logout": "Çıkış Yap",
+        "follow": "Takip Et",
+        "unfollow": "Takibi Bırak",
+        "following": "Takip Ediliyor",
+        "followers": "Takipçiler",
+        "followError": "Kullanıcı takip edilemedi/takipten çıkılamadı. Lütfen tekrar deneyin.",
+        "followSuccess": "Bu kullanıcıyı takip ediyorsunuz.",
+        "unfollowSuccess": "Bu kullanıcıyı takip etmeyi bıraktınız."
     },
     "report": {
         "title": "{{target}} Raporla",
