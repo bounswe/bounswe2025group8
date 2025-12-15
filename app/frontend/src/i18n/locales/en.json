@@ -702,13 +702,16 @@
     "pageTitle": "Home",
     "popularCategories": "Popular Categories",
     "popularRequests": "Popular Requests",
+    "followedRequests": "Requests From People You Follow",
     "seeAll": "See All",
     "viewAllCategories": "View all categories",
     "viewAllRequests": "View all requests",
     "loadingPopularCategories": "Loading popular categories",
     "loadingPopularRequests": "Loading popular requests",
+    "loadingFollowedRequests": "Loading requests from people you follow",
     "failedToLoadCategories": "Failed to load categories",
     "failedToLoadPopularRequests": "Failed to load popular requests",
+    "failedToLoadFollowedRequests": "Failed to load requests from people you follow",
     "tryAgain": "Try Again",
     "noCategoriesAvailable": "No categories available",
     "noRequestsAvailable": "No requests available"
@@ -763,6 +766,10 @@
     }
   },
   "profile": {
+    "followers": "followers",
+    "following": "following",
+    "follow": "Follow",
+    "unfollow": "Unfollow",
     "reviews": {
       "title": "Reviews",
       "noReviewsYet": "No reviews yet"
