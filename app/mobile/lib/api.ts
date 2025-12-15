@@ -931,6 +931,51 @@ export const getTasks = async (): Promise<TasksResponse> => {
   }
 };
 
+export const getUserTasks = async (userId: number, page: number = 1, limit: number = 100): Promise<TasksResponse> => {
+  try {
+    console.log(`Fetching tasks for user ${userId} with page: ${page}, limit: ${limit}`);
+    const response = await api.get(`/users/${userId}/tasks/`, {
+      params: { page, limit }
+    });
+    console.log('User tasks response:', response.data);
+
+    // Backend returns { status, data: { tasks: Task[], pagination: {...} } }
+    if (response.data?.data) {
+      const { tasks, pagination } = response.data.data;
+      let allTasks = tasks || [];
+
+      // Check if there are more pages and recursively fetch them
+      if (pagination?.next_page && pagination.next_page > page) {
+        console.log(`Fetching next page ${pagination.next_page} for user ${userId}`);
+        const nextPageResponse = await getUserTasks(userId, pagination.next_page, limit);
+        allTasks = [...allTasks, ...nextPageResponse.results];
+      }
+
+      return {
+        count: pagination?.total_records || allTasks.length,
+        next: null,
+        previous: null,
+        results: allTasks
+      };
+    }
+
+    // Fallback to normalize if structure is different
+    return normalizeTasksResponse(response.data);
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get user tasks error details:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+    }
+    throw error;
+  }
+};
+
+
 export const getPopularTasks = async (limit: number = 6): Promise<Task[]> => {
   try {
     console.log(`Fetching popular tasks with limit: ${limit}`);
