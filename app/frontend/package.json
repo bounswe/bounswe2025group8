@@ -21,7 +21,7 @@
     "country-state-city": "^3.2.1",
     "date-fns": "^4.1.0",
     "i18next": "^23.16.8",
-    "i18next-browser-languagedetector": "^8.0.2",
+    "i18next-browser-languagedetector": "^8.2.0",
     "react": "^19.1.1",
     "react-country-state-city": "^1.1.12",
     "react-dom": "^19.1.1",
