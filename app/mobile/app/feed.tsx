@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { getTasks, getPopularTasks, getUserProfile, getFollowedTasks, BACKEND_BASE_URL, type Task, type UserProfile, type Category as ApiCategory } from '../lib/api';
 import type { ThemeTokens } from '@/constants/Colors';
 import { useAuth } from '../lib/auth';
@@ -135,6 +135,16 @@ export default function Feed() {
     fetchTasks();
     fetchFollowingTasks();
   }, [user?.id]); // Re-fetch when user changes
+
+  // Refresh following tasks when screen comes into focus
+  // This ensures the list updates after unfollowing someone
+  useFocusEffect(
+    React.useCallback(() => {
+      if (user) {
+        fetchFollowingTasks();
+      }
+    }, [user?.id])
+  );
 
   const onRefresh = () => {
     setRefreshing(true);

@@ -149,6 +149,7 @@
         "errorInvalidDeadline": "Invalid deadline. Please pick a valid deadline.",
         "errorFutureDeadline": "Please select a future date and time.",
         "errorAddress": "Please select a country, state and city for the address.",
+        "errorAddressCountry": "Please select a country for the address.",
         "warningPhotos": "Task created but some photos could not be uploaded.",
         "successCreated": "Task created successfully!",
         "errorFailed": "Failed to create task. Please try again.",

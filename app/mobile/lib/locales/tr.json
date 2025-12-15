@@ -149,6 +149,7 @@
         "errorInvalidDeadline": "Geçersiz bitiş tarihi. Lütfen geçerli bir tarih seçin.",
         "errorFutureDeadline": "Lütfen ileri bir tarih ve saat seçin.",
         "errorAddress": "Lütfen adres için ülke, il ve ilçe seçin.",
+        "errorAddressCountry": "Lütfen adres için ülke seçin.",
         "warningPhotos": "İstek oluşturuldu ancak bazı fotoğraflar yüklenemedi.",
         "successCreated": "İstek başarıyla oluşturuldu!",
         "errorFailed": "İstek oluşturulamadı. Lütfen tekrar deneyin.",
