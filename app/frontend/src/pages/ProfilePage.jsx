@@ -769,7 +769,7 @@ const ProfilePage = () => {
                       variant="body2"
                       sx={{ color: colors.text.secondary }}
                     >
-                      <strong>{followersCount}</strong> followers
+                      <strong>{followersCount}</strong> {t("profile.followers")}
                     </Typography>
                   </Box>
                   <Box
@@ -787,7 +787,7 @@ const ProfilePage = () => {
                       variant="body2"
                       sx={{ color: colors.text.secondary }}
                     >
-                      <strong>{followingCount}</strong> following
+                      <strong>{followingCount}</strong> {t("profile.following")}
                     </Typography>
                   </Box>
                 </Box>
@@ -857,8 +857,8 @@ const ProfilePage = () => {
                       {followLoading
                         ? "..."
                         : isFollowing
-                          ? "Unfollow"
-                          : "Follow"}
+                          ? t("profile.unfollow")
+                          : t("profile.follow")}
                     </Button>
                     <Button
                       onClick={handleUserReport}
