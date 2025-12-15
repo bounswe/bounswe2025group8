@@ -31,7 +31,8 @@ const port = Constants.expoConfig?.extra?.apiPort ?? '8000';
 // Find your LAN IP with: ipconfig getifaddr en0
 // use the first one returned by the command
 // Can be set via Constants.expoConfig?.extra?.localLanIp from .env file
-const LOCAL_LAN_IP = Constants.expoConfig?.extra?.localLanIp ?? '172.20.10.2'; // Default fallback if not set
+// const LOCAL_LAN_IP = Constants.expoConfig?.extra?.localLanIp ?? '172.20.10.2'; // Default fallback if not set
+const LOCAL_LAN_IP = '192.168.5.27'; // Hardcoded for current session
 
 const API_HOST = Platform.select({
   web: 'localhost',           // Web uses localhost
@@ -325,7 +326,7 @@ api.interceptors.response.use(
         data: error.response.data || { status: 'success', message: 'Operation completed successfully.' }
       });
     }
-    
+
     // React Native iOS specific: ERR_NETWORK with no response often means 204 No Content
     // This happens when a DELETE request returns 204 with no body
     if (error.code === 'ERR_NETWORK' && !error.response && error.config?.method?.toLowerCase() === 'delete') {
@@ -338,7 +339,7 @@ api.interceptors.response.use(
         config: error.config,
       } as any);
     }
-    
+
     // Enhanced error logging for network issues
     if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || error.message.includes('Network Error')) {
       console.error('[API Network Error]', {
@@ -1591,12 +1592,12 @@ export const deleteComment = async (commentId: number): Promise<{ status: string
   try {
     const response = await api.delete(`/comments/${commentId}/`);
     console.log('Delete comment response:', response.data);
-    
+
     // Handle 204 No Content response (may have empty body)
     if (response.status === 204) {
       return { status: 'success', message: 'Comment deleted successfully.' };
     }
-    
+
     return response.data || { status: 'success', message: 'Comment deleted successfully.' };
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -1604,7 +1605,7 @@ export const deleteComment = async (commentId: number): Promise<{ status: string
       if (error.response?.status === 204) {
         return { status: 'success', message: 'Comment deleted successfully.' };
       }
-      
+
       console.error('Delete comment error:', {
         error: error.message,
         request: error.config,

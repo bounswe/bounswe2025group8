@@ -80,10 +80,11 @@ export default function SignIn() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingView}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView testID="signin-scroll-view" contentContainerStyle={styles.scrollContent}>
           <TouchableOpacity
             style={styles.backButton}
             accessible
+            testID="signin-back-button"
             accessibilityRole="button"
             accessibilityLabel="Go back"
             onPress={() => {
@@ -179,6 +180,8 @@ export default function SignIn() {
                   onChangeText={setPassword}
                   secureTextEntry={!showPwd}
                   editable={!isLoading}
+                  textContentType="none"
+                  autoComplete="off"
                   accessibilityLabel="Password input"
                   accessibilityValue={{
                     text: password
@@ -198,6 +201,7 @@ export default function SignIn() {
 
                 accessibilityRole="button"
                 accessibilityLabel={showPwd ? 'Hide password' : 'Show password'}
+                testID="signin-password-toggle"
               >
                 <Ionicons
                   name={showPwd ? 'eye-off-outline' : 'eye-outline'}
@@ -217,6 +221,7 @@ export default function SignIn() {
 
               accessibilityRole="button"
               accessibilityLabel="Forgot Password"
+              testID="signin-forgot-password-link"
             >
               <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>
                 {t('auth.forgotPassword')}
@@ -248,6 +253,7 @@ export default function SignIn() {
 
               accessibilityRole="button"
               accessibilityLabel="Go to Sign Up"
+              testID="signin-signup-link"
             >
               <Text style={[styles.signupLink, { color: colors.primary }]}>{t('auth.signUp')}</Text>
             </TouchableOpacity>
