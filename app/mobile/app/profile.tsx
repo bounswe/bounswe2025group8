@@ -6,9 +6,12 @@ import RatingPill from '../components/ui/RatingPill';
 import ReviewCard from '../components/ui/ReviewCard';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../lib/auth';
-import { getUserProfile, type UserProfile, getTasks, type Task, getUserReviews, type Review, listVolunteers, type Volunteer, uploadProfilePhoto, deleteProfilePhoto, submitUserReport, BACKEND_BASE_URL, followUser, unfollowUser, getFollowers, getFollowing, type FollowerInfo, type FollowingInfo } from '../lib/api';
+import { getUserProfile, type UserProfile, getTasks, type Task, getUserReviews, type Review, listVolunteers, type Volunteer, uploadProfilePhoto, deleteProfilePhoto, submitUserReport, BACKEND_BASE_URL, followUser, unfollowUser, getFollowers, getFollowing, type FollowerInfo, type FollowingInfo, getAllBadges, getUserBadges, checkBadges, type Badge, type UserBadge } from '../lib/api';
 import { ReportModal } from '../components/ReportModal';
 import FollowListModal from '../components/ui/FollowListModal';
+import BadgeModal from '../components/ui/BadgeModal';
+import BadgeComponent from '../components/ui/Badge';
+import BadgeDetailModal from '../components/ui/BadgeDetailModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RequestCard from '../components/ui/RequestCard';
 import { Ionicons } from '@expo/vector-icons';
@@ -50,6 +53,14 @@ export default function ProfileScreen() {
   const [followersModalVisible, setFollowersModalVisible] = useState(false);
   const [followingModalVisible, setFollowingModalVisible] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+
+  // Badge-related state
+  const [earnedUserBadges, setEarnedUserBadges] = useState<UserBadge[]>([]);
+  const [allBadges, setAllBadges] = useState<Badge[]>([]);
+  const [badgesLoading, setBadgesLoading] = useState(false);
+  const [badgeModalVisible, setBadgeModalVisible] = useState(false);
+  const [selectedBadge, setSelectedBadge] = useState<Badge | UserBadge | null>(null);
+  const [badgeDetailModalVisible, setBadgeDetailModalVisible] = useState(false);
 
   const [selectedTab, setSelectedTab] = useState<'volunteer' | 'requester'>(initialTab);
 
@@ -410,6 +421,51 @@ export default function ProfileScreen() {
       .finally(() => setReviewsLoading(false));
   }, [profile?.id]);
 
+  // Fetch badges when profile loads
+  useEffect(() => {
+    if (!targetUserId) {
+      setEarnedUserBadges([]);
+      setAllBadges([]);
+      return;
+    }
+
+    const fetchBadges = async () => {
+      try {
+        setBadgesLoading(true);
+        
+        // Check badges for own profile (to award new badges)
+        if (user?.id && targetUserId === user.id) {
+          try {
+            await checkBadges();
+            console.log('[ProfileScreen] Badge check completed');
+          } catch (error) {
+            console.error('[ProfileScreen] Error checking badges:', error);
+            // Don't show error to user, just log it
+          }
+        }
+
+        // Fetch user badges and all badges in parallel
+        const [userBadgesData, allBadgesData] = await Promise.all([
+          getUserBadges(targetUserId),
+          getAllBadges(),
+        ]);
+
+        // Store full UserBadge objects to preserve earned_at information
+        setEarnedUserBadges(userBadgesData);
+        setAllBadges(allBadgesData);
+      } catch (error) {
+        console.error('[ProfileScreen] Error fetching badges:', error);
+        // Don't show error to user, just set empty arrays
+        setEarnedUserBadges([]);
+        setAllBadges([]);
+      } finally {
+        setBadgesLoading(false);
+      }
+    };
+
+    fetchBadges();
+  }, [targetUserId, user?.id]);
+
   if (!viewedUserId && !user) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
@@ -635,6 +691,72 @@ export default function ProfileScreen() {
           )}
         </View>
 
+        {/* Badges Section */}
+        <View style={[styles.badgesSection, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+          <View style={styles.badgesHeader}>
+            <View style={styles.badgesHeaderLeft}>
+              <Ionicons name="trophy" size={20} color={themeColors.primary} />
+              <Text style={[styles.badgesTitle, { color: themeColors.text }]}>
+                {t('profile.badges.title', { defaultValue: 'Badges' })}
+              </Text>
+              {earnedUserBadges.length > 0 && (
+                <View style={[styles.badgeCountPill, { backgroundColor: themeColors.primary }]}>
+                  <Text style={[styles.badgeCountText, { color: themeColors.card }]}>
+                    {earnedUserBadges.length}
+                  </Text>
+                </View>
+              )}
+            </View>
+            <TouchableOpacity
+              onPress={() => setBadgeModalVisible(true)}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={t('profile.badges.viewAll', { defaultValue: 'View all badges' })}
+            >
+              <Text style={[styles.viewAllText, { color: themeColors.primary }]}>
+                {t('profile.badges.viewAll', { defaultValue: 'View All' })}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          
+          {badgesLoading ? (
+            <ActivityIndicator color={themeColors.primary} style={{ marginVertical: 16 }} />
+          ) : earnedUserBadges.length > 0 ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.badgesScrollContent}
+            >
+              {earnedUserBadges.slice(0, 5).map((userBadge) => (
+                <BadgeComponent
+                  key={userBadge.id}
+                  badge={userBadge}
+                  isEarned={true}
+                  size="medium"
+                  onPress={() => {
+                    setSelectedBadge(userBadge);
+                    setBadgeDetailModalVisible(true);
+                  }}
+                />
+              ))}
+              {earnedUserBadges.length > 5 && (
+                <TouchableOpacity
+                  onPress={() => setBadgeModalVisible(true)}
+                  style={[styles.moreBadgesButton, { backgroundColor: themeColors.background }]}
+                >
+                  <Text style={[styles.moreBadgesText, { color: themeColors.primary }]}>
+                    +{earnedUserBadges.length - 5}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </ScrollView>
+          ) : (
+            <Text style={[styles.noBadgesText, { color: themeColors.textMuted }]}>
+              {t('profile.badges.noBadgesYet', { defaultValue: 'No badges earned yet' })}
+            </Text>
+          )}
+        </View>
+
         {/* Follow button and follower/following counts */}
         <View style={styles.followSection}>
           {!isOwnProfile && (
@@ -818,6 +940,23 @@ export default function ProfileScreen() {
           targetName={profile ? `${profile.name} ${profile.surname}` : 'User'}
           isUserReport={true}
         />
+
+        <BadgeModal
+          visible={badgeModalVisible}
+          onClose={() => setBadgeModalVisible(false)}
+          earnedUserBadges={earnedUserBadges}
+          allBadges={allBadges}
+          loading={badgesLoading}
+        />
+
+        <BadgeDetailModal
+          visible={badgeDetailModalVisible}
+          onClose={() => {
+            setBadgeDetailModalVisible(false);
+            setSelectedBadge(null);
+          }}
+          badge={selectedBadge}
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -951,5 +1090,67 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 14,
+  },
+  badgesSection: {
+    marginTop: 16,
+    marginBottom: 0,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  badgesHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  badgesHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  badgesTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  badgeCountPill: {
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginLeft: 8,
+    minWidth: 24,
+    alignItems: 'center',
+  },
+  badgeCountText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  viewAllText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  badgesScrollContent: {
+    paddingVertical: 4,
+    gap: 12,
+  },
+  moreBadgesButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    marginLeft: 4,
+  },
+  moreBadgesText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  noBadgesText: {
+    textAlign: 'center',
+    fontSize: 14,
+    fontStyle: 'italic',
+    marginVertical: 8,
   },
 }); 
