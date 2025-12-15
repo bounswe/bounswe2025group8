@@ -1,36 +1,17 @@
 import { useState, useEffect } from "react";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import useAuth from "../features/authentication/hooks/useAuth";
 import logoImage from "../assets/logo.png";
-import lockIcon from "../assets/lock.svg";
-import mailIcon from "../assets/mail.svg";
 import { useTheme } from "../hooks/useTheme";
-
-// Eye icons for password visibility (you may need to replace these with actual SVG icons or use different icons)
-const EyeIcon = () => (
-  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-    <path
-      fillRule="evenodd"
-      d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-      clipRule="evenodd"
-    />
-  </svg>
-);
-
-const EyeOffIcon = () => (
-  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-    <path
-      fillRule="evenodd"
-      d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z"
-      clipRule="evenodd"
-    />
-    <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
-  </svg>
-);
+import EmailIcon from "@mui/icons-material/Email";
+import LockIcon from "@mui/icons-material/Lock";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 const LoginPage = () => {
   const { colors, theme, setTheme } = useTheme();
+  const { t, i18n } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -53,13 +34,13 @@ const LoginPage = () => {
       if (success) {
         navigate("/"); // Only redirect on successful login
       } else {
-        setLoginError(
-          "Invalid credentials. Please check your email and password."
-        );
+        setLoginError(t("loginPage.invalidCredentials"));
       }
     } catch (error) {
       setLoginError(
-        "Failed to sign in: " + (error.message || "Invalid credentials")
+        t("loginPage.failedToSignIn") +
+          ": " +
+          (error.message || t("loginPage.invalidCredentials"))
       );
     }
   };
@@ -70,13 +51,14 @@ const LoginPage = () => {
       className="flex min-h-screen items-center justify-center"
       style={{ backgroundColor: colors.background.primary }}
     >
-      {/* Theme Toggle Button */}
-      <div className="fixed top-4 right-4 z-50">
+      {/* Theme and Language Toggle Buttons */}
+      <div className="fixed top-4 right-4 z-50 flex gap-2">
+        {/* Language Selector */}
         <select
-          value={theme}
-          onChange={(e) => setTheme(e.target.value)}
+          value={i18n.language}
+          onChange={(e) => i18n.changeLanguage(e.target.value)}
           className="px-3 py-2 rounded-md border text-sm focus:outline-none"
-          aria-label="Theme selection"
+          aria-label={t("loginPage.changeLanguage")}
           style={{
             backgroundColor: colors.background.secondary,
             color: colors.text.primary,
@@ -87,9 +69,29 @@ const LoginPage = () => {
           }
           onBlur={(e) => (e.target.style.boxShadow = "none")}
         >
-          <option value="light">Light Mode</option>
-          <option value="dark">Dark Mode</option>
-          <option value="high-contrast">High Contrast</option>
+          <option value="en">{t("english")}</option>
+          <option value="tr">{t("turkish")}</option>
+        </select>
+
+        {/* Theme Selector */}
+        <select
+          value={theme}
+          onChange={(e) => setTheme(e.target.value)}
+          className="px-3 py-2 rounded-md border text-sm focus:outline-none"
+          aria-label={t("loginPage.themeSelection")}
+          style={{
+            backgroundColor: colors.background.secondary,
+            color: colors.text.primary,
+            borderColor: colors.border.primary,
+          }}
+          onFocus={(e) =>
+            (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+          }
+          onBlur={(e) => (e.target.style.boxShadow = "none")}
+        >
+          <option value="light">{t("lightMode")}</option>
+          <option value="dark">{t("darkMode")}</option>
+          <option value="high-contrast">{t("highContrast")}</option>
         </select>
       </div>
 
@@ -100,15 +102,25 @@ const LoginPage = () => {
       >
         {/* Logo and Title updated to be side by side */}
         <div className="flex flex-row items-center justify-center mb-1">
-          <img src={logoImage} alt="Logo" width="160" height="160" />
+          <img
+            src={logoImage}
+            alt={t("loginPage.logoAlt")}
+            width="160"
+            height="160"
+          />
           <h1
             className="text-4xl font-bold ml-2"
             style={{ color: colors.text.primary }}
             id="login-page-title"
           >
-            Neighborhood
-            <br />
-            Assistance Board
+            {t("loginPage.pageTitle")
+              .split("\n")
+              .map((line, i) => (
+                <span key={i}>
+                  {line}
+                  {i === 0 && <br />}
+                </span>
+              ))}
           </h1>
         </div>
 
@@ -132,7 +144,7 @@ const LoginPage = () => {
                   className="px-8 py-2 no-underline transition-colors"
                   style={{
                     backgroundColor: colors.brand.primary,
-                    color: colors.text.inverted,
+                    color: colors.text.inverse,
                   }}
                   onMouseOver={(e) =>
                     (e.currentTarget.style.backgroundColor =
@@ -143,7 +155,7 @@ const LoginPage = () => {
                       colors.brand.primary)
                   }
                 >
-                  LOGIN
+                  {t("loginPage.login").toUpperCase()}
                 </RouterLink>
                 <RouterLink
                   to="/register"
@@ -161,7 +173,7 @@ const LoginPage = () => {
                       colors.background.secondary)
                   }
                 >
-                  REGISTER
+                  {t("loginPage.register").toUpperCase()}
                 </RouterLink>
               </div>
             </div>
@@ -170,13 +182,13 @@ const LoginPage = () => {
                 className="text-lg font-bold mb-1"
                 style={{ color: colors.text.primary }}
               >
-                Welcome back
+                {t("loginPage.welcomeBack")}
               </h2>
               <p
                 className="text-sm mb-6"
                 style={{ color: colors.text.secondary }}
               >
-                Enter your details to sign in to your account
+                {t("loginPage.enterDetailsToSignIn")}
               </p>
 
               {/* Show registration success message if applicable */}
@@ -191,8 +203,7 @@ const LoginPage = () => {
                   role="alert"
                   aria-live="assertive"
                 >
-                  Registration successful! You can now log in with your
-                  credentials.
+                  {t("loginPage.registrationSuccessful")}
                 </div>
               )}
 
@@ -219,17 +230,9 @@ const LoginPage = () => {
                 <div className="mb-4">
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <img
-                        src={mailIcon}
-                        alt=""
-                        aria-hidden="true"
-                        width="16"
-                        height="16"
+                      <EmailIcon
                         style={{
-                          filter:
-                            theme === "light"
-                              ? "brightness(0) saturate(100%) invert(0.3) sepia(100%) hue-rotate(0deg)"
-                              : "brightness(0) invert(1)",
+                          fontSize: 16,
                         }}
                       />
                     </div>
@@ -248,13 +251,13 @@ const LoginPage = () => {
                         border: 0,
                       }}
                     >
-                      Email
+                      {t("loginPage.email")}
                     </label>
                     <input
                       type="email"
                       id="email"
                       name="email"
-                      placeholder="Email"
+                      placeholder={t("loginPage.email")}
                       autoComplete="email"
                       autoFocus
                       required
@@ -278,17 +281,9 @@ const LoginPage = () => {
                 <div className="mb-2">
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <img
-                        src={lockIcon}
-                        alt=""
-                        aria-hidden="true"
-                        width="16"
-                        height="16"
+                      <LockIcon
                         style={{
-                          filter:
-                            theme === "light"
-                              ? "brightness(0) saturate(100%) invert(0.3) sepia(100%) hue-rotate(0deg)"
-                              : "brightness(0) invert(1)",
+                          fontSize: 16,
                         }}
                       />
                     </div>
@@ -307,13 +302,13 @@ const LoginPage = () => {
                         border: 0,
                       }}
                     >
-                      Password
+                      {t("loginPage.password")}
                     </label>
                     <input
                       type={showPassword ? "text" : "password"}
                       id="password"
                       name="password"
-                      placeholder="Password"
+                      placeholder={t("loginPage.password")}
                       autoComplete="current-password"
                       required
                       value={password}
@@ -336,7 +331,9 @@ const LoginPage = () => {
                         onClick={() => setShowPassword(!showPassword)}
                         className="focus:outline-none"
                         aria-label={
-                          showPassword ? "Hide password" : "Show password"
+                          showPassword
+                            ? t("loginPage.hidePassword")
+                            : t("loginPage.showPassword")
                         }
                         style={{ color: colors.text.tertiary }}
                         onMouseOver={(e) =>
@@ -346,7 +343,11 @@ const LoginPage = () => {
                           (e.currentTarget.style.color = colors.text.tertiary)
                         }
                       >
-                        {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                        {showPassword ? (
+                          <VisibilityOffIcon style={{ fontSize: 16 }} />
+                        ) : (
+                          <VisibilityIcon style={{ fontSize: 16 }} />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -368,7 +369,7 @@ const LoginPage = () => {
                       className="ml-2 text-sm"
                       style={{ color: colors.text.primary }}
                     >
-                      Remember me
+                      {t("loginPage.rememberMe")}
                     </span>
                   </label>
                 </div>
@@ -381,7 +382,7 @@ const LoginPage = () => {
                     backgroundColor: loading
                       ? colors.interactive.disabled
                       : colors.brand.primary,
-                    color: colors.text.inverted,
+                    color: colors.text.inverse,
                   }}
                   onMouseOver={(e) =>
                     !loading &&
@@ -398,7 +399,7 @@ const LoginPage = () => {
                   }
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
                 >
-                  Login
+                  {t("loginPage.login")}
                 </button>
 
                 <div className="text-center mb-4">
@@ -413,7 +414,7 @@ const LoginPage = () => {
                       (e.currentTarget.style.color = colors.brand.primary)
                     }
                   >
-                    Forgot my password
+                    {t("loginPage.forgotMyPassword")}
                   </RouterLink>
                 </div>
               </form>
@@ -423,7 +424,7 @@ const LoginPage = () => {
 
         <div className="text-center my-4">
           <p className="text-sm" style={{ color: colors.text.secondary }}>
-            OR
+            {t("loginPage.or")}
           </p>
         </div>
 
@@ -439,7 +440,7 @@ const LoginPage = () => {
               (e.currentTarget.style.color = colors.brand.primary)
             }
           >
-            Continue as a guest
+            {t("loginPage.continueAsGuest")}
           </RouterLink>
         </div>
       </main>

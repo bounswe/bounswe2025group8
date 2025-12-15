@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import useAuth from '../../features/authentication/hooks/useAuth';
-import { useTheme } from '../../hooks/useTheme';
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import useAuth from "../../features/authentication/hooks/useAuth";
+import { useTheme } from "../../hooks/useTheme";
 import {
   Container,
   Paper,
@@ -27,17 +28,17 @@ import {
   InputLabel,
   Select,
   MenuItem,
-} from '@mui/material';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import BlockIcon from '@mui/icons-material/Block';
+} from "@mui/material";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import BlockIcon from "@mui/icons-material/Block";
 import {
   fetchUserReports,
   updateReportStatusThunk,
   banUserThunk,
   clearError,
   clearSuccess,
-} from '../../features/admin/store/adminSlice';
-import DeleteIcon from '@mui/icons-material/Delete';
+} from "../../features/admin/store/adminSlice";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const AdminUserReports = () => {
   const dispatch = useDispatch();
@@ -45,23 +46,29 @@ const AdminUserReports = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { userRole } = useAuth();
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
-  const { userReports, pagination, loading, actionLoading, error, successMessage } = useSelector(
-    (state) => state.admin
-  );
+  const {
+    userReports,
+    pagination,
+    loading,
+    actionLoading,
+    error,
+    successMessage,
+  } = useSelector((state) => state.admin);
 
-  const currentPage = parseInt(searchParams.get('page') || '1', 10);
-  const statusFilter = searchParams.get('status') || null;
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
+  const statusFilter = searchParams.get("status") || null;
 
   const [dismissDialogOpen, setDismissDialogOpen] = useState(false);
   const [banDialogOpen, setBanDialogOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
-  const [banReason, setBanReason] = useState('');
+  const [banReason, setBanReason] = useState("");
 
   // Check admin access
   useEffect(() => {
-    if (userRole !== 'admin') {
-      navigate('/');
+    if (userRole !== "admin") {
+      navigate("/");
     }
   }, [userRole, navigate]);
 
@@ -82,11 +89,14 @@ const AdminUserReports = () => {
   }, [error, successMessage, dispatch]);
 
   const handlePageChange = (event, value) => {
-    setSearchParams({ page: value.toString(), ...(statusFilter && { status: statusFilter }) });
+    setSearchParams({
+      page: value.toString(),
+      ...(statusFilter && { status: statusFilter }),
+    });
   };
 
   const handleStatusFilterChange = (status) => {
-    setSearchParams({ page: '1', ...(status && { status }) });
+    setSearchParams({ page: "1", ...(status && { status }) });
   };
 
   const handleDismissClick = (report) => {
@@ -96,7 +106,7 @@ const AdminUserReports = () => {
 
   const handleBanClick = (report) => {
     setSelectedReport(report);
-    setBanReason('');
+    setBanReason("");
     setBanDialogOpen(true);
   };
 
@@ -104,10 +114,10 @@ const AdminUserReports = () => {
     if (selectedReport) {
       dispatch(
         updateReportStatusThunk({
-          reportType: 'user',
+          reportType: "user",
           reportId: selectedReport.id,
-          status: 'DISMISSED',
-          notes: 'Report dismissed by admin',
+          status: "DISMISSED",
+          notes: "Report dismissed by admin",
         })
       );
       setDismissDialogOpen(false);
@@ -129,7 +139,7 @@ const AdminUserReports = () => {
       );
       setBanDialogOpen(false);
       setSelectedReport(null);
-      setBanReason('');
+      setBanReason("");
       // Refetch reports after ban
       setTimeout(() => {
         dispatch(fetchUserReports({ status: statusFilter, page: currentPage }));
@@ -141,50 +151,70 @@ const AdminUserReports = () => {
     setDismissDialogOpen(false);
     setBanDialogOpen(false);
     setSelectedReport(null);
-    setBanReason('');
+    setBanReason("");
   };
 
   const getStatusColor = (status) => {
     const statusColors = {
-      PENDING: 'warning',
-      UNDER_REVIEW: 'info',
-      RESOLVED: 'success',
-      DISMISSED: 'error',
+      PENDING: "warning",
+      UNDER_REVIEW: "info",
+      RESOLVED: "success",
+      DISMISSED: "error",
     };
-    return statusColors[status] || 'default';
+    return statusColors[status] || "default";
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
-  if (userRole !== 'admin') {
+  if (userRole !== "admin") {
     return null;
   }
 
   return (
-    <Box sx={{ backgroundColor: colors.background.primary, minHeight: '100vh', py: 4 }}>
+    <Box
+      sx={{
+        backgroundColor: colors.background.primary,
+        minHeight: "100vh",
+        py: 4,
+      }}
+    >
       <Container maxWidth="lg">
         {/* Header */}
-        <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box
+          sx={{
+            mb: 4,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <div>
-            <h1 style={{ color: colors.text.primary, marginBottom: '8px' }}>User Reports</h1>
-            <p style={{ color: colors.text.secondary, fontSize: '14px' }}>
-              Total reports: {pagination.totalItems}
+            <h1 style={{ color: colors.text.primary, marginBottom: "8px" }}>
+              {t("adminUserReports.title")}
+            </h1>
+            <p style={{ color: colors.text.secondary, fontSize: "14px" }}>
+              {t("adminUserReports.totalReports", {
+                count: pagination.totalItems,
+              })}
             </p>
           </div>
           <Button
             variant="outlined"
-            onClick={() => navigate('/admin')}
-            sx={{ color: colors.brand.primary, borderColor: colors.brand.primary }}
+            onClick={() => navigate("/admin")}
+            sx={{
+              color: colors.brand.primary,
+              borderColor: colors.brand.primary,
+            }}
           >
-            Back to Dashboard
+            {t("adminUserReports.backToDashboard")}
           </Button>
         </Box>
 
@@ -194,35 +224,43 @@ const AdminUserReports = () => {
             <InputLabel
               sx={{
                 color: colors.brand.primary,
-                '&.Mui-focused': {
+                "&.Mui-focused": {
                   color: colors.brand.primary,
-                }
+                },
               }}
             >
-              Filter by Status
+              {t("adminUserReports.filterByStatus")}
             </InputLabel>
             <Select
-              value={statusFilter || ''}
-              label="Filter by Status"
+              value={statusFilter || ""}
+              label={t("adminUserReports.filterByStatus")}
               onChange={(e) => handleStatusFilterChange(e.target.value || null)}
               sx={{
                 color: colors.text.primary,
-                '& .MuiOutlinedInput-notchedOutline': {
+                "& .MuiOutlinedInput-notchedOutline": {
                   borderColor: colors.brand.primary,
                 },
-                '&:hover .MuiOutlinedInput-notchedOutline': {
+                "&:hover .MuiOutlinedInput-notchedOutline": {
                   borderColor: colors.brand.primary,
                 },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
                   borderColor: colors.brand.primary,
                 },
               }}
             >
-              <MenuItem value="">All Statuses</MenuItem>
-              <MenuItem value="PENDING">Pending</MenuItem>
-              <MenuItem value="UNDER_REVIEW">Under Review</MenuItem>
-              <MenuItem value="RESOLVED">Resolved</MenuItem>
-              <MenuItem value="DISMISSED">Dismissed</MenuItem>
+              <MenuItem value="">{t("adminUserReports.allStatuses")}</MenuItem>
+              <MenuItem value="PENDING">
+                {t("adminUserReports.pending")}
+              </MenuItem>
+              <MenuItem value="UNDER_REVIEW">
+                {t("adminUserReports.underReview")}
+              </MenuItem>
+              <MenuItem value="RESOLVED">
+                {t("adminUserReports.resolved")}
+              </MenuItem>
+              <MenuItem value="DISMISSED">
+                {t("adminUserReports.dismissed")}
+              </MenuItem>
             </Select>
           </FormControl>
         </Box>
@@ -230,7 +268,7 @@ const AdminUserReports = () => {
         {/* Alerts */}
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
-            {typeof error === 'string' ? error : 'An error occurred'}
+            {typeof error === "string" ? error : "An error occurred"}
           </Alert>
         )}
         {successMessage && (
@@ -241,7 +279,7 @@ const AdminUserReports = () => {
 
         {/* Loading State */}
         {loading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
             <CircularProgress />
           </Box>
         )}
@@ -253,10 +291,10 @@ const AdminUserReports = () => {
             sx={{
               backgroundColor: colors.background.elevated,
               color: colors.text.primary,
-              '& .MuiTable-root': {
+              "& .MuiTable-root": {
                 backgroundColor: colors.background.elevated,
               },
-              '& .MuiTableCell-root': {
+              "& .MuiTableCell-root": {
                 backgroundColor: colors.background.elevated,
                 color: colors.text.primary,
               },
@@ -265,13 +303,41 @@ const AdminUserReports = () => {
             <Table>
               <TableHead>
                 <TableRow sx={{ backgroundColor: colors.brand.primary }}>
-                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>ID</TableCell>
-                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Reported User</TableCell>
-                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Report Type</TableCell>
-                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Reported By</TableCell>
-                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Status</TableCell>
-                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Created</TableCell>
-                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Actions</TableCell>
+                  <TableCell
+                    sx={{ color: colors.text.inverse, fontWeight: "bold" }}
+                  >
+                    {t("adminUserReports.table.id")}
+                  </TableCell>
+                  <TableCell
+                    sx={{ color: colors.text.inverse, fontWeight: "bold" }}
+                  >
+                    {t("adminUserReports.table.reportedUser")}
+                  </TableCell>
+                  <TableCell
+                    sx={{ color: colors.text.inverse, fontWeight: "bold" }}
+                  >
+                    {t("adminUserReports.table.reportType")}
+                  </TableCell>
+                  <TableCell
+                    sx={{ color: colors.text.inverse, fontWeight: "bold" }}
+                  >
+                    {t("adminUserReports.table.reportedBy")}
+                  </TableCell>
+                  <TableCell
+                    sx={{ color: colors.text.inverse, fontWeight: "bold" }}
+                  >
+                    {t("adminUserReports.table.status")}
+                  </TableCell>
+                  <TableCell
+                    sx={{ color: colors.text.inverse, fontWeight: "bold" }}
+                  >
+                    {t("adminUserReports.table.created")}
+                  </TableCell>
+                  <TableCell
+                    sx={{ color: colors.text.inverse, fontWeight: "bold" }}
+                  >
+                    {t("adminUserReports.table.actions")}
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -282,7 +348,7 @@ const AdminUserReports = () => {
                       align="center"
                       sx={{ py: 3, color: colors.text.secondary }}
                     >
-                      No reports found
+                      {t("adminUserReports.noReportsFound")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -291,22 +357,26 @@ const AdminUserReports = () => {
                       key={report.id}
                       hover
                       sx={{
-                        '&:hover': { backgroundColor: colors.interactive.hover },
+                        "&:hover": {
+                          backgroundColor: colors.interactive.hover,
+                        },
                         borderBottom: `1px solid ${colors.border.secondary}`,
                       }}
                     >
-                      <TableCell sx={{ color: colors.text.primary }}>{report.id}</TableCell>
+                      <TableCell sx={{ color: colors.text.primary }}>
+                        {report.id}
+                      </TableCell>
                       <TableCell sx={{ color: colors.text.primary }}>
                         {report.user ? (
                           <div>
                             {report.user.name} {report.user.surname}
                           </div>
                         ) : (
-                          'User Deleted'
+                          t("adminUserReports.userDeleted")
                         )}
                       </TableCell>
                       <TableCell sx={{ color: colors.text.primary }}>
-                        {report.report_type || 'N/A'}
+                        {report.report_type || "N/A"}
                       </TableCell>
                       <TableCell sx={{ color: colors.text.primary }}>
                         {report.reporter?.name} {report.reporter?.surname}
@@ -322,15 +392,17 @@ const AdminUserReports = () => {
                         {formatDate(report.created_at)}
                       </TableCell>
                       <TableCell>
-                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                           {report.user && (
                             <Button
                               size="small"
                               startIcon={<VisibilityIcon />}
                               variant="outlined"
-                              onClick={() => navigate(`/profile/${report.user.id}`)}
+                              onClick={() =>
+                                navigate(`/profile/${report.user.id}`)
+                              }
                             >
-                              View
+                              {t("adminUserReports.actions.view")}
                             </Button>
                           )}
                           <Button
@@ -339,7 +411,7 @@ const AdminUserReports = () => {
                             variant="outlined"
                             onClick={() => handleDismissClick(report)}
                           >
-                            Dismiss
+                            {t("adminUserReports.actions.dismiss")}
                           </Button>
                           {report.user && (
                             <Button
@@ -349,7 +421,7 @@ const AdminUserReports = () => {
                               startIcon={<BlockIcon />}
                               onClick={() => handleBanClick(report)}
                             >
-                              Ban
+                              {t("adminUserReports.actions.ban")}
                             </Button>
                           )}
                         </Box>
@@ -364,7 +436,7 @@ const AdminUserReports = () => {
 
         {/* Pagination */}
         {!loading && pagination.totalPages > 1 && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
             <Pagination
               count={pagination.totalPages}
               page={currentPage}
@@ -376,62 +448,99 @@ const AdminUserReports = () => {
       </Container>
 
       {/* Dismiss Dialog */}
-      <Dialog open={dismissDialogOpen} onClose={handleDialogCancel} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ color: colors.text.primary }}>Dismiss Report</DialogTitle>
+      <Dialog
+        open={dismissDialogOpen}
+        onClose={handleDialogCancel}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ color: colors.text.primary }}>
+          {t("adminUserReports.dismissDialog.title")}
+        </DialogTitle>
         <DialogContent>
           {selectedReport && (
             <Box sx={{ mb: 2 }}>
-              <div style={{ marginBottom: '16px', color: colors.text.primary }}>
+              <div style={{ marginBottom: "16px", color: colors.text.primary }}>
                 <p>
-                  <strong>Reported User:</strong>{' '}
+                  <strong>
+                    {t("adminUserReports.dismissDialog.reportedUser")}
+                  </strong>{" "}
                   {selectedReport.user
                     ? `${selectedReport.user.name} ${selectedReport.user.surname}`
-                    : 'User Deleted'}
+                    : t("adminUserReports.userDeleted")}
                 </p>
                 <p>
-                  <strong>Report Type:</strong> {selectedReport.report_type}
+                  <strong>
+                    {t("adminUserReports.dismissDialog.reportType")}
+                  </strong>{" "}
+                  {selectedReport.report_type}
                 </p>
                 {selectedReport.description && (
                   <p>
-                    <strong>Description:</strong> {selectedReport.description}
+                    <strong>
+                      {t("adminUserReports.dismissDialog.description")}
+                    </strong>{" "}
+                    {selectedReport.description}
                   </p>
                 )}
-                <p style={{ marginTop: '16px', fontStyle: 'italic', color: colors.text.secondary }}>
-                  This report will be marked as dismissed.
+                <p
+                  style={{
+                    marginTop: "16px",
+                    fontStyle: "italic",
+                    color: colors.text.secondary,
+                  }}
+                >
+                  {t("adminUserReports.dismissDialog.message")}
                 </p>
               </div>
             </Box>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDialogCancel}>Cancel</Button>
+          <Button onClick={handleDialogCancel}>
+            {t("adminUserReports.dismissDialog.cancel")}
+          </Button>
           <Button
             onClick={handleDismissConfirm}
             color="warning"
             variant="contained"
             disabled={actionLoading}
           >
-            {actionLoading ? <CircularProgress size={24} /> : 'Dismiss Report'}
+            {actionLoading ? (
+              <CircularProgress size={24} />
+            ) : (
+              t("adminUserReports.dismissDialog.confirm")
+            )}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Ban Dialog */}
-      <Dialog open={banDialogOpen} onClose={handleDialogCancel} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ color: colors.text.primary }}>Ban User</DialogTitle>
+      <Dialog
+        open={banDialogOpen}
+        onClose={handleDialogCancel}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ color: colors.text.primary }}>
+          {t("adminUserReports.banDialog.title")}
+        </DialogTitle>
         <DialogContent>
           {selectedReport && selectedReport.user && (
             <Box sx={{ mb: 2 }}>
               <Alert severity="warning" sx={{ mb: 2 }}>
-                You are about to ban {selectedReport.user.name} {selectedReport.user.surname}.
-                This user will no longer be able to access their account.
+                {t("adminUserReports.banDialog.warning", {
+                  name: `${selectedReport.user.name} ${selectedReport.user.surname}`,
+                })}
               </Alert>
-              <div style={{ marginBottom: '16px', color: colors.text.primary }}>
+              <div style={{ marginBottom: "16px", color: colors.text.primary }}>
                 <p>
-                  <strong>User:</strong> {selectedReport.user.name} {selectedReport.user.surname}
+                  <strong>{t("adminUserReports.banDialog.user")}</strong>{" "}
+                  {selectedReport.user.name} {selectedReport.user.surname}
                 </p>
                 <p>
-                  <strong>Email:</strong> {selectedReport.user.email}
+                  <strong>{t("adminUserReports.banDialog.email")}</strong>{" "}
+                  {selectedReport.user.email}
                 </p>
               </div>
             </Box>
@@ -441,16 +550,16 @@ const AdminUserReports = () => {
             fullWidth
             multiline
             rows={3}
-            label="Ban Reason"
+            label={t("adminUserReports.banDialog.reasonLabel")}
             value={banReason}
             onChange={(e) => setBanReason(e.target.value)}
-            placeholder="Explain why this user is being banned..."
+            placeholder={t("adminUserReports.banDialog.reasonPlaceholder")}
             required
             sx={{
-              '& .MuiOutlinedInput-root': {
+              "& .MuiOutlinedInput-root": {
                 color: colors.text.primary,
               },
-              '& .MuiInputBase-input::placeholder': {
+              "& .MuiInputBase-input::placeholder": {
                 color: colors.text.secondary,
                 opacity: 0.7,
               },
@@ -458,14 +567,20 @@ const AdminUserReports = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDialogCancel}>Cancel</Button>
+          <Button onClick={handleDialogCancel}>
+            {t("adminUserReports.banDialog.cancel")}
+          </Button>
           <Button
             onClick={handleBanConfirm}
             color="error"
             variant="contained"
             disabled={actionLoading || !banReason.trim()}
           >
-            {actionLoading ? <CircularProgress size={24} /> : 'Ban User'}
+            {actionLoading ? (
+              <CircularProgress size={24} />
+            ) : (
+              t("adminUserReports.banDialog.confirm")
+            )}
           </Button>
         </DialogActions>
       </Dialog>

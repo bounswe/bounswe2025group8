@@ -115,16 +115,17 @@ export const formatRating = (rating, maxRating = 5) => {
 /**
  * Get text for task status with proper formatting
  * @param {string} status - Task status code
+ * @param {Function} t - Optional i18n translation function
  * @returns {Object} Status text and color
  */
-export const getTaskStatusInfo = (status) => {
+export const getTaskStatusInfo = (status, t = null) => {
   const statusMap = {
-    POSTED: { text: 'Posted', color: '#3498db' }, // Blue
-    ASSIGNED: { text: 'Assigned', color: '#f39c12' }, // Orange
-    IN_PROGRESS: { text: 'In Progress', color: '#8e44ad' }, // Purple
-    COMPLETED: { text: 'Completed', color: '#27ae60' }, // Green
-    CANCELLED: { text: 'Cancelled', color: '#e74c3c' }, // Red
-    EXPIRED: { text: 'Expired', color: '#7f8c8d' }, // Gray
+    POSTED: { text: t ? t('taskStatuses.POSTED') : 'Posted', color: '#3498db' }, // Blue
+    ASSIGNED: { text: t ? t('taskStatuses.ASSIGNED') : 'Assigned', color: '#f39c12' }, // Orange
+    IN_PROGRESS: { text: t ? t('taskStatuses.IN_PROGRESS') : 'In Progress', color: '#8e44ad' }, // Purple
+    COMPLETED: { text: t ? t('taskStatuses.COMPLETED') : 'Completed', color: '#27ae60' }, // Green
+    CANCELLED: { text: t ? t('taskStatuses.CANCELLED') : 'Cancelled', color: '#e74c3c' }, // Red
+    EXPIRED: { text: t ? t('taskStatuses.EXPIRED') : 'Expired', color: '#7f8c8d' }, // Gray
   };
   
   return statusMap[status] || { text: status, color: '#000000' }; // Default black
@@ -133,14 +134,15 @@ export const getTaskStatusInfo = (status) => {
 /**
  * Get text for volunteer status with proper formatting
  * @param {string} status - Volunteer status code
+ * @param {Function} t - Optional i18n translation function
  * @returns {Object} Status text and color
  */
-export const getVolunteerStatusInfo = (status) => {
+export const getVolunteerStatusInfo = (status, t = null) => {
   const statusMap = {
-    PENDING: { text: 'Pending', color: '#3498db' }, // Blue
-    ACCEPTED: { text: 'Accepted', color: '#27ae60' }, // Green
-    REJECTED: { text: 'Rejected', color: '#e74c3c' }, // Red
-    WITHDRAWN: { text: 'Withdrawn', color: '#7f8c8d' }, // Gray
+    PENDING: { text: t ? t('volunteerStatuses.PENDING') : 'Pending', color: '#3498db' }, // Blue
+    ACCEPTED: { text: t ? t('volunteerStatuses.ACCEPTED') : 'Accepted', color: '#27ae60' }, // Green
+    REJECTED: { text: t ? t('volunteerStatuses.REJECTED') : 'Rejected', color: '#e74c3c' }, // Red
+    WITHDRAWN: { text: t ? t('volunteerStatuses.WITHDRAWN') : 'Withdrawn', color: '#7f8c8d' }, // Gray
   };
   
   return statusMap[status] || { text: status, color: '#000000' }; // Default black
@@ -148,16 +150,32 @@ export const getVolunteerStatusInfo = (status) => {
 
 /**
  * Format a category code to display name
- * @param {string} categoryCode - Category code 
+ * @param {string} categoryCode - Category code
+ * @param {Function} t - Optional i18n translation function
  * @returns {string} Display name
  */
-export const formatCategory = (categoryCode) => {
+export const formatCategory = (categoryCode, t = null) => {
+  if (!categoryCode) return categoryCode;
+  
+  // If translation function is provided, use it
+  if (t) {
+    return t(`categories.${categoryCode}`, { defaultValue: categoryCode });
+  }
+  
+  // Fallback to English if no translation function
   const categoryMap = {
     GROCERY_SHOPPING: 'Grocery Shopping',
     TUTORING: 'Tutoring',
     HOME_REPAIR: 'Home Repair',
     MOVING_HELP: 'Moving Help',
     HOUSE_CLEANING: 'House Cleaning',
+    HOME_CLEANING: 'Home Cleaning',
+    TECHNICAL_SUPPORT: 'Technical Support',
+    PROFESSIONAL_ADVICE: 'Professional Advice',
+    ELDERLY_CARE: 'Elderly Care',
+    EDUCATION: 'Education',
+    HEALTHCARE: 'Healthcare',
+    HOME_MAINTENANCE: 'Home Maintenance',
     OTHER: 'Other',
   };
   
@@ -167,16 +185,17 @@ export const formatCategory = (categoryCode) => {
 /**
  * Format urgency level as text
  * @param {number} level - Urgency level (1-3)
+ * @param {Function} t - Optional i18n translation function
  * @returns {Object} Urgency text and color
  */
-export const formatUrgency = (level) => {
+export const formatUrgency = (level, t = null) => {
   const urgencyMap = {
-    1: { text: 'Low Urgency', color: '#27ae60' }, // Green
-    2: { text: 'Medium Urgency', color: '#f39c12' }, // Orange
-    3: { text: 'High Urgency', color: '#e74c3c' }, // Red
+    1: { text: t ? t('urgencyLevels.low') : 'Low Urgency', color: '#27ae60' }, // Green
+    2: { text: t ? t('urgencyLevels.medium') : 'Medium Urgency', color: '#f39c12' }, // Orange
+    3: { text: t ? t('urgencyLevels.high') : 'High Urgency', color: '#e74c3c' }, // Red
   };
   
-  return urgencyMap[level] || { text: 'Unknown', color: '#7f8c8d' }; // Default gray
+  return urgencyMap[level] || { text: t ? t('urgencyLevels.unknown') : 'Unknown', color: '#7f8c8d' }; // Default gray
 };
 
 /**
