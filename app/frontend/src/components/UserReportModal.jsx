@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +23,14 @@ import { submitUserReport } from "../services/reportService";
  * UserReportModal Component
  * Modal for reporting users with reason and optional comments
  */
-const UserReportModal = ({ open, onClose, user, currentUser, onSubmitSuccess }) => {
+const UserReportModal = ({
+  open,
+  onClose,
+  user,
+  currentUser,
+  onSubmitSuccess,
+}) => {
+  const { t } = useTranslation();
   // State for form
   const [reportType, setReportType] = useState("");
   const [description, setDescription] = useState("");
@@ -34,14 +42,17 @@ const UserReportModal = ({ open, onClose, user, currentUser, onSubmitSuccess }) 
 
   // Report type options matching backend
   const reportTypes = [
-    { value: "SPAM", label: "Spam" },
-    { value: "INAPPROPRIATE_CONTENT", label: "Inappropriate Content" },
-    { value: "HARASSMENT", label: "Harassment" },
-    { value: "FRAUD", label: "Fraud" },
-    { value: "FAKE_REQUEST", label: "Fake Request" },
-    { value: "NO_SHOW", label: "No Show" },
-    { value: "SAFETY_CONCERN", label: "Safety Concern" },
-    { value: "OTHER", label: "Other" },
+    { value: "SPAM", label: t("userReportModal.spam") },
+    {
+      value: "INAPPROPRIATE_CONTENT",
+      label: t("userReportModal.inappropriateContent"),
+    },
+    { value: "HARASSMENT", label: t("userReportModal.harassment") },
+    { value: "FRAUD", label: t("userReportModal.fraud") },
+    { value: "FAKE_REQUEST", label: t("userReportModal.fakeRequest") },
+    { value: "NO_SHOW", label: t("userReportModal.noShow") },
+    { value: "SAFETY_CONCERN", label: t("userReportModal.safetyConcern") },
+    { value: "OTHER", label: t("userReportModal.other") },
   ];
 
   // Reset form when modal closes
@@ -58,17 +69,17 @@ const UserReportModal = ({ open, onClose, user, currentUser, onSubmitSuccess }) 
   // Handle form submission
   const handleSubmit = async () => {
     if (!reportType) {
-      setError("Please select a reason for reporting");
+      setError(t("userReportModal.selectReasonError"));
       return;
     }
 
     if (!description.trim()) {
-      setError("Please provide details about your report");
+      setError(t("userReportModal.provideDetailsError"));
       return;
     }
 
     if (description.trim().length < 10) {
-      setError("Please provide at least 10 characters in your report");
+      setError(t("userReportModal.minCharactersError"));
       return;
     }
 
@@ -98,7 +109,7 @@ const UserReportModal = ({ open, onClose, user, currentUser, onSubmitSuccess }) 
         (err.response?.data?.errors &&
           Object.values(err.response.data.errors).flat().join(", ")) ||
         err.message ||
-        "Failed to submit report. Please try again.";
+        t("userReportModal.submitFailedError");
 
       setError(errorMessage);
     } finally {
@@ -108,10 +119,14 @@ const UserReportModal = ({ open, onClose, user, currentUser, onSubmitSuccess }) 
 
   // Get user display name
   const getUserDisplayName = () => {
-    if (!user) return "Unknown User";
+    if (!user) return t("userReportModal.unknownUser");
     const firstName = user.name || "";
     const lastName = user.surname || "";
-    return `${firstName} ${lastName}`.trim() || user.username || "Unknown User";
+    return (
+      `${firstName} ${lastName}`.trim() ||
+      user.username ||
+      t("userReportModal.unknownUser")
+    );
   };
 
   return (
@@ -130,7 +145,7 @@ const UserReportModal = ({ open, onClose, user, currentUser, onSubmitSuccess }) 
       {/* Header */}
       <DialogTitle sx={{ pb: 1, pr: 6 }}>
         <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
-          Report User
+          {t("userReportModal.reportUser")}
         </Typography>
         <IconButton
           onClick={onClose}
@@ -149,8 +164,7 @@ const UserReportModal = ({ open, onClose, user, currentUser, onSubmitSuccess }) 
         {/* Success Message */}
         {success && (
           <Alert severity="success" sx={{ mb: 2 }}>
-            Report submitted successfully! Thank you for helping keep our
-            community safe.
+            {t("userReportModal.reportSubmittedSuccess")}
           </Alert>
         )}
 
@@ -165,7 +179,7 @@ const UserReportModal = ({ open, onClose, user, currentUser, onSubmitSuccess }) 
         {user && (
           <Box sx={{ mb: 3, p: 2, bgcolor: "grey.50", borderRadius: 2 }}>
             <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 500 }}>
-              Reporting User
+              {t("userReportModal.reportingUser")}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               <Avatar
@@ -175,15 +189,17 @@ const UserReportModal = ({ open, onClose, user, currentUser, onSubmitSuccess }) 
                   bgcolor: "primary.main",
                 }}
               >
-                {(user.name?.charAt(0) || "") +
-                  (user.surname?.charAt(0) || "")}
+                {(user.name?.charAt(0) || "") + (user.surname?.charAt(0) || "")}
               </Avatar>
               <Box>
                 <Typography variant="body1" sx={{ fontWeight: 500 }}>
                   {getUserDisplayName()}
                 </Typography>
                 {user.username && (
-                  <Typography variant="caption" sx={{ color: "text.secondary" }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: "text.secondary" }}
+                  >
                     @{user.username}
                   </Typography>
                 )}
@@ -195,7 +211,10 @@ const UserReportModal = ({ open, onClose, user, currentUser, onSubmitSuccess }) 
         {/* Report Type Selection */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 500 }}>
-            Reason for Report <span style={{ color: "red" }}>*</span>
+            {t("userReportModal.reasonForReport")}{" "}
+            <span style={{ color: "red" }}>
+              {t("userReportModal.required")}
+            </span>
           </Typography>
           <FormControl fullWidth>
             <Select
@@ -210,7 +229,7 @@ const UserReportModal = ({ open, onClose, user, currentUser, onSubmitSuccess }) 
             >
               <MenuItem value="" disabled>
                 <Typography color="text.secondary">
-                  Select a reason for reporting
+                  {t("userReportModal.selectReason")}
                 </Typography>
               </MenuItem>
               {reportTypes.map((type) => (
@@ -225,13 +244,16 @@ const UserReportModal = ({ open, onClose, user, currentUser, onSubmitSuccess }) 
         {/* Description */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 500 }}>
-            Details <span style={{ color: "red" }}>*</span>
+            {t("userReportModal.details")}{" "}
+            <span style={{ color: "red" }}>
+              {t("userReportModal.required")}
+            </span>
           </Typography>
           <TextField
             multiline
             rows={4}
             fullWidth
-            placeholder="Please explain why you're reporting this user. Provide specific details about their behavior to help us review your report (minimum 10 characters)..."
+            placeholder={t("userReportModal.detailsPlaceholder")}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             variant="outlined"
@@ -249,7 +271,7 @@ const UserReportModal = ({ open, onClose, user, currentUser, onSubmitSuccess }) 
               color: "text.secondary",
             }}
           >
-            {description.length} characters
+            {t("userReportModal.characters", { count: description.length })}
           </Typography>
         </Box>
 
@@ -277,12 +299,12 @@ const UserReportModal = ({ open, onClose, user, currentUser, onSubmitSuccess }) 
           {loading ? (
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <CircularProgress size={20} color="inherit" />
-              Submitting Report...
+              {t("userReportModal.submittingReport")}
             </Box>
           ) : success ? (
-            "Report Submitted!"
+            t("userReportModal.reportSubmitted")
           ) : (
-            "Submit Report"
+            t("userReportModal.submitReport")
           )}
         </Button>
 
@@ -296,7 +318,7 @@ const UserReportModal = ({ open, onClose, user, currentUser, onSubmitSuccess }) 
             color: "text.secondary",
           }}
         >
-          Your report helps us maintain a safe and trustworthy community
+          {t("userReportModal.infoText")}
         </Typography>
       </DialogContent>
     </Dialog>

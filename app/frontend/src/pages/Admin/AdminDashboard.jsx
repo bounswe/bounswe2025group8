@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import useAuth from '../../features/authentication/hooks/useAuth';
-import { useTheme } from '../../hooks/useTheme';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import useAuth from "../../features/authentication/hooks/useAuth";
+import { useTheme } from "../../hooks/useTheme";
 import {
   Container,
   Paper,
@@ -12,21 +13,22 @@ import {
   Button,
   Box,
   Alert,
-} from '@mui/material';
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import FlagIcon from '@mui/icons-material/Flag';
-import PeopleIcon from '@mui/icons-material/People';
+} from "@mui/material";
+import AssignmentIcon from "@mui/icons-material/Assignment";
+import FlagIcon from "@mui/icons-material/Flag";
+import PeopleIcon from "@mui/icons-material/People";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { currentUser, userRole } = useAuth();
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     // Check if user is admin
-    if (userRole !== 'admin') {
-      navigate('/');
+    if (userRole !== "admin") {
+      navigate("/");
       return;
     }
     setIsAdmin(true);
@@ -38,43 +40,54 @@ const AdminDashboard = () => {
 
   const dashboardItems = [
     {
-      title: 'All Requests',
-      description: 'View and manage all requests/tasks in the system',
-      icon: <AssignmentIcon sx={{ fontSize: 48, color: colors.brand.primary }} />,
-      path: '/admin/requests',
-      color: '#4CAF50',
+      title: t("adminDashboard.sections.allRequests.title"),
+      description: t("adminDashboard.sections.allRequests.description"),
+      icon: (
+        <AssignmentIcon sx={{ fontSize: 48, color: colors.brand.primary }} />
+      ),
+      path: "/admin/requests",
+      color: "#4CAF50",
     },
     {
-      title: 'Task Reports',
-      description: 'View and manage reports filed against tasks/requests',
+      title: t("adminDashboard.sections.taskReports.title"),
+      description: t("adminDashboard.sections.taskReports.description"),
       icon: <FlagIcon sx={{ fontSize: 48, color: colors.brand.primary }} />,
-      path: '/admin/task-reports',
-      color: '#2196F3',
+      path: "/admin/task-reports",
+      color: "#2196F3",
     },
     {
-      title: 'Reported Users',
-      description: 'View users who have been reported and need review',
+      title: t("adminDashboard.sections.reportedUsers.title"),
+      description: t("adminDashboard.sections.reportedUsers.description"),
       icon: <PeopleIcon sx={{ fontSize: 48, color: colors.brand.primary }} />,
-      path: '/admin/reported-users',
-      color: '#F44336',
+      path: "/admin/reported-users",
+      color: "#F44336",
     },
   ];
 
   return (
-    <Box sx={{ backgroundColor: colors.background.primary, minHeight: '100vh', py: 4 }}>
+    <Box
+      sx={{
+        backgroundColor: colors.background.primary,
+        minHeight: "100vh",
+        py: 4,
+      }}
+    >
       <Container maxWidth="xl">
         {/* Header */}
         <Box sx={{ mb: 4 }}>
-          <h1 style={{ color: colors.text.primary, marginBottom: '8px' }}>Admin Dashboard</h1>
-          <p style={{ color: colors.text.secondary, fontSize: '16px' }}>
-            Welcome back, {currentUser?.name || 'Admin'}. Manage reports and content here.
+          <h1 style={{ color: colors.text.primary, marginBottom: "8px" }}>
+            {t("adminDashboard.title")}
+          </h1>
+          <p style={{ color: colors.text.secondary, fontSize: "16px" }}>
+            {t("adminDashboard.welcome", {
+              name: currentUser?.name || "Admin",
+            })}
           </p>
         </Box>
 
         {/* Alert */}
         <Alert severity="info" sx={{ mb: 4 }}>
-          You have admin access to manage all requests and reports. Please handle reports
-          responsibly.
+          {t("adminDashboard.adminAccessAlert")}
         </Alert>
 
         {/* Dashboard Grid */}
@@ -83,25 +96,38 @@ const AdminDashboard = () => {
             <Grid item xs={12} sm={12} md={4} key={index}>
               <Card
                 sx={{
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  transition: "all 0.3s ease",
+                  cursor: "pointer",
+                  "&:hover": {
+                    transform: "translateY(-4px)",
+                    boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
                   },
                   backgroundColor: colors.background.elevated,
                   borderLeft: `4px solid ${item.color}`,
                 }}
               >
                 <CardHeader
-                  avatar={<div style={{ transform: 'scale(0.6)', transformOrigin: 'left' }}>{item.icon}</div>}
+                  avatar={
+                    <div
+                      style={{
+                        transform: "scale(0.6)",
+                        transformOrigin: "left",
+                      }}
+                    >
+                      {item.icon}
+                    </div>
+                  }
                   title={item.title}
                   titleTypographyProps={{
-                    variant: 'subtitle1',
-                    sx: { color: colors.text.primary, fontWeight: 'bold', fontSize: '16px' },
+                    variant: "subtitle1",
+                    sx: {
+                      color: colors.text.primary,
+                      fontWeight: "bold",
+                      fontSize: "16px",
+                    },
                   }}
                   sx={{ pb: 1, pt: 1.5, px: 2 }}
                 />
@@ -109,8 +135,8 @@ const AdminDashboard = () => {
                   <p
                     style={{
                       color: colors.text.secondary,
-                      fontSize: '12px',
-                      marginBottom: '8px',
+                      fontSize: "12px",
+                      marginBottom: "8px",
                       margin: 0,
                     }}
                   >
@@ -123,18 +149,18 @@ const AdminDashboard = () => {
                     size="small"
                     sx={{
                       backgroundColor: item.color,
-                      color: 'white',
-                      width: '100%',
-                      fontSize: '12px',
-                      textTransform: 'uppercase',
-                      '&:hover': {
+                      color: "white",
+                      width: "100%",
+                      fontSize: "12px",
+                      textTransform: "uppercase",
+                      "&:hover": {
                         backgroundColor: item.color,
                         opacity: 0.9,
                       },
                     }}
                     onClick={() => navigate(item.path)}
                   >
-                    View
+                    {t("adminDashboard.viewButton")}
                   </Button>
                 </Box>
               </Card>
@@ -144,23 +170,25 @@ const AdminDashboard = () => {
 
         {/* Quick Stats */}
         <Box sx={{ mt: 6 }}>
-          <h2 style={{ color: colors.text.primary, marginBottom: '16px' }}>Quick Stats</h2>
+          <h2 style={{ color: colors.text.primary, marginBottom: "16px" }}>
+            {t("adminDashboard.quickStats.title")}
+          </h2>
           <Grid container spacing={3}>
             <Grid item xs={12} sm={6} md={3}>
               <Paper
                 sx={{
                   p: 3,
-                  textAlign: 'center',
+                  textAlign: "center",
                   backgroundColor: colors.background.elevated,
                   borderTop: `4px solid #4CAF50`,
                 }}
               >
                 <p
                   style={{
-                    fontSize: '24px',
-                    fontWeight: 'bold',
-                    color: '#4CAF50',
-                    margin: '0 0 8px 0',
+                    fontSize: "24px",
+                    fontWeight: "bold",
+                    color: "#4CAF50",
+                    margin: "0 0 8px 0",
                   }}
                 >
                   -
@@ -168,11 +196,11 @@ const AdminDashboard = () => {
                 <p
                   style={{
                     color: colors.text.secondary,
-                    fontSize: '14px',
+                    fontSize: "14px",
                     margin: 0,
                   }}
                 >
-                  Total Requests
+                  {t("adminDashboard.quickStats.totalRequests")}
                 </p>
               </Paper>
             </Grid>
@@ -180,17 +208,17 @@ const AdminDashboard = () => {
               <Paper
                 sx={{
                   p: 3,
-                  textAlign: 'center',
+                  textAlign: "center",
                   backgroundColor: colors.background.elevated,
                   borderTop: `4px solid #2196F3`,
                 }}
               >
                 <p
                   style={{
-                    fontSize: '24px',
-                    fontWeight: 'bold',
-                    color: '#2196F3',
-                    margin: '0 0 8px 0',
+                    fontSize: "24px",
+                    fontWeight: "bold",
+                    color: "#2196F3",
+                    margin: "0 0 8px 0",
                   }}
                 >
                   -
@@ -198,11 +226,11 @@ const AdminDashboard = () => {
                 <p
                   style={{
                     color: colors.text.secondary,
-                    fontSize: '14px',
+                    fontSize: "14px",
                     margin: 0,
                   }}
                 >
-                  Pending Reports
+                  {t("adminDashboard.quickStats.pendingReports")}
                 </p>
               </Paper>
             </Grid>
@@ -210,17 +238,17 @@ const AdminDashboard = () => {
               <Paper
                 sx={{
                   p: 3,
-                  textAlign: 'center',
+                  textAlign: "center",
                   backgroundColor: colors.background.elevated,
                   borderTop: `4px solid #FF9800`,
                 }}
               >
                 <p
                   style={{
-                    fontSize: '24px',
-                    fontWeight: 'bold',
-                    color: '#FF9800',
-                    margin: '0 0 8px 0',
+                    fontSize: "24px",
+                    fontWeight: "bold",
+                    color: "#FF9800",
+                    margin: "0 0 8px 0",
                   }}
                 >
                   -
@@ -228,11 +256,11 @@ const AdminDashboard = () => {
                 <p
                   style={{
                     color: colors.text.secondary,
-                    fontSize: '14px',
+                    fontSize: "14px",
                     margin: 0,
                   }}
                 >
-                  Reported Users
+                  {t("adminDashboard.quickStats.reportedUsers")}
                 </p>
               </Paper>
             </Grid>
@@ -240,17 +268,17 @@ const AdminDashboard = () => {
               <Paper
                 sx={{
                   p: 3,
-                  textAlign: 'center',
+                  textAlign: "center",
                   backgroundColor: colors.background.elevated,
                   borderTop: `4px solid #F44336`,
                 }}
               >
                 <p
                   style={{
-                    fontSize: '24px',
-                    fontWeight: 'bold',
-                    color: '#F44336',
-                    margin: '0 0 8px 0',
+                    fontSize: "24px",
+                    fontWeight: "bold",
+                    color: "#F44336",
+                    margin: "0 0 8px 0",
                   }}
                 >
                   -
@@ -258,11 +286,11 @@ const AdminDashboard = () => {
                 <p
                   style={{
                     color: colors.text.secondary,
-                    fontSize: '14px',
+                    fontSize: "14px",
                     margin: 0,
                   }}
                 >
-                  Total Users
+                  {t("adminDashboard.quickStats.totalUsers")}
                 </p>
               </Paper>
             </Grid>

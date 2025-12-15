@@ -56,3 +56,21 @@ export const categoryImages = {
 export const getCategoryImage = (categoryValue) => {
   return categoryImages[categoryValue] || DEFAULT_CATEGORY_IMAGE;
 };
+
+/**
+ * Get localized category name
+ * @param {string} categoryValue - The category value/key (e.g., 'HOME_CLEANING')
+ * @param {Function} t - Optional i18n translation function
+ * @returns {string} - The localized category name
+ */
+export const getCategoryName = (categoryValue, t = null) => {
+  if (!categoryValue) return categoryValue;
+  
+  // If translation function is provided, use it
+  if (t) {
+    return t(`categories.${categoryValue}`, { defaultValue: categoryMapping[categoryValue] || categoryValue });
+  }
+  
+  // Fallback to English categoryMapping
+  return categoryMapping[categoryValue] || categoryValue;
+};

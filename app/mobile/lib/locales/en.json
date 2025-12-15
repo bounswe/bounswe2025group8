@@ -64,37 +64,19 @@
         "CLEANING": "Cleaning",
         "REPAIR": "Repair"
     },
+    "category": {
+        "noRequests": "No requests found for this category."
+    },
     "auth": {
         "signIn": "Sign In",
         "signUp": "Sign Up",
         "email": "Email",
         "password": "Password",
-        "errorDescription": "Description cannot be empty.",
-        "errorFields": "Please fill in all required fields",
-        "uploadPhotos": "Upload Photos",
-        "browsePhotos": "+ Browse photos",
-        "permissionError": "Sorry, we need camera roll permissions to make this work!",
-        "determineDeadline": "Determine Deadline",
-        "selectDate": "Select date",
-        "selectTime": "Select time",
-        "selectDateA11y": "Select date. Currently {{date}}",
-        "selectTimeA11y": "Select time. Currently {{time}}",
-        "setupAddress": "Setup Address",
-        "addressDescription": "Address Description",
-        "addressDescriptionPlaceholder": "Additional address details",
-        "createButton": "Create Request",
-        "creatingButton": "Creating...",
-        "select": "Select",
-        "errorMissingData": "Missing task data. Please go back and try again.",
-        "errorInvalidDeadline": "Invalid deadline. Please pick a valid deadline.",
-        "errorFutureDeadline": "Please select a future date and time.",
-        "errorAddress": "Please select a country, state and city for the address.",
-        "warningPhotos": "Task created but some photos could not be uploaded.",
-        "successCreated": "Task created successfully!",
-        "errorFailed": "Failed to create task. Please try again.",
+        "or": "OR",
         "forgotPassword": "Forgot Password?",
         "sendResetLink": "Send Reset Link",
-        "passwordResetPrompt": "Enter your email address and we'll send you a link to reset your password.",        "passwordResetNotice": "If your email exists in our system, you will receive a password reset link shortly.",
+        "passwordResetPrompt": "Enter your email address and we'll send you a link to reset your password.",
+        "passwordResetNotice": "If your email exists in our system, you will receive a password reset link shortly.",
         "fillAllFields": "Please fill in all fields",
         "invalidCredentials": "Invalid credentials",
         "signInError": "Failed to sign in",
@@ -115,10 +97,11 @@
         "phone": "Phone",
         "agreeWith": "I agree with ",
         "termsAndConditions": "Terms & Conditions",
+        "communityGuidelines": "Community Guidelines",
         "signingUp": "Signing up...",
         "registrationFailed": "Registration Failed",
         "registrationSuccess": "Registration successful! Please log in.",
-        "agreeTerms": "Please agree to the Terms & Conditions",
+        "agreeTerms": "Please agree to the Terms & Conditions and Community Guidelines",
         "passwordRequirements": "Password requirements not met"
     },
     "feed": {
@@ -129,6 +112,10 @@
         "popularRequests": "Popular Requests",
         "seeAllCategories": "See all categories",
         "seeAllRequests": "See all requests",
+        "followingRequests": "Requests from People You Follow",
+        "noFollowingRequests": "Follow users to see their requests here",
+        "seeAllFollowing": "See all from people you follow",
+        "errorLoadingTasks": "Failed to load tasks. Please try again.",
         "home": "Home",
         "categories": "Categories",
         "create": "Create",
@@ -137,6 +124,36 @@
     },
     "createRequest": {
         "title": "Create Request",
+        "generalInfo": "General Info",
+        "next": "Next",
+        "authRequiredTitle": "Authentication Required",
+        "authRequiredMessage": "You need to log in to create a request.",
+        "redirecting": "Redirecting to login...",
+        "selectOption": "Select an option",
+        "errorDescription": "Description cannot be empty.",
+        "errorFields": "Please fill in all required fields",
+        "uploadPhotos": "Upload Photos",
+        "browsePhotos": "+ Browse photos",
+        "permissionError": "Sorry, we need camera roll permissions to make this work!",
+        "determineDeadline": "Determine Deadline",
+        "selectDate": "Select date",
+        "selectTime": "Select time",
+        "selectDateA11y": "Select date. Currently {{date}}",
+        "selectTimeA11y": "Select time. Currently {{time}}",
+        "setupAddress": "Setup Address",
+        "addressDescription": "Address Description",
+        "addressDescriptionPlaceholder": "Additional address details",
+        "createButton": "Create Request",
+        "creatingButton": "Creating...",
+        "select": "Select",
+        "errorMissingData": "Missing task data. Please go back and try again.",
+        "errorInvalidDeadline": "Invalid deadline. Please pick a valid deadline.",
+        "errorFutureDeadline": "Please select a future date and time.",
+        "errorAddress": "Please select a country, state and city for the address.",
+        "errorAddressCountry": "Please select a country for the address.",
+        "warningPhotos": "Task created but some photos could not be uploaded.",
+        "successCreated": "Task created successfully!",
+        "errorFailed": "Failed to create task. Please try again.",
         "step1": "General Info",
         "step2": "Upload Photo",
         "step3": "Deadline",
@@ -147,17 +164,30 @@
         "descriptionPlaceholder": "Describe your request in detail...",
         "category": "Category",
         "selectCategory": "Select a category",
+        "categoryPlaceholder": "Select a category",
         "urgency": "Urgency",
         "peopleNeeded": "People Needed",
         "recurringTask": "Recurring Task",
         "uploadPhoto": "Upload Photo",
         "uploadDescription": "Add photos to help volunteers understand your request better.",
         "tapToUpload": "Tap to upload",
+        "uploadPhotoTitle": "Upload Photo",
+        "uploadPhotoSubtitle": "Upload photos for your request",
+        "uploadPhotoBtn": "Upload Photo",
+        "uploadPhotoNote": "Note: Uploading photos is optional.",
         "deadlineDate": "Deadline Date",
         "deadlineTime": "Deadline Time",
+        "deadlineTitle": "Deadline",
+        "deadlineSubtitle": "Choose when your request needs to be completed",
+        "deadlineLabel": "Deadline",
         "address": "Address",
         "selectAddress": "Select Address",
-        "createRequest": "Create Request"
+        "addressTitle": "Address",
+        "addressSubtitle": "Enter the address where the request will take place",
+        "addressLabel": "Address",
+        "addressPlaceholder": "Enter your address",
+        "createRequest": "Create Request",
+        "submit": "Create Request"
     },
     "urgency": {
         "low": "Low",
@@ -216,6 +246,7 @@
         "noResults": "No results found.",
         "urgencySuffix": "urgency",
         "requestsSuffix": "requests",
+        "requestsIn": "Requests in {{location}}",
         "loadError": "Failed to load search data. Please try again.",
         "photoError": "Failed to upload profile photo. Please try again.",
         "logout": "Log Out"
@@ -295,7 +326,14 @@
         "photoPermission": "Please grant permission to access your photo library.",
         "photoSuccess": "Profile photo updated successfully!",
         "photoError": "Failed to upload profile photo. Please try again.",
-        "logout": "Logout"
+        "logout": "Logout",
+        "follow": "Follow",
+        "unfollow": "Unfollow",
+        "following": "Following",
+        "followers": "Followers",
+        "followError": "Failed to follow/unfollow user. Please try again.",
+        "followSuccess": "You are now following this user.",
+        "unfollowSuccess": "You have unfollowed this user."
     },
     "volunteers": {
         "title": "Select Volunteers",
@@ -529,5 +567,91 @@
         "reviewSubmitted": "Review submitted for {{name}}!",
         "reviewError": "Failed to submit review. Please try again.",
         "rateRequest": "Rate Request"
+    },
+    "communityGuidelines": {
+        "title": "Community Guidelines",
+        "lastUpdated": "Last updated: December 15, 2025",
+        "agreeButton": "I Agree",
+        "intro": {
+            "title": "🌟 Introduction",
+            "para1": "Welcome to the Neighborhood Assistance Board community! We're really happy to have you here.",
+            "para2": "This platform was built around a simple idea: neighbors helping neighbors in all kinds of ways. Sometimes help means carrying groceries or fixing a small issue at home but support can also look like sharing local stories, offering tutoring, reading to children, or simply giving guidance based on your experience.",
+            "para3": "Everyone has something valuable to contribute. An elderly neighbor might share the history of the neighborhood, a student might offer homework help, a skilled volunteer might assist with small repairs and all of these are equally meaningful.",
+            "para4": "Our goal is to create an inclusive space where people of all ages, backgrounds, and abilities can participate in the way that feels right for them. Here, kindness matters, respect matters, and every contribution big or small helps make our community stronger.",
+            "para5": "These guidelines are here to ensure the Neighborhood Assistance Board stays safe, welcoming, and supportive for everyone."
+        },
+        "corePrinciples": {
+            "title": "🤝 Core Principles",
+            "p1Title": "1. Be Kind and Respectful",
+            "p1Text": "Treat everyone with empathy and understanding. Harassment, insults, or rude behavior are not tolerated.",
+            "p2Title": "2. Zero Tolerance for Discrimination",
+            "p2Text": "No form of discrimination is allowed based on:\n• Race or ethnicity\n• Gender or gender identity\n• Sexual orientation\n• Religion or belief\n• Disability\n• Age\n• Socioeconomic status\n• Or any other personal attribute\n\nEveryone deserves a safe and equal experience.",
+            "p3Title": "3. Protect Privacy",
+            "p3Text": "Respect others' personal information. Do not share addresses, phone numbers, or private discussions outside the platform. Use the built-in communication features responsibly.",
+            "p4Title": "4. Be Honest and Transparent",
+            "p4Text": "Provide accurate details when creating or accepting tasks. If you can no longer complete a task, inform the requester promptly.",
+            "p5Title": "5. Safety First",
+            "p5Text": "Accept only tasks you feel comfortable with. Report suspicious or unsafe behavior using moderation tools.",
+            "p6Title": "6. Keep Interactions Purposeful",
+            "p6Text": "The platform is for assistance not advertising, spam, or self-promotion. Post only relevant and helpful content.",
+            "p7Title": "7. Respect the Workflow",
+            "p7Text": "Follow task assignment, volunteer processes, and moderation rules to ensure smooth collaboration within the community."
+        },
+        "contentRules": {
+            "title": "🛠 Content Rules",
+            "allowedTitle": "Allowed",
+            "allowedText": "• Assistance requests (e.g., groceries, tutoring, minor repairs)\n• Volunteer confirmations and progress updates\n• Respectful, helpful communication\n• Task-related questions and clarifications",
+            "notAllowedTitle": "Not Allowed",
+            "notAllowedText": "• Hate speech or discriminatory language\n• Harassment, threats, or aggressive behavior\n• Misinformation or deceptive content\n• Commercial ads or political promotion\n• Sharing someone else's private information"
+        },
+        "responsibility": {
+            "title": "🌱 Community Responsibility",
+            "text": "Every positive interaction strengthens our neighborhood. If you encounter behavior that violates these guidelines, please report it so the moderation team can take appropriate action."
+        },
+        "thankYou": {
+            "title": "💛 Thank You",
+            "text": "Thank you for being a part of the Neighborhood Assistance Board. Your kindness and willingness to help make a real difference."
+        }
+    },
+    "terms": {
+        "title": "Terms & Conditions",
+        "lastUpdated": "Last updated: May 11, 2025",
+        "agreeButton": "I Agree",
+        "section1": {
+            "title": "1. Data Confiscation",
+            "text": "• We will collect, store, and monetize every piece of data you generate: messages, photos, biometric readings, and even your thoughts (if we figure out how).\n• Consent? You gave it by using the App. No take-backs."
+        },
+        "section2": {
+            "title": "2. No Legal Recourse",
+            "text": "• You cannot sue, dispute, protest, or complain in any forum, real or digital.\n• All claims against us are waived forever.\n• If you try to initiate legal action, we will countersue for betrayal of trust."
+        },
+        "section3": {
+            "title": "3. License to Abuse",
+            "text": "• We may modify, delete, or corrupt your Content at will, for any reason or no reason.\n• You grant us a perpetual, irrevocable license to abuse your Content, profile, and reputation in marketing or blackmailer newsletters."
+        },
+        "section4": {
+            "title": "4. Required Cooperation",
+            "text": "• You must comply with any request to provide additional personal data, including but not limited to DNA samples, social security numbers.\n• Failure to comply will result in account suspension and public shaming on our official Twitter account."
+        },
+        "section5": {
+            "title": "5. Unlimited Liability Shift",
+            "text": "• We assume zero liability for loss, theft, data breaches, emotional distress, or existential crisis caused by the App.\n• Our only obligation is to send you one apology emoji if we feel like it."
+        },
+        "section6": {
+            "title": "6. Mandatory Arbitration",
+            "text": "• Any disputes will be settled by a secret tribunal composed entirely of our board members.\n• Decisions are final and binding.\n• Appeals are strictly prohibited."
+        },
+        "section7": {
+            "title": "7. Changes Without Notice",
+            "text": "• We may alter these Terms at any time, for any reason, without notifying you.\n• Continued use constitutes acceptance of the new, possibly more draconian, Terms."
+        },
+        "section8": {
+            "title": "8. Termination Rights",
+            "text": "• We may terminate or suspend your account at our sole discretion.\n• This will permanently block access to any content or funds you've entrusted to the App."
+        },
+        "section9": {
+            "title": "9. Governing Law",
+            "text": "• These Terms are governed by the laws of Banana Republic.\n• You waive any jurisdictional immunity or local consumer protection rights."
+        }
     }
 }

@@ -15,6 +15,7 @@ import {
   Alert,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { useTranslation } from "react-i18next";
 import { submitReport } from "../services/reportService";
 
 /**
@@ -22,6 +23,7 @@ import { submitReport } from "../services/reportService";
  * Modal for reporting tasks/volunteers with reason and optional comments
  */
 const ReportModal = ({ open, onClose, task, currentUser, onSubmitSuccess }) => {
+  const { t } = useTranslation();
   // State for form
   const [reportType, setReportType] = useState("");
   const [description, setDescription] = useState("");
@@ -33,14 +35,17 @@ const ReportModal = ({ open, onClose, task, currentUser, onSubmitSuccess }) => {
 
   // Report type options matching backend
   const reportTypes = [
-    { value: "SPAM", label: "Spam" },
-    { value: "INAPPROPRIATE_CONTENT", label: "Inappropriate Content" },
-    { value: "HARASSMENT", label: "Harassment" },
-    { value: "FRAUD", label: "Fraud" },
-    { value: "FAKE_REQUEST", label: "Fake Request" },
-    { value: "NO_SHOW", label: "No Show" },
-    { value: "SAFETY_CONCERN", label: "Safety Concern" },
-    { value: "OTHER", label: "Other" },
+    { value: "SPAM", labelKey: "reportModal.spam" },
+    {
+      value: "INAPPROPRIATE_CONTENT",
+      labelKey: "reportModal.inappropriateContent",
+    },
+    { value: "HARASSMENT", labelKey: "reportModal.harassment" },
+    { value: "FRAUD", labelKey: "reportModal.fraud" },
+    { value: "FAKE_REQUEST", labelKey: "reportModal.fakeRequest" },
+    { value: "NO_SHOW", labelKey: "reportModal.noShow" },
+    { value: "SAFETY_CONCERN", labelKey: "reportModal.safetyConcern" },
+    { value: "OTHER", labelKey: "reportModal.other" },
   ];
 
   // Reset form when modal closes
@@ -57,17 +62,17 @@ const ReportModal = ({ open, onClose, task, currentUser, onSubmitSuccess }) => {
   // Handle form submission
   const handleSubmit = async () => {
     if (!reportType) {
-      setError("Please select a reason for reporting");
+      setError(t("reportModal.pleaseSelectReason"));
       return;
     }
 
     if (!description.trim()) {
-      setError("Please provide details about your report");
+      setError(t("reportModal.pleaseProvideDetails"));
       return;
     }
 
     if (description.trim().length < 10) {
-      setError("Please provide at least 10 characters in your report");
+      setError(t("reportModal.pleaseProvideAtLeast10Chars"));
       return;
     }
 
@@ -97,7 +102,7 @@ const ReportModal = ({ open, onClose, task, currentUser, onSubmitSuccess }) => {
         (err.response?.data?.errors &&
           Object.values(err.response.data.errors).flat().join(", ")) ||
         err.message ||
-        "Failed to submit report. Please try again.";
+        t("reportModal.failedToSubmit");
 
       setError(errorMessage);
     } finally {
@@ -121,7 +126,7 @@ const ReportModal = ({ open, onClose, task, currentUser, onSubmitSuccess }) => {
       {/* Header */}
       <DialogTitle sx={{ pb: 1, pr: 6 }}>
         <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
-          Report This Task
+          {t("reportModal.title")}
         </Typography>
         <IconButton
           onClick={onClose}
@@ -131,6 +136,7 @@ const ReportModal = ({ open, onClose, task, currentUser, onSubmitSuccess }) => {
             top: 8,
             color: "text.secondary",
           }}
+          aria-label={t("reportModal.close")}
         >
           <CloseIcon />
         </IconButton>
@@ -140,8 +146,7 @@ const ReportModal = ({ open, onClose, task, currentUser, onSubmitSuccess }) => {
         {/* Success Message */}
         {success && (
           <Alert severity="success" sx={{ mb: 2 }}>
-            Report submitted successfully! Thank you for helping keep our
-            community safe.
+            {t("reportModal.reportSubmittedSuccess")}
           </Alert>
         )}
 
@@ -155,7 +160,8 @@ const ReportModal = ({ open, onClose, task, currentUser, onSubmitSuccess }) => {
         {/* Report Type Selection */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 500 }}>
-            Reason for Report <span style={{ color: "red" }}>*</span>
+            {t("reportModal.reasonForReport")}{" "}
+            <span style={{ color: "red" }}>*</span>
           </Typography>
           <FormControl fullWidth>
             <Select
@@ -170,12 +176,12 @@ const ReportModal = ({ open, onClose, task, currentUser, onSubmitSuccess }) => {
             >
               <MenuItem value="" disabled>
                 <Typography color="text.secondary">
-                  Select a reason for reporting
+                  {t("reportModal.selectReason")}
                 </Typography>
               </MenuItem>
               {reportTypes.map((type) => (
                 <MenuItem key={type.value} value={type.value}>
-                  {type.label}
+                  {t(type.labelKey)}
                 </MenuItem>
               ))}
             </Select>
@@ -185,13 +191,13 @@ const ReportModal = ({ open, onClose, task, currentUser, onSubmitSuccess }) => {
         {/* Description */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 500 }}>
-            Details <span style={{ color: "red" }}>*</span>
+            {t("reportModal.details")} <span style={{ color: "red" }}>*</span>
           </Typography>
           <TextField
             multiline
             rows={4}
             fullWidth
-            placeholder="Please explain why you're reporting this task. Provide specific details to help us review your report (minimum 10 characters)..."
+            placeholder={t("reportModal.detailsPlaceholder")}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             variant="outlined"
@@ -209,7 +215,7 @@ const ReportModal = ({ open, onClose, task, currentUser, onSubmitSuccess }) => {
               color: "text.secondary",
             }}
           >
-            {description.length} characters
+            {t("reportModal.charactersCount", { count: description.length })}
           </Typography>
         </Box>
 
@@ -237,12 +243,12 @@ const ReportModal = ({ open, onClose, task, currentUser, onSubmitSuccess }) => {
           {loading ? (
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <CircularProgress size={20} color="inherit" />
-              Submitting Report...
+              {t("reportModal.submittingReport")}
             </Box>
           ) : success ? (
-            "Report Submitted!"
+            t("reportModal.reportSubmitted")
           ) : (
-            "Submit Report"
+            t("reportModal.submitReport")
           )}
         </Button>
 
@@ -256,7 +262,7 @@ const ReportModal = ({ open, onClose, task, currentUser, onSubmitSuccess }) => {
             color: "text.secondary",
           }}
         >
-          Your report helps us maintain a safe and trustworthy community
+          {t("reportModal.reportHelpsInfo")}
         </Typography>
       </DialogContent>
     </Dialog>

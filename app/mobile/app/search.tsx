@@ -43,7 +43,7 @@ export default function SearchPage() {
               urgency: task.urgency_level === 3 ? 'High' : task.urgency_level === 2 ? 'Medium' : 'Low',
               meta: `${locationLabel} • ${task.deadline ? new Date(task.deadline).toLocaleDateString() : 'N/A'}`,
               category: t(`categories.${task.category}`, task.category_display || task.category),
-              image: require('../assets/images/help.png'),
+              image: task.primary_photo_url ? { uri: task.primary_photo_url } : require('../assets/images/help.png'),
             };
           })
         );
@@ -120,7 +120,7 @@ export default function SearchPage() {
         }
       } catch (error) {
         console.error('Error loading search data:', error);
-        Alert.alert('Error', 'Failed to load search data. Please try again.');
+        Alert.alert(t('common.error'), t('search.loadError'));
         setRequests([]);
         setCategories([]);
         setProfiles([]);

@@ -52,6 +52,7 @@ export default function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [agree, setAgree] = useState(false);
+  const [agreeCommunityGuidelines, setAgreeCommunityGuidelines] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
@@ -70,7 +71,19 @@ export default function SignUp() {
           console.error("Failed to read terms agreement from AsyncStorage", e);
         }
       };
+      const checkCommunityGuidelinesAgreement = async () => {
+        try {
+          const agreed = await AsyncStorage.getItem('communityGuidelinesAgreedV1');
+          if (agreed === 'true') {
+            setAgreeCommunityGuidelines(true);
+            await AsyncStorage.removeItem('communityGuidelinesAgreedV1');
+          }
+        } catch (e) {
+          console.error("Failed to read community guidelines agreement from AsyncStorage", e);
+        }
+      };
       checkTermsAgreement();
+      checkCommunityGuidelinesAgreement();
     }, [])
   );
 
@@ -80,7 +93,7 @@ export default function SignUp() {
       return;
     }
 
-    if (!agree) {
+    if (!agree || !agreeCommunityGuidelines) {
       Alert.alert(t('common.error'), t('auth.agreeTerms'));
       return;
     }
@@ -284,14 +297,48 @@ export default function SignUp() {
             </Pressable>
           </View>
 
+          <View style={styles.rememberWrapper}>
+            <Pressable
+              onPress={() => setAgreeCommunityGuidelines(a => !a)}
+              hitSlop={8}
+              disabled={isLoading}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: agreeCommunityGuidelines, disabled: isLoading }}
+              testID="signup-community-guidelines-checkbox"
+            >
+              <Ionicons
+                name={agreeCommunityGuidelines ? 'checkbox' : 'square-outline'}
+                size={20}
+                color={agreeCommunityGuidelines ? colors.primary : themeColors.icon}
+              />
+            </Pressable>
+
+            <Text style={[styles.rememberText, { color: colors.text }]}>
+              {t('auth.agreeWith')}
+            </Text>
+
+            <Pressable
+              onPress={() => router.push({ pathname: '/community-guidelines' })}
+              hitSlop={8}
+              disabled={isLoading}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel="View community guidelines"
+            >
+              <Text style={[styles.rememberText, styles.linkText, { color: colors.primary }]}>
+                {t('auth.communityGuidelines')}
+              </Text>
+            </Pressable>
+          </View>
+
           {/* Sign Up Button */}
           <TouchableOpacity
             style={[
               styles.button,
               { backgroundColor: colors.primary },
-              (!agree || isLoading) && { opacity: 0.5 }
+              (!agree || !agreeCommunityGuidelines || isLoading) && { opacity: 0.5 }
             ]}
-            disabled={!agree || isLoading}
+            disabled={!agree || !agreeCommunityGuidelines || isLoading}
             onPress={handleSignUp}
             accessible
 

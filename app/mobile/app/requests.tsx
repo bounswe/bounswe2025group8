@@ -15,7 +15,7 @@ import {
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { getTasks, getTaskPhotos, BACKEND_BASE_URL, type Task, type Photo } from '../lib/api';
+import { getTasks, getFollowing, BACKEND_BASE_URL, type Task } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { locationMatches, normalizedLocationLabel } from '../utils/address';
@@ -31,9 +31,9 @@ export default function Requests() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [taskPhotos, setTaskPhotos] = useState<Map<number, Photo[]>>(new Map());
 
   const locationLabel = (Array.isArray(params.location) ? params.location[0]?.trim() : params.location)?.trim() || undefined;
+  const filterType = (Array.isArray(params.filter) ? params.filter[0] : params.filter) || undefined;
 
   // Filter out completed and cancelled tasks
   const filterActiveTasks = (tasksList: Task[]): Task[] => {
@@ -55,24 +55,20 @@ export default function Requests() {
         filteredTasks = activeTasks.filter(task => normalizedLocationLabel(task.location) === locationLabel);
       }
 
-      setTasks(filteredTasks);
+      // Filter by following if filter=following parameter is provided
+      if (filterType === 'following' && user) {
+        try {
+          const followingUsers = await getFollowing(user.id);
+          const followingUserIds = followingUsers.map(f => f.id);
+          filteredTasks = filteredTasks.filter(task =>
+            task.creator && followingUserIds.includes(task.creator.id)
+          );
+        } catch (error) {
+          console.error('Error fetching following users:', error);
+        }
+      }
 
-      // Fetch photos for filtered tasks
-      const photosMap = new Map<number, Photo[]>();
-      await Promise.all(
-        filteredTasks.map(async (task) => {
-          try {
-            const photosResponse = await getTaskPhotos(task.id);
-            if (photosResponse.status === 'success' && photosResponse.data.photos.length > 0) {
-              photosMap.set(task.id, photosResponse.data.photos);
-            }
-          } catch (error) {
-            // Silently fail for individual photo fetches
-            console.warn(`Failed to fetch photos for task ${task.id}`);
-          }
-        })
-      );
-      setTaskPhotos(photosMap);
+      setTasks(filteredTasks);
     } catch (error) {
       console.error('Error fetching tasks:', error);
       Alert.alert(t('common.error'), t('search.loadError'));
@@ -84,7 +80,7 @@ export default function Requests() {
 
   useEffect(() => {
     fetchTasks();
-  }, [locationLabel]);
+  }, [locationLabel, filterType, user?.id]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -196,7 +192,11 @@ export default function Requests() {
       <View style={styles.titleRow}>
         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            {locationLabel ? t('search.requestsIn', { location: locationLabel }) : t('feed.seeAllRequests')}
+            {filterType === 'following'
+              ? t('feed.followingRequests')
+              : locationLabel
+                ? t('search.requestsIn', { location: locationLabel })
+                : t('feed.seeAllRequests')}
           </Text>
           {locationLabel && (
             <TouchableOpacity
@@ -206,6 +206,17 @@ export default function Requests() {
 
               accessibilityRole="button"
               accessibilityLabel="Clear location filter"
+            >
+              <Ionicons name="close-circle" size={20} color={colors.text} />
+            </TouchableOpacity>
+          )}
+          {filterType === 'following' && (
+            <TouchableOpacity
+              onPress={() => router.replace('/requests')}
+              style={{ marginLeft: 8, padding: 4 }}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel="Clear following filter"
             >
               <Ionicons name="close-circle" size={20} color={colors.text} />
             </TouchableOpacity>
@@ -241,14 +252,6 @@ export default function Requests() {
       >
         {tasks.map((task) => {
           const statusPalette = getStatusPalette(task.status_display || task.status);
-          const photos = taskPhotos.get(task.id) || [];
-          const primaryPhoto = photos.length > 0 ? photos[0] : null;
-          const photoUrl = primaryPhoto ? (primaryPhoto.photo_url || primaryPhoto.url || primaryPhoto.image) : null;
-          const absolutePhotoUrl = photoUrl && photoUrl.startsWith('http')
-            ? photoUrl
-            : photoUrl
-              ? `${BACKEND_BASE_URL}${photoUrl}`
-              : null;
 
           return (
             <TouchableOpacity
@@ -266,10 +269,10 @@ export default function Requests() {
               accessibilityLabel={`View request ${task.title}`}
             >
               <Image
-                source={absolutePhotoUrl ? { uri: absolutePhotoUrl } : require('../assets/images/help.png')}
+                source={task.primary_photo_url ? { uri: task.primary_photo_url } : require('../assets/images/help.png')}
                 style={styles.cardImage}
                 accessibilityRole="image"
-                accessibilityLabel={absolutePhotoUrl ? `Photo for ${task.title}` : `Default illustration for ${task.title}`}
+                accessibilityLabel={task.primary_photo_url ? `Photo for ${task.title}` : `Default illustration for ${task.title}`}
               />
 
               <View style={styles.cardContent}>
@@ -353,7 +356,7 @@ export default function Requests() {
             accessibilityState={{ disabled: true }}
           >
             <Ionicons name="add-circle-outline" size={24} color={colors.text} />
-            <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
+            <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.create')}</Text>
           </TouchableOpacity>
         )}
         <TouchableOpacity

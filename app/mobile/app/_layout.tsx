@@ -19,6 +19,7 @@ const publicAppRoutes = [
   'category',
   'search',
   'terms',
+  'community-guidelines',
   'requests',
   'v-request-details',
   'r-request-details',
@@ -75,6 +76,7 @@ function RootNavigator() {
       <Stack.Screen name="v-request-details" />
       <Stack.Screen name="select-volunteer" />
       <Stack.Screen name="terms" />
+      <Stack.Screen name="community-guidelines" />
     </Stack>
   );
 }
