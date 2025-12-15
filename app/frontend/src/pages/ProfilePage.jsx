@@ -63,6 +63,15 @@ import userService from "../services/userService";
 // No need for CSS module import as we're using Material UI's sx prop
 import { checkBadges } from "../features/badges/services/badgeService";
 
+const safeJSONParse = (str) => {
+  try {
+    return str ? JSON.parse(str) : null;
+  } catch (e) {
+    console.error("Error parsing JSON from localStorage:", e);
+    return null;
+  }
+};
+
 const ProfilePage = () => {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -71,9 +80,7 @@ const ProfilePage = () => {
 
   // Get logged-in user data from localStorage and Redux store
   const loggedInUserId = localStorage.getItem("userId");
-  const loggedInUserData = localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user"))
-    : null;
+  const loggedInUserData = safeJSONParse(localStorage.getItem("user"));
   const authState = useSelector((state) => state.auth);
 
   // Debug helper function - call this in the browser console to see all auth-related info
@@ -116,8 +123,7 @@ const ProfilePage = () => {
 
   const auth = useSelector((s) => s.auth);
   const authUserId = auth?.user?.id != null ? String(auth.user.id) : null;
-  const lsUserRaw = localStorage.getItem("user");
-  const lsUserObj = lsUserRaw ? JSON.parse(lsUserRaw) : null;
+  const lsUserObj = safeJSONParse(localStorage.getItem("user"));
   const lsUserId = lsUserObj?.id != null ? String(lsUserObj.id) : null;
   const lsUserIdSimple = localStorage.getItem("userId");
   const effectiveLoggedInId = authUserId ?? lsUserId ?? lsUserIdSimple ?? null;
@@ -149,13 +155,20 @@ const ProfilePage = () => {
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
 
+  // Placeholder handlers for future implementation
+  const handleFollowersClick = () => {
+    console.log("Followers clicked");
+  };
+
+  const handleFollowingClick = () => {
+    console.log("Following clicked");
+  };
+
   const loadProfileData = useCallback(async () => {
     try {
       // Get user ID from multiple possible sources
       const loggedInUserId = localStorage.getItem("userId");
-      const loggedInUserObj = localStorage.getItem("user")
-        ? JSON.parse(localStorage.getItem("user"))
-        : null;
+      const loggedInUserObj = safeJSONParse(localStorage.getItem("user"));
       const loggedInUserIdFromObj = loggedInUserObj?.id;
       const effectiveLoggedInUserId = loggedInUserId || loggedInUserIdFromObj;
 
@@ -520,27 +533,27 @@ const ProfilePage = () => {
   };
 
   // Handler for follow/unfollow
-const handleFollowToggle = async () => {
-  if (followLoading) return;
+  const handleFollowToggle = async () => {
+    if (followLoading) return;
 
-  setFollowLoading(true);
-  try {
-    if (isFollowing) {
-      await userService.unfollowUser(effectiveProfileId);
-      setIsFollowing(false);
-      setFollowersCount((prev) => Math.max(0, prev - 1));
-    } else {
-      await userService.followUser(effectiveProfileId);
-      setIsFollowing(true);
-      setFollowersCount((prev) => prev + 1);
+    setFollowLoading(true);
+    try {
+      if (isFollowing) {
+        await userService.unfollowUser(effectiveProfileId);
+        setIsFollowing(false);
+        setFollowersCount((prev) => Math.max(0, prev - 1));
+      } else {
+        await userService.followUser(effectiveProfileId);
+        setIsFollowing(true);
+        setFollowersCount((prev) => prev + 1);
+      }
+    } catch (error) {
+      console.error("Error toggling follow:", error);
+      alert(error?.message || "Failed to update follow status");
+    } finally {
+      setFollowLoading(false);
     }
-  } catch (error) {
-    console.error("Error toggling follow:", error);
-    alert(error?.message || "Failed to update follow status");
-  } finally {
-    setFollowLoading(false);
-  }
-};
+  };
 
   if (loading) {
     return (
@@ -598,6 +611,24 @@ const handleFollowToggle = async () => {
         >
           {t("common.retry")}
         </Button>
+      </Box>
+    );
+  }
+  if (!user) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          backgroundColor: colors.background.primary,
+        }}
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        <CircularProgress sx={{ color: colors.brand.primary }} />
       </Box>
     );
   }
@@ -807,27 +838,27 @@ const handleFollowToggle = async () => {
                         px: 3,
                         ...(isFollowing
                           ? {
-                              color: colors.brand.primary,
-                              borderColor: colors.brand.primary,
-                              "&:hover": {
-                                backgroundColor: `${colors.brand.primary}0A`,
-                                borderColor: colors.brand.secondary,
-                              },
-                            }
+                            color: colors.brand.primary,
+                            borderColor: colors.brand.primary,
+                            "&:hover": {
+                              backgroundColor: `${colors.brand.primary}0A`,
+                              borderColor: colors.brand.secondary,
+                            },
+                          }
                           : {
-                              backgroundColor: colors.brand.primary,
-                              color: colors.text.inverse,
-                              "&:hover": {
-                                backgroundColor: colors.brand.secondary,
-                              },
-                            }),
+                            backgroundColor: colors.brand.primary,
+                            color: colors.text.inverse,
+                            "&:hover": {
+                              backgroundColor: colors.brand.secondary,
+                            },
+                          }),
                       }}
                     >
                       {followLoading
                         ? "..."
                         : isFollowing
-                        ? "Unfollow"
-                        : "Follow"}
+                          ? "Unfollow"
+                          : "Follow"}
                     </Button>
                     <Button
                       onClick={handleUserReport}
@@ -846,6 +877,7 @@ const handleFollowToggle = async () => {
                     >
                       {t("profile.actions.report")}
                     </Button>
+                  </Box>
                 )}
               </Box>
             </Box>
