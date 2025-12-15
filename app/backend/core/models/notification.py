@@ -10,6 +10,7 @@ class NotificationType(models.TextChoices):
     TASK_CANCELLED = 'TASK_CANCELLED', 'Task Cancelled'
     NEW_REVIEW = 'NEW_REVIEW', 'New Review'
     BADGE_EARNED = 'BADGE_EARNED', 'Badge Earned'
+    COMMENT_ADDED = 'COMMENT_ADDED', 'Comment Added'
     SYSTEM_NOTIFICATION = 'SYSTEM_NOTIFICATION', 'System Notification'
 
 
@@ -167,3 +168,29 @@ class Notification(models.Model):
             notification_type=NotificationType.BADGE_EARNED,
             related_task=None
         )
+    
+    @classmethod
+    def send_comment_added_notification(cls, comment):
+        """Send notification when someone adds a comment to a task"""
+        task = comment.task
+        commenter = comment.user
+        
+        # Notify task creator if they didn't write the comment
+        if task.creator != commenter:
+            content = f"{commenter.username} commented on your task '{task.title}': {comment.content[:50]}{'...' if len(comment.content) > 50 else ''}"
+            cls.send_notification(
+                user=task.creator,
+                content=content,
+                notification_type=NotificationType.COMMENT_ADDED,
+                related_task=task
+            )
+        
+        # Notify task assignee if exists and they didn't write the comment
+        if task.assignee and task.assignee != commenter and task.assignee != task.creator:
+            content = f"{commenter.username} commented on task '{task.title}': {comment.content[:50]}{'...' if len(comment.content) > 50 else ''}"
+            cls.send_notification(
+                user=task.assignee,
+                content=content,
+                notification_type=NotificationType.COMMENT_ADDED,
+                related_task=task
+            )
