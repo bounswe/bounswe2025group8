@@ -114,8 +114,8 @@ const RegisterPage = () => {
       } else {
         setRegisterError(
           t("registerPage.validation.failedToCreateAccount") +
-            ": " +
-            (error.message || t("registerPage.validation.registrationFailed"))
+          ": " +
+          (error.message || t("registerPage.validation.registrationFailed"))
         );
       }
     }
@@ -214,12 +214,12 @@ const RegisterPage = () => {
                     backgroundColor: colors.background.secondary,
                   }}
                   onMouseOver={(e) =>
-                    (e.currentTarget.style.backgroundColor =
-                      colors.background.tertiary)
+                  (e.currentTarget.style.backgroundColor =
+                    colors.background.tertiary)
                   }
                   onMouseOut={(e) =>
-                    (e.currentTarget.style.backgroundColor =
-                      colors.background.secondary)
+                  (e.currentTarget.style.backgroundColor =
+                    colors.background.secondary)
                   }
                 >
                   {t("login").toUpperCase()}
@@ -232,12 +232,12 @@ const RegisterPage = () => {
                     color: colors.text.inverse,
                   }}
                   onMouseOver={(e) =>
-                    (e.currentTarget.style.backgroundColor =
-                      colors.brand.secondary)
+                  (e.currentTarget.style.backgroundColor =
+                    colors.brand.secondary)
                   }
                   onMouseOut={(e) =>
-                    (e.currentTarget.style.backgroundColor =
-                      colors.brand.primary)
+                  (e.currentTarget.style.backgroundColor =
+                    colors.brand.primary)
                   }
                 >
                   {t("register").toUpperCase()}
@@ -674,7 +674,7 @@ const RegisterPage = () => {
                   </div>
                 </div>
 
-                {/* Terms and Conditions */}
+                {/* Terms and Conditions and Community Guidelines */}
                 <div className="mb-4">
                   <label className="flex items-start">
                     <input
@@ -692,7 +692,7 @@ const RegisterPage = () => {
                       className="text-sm"
                       style={{ color: colors.text.primary }}
                     >
-                      {t("registerPage.agreeTerms")}{" "}
+                      {t("registerPageAgreement.agreeTermsWithGuidelines")}{" "}
                       <button
                         type="button"
                         className="underline"
@@ -706,6 +706,22 @@ const RegisterPage = () => {
                       >
                         {t("registerPage.termsAndConditions")}
                       </button>
+                      {" "} {t("registerPageAgreement.and")} {" "}
+                      <RouterLink
+                        to="/community-guidelines"
+                        className="underline"
+                        style={{ color: colors.brand.primary }}
+                        onMouseOver={(e) =>
+                          (e.currentTarget.style.color = colors.brand.secondary)
+                        }
+                        onMouseOut={(e) =>
+                          (e.currentTarget.style.color = colors.brand.primary)
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {t("registerPageAgreement.communityGuideline")}
+                      </RouterLink>
                     </span>
                   </label>
                 </div>
