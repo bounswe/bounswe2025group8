@@ -5,7 +5,8 @@ from django.shortcuts import get_object_or_404
 
 from core.models import Notification
 from core.api.serializers.notification_serializers import (
-    NotificationSerializer, NotificationCreateSerializer, NotificationUpdateSerializer
+    NotificationSerializer, NotificationCreateSerializer, NotificationUpdateSerializer,
+    AdminWarningSerializer
 )
 from core.permissions import IsOwner
 from core.utils import format_response, paginate_results
@@ -133,3 +134,44 @@ class NotificationViewSet(viewsets.ModelViewSet):
             status='success',
             message=f'{unread_notifications.count()} notifications marked as read.'
         ))
+    
+    @action(detail=False, methods=['post'], url_path='send-warning', permission_classes=[permissions.IsAuthenticated])
+    def send_warning(self, request):
+        """
+        Admin-only action to send a warning to a user.
+        
+        Request body:
+        {
+            "user_id": 123,
+            "message": "Please follow community guidelines."
+        }
+        """
+        # Check if user is admin/staff
+        if not request.user.is_staff:
+            return Response(format_response(
+                status='error',
+                message='Only administrators can send warnings to users.'
+            ), status=status.HTTP_403_FORBIDDEN)
+        
+        # Validate request data
+        serializer = AdminWarningSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Get the target user
+        from core.models import RegisteredUser
+        target_user = RegisteredUser.objects.get(id=serializer.validated_data['user_id'])
+        
+        # Send the warning notification
+        notification = Notification.send_admin_warning(
+            user=target_user,
+            message=serializer.validated_data['message'],
+            admin_user=request.user
+        )
+        
+        # Return response
+        response_serializer = NotificationSerializer(notification)
+        return Response(format_response(
+            status='success',
+            message=f'Warning sent to {target_user.username}.',
+            data=response_serializer.data
+        ), status=status.HTTP_201_CREATED)
