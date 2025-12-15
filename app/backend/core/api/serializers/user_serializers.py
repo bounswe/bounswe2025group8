@@ -7,22 +7,78 @@ from core.utils import password_meets_requirements, validate_phone_number
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for the RegisteredUser model"""
     profile_photo = serializers.SerializerMethodField()
+    followers_count = serializers.SerializerMethodField()
+    following_count = serializers.SerializerMethodField()
+    is_following = serializers.SerializerMethodField()
+    badges = serializers.SerializerMethodField()
+    badges_count = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    surname = serializers.SerializerMethodField()
+    username = serializers.SerializerMethodField()
     
     class Meta:
         model = RegisteredUser
         fields = ['id', 'name', 'surname', 'username', 'email', 
                  'phone_number', 'location', 'rating', 
-                 'completed_task_count', 'is_active', 'profile_photo']
-        read_only_fields = ['id', 'rating', 'completed_task_count', 'is_active', 'profile_photo']
+                 'completed_task_count', 'is_active', 'profile_photo',
+                 'followers_count', 'following_count', 'is_following',
+                 'badges', 'badges_count']
+        read_only_fields = ['id', 'rating', 'completed_task_count', 'is_active', 
+                          'profile_photo', 'followers_count', 'following_count', 
+                          'is_following', 'badges', 'badges_count']
+    
+    def get_name(self, obj):
+        """Return *deleted if user is banned"""
+        return '*deleted' if not obj.is_active else obj.name
+    
+    def get_surname(self, obj):
+        """Return empty string if user is banned"""
+        return '' if not obj.is_active else obj.surname
+    
+    def get_username(self, obj):
+        """Return *deleted if user is banned"""
+        return '*deleted' if not obj.is_active else obj.username
     
     def get_profile_photo(self, obj):
         """Get the absolute URL for the profile photo"""
+        # Return None if user is banned
+        if not obj.is_active:
+            return None
         if obj.profile_photo:
             request = self.context.get('request')
             if request is not None:
                 return request.build_absolute_uri(obj.profile_photo.url)
             return obj.profile_photo.url
         return None
+    
+    def get_followers_count(self, obj):
+        """Get the number of followers"""
+        return obj.followers_set.count()
+    
+    def get_following_count(self, obj):
+        """Get the number of users this user is following"""
+        return obj.following_set.count()
+    
+    def get_is_following(self, obj):
+        """Check if the current user is following this user"""
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            from core.models import UserFollows
+            return UserFollows.objects.filter(
+                follower=request.user, 
+                following=obj
+            ).exists()
+        return False
+    
+    def get_badges(self, obj):
+        """Get user's badges"""
+        from core.api.serializers.badge_serializers import UserBadgeSimpleSerializer
+        badges = obj.earned_badges.select_related('badge').all()[:10]  # Limit to 10 most recent
+        return UserBadgeSimpleSerializer(badges, many=True).data
+    
+    def get_badges_count(self, obj):
+        """Get total number of badges earned"""
+        return obj.earned_badges.count()
 
 
 class UserCreateSerializer(serializers.ModelSerializer):

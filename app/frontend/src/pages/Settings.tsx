@@ -1,4 +1,5 @@
 import { useTheme } from '../hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import ContrastIcon from '@mui/icons-material/Contrast';
@@ -7,25 +8,26 @@ import type { ReactElement } from 'react';
 
 const Settings = () => {
   const { mode, setTheme, colors } = useTheme();
+  const { t } = useTranslation();
 
   const themeOptions: Array<{ value: ThemeMode; label: string; icon: ReactElement; description: string }> = [
     {
       value: 'light',
-      label: 'Light',
+      label: t('settingsPage.themes.light.label'),
       icon: <LightModeIcon />,
-      description: 'Clean, bright interface for daytime use',
+      description: t('settingsPage.themes.light.description'),
     },
     {
       value: 'dark',
-      label: 'Dark',
+      label: t('settingsPage.themes.dark.label'),
       icon: <DarkModeIcon />,
-      description: 'Easy on the eyes in low-light environments',
+      description: t('settingsPage.themes.dark.description'),
     },
     {
       value: 'high-contrast',
-      label: 'High Contrast',
+      label: t('settingsPage.themes.highContrast.label'),
       icon: <ContrastIcon />,
-      description: 'Maximum visibility and accessibility (WCAG AAA)',
+      description: t('settingsPage.themes.highContrast.description'),
     },
   ];
 
@@ -48,7 +50,7 @@ const Settings = () => {
           }}
           id="settings-title"
         >
-          Settings
+          {t('settingsPage.title')}
         </h1>
         <p
           style={{
@@ -57,7 +59,7 @@ const Settings = () => {
             marginBottom: '2rem',
           }}
         >
-          Customize your experience
+          {t('settingsPage.subtitle')}
         </p>
 
         {/* Theme Section */}
@@ -78,7 +80,7 @@ const Settings = () => {
               color: colors.text.primary,
             }}
           >
-            Appearance
+            {t('settingsPage.appearance.title')}
           </h2>
           <p
             style={{
@@ -87,7 +89,7 @@ const Settings = () => {
               marginBottom: '1.5rem',
             }}
           >
-            Select your preferred theme. Your choice will be saved and applied across all pages.
+            {t('settingsPage.appearance.description')}
           </p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -134,7 +136,7 @@ const Settings = () => {
                     e.currentTarget.style.outline = 'none';
                   }}
                   aria-pressed={isSelected}
-                  aria-label={`Select ${option.label} theme: ${option.description}`}
+                  aria-label={t('settingsPage.aria.selectTheme', { label: option.label, description: option.description })}
                 >
                   <div
                     style={{
@@ -172,7 +174,7 @@ const Settings = () => {
                             opacity: 0.9,
                           }}
                         >
-                          (Active)
+                          {t('settingsPage.themes.active')}
                         </span>
                       )}
                     </div>
@@ -260,9 +262,7 @@ const Settings = () => {
                 margin: 0,
               }}
             >
-              <strong>Accessibility:</strong> All themes meet WCAG standards. Light and Dark
-              modes meet AA compliance (4.5:1 contrast). High Contrast mode meets AAA
-              compliance (7:1 contrast) for users with visual impairments.
+              <strong>{t('settingsPage.accessibility.title')}</strong> {t('settingsPage.accessibility.description')}
             </p>
           </div>
         </div>

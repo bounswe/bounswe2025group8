@@ -39,8 +39,8 @@ class TaskViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         """Return appropriate queryset based on filters"""
-        # Exclude tasks created by banned users
-        queryset = Task.objects.filter(creator__is_active=True)
+        # Include all tasks, even from banned users (their contributions remain visible)
+        queryset = Task.objects.all()
 
         # Filter by status
         status_param = self.request.query_params.get('status')
@@ -233,7 +233,34 @@ class TaskViewSet(viewsets.ModelViewSet):
             message='Popular tasks retrieved successfully',
             data=serializer.data
         ))
-
+    @action(detail=False, methods=['get'], url_path='followed', permission_classes=[permissions.IsAuthenticated])
+    def followed(self, request):
+        """
+        Return tasks created by users that the current user follows
+        """
+        from core.models import UserFollows
+        
+        # Determine how many tasks to return
+        limit = int(request.query_params.get('limit', 6))
+        
+        # Get list of users that the current user is following
+        following_ids = UserFollows.objects.filter(
+            follower=request.user
+        ).values_list('following_id', flat=True)
+        
+        # Get tasks created by followed users (only open tasks)
+        followed_tasks = Task.objects.filter(
+            creator_id__in=following_ids,
+            status=TaskStatus.POSTED  # Only show open tasks
+        ).order_by('-created_at')[:limit]
+        
+        serializer = TaskSerializer(followed_tasks, many=True, context={'request': request})
+        
+        return Response(format_response(
+            status='success',
+            message='Followed users tasks retrieved successfully',
+            data=serializer.data
+        ))
 
 class UserTasksView(views.APIView):
     """View for listing tasks created by a specific user"""

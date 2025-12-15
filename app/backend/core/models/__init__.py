@@ -10,6 +10,8 @@ from .feed import Feed
 from .comment import Comment
 from .search import Search
 from .report import TaskReport, UserReport, ReportType, ReportStatus
+from .user_follows import UserFollows
+from .badge import Badge, BadgeType, UserBadge
 
 __all__ = [
     'RegisteredUser',
@@ -34,4 +36,8 @@ __all__ = [
     'UserReport',
     'ReportType',
     'ReportStatus',
+    'UserFollows',
+    'Badge',
+    'BadgeType',
+    'UserBadge',
 ]

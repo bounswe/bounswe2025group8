@@ -19,6 +19,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import StarIcon from "@mui/icons-material/Star";
+import { useTranslation } from "react-i18next";
 import {
   submitReview,
   getReviewableUsersAsync,
@@ -36,6 +37,7 @@ const RatingReviewModal = ({
   currentUser,
   onSubmitSuccess,
 }) => {
+  const { t } = useTranslation();
   // State for form
   const [selectedUser, setSelectedUser] = useState(null);
   const [rating, setRating] = useState(3.0);
@@ -92,10 +94,10 @@ const RatingReviewModal = ({
             allUsersWithStatus.length > 0
           ) {
             console.log("All users have been reviewed");
-            setError("All users for this task have already been reviewed.");
+            setError(t("ratingReviewModal.allUsersReviewed"));
           } else if (allUsersWithStatus.length === 0) {
             console.log("No users available to review");
-            setError("No users available to review for this task.");
+            setError(t("ratingReviewModal.noUsersToReview"));
           }
         } catch (err) {
           console.error("Error fetching users with status:", err);
@@ -117,11 +119,11 @@ const RatingReviewModal = ({
               setSelectedUser(users[0]);
             } else if (users.length === 0) {
               console.error("No reviewable users found!");
-              setError("No users available to review for this task.");
+              setError(t("ratingReviewModal.noUsersToReview"));
             }
           } catch (fallbackErr) {
             console.error("Fallback method also failed:", fallbackErr);
-            setError("Could not load reviewable users. Please try again.");
+            setError(t("ratingReviewModal.couldNotLoadUsers"));
           }
         }
       };
@@ -179,14 +181,14 @@ const RatingReviewModal = ({
   // Handle form submission
   const handleSubmit = async () => {
     if (!selectedUser || !task) {
-      setError("Please select a user to review");
+      setError(t("ratingReviewModal.pleaseSelectUser"));
       return;
     }
 
     // Validate that comment is not empty
     const publicComment = comment?.trim() ?? "";
     if (!publicComment) {
-      setError("Please write a review comment. Your feedback is valuable!");
+      setError(t("ratingReviewModal.pleaseWriteComment"));
       return;
     }
 
@@ -305,7 +307,7 @@ const RatingReviewModal = ({
         (err.response?.data?.errors &&
           Object.values(err.response.data.errors).flat().join(", ")) ||
         err.message ||
-        "Failed to submit review. Please try again.";
+        t("ratingReviewModal.failedToSubmit");
 
       setError(errorMessage);
     } finally {
@@ -346,7 +348,7 @@ const RatingReviewModal = ({
       {/* Header */}
       <DialogTitle id="rating-review-title" sx={{ pb: 1, pr: 6 }}>
         <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
-          Rate & Review
+          {t("ratingReviewModal.title")}
         </Typography>
         <IconButton
           onClick={onClose}
@@ -356,7 +358,7 @@ const RatingReviewModal = ({
             top: 8,
             color: "text.secondary",
           }}
-          aria-label="Close"
+          aria-label={t("ratingReviewModal.close")}
         >
           <CloseIcon />
         </IconButton>
@@ -366,7 +368,7 @@ const RatingReviewModal = ({
         {/* Success Message */}
         {success && (
           <Alert severity="success" sx={{ mb: 2 }}>
-            Review submitted successfully!
+            {t("ratingReviewModal.reviewSubmittedSuccess")}
           </Alert>
         )}
 
@@ -381,7 +383,7 @@ const RatingReviewModal = ({
         {allUsersWithStatus.length > 1 && (
           <Box sx={{ mb: 3 }}>
             <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 500 }}>
-              Select User to Review
+              {t("ratingReviewModal.selectUserToReview")}
             </Typography>
             <FormControl fullWidth>
               <Select
@@ -393,7 +395,7 @@ const RatingReviewModal = ({
                   setSelectedUser(user);
                 }}
                 displayEmpty
-                aria-label="Select user to review"
+                aria-label={t("ratingReviewModal.selectUserToReview")}
                 sx={{
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "8px",
@@ -402,7 +404,7 @@ const RatingReviewModal = ({
               >
                 <MenuItem value="" disabled>
                   <Typography color="text.secondary">
-                    Choose a user to review
+                    {t("ratingReviewModal.chooseUser")}
                   </Typography>
                 </MenuItem>
                 {allUsersWithStatus.map((user) => (
@@ -452,8 +454,8 @@ const RatingReviewModal = ({
                             <Chip
                               label={
                                 user.role === "volunteer"
-                                  ? "Volunteer"
-                                  : "Requester"
+                                  ? t("ratingReviewModal.volunteer")
+                                  : t("ratingReviewModal.requester")
                               }
                               size="small"
                               color={
@@ -468,7 +470,7 @@ const RatingReviewModal = ({
                       </Box>
                       {user.reviewed && (
                         <Chip
-                          label="Reviewed"
+                          label={t("ratingReviewModal.reviewed")}
                           size="small"
                           color="default"
                           variant="outlined"
@@ -491,7 +493,7 @@ const RatingReviewModal = ({
         {selectedUser && (
           <Box sx={{ mb: 3, p: 2, bgcolor: "grey.50", borderRadius: 2 }}>
             <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 500 }}>
-              Reviewing
+              {t("ratingReviewModal.reviewing")}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               <Avatar
@@ -510,8 +512,8 @@ const RatingReviewModal = ({
                 <Chip
                   label={
                     selectedUser.role === "volunteer"
-                      ? "Volunteer"
-                      : "Requester"
+                      ? t("ratingReviewModal.volunteer")
+                      : t("ratingReviewModal.requester")
                   }
                   size="small"
                   color={
@@ -527,7 +529,7 @@ const RatingReviewModal = ({
         {/* Rating / Per-dimension Ratings */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 500 }}>
-            Rating
+            {t("ratingReviewModal.rating")}
           </Typography>
 
           {selectedUser ? (
@@ -539,41 +541,41 @@ const RatingReviewModal = ({
                       // Requester -> Volunteer ratings
                       {
                         key: "reliability",
-                        label: "Reliability",
-                        hint: "Did the volunteer arrive at the agreed-upon time?",
+                        label: t("ratingReviewModal.reliability"),
+                        hint: t("ratingReviewModal.reliabilityHint"),
                       },
                       {
                         key: "task_completion",
-                        label: "Task Completion",
-                        hint: "Did the volunteer complete the task?",
+                        label: t("ratingReviewModal.taskCompletion"),
+                        hint: t("ratingReviewModal.taskCompletionHint"),
                       },
                       {
                         key: "communication_requester_to_volunteer",
-                        label: "Communication",
-                        hint: "How clear and polite was the volunteer's communication?",
+                        label: t("ratingReviewModal.communication"),
+                        hint: t("ratingReviewModal.communicationHint"),
                       },
                       {
                         key: "safety_and_respect",
-                        label: "Safety & Respect",
-                        hint: "Did you feel safe and respected during the interaction?",
+                        label: t("ratingReviewModal.safetyAndRespect"),
+                        hint: t("ratingReviewModal.safetyAndRespectHint"),
                       },
                     ]
                   : [
                       // Volunteer -> Requester ratings
                       {
                         key: "accuracy_of_request",
-                        label: "Accuracy of Request",
-                        hint: "Was the task as described in the post?",
+                        label: t("ratingReviewModal.accuracyOfRequest"),
+                        hint: t("ratingReviewModal.accuracyOfRequestHint"),
                       },
                       {
                         key: "communication_volunteer_to_requester",
-                        label: "Communication",
-                        hint: "Was the requester easy to communicate with?",
+                        label: t("ratingReviewModal.communicationRequester"),
+                        hint: t("ratingReviewModal.communicationRequesterHint"),
                       },
                       {
                         key: "safety_and_preparedness",
-                        label: "Safety & Preparedness",
-                        hint: "Did you feel safe at the location? Was the requester prepared for your arrival?",
+                        label: t("ratingReviewModal.safetyAndPreparedness"),
+                        hint: t("ratingReviewModal.safetyAndPreparednessHint"),
                       },
                     ];
 
@@ -619,8 +621,7 @@ const RatingReviewModal = ({
                       variant="caption"
                       sx={{ color: "text.secondary" }}
                     >
-                      The final score will be the average of the selected
-                      categories.
+                      {t("ratingReviewModal.finalScoreAverage")}
                     </Typography>
                   </Box>
                 </Box>
@@ -656,14 +657,15 @@ const RatingReviewModal = ({
         {/* Comment */}
         <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 500 }}>
-            Review Comment <span style={{ color: "#E15B97" }}>*</span>
+            {t("ratingReviewModal.reviewComment")}{" "}
+            <span style={{ color: "#E15B97" }}>*</span>
           </Typography>
           <TextField
             multiline
             rows={4}
             fullWidth
             required
-            placeholder="Share your experience working with this person..."
+            placeholder={t("ratingReviewModal.shareExperience")}
             value={comment}
             onChange={(e) => {
               setComment(e.target.value);
@@ -717,12 +719,12 @@ const RatingReviewModal = ({
           {loading ? (
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <CircularProgress size={20} color="inherit" />
-              Submitting Review...
+              {t("ratingReviewModal.submittingReview")}
             </Box>
           ) : success ? (
-            "Review Submitted!"
+            t("ratingReviewModal.reviewSubmitted")
           ) : (
-            "Submit Review"
+            t("ratingReviewModal.submitReview")
           )}
         </Button>
 
@@ -736,7 +738,7 @@ const RatingReviewModal = ({
             color: "text.secondary",
           }}
         >
-          Reviews help build trust in our community
+          {t("ratingReviewModal.reviewsHelpTrust")}
         </Typography>
       </DialogContent>
     </Dialog>

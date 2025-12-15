@@ -1,13 +1,18 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import RequestCardForHomePage from "../components/RequestCardForHomePage";
 import {
   fetchAllTasks,
   clearError,
 } from "../features/request/store/allRequestsSlice";
-import { categoryMapping, getCategoryImage } from "../constants/categories";
-import { urgencyLevels } from "../constants/urgency_level";
+import {
+  categoryMapping,
+  getCategoryImage,
+  getCategoryName,
+} from "../constants/categories";
+import { urgencyLevels, getUrgencyLevelName } from "../constants/urgency_level";
 import { formatRelativeTime } from "../utils/dateUtils";
 import { extractRegionFromLocation } from "../utils/taskUtils";
 import { toAbsoluteUrl } from "../utils/url";
@@ -21,6 +26,7 @@ const AllRequests = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
   const { tasks, pagination, loading, error } = useSelector(
     (state) => state.allRequests
@@ -139,9 +145,8 @@ const AllRequests = () => {
 
   // Format task data for RequestCardForHomePage component
   const formatTaskForCard = (task) => {
-    const categoryDisplayName = categoryMapping[task.category] || task.category;
-    const urgencyDisplayName =
-      urgencyLevels[task.urgency_level]?.name || "Unknown";
+    const categoryDisplayName = getCategoryName(task.category, t);
+    const urgencyDisplayName = getUrgencyLevelName(task.urgency_level, t);
 
     // Get task image the same way as Home page - check photos array and primary_photo_url
     const photoFromList =
@@ -155,12 +160,12 @@ const AllRequests = () => {
     // Format location (fallback to "Location not specified")
     const location = task.location
       ? extractRegionFromLocation(task.location)
-      : "Location not specified";
+      : t("allRequests.locationNotSpecified");
 
     // Format time ago
     const timeAgo = task.created_at
       ? formatRelativeTime(task.created_at)
-      : "Time unknown";
+      : t("allRequests.timeUnknown");
 
     return {
       id: task.id,
@@ -193,7 +198,7 @@ const AllRequests = () => {
               marginBottom: "8px",
             }}
           >
-            Error Loading Requests
+            {t("allRequests.errorLoadingRequests")}
           </h3>
           <p style={{ color: colors.text.secondary, marginBottom: "16px" }}>
             {error}
@@ -216,9 +221,9 @@ const AllRequests = () => {
             onMouseOut={(e) =>
               (e.currentTarget.style.backgroundColor = colors.brand.primary)
             }
-            aria-label="Retry loading requests"
+            aria-label={t("allRequests.retryLoadingRequests")}
           >
-            Try Again
+            {t("allRequests.tryAgain")}
           </button>
         </div>
       </div>
@@ -252,12 +257,14 @@ const AllRequests = () => {
             id="all-requests-title"
           >
             {categoryFilter
-              ? `${categoryMapping[categoryFilter] || categoryFilter} Requests`
+              ? `${getCategoryName(categoryFilter, t)} ${t(
+                  "allRequests.requests"
+                )}`
               : urgencyFilter
-              ? `${
-                  urgencyLevels[urgencyFilter]?.name || urgencyFilter
-                } Priority Requests`
-              : "All Requests"}
+              ? `${getUrgencyLevelName(Number(urgencyFilter), t)} ${t(
+                  "allRequests.priorityRequests"
+                )}`
+              : t("allRequests.allRequests")}
           </h1>
           {(categoryFilter || urgencyFilter || locationFilter) && (
             <p
@@ -268,17 +275,20 @@ const AllRequests = () => {
               }}
             >
               {categoryFilter &&
-                `Showing requests in ${
-                  categoryMapping[categoryFilter] || categoryFilter
-                } category`}
+                `${t("allRequests.showingRequestsIn")} ${getCategoryName(
+                  categoryFilter,
+                  t
+                )} ${t("allRequests.category")}`}
               {urgencyFilter &&
-                `${categoryFilter ? " • " : ""}Showing ${
-                  urgencyLevels[urgencyFilter]?.name || urgencyFilter
-                } priority requests`}
+                `${categoryFilter ? " • " : ""}${t(
+                  "allRequests.showing"
+                )} ${getUrgencyLevelName(Number(urgencyFilter), t)} ${t(
+                  "allRequests.priorityRequests"
+                )}`}
               {locationFilter &&
-                `${
-                  categoryFilter || urgencyFilter ? " • " : ""
-                }Near: ${locationFilter}`}
+                `${categoryFilter || urgencyFilter ? " • " : ""}${t(
+                  "allRequests.near"
+                )}: ${locationFilter}`}
               <button
                 onClick={() => navigate("/requests")}
                 style={{
@@ -297,7 +307,7 @@ const AllRequests = () => {
                   (e.currentTarget.style.color = colors.brand.primary)
                 }
               >
-                Clear filters
+                {t("allRequests.clearFilters")}
               </button>
             </p>
           )}
@@ -318,7 +328,7 @@ const AllRequests = () => {
           >
             <input
               type="text"
-              placeholder="Filter by location (district/city)"
+              placeholder={t("allRequests.filterByLocation")}
               style={{
                 padding: "8px 16px",
                 fontSize: "0.875rem",
@@ -333,7 +343,7 @@ const AllRequests = () => {
               onKeyDown={(e) => {
                 if (e.key === "Enter") applyLocationFilter();
               }}
-              aria-label="Filter by location (district or city)"
+              aria-label={t("allRequests.filterByLocation")}
             />
             <button
               onClick={applyLocationFilter}
@@ -353,9 +363,9 @@ const AllRequests = () => {
               onMouseOut={(e) =>
                 (e.currentTarget.style.backgroundColor = colors.brand.primary)
               }
-              aria-label="Apply location filter"
+              aria-label={t("allRequests.applyLocationFilter")}
             >
-              Apply
+              {t("allRequests.apply")}
             </button>
           </div>
           {/* Sort Icon */}
@@ -376,7 +386,7 @@ const AllRequests = () => {
             onMouseOut={(e) =>
               (e.currentTarget.style.color = colors.text.primary)
             }
-            aria-label="Sort requests"
+            aria-label={t("allRequests.sortRequests")}
           >
             <img
               src={sortIcon}
@@ -410,7 +420,7 @@ const AllRequests = () => {
             onMouseOut={(e) =>
               (e.currentTarget.style.color = colors.text.primary)
             }
-            aria-label="Open address filter"
+            aria-label={t("allRequests.openAddressFilter")}
           >
             <img
               src={filterIcon}
@@ -575,10 +585,10 @@ const AllRequests = () => {
                   marginBottom: "8px",
                 }}
               >
-                No Requests Available
+                {t("allRequests.noRequestsAvailable")}
               </h3>
               <p style={{ color: colors.text.secondary }}>
-                There are currently no requests to display.
+                {t("allRequests.noRequestsDescription")}
               </p>
             </div>
           </div>
@@ -626,7 +636,7 @@ const AllRequests = () => {
               }
             }}
           >
-            Previous
+            {t("allRequests.previous")}
           </button>
 
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -677,7 +687,7 @@ const AllRequests = () => {
                           colors.background.secondary;
                       }
                     }}
-                    aria-label={`Go to page ${pageNumber}`}
+                    aria-label={t("allRequests.goToPage", { page: pageNumber })}
                     aria-current={isActive ? "page" : undefined}
                   >
                     {pageNumber}
@@ -717,7 +727,7 @@ const AllRequests = () => {
               }
             }}
           >
-            Next
+            {t("allRequests.next")}
           </button>
         </div>
       )}
@@ -732,11 +742,17 @@ const AllRequests = () => {
             color: colors.text.secondary,
           }}
         >
-          Showing {tasks.length} of {pagination.totalItems} requests
+          {t("allRequests.showingRequests", {
+            showing: tasks.length,
+            count: pagination.totalItems,
+          })}
           {pagination.totalPages > 1 && (
             <span>
               {" "}
-              (Page {currentPage} of {pagination.totalPages})
+              {t("allRequests.pageInfo", {
+                current: currentPage,
+                total: pagination.totalPages,
+              })}
             </span>
           )}
         </div>

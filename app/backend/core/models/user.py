@@ -205,13 +205,26 @@ class RegisteredUser(AbstractBaseUser, PermissionsMixin):
     
     def follow_user(self, user):
         """Follow another user"""
-        # This would involve a UserFollows model (to be implemented)
-        pass
+        from .user_follows import UserFollows
+        
+        if self == user:
+            raise ValueError("Cannot follow yourself")
+        
+        # Check if already following
+        if UserFollows.objects.filter(follower=self, following=user).exists():
+            raise ValueError("Already following this user")
+        
+        return UserFollows.objects.create(follower=self, following=user)
     
     def unfollow_user(self, user):
         """Unfollow a user"""
-        # This would involve a UserFollows model (to be implemented)
-        pass
+        from .user_follows import UserFollows
+        
+        follow = UserFollows.objects.filter(follower=self, following=user).first()
+        if follow:
+            follow.delete()
+            return True
+        return False
     
     def report_user(self, user, reason):
         """Report a user"""

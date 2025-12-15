@@ -3,7 +3,8 @@ from rest_framework.routers import DefaultRouter
 from core.api.views import (
     user_views, auth_views, task_views, volunteer_views, 
     review_views, bookmark_views, notification_views, 
-    photo_views, admin_views, comment_views, report_views
+    photo_views, admin_views, comment_views, report_views,
+    badge_views
 )
 
 router = DefaultRouter()
@@ -16,6 +17,8 @@ router.register(r'notifications', notification_views.NotificationViewSet)
 router.register(r'comments', comment_views.CommentViewSet)
 router.register(r'task-reports', report_views.TaskReportViewSet, basename='task-report')
 router.register(r'user-reports', report_views.UserReportViewSet, basename='user-report')
+router.register(r'badges', badge_views.BadgeViewSet, basename='badge')
+router.register(r'user-badges', badge_views.UserBadgeViewSet, basename='user-badge')
 
 urlpatterns = [
     path('', include(router.urls)),

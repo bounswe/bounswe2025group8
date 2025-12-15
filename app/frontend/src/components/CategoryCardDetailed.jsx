@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useTheme } from "../hooks/useTheme";
 
 /**
@@ -21,6 +22,7 @@ const CategoryCardDetailed = ({
   onClick,
   className = "",
 }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { colors } = useTheme();
   const [isHovered, setIsHovered] = useState(false);
@@ -51,8 +53,8 @@ const CategoryCardDetailed = ({
       onBlur={() => setIsFocused(false)}
       role="button" // Add button role for accessibility
       tabIndex={0} // Make it focusable
-      aria-label={`${title} category with ${requestCount} ${
-        requestCount === 1 ? "request" : "requests"
+      aria-label={`${title} ${t("categoryWith")} ${requestCount} ${
+        requestCount === 1 ? t("request") : t("requests")
       }`}
       style={{
         display: "flex",
@@ -108,7 +110,7 @@ const CategoryCardDetailed = ({
             }}
           >
             <span style={{ fontSize: "0.875rem", color: colors.text.tertiary }}>
-              No Image
+              {t("noImage")}
             </span>
           </div>
         )}
@@ -143,7 +145,7 @@ const CategoryCardDetailed = ({
             alignItems: "center",
           }}
         >
-          {requestCount} {requestCount === 1 ? "request" : "requests"}
+          {requestCount} {requestCount === 1 ? t("request") : t("requests")}
         </p>
       </div>
     </div>
