@@ -89,3 +89,28 @@ class NotificationUpdateSerializer(serializers.ModelSerializer):
             instance.save()
         
         return instance
+
+
+class AdminWarningSerializer(serializers.Serializer):
+    """Serializer for admin sending warnings to users"""
+    user_id = serializers.IntegerField(required=True, help_text="ID of the user to warn")
+    message = serializers.CharField(
+        required=True, 
+        max_length=500,
+        help_text="Warning message to send to the user"
+    )
+    
+    def validate_user_id(self, value):
+        """Validate that the user exists"""
+        from core.models import RegisteredUser
+        try:
+            RegisteredUser.objects.get(id=value)
+            return value
+        except RegisteredUser.DoesNotExist:
+            raise serializers.ValidationError("User not found.")
+    
+    def validate_message(self, value):
+        """Validate the warning message"""
+        if not value.strip():
+            raise serializers.ValidationError("Warning message cannot be empty.")
+        return value.strip()

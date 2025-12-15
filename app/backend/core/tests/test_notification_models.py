@@ -341,6 +341,53 @@ class NotificationModelTests(TestCase):
         self.assertIn('...', creator_notification.content)
         # The actual comment preview should be 50 characters
         self.assertTrue(long_content[:50] in creator_notification.content)
+    
+    def test_admin_warning_notification(self):
+        """Test admin warning notification"""
+        # Create an admin user
+        admin = RegisteredUser.objects.create_user(
+            email='admin@example.com',
+            name='Admin',
+            surname='User',
+            username='adminuser',
+            phone_number='9999999999',
+            password='admin123',
+            is_staff=True
+        )
+        
+        # Send warning to user1
+        warning_message = "Please follow community guidelines."
+        notification = Notification.send_admin_warning(
+            user=self.user1,
+            message=warning_message,
+            admin_user=admin
+        )
+        
+        # Verify notification
+        self.assertIsNotNone(notification)
+        self.assertEqual(notification.user, self.user1)
+        self.assertEqual(notification.type, NotificationType.ADMIN_WARNING)
+        self.assertIsNone(notification.related_task)
+        self.assertIn(admin.username, notification.content)
+        self.assertIn(warning_message, notification.content)
+        self.assertIn('⚠️', notification.content)
+        self.assertIn('Warning', notification.content)
+    
+    def test_admin_warning_notification_without_admin_user(self):
+        """Test admin warning notification when admin user is not provided"""
+        warning_message = "This is a system warning."
+        notification = Notification.send_admin_warning(
+            user=self.user1,
+            message=warning_message,
+            admin_user=None
+        )
+        
+        # Verify notification
+        self.assertIsNotNone(notification)
+        self.assertEqual(notification.user, self.user1)
+        self.assertEqual(notification.type, NotificationType.ADMIN_WARNING)
+        self.assertIn('Administrator', notification.content)
+        self.assertIn(warning_message, notification.content)
 
 
 class NotificationTypeEnumTests(TestCase):
@@ -356,6 +403,7 @@ class NotificationTypeEnumTests(TestCase):
         self.assertEqual(NotificationType.NEW_REVIEW, 'NEW_REVIEW')
         self.assertEqual(NotificationType.BADGE_EARNED, 'BADGE_EARNED')
         self.assertEqual(NotificationType.COMMENT_ADDED, 'COMMENT_ADDED')
+        self.assertEqual(NotificationType.ADMIN_WARNING, 'ADMIN_WARNING')
         self.assertEqual(NotificationType.SYSTEM_NOTIFICATION, 'SYSTEM_NOTIFICATION')
         
         # Test choices format
@@ -364,3 +412,4 @@ class NotificationTypeEnumTests(TestCase):
         self.assertTrue(('NEW_REVIEW', 'New Review') in choices)
         self.assertTrue(('BADGE_EARNED', 'Badge Earned') in choices)
         self.assertTrue(('COMMENT_ADDED', 'Comment Added') in choices)
+        self.assertTrue(('ADMIN_WARNING', 'Admin Warning') in choices)

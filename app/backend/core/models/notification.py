@@ -11,6 +11,7 @@ class NotificationType(models.TextChoices):
     NEW_REVIEW = 'NEW_REVIEW', 'New Review'
     BADGE_EARNED = 'BADGE_EARNED', 'Badge Earned'
     COMMENT_ADDED = 'COMMENT_ADDED', 'Comment Added'
+    ADMIN_WARNING = 'ADMIN_WARNING', 'Admin Warning'
     SYSTEM_NOTIFICATION = 'SYSTEM_NOTIFICATION', 'System Notification'
 
 
@@ -194,3 +195,16 @@ class Notification(models.Model):
                 notification_type=NotificationType.COMMENT_ADDED,
                 related_task=task
             )
+    
+    @classmethod
+    def send_admin_warning(cls, user, message, admin_user=None):
+        """Send an administrative warning to a user"""
+        admin_name = admin_user.username if admin_user else "Administrator"
+        content = f"⚠️ Warning from {admin_name}: {message}"
+        
+        return cls.send_notification(
+            user=user,
+            content=content,
+            notification_type=NotificationType.ADMIN_WARNING,
+            related_task=None
+        )
