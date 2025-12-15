@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { getCategories } from '../features/category/services/categoryService';
 import { urgencyLevels, getUrgencyLevelName } from "../constants/urgency_level";
 import { getCategoryName } from '../constants/categories';
+import { useTheme } from '../hooks/useTheme';
 
 type Request = {
   id: number | string;
@@ -31,6 +32,7 @@ type Category = {
 
 const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, onSubmit }) => {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const dialogRef = useRef<HTMLDialogElement | null>(null);
 
   const [formState, setFormState] = useState({
@@ -46,6 +48,32 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [categories, setCategories] = useState<Omit<Category, 'task_value'>[]>([]);
+
+  // Add backdrop styling based on theme
+  useEffect(() => {
+    const styleId = 'edit-request-modal-backdrop-style';
+    let styleEl = document.getElementById(styleId) as HTMLStyleElement;
+
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = styleId;
+      document.head.appendChild(styleEl);
+    }
+
+    styleEl.textContent = `
+      dialog#edit-request-modal::backdrop {
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+    `;
+
+    return () => {
+      // Cleanup on unmount
+      const el = document.getElementById(styleId);
+      if (el) {
+        el.remove();
+      }
+    };
+  }, [colors]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -167,52 +195,136 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
 
   return (
     <dialog
+      id="edit-request-modal"
       ref={dialogRef}
-      className="backdrop:bg-black/40 rounded-2xl border-0 p-0 text-base w-full max-w-2xl m-auto overflow-hidden"
+      style={{
+        backgroundColor: colors.background.secondary,
+        color: colors.text.primary,
+        borderRadius: '16px',
+        border: 'none',
+        padding: 0,
+        fontSize: '16px',
+        width: '100%',
+        maxWidth: '42rem',
+        margin: 'auto',
+        overflow: 'hidden',
+      }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="edit-request-title"
     >
       <form
         onSubmit={handleSubmit}
-        className="flex h-full max-h-[92vh] flex-col bg-white text-gray-900"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          maxHeight: '92vh',
+          backgroundColor: colors.background.secondary,
+          color: colors.text.primary,
+        }}
       >
-        <header className="border-b border-gray-200 px-6 py-4">
-          <h2 id="edit-request-title" className="text-lg font-semibold">{t('editRequestModal.title')}</h2>
+        <header style={{
+          borderBottom: `1px solid ${colors.border.primary}`,
+          padding: '16px 24px',
+        }}>
+          <h2 id="edit-request-title" style={{
+            fontSize: '18px',
+            fontWeight: 600,
+            color: colors.text.primary,
+            margin: 0,
+          }}>{t('editRequestModal.title')}</h2>
         </header>
 
-        <section className="flex-1 overflow-y-auto px-6 py-5">
-          <div className="flex flex-col gap-4">
+        <section style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: '20px 24px',
+        }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {submitError && (
-              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert" aria-live="assertive">
+              <div style={{
+                borderRadius: '8px',
+                border: `1px solid ${colors.semantic.error}`,
+                backgroundColor: `${colors.semantic.error}20`,
+                padding: '12px 16px',
+                fontSize: '14px',
+                color: colors.semantic.error,
+              }} role="alert" aria-live="assertive">
                 {submitError}
               </div>
             )}
 
-            <label className="flex flex-col gap-2 text-sm font-medium text-gray-700">
+            <label style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: 500,
+              color: colors.text.primary,
+            }}>
               {t('editRequestModal.titleLabel')} <span className="sr-only">*</span>
               <input
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                style={{
+                  width: '100%',
+                  borderRadius: '8px',
+                  border: `1px solid ${colors.border.primary}`,
+                  padding: '8px 12px',
+                  fontSize: '14px',
+                  backgroundColor: colors.background.elevated,
+                  color: colors.text.primary,
+                }}
                 value={formState.title}
                 onChange={handleChange('title')}
                 required
               />
             </label>
 
-            <label className="flex flex-col gap-2 text-sm font-medium text-gray-700">
+            <label style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: 500,
+              color: colors.text.primary,
+            }}>
               {t('editRequestModal.descriptionLabel')}
               <textarea
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                style={{
+                  width: '100%',
+                  borderRadius: '8px',
+                  border: `1px solid ${colors.border.primary}`,
+                  padding: '8px 12px',
+                  fontSize: '14px',
+                  backgroundColor: colors.background.elevated,
+                  color: colors.text.primary,
+                  resize: 'vertical',
+                }}
                 value={formState.description}
                 onChange={handleChange('description')}
                 rows={4}
               />
             </label>
 
-            <label className="flex flex-col gap-2 text-sm font-medium text-gray-700">
+            <label style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: 500,
+              color: colors.text.primary,
+            }}>
               {t('editRequestModal.categoryLabel')}
               <select
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                style={{
+                  width: '100%',
+                  borderRadius: '8px',
+                  border: `1px solid ${colors.border.primary}`,
+                  padding: '8px 12px',
+                  fontSize: '14px',
+                  backgroundColor: colors.background.elevated,
+                  color: colors.text.primary,
+                }}
                 value={formState.category}
                 onChange={handleChange('category')}
                 aria-label={t('editRequestModal.categoryLabel')}
@@ -226,10 +338,25 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
               </select>
             </label>
 
-            <label className="flex flex-col gap-2 text-sm font-medium text-gray-700">
+            <label style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: 500,
+              color: colors.text.primary,
+            }}>
               {t('editRequestModal.urgencyLabel')}
               <select
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                style={{
+                  width: '100%',
+                  borderRadius: '8px',
+                  border: `1px solid ${colors.border.primary}`,
+                  padding: '8px 12px',
+                  fontSize: '14px',
+                  backgroundColor: colors.background.elevated,
+                  color: colors.text.primary,
+                }}
                 value={formState.urgency_level}
                 onChange={handleChange('urgency_level')}
                 aria-label={t('editRequestModal.urgencyLabel')}
@@ -242,33 +369,78 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
               </select>
             </label>
 
-            <label className="flex flex-col gap-2 text-sm font-medium text-gray-700">
+            <label style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: 500,
+              color: colors.text.primary,
+            }}>
               {t('editRequestModal.locationLabel')}
               <input
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                style={{
+                  width: '100%',
+                  borderRadius: '8px',
+                  border: `1px solid ${colors.border.primary}`,
+                  padding: '8px 12px',
+                  fontSize: '14px',
+                  backgroundColor: colors.background.elevated,
+                  color: colors.text.primary,
+                }}
                 value={formState.location}
                 onChange={handleChange('location')}
                 aria-label={t('editRequestModal.locationLabel')}
               />
             </label>
 
-            <label className="flex flex-col gap-2 text-sm font-medium text-gray-700">
+            <label style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: 500,
+              color: colors.text.primary,
+            }}>
               {t('editRequestModal.deadlineLabel')}
               <input
                 type="datetime-local"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                style={{
+                  width: '100%',
+                  borderRadius: '8px',
+                  border: `1px solid ${colors.border.primary}`,
+                  padding: '8px 12px',
+                  fontSize: '14px',
+                  backgroundColor: colors.background.elevated,
+                  color: colors.text.primary,
+                }}
                 value={formState.deadline}
                 onChange={handleChange('deadline')}
                 aria-label={t('editRequestModal.deadlineLabel')}
               />
             </label>
 
-            <label className="flex flex-col gap-2 text-sm font-medium text-gray-700">
+            <label style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: 500,
+              color: colors.text.primary,
+            }}>
               {t('editRequestModal.volunteersNeeded')}
               <input
                 type="number"
                 min={1}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                style={{
+                  width: '100%',
+                  borderRadius: '8px',
+                  border: `1px solid ${colors.border.primary}`,
+                  padding: '8px 12px',
+                  fontSize: '14px',
+                  backgroundColor: colors.background.elevated,
+                  color: colors.text.primary,
+                }}
                 value={formState.volunteer_number}
                 onChange={handleChange('volunteer_number')}
                 aria-label={t('editRequestModal.volunteersNeeded')}
@@ -277,19 +449,45 @@ const EditRequestModal: React.FC<EditModalProps> = ({ open, request, onClose, on
           </div>
         </section>
 
-        <footer className="flex justify-end gap-3 border-t border-gray-200 px-6 py-4">
+        <footer style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          gap: '12px',
+          borderTop: `1px solid ${colors.border.primary}`,
+          padding: '16px 24px',
+        }}>
           <button
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
+            style={{
+              borderRadius: '8px',
+              border: `1px solid ${colors.border.primary}`,
+              padding: '8px 16px',
+              fontSize: '14px',
+              fontWeight: 500,
+              color: colors.text.primary,
+              backgroundColor: colors.background.elevated,
+              cursor: saving ? 'not-allowed' : 'pointer',
+              opacity: saving ? 0.6 : 1,
+            }}
           >
             {t('cancel')}
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
+            style={{
+              borderRadius: '8px',
+              backgroundColor: colors.brand.primary,
+              padding: '8px 16px',
+              fontSize: '14px',
+              fontWeight: 600,
+              color: '#ffffff',
+              border: 'none',
+              cursor: saving ? 'not-allowed' : 'pointer',
+              opacity: saving ? 0.7 : 1,
+            }}
           >
             {saving ? t('editRequestModal.saving') : t('saveChanges')}
           </button>
