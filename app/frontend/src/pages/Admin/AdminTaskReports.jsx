@@ -31,10 +31,12 @@ import {
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import WarningIcon from "@mui/icons-material/Warning";
 import {
   fetchTaskReports,
   updateReportStatusThunk,
   deleteTaskThunk,
+  sendWarningThunk,
   clearError,
   clearSuccess,
 } from "../../features/admin/store/adminSlice";
@@ -63,6 +65,9 @@ const AdminTaskReports = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [reportDetailsDialogOpen, setReportDetailsDialogOpen] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
+  const [warningDialogOpen, setWarningDialogOpen] = useState(false);
+  const [warningMessage, setWarningMessage] = useState("");
+  const [deleteReason, setDeleteReason] = useState("");
 
   // Check admin access
   useEffect(() => {
@@ -149,11 +154,48 @@ const AdminTaskReports = () => {
     }
   };
 
+  const handleWarnClick = (report) => {
+    setSelectedReport(report);
+    setWarningMessage("");
+    setWarningDialogOpen(true);
+  };
+
+  const handleWarnConfirm = () => {
+    if (selectedReport && selectedReport.task?.creator_id && warningMessage.trim()) {
+      // Send warning
+      dispatch(
+        sendWarningThunk({
+          userId: selectedReport.task.creator_id,
+          message: warningMessage.trim(),
+        })
+      );
+      // Mark report as resolved
+      dispatch(
+        updateReportStatusThunk({
+          reportType: "task",
+          reportId: selectedReport.id,
+          status: "RESOLVED",
+          notes: "Warning sent to task creator",
+        })
+      );
+      setWarningDialogOpen(false);
+      setSelectedReport(null);
+      setWarningMessage("");
+      // Refetch reports after warning
+      setTimeout(() => {
+        dispatch(fetchTaskReports({ status: statusFilter, page: currentPage }));
+      }, 500);
+    }
+  };
+
   const handleDialogCancel = () => {
     setDismissDialogOpen(false);
     setDeleteDialogOpen(false);
     setReportDetailsDialogOpen(false);
+    setWarningDialogOpen(false);
     setSelectedReport(null);
+    setWarningMessage("");
+    setDeleteReason("");
   };
 
   const getStatusColor = (status) => {
@@ -210,7 +252,7 @@ const AdminTaskReports = () => {
           </div>
           <Button
             variant="outlined"
-            onClick={() => navigate("/admin")}
+            onClick={() => navigate(-1)}
             sx={{
               color: colors.brand.primary,
               borderColor: colors.brand.primary,
@@ -426,6 +468,17 @@ const AdminTaskReports = () => {
                           >
                             {t("adminTaskReports.actions.view")}
                           </Button>
+                          {report.task?.creator_id && (
+                            <Button
+                              size="small"
+                              color="warning"
+                              variant="outlined"
+                              startIcon={<WarningIcon />}
+                              onClick={() => handleWarnClick(report)}
+                            >
+                              {t("adminTaskReports.actions.warn")}
+                            </Button>
+                          )}
                           {report.task && (
                             <Button
                               size="small"
@@ -694,6 +747,76 @@ const AdminTaskReports = () => {
               {t("adminTaskReports.detailsDialog.viewRequest")}
             </Button>
           )}
+        </DialogActions>
+      </Dialog>
+
+      {/* Warning Dialog */}
+      <Dialog
+        open={warningDialogOpen}
+        onClose={handleDialogCancel}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ color: colors.text.primary }}>
+          {t("adminTaskReports.warningDialog.title")}
+        </DialogTitle>
+        <DialogContent>
+          {selectedReport && selectedReport.task && (
+            <Box sx={{ mb: 2 }}>
+              <Alert severity="info" sx={{ mb: 2 }}>
+                {t("adminTaskReports.warningDialog.infoMessage")}
+              </Alert>
+              <div style={{ marginBottom: "16px", color: colors.text.primary }}>
+                <p>
+                  <strong>{t("adminTaskReports.warningDialog.taskTitle")}</strong>{" "}
+                  {selectedReport.task.title}
+                </p>
+                <p>
+                  <strong>{t("adminTaskReports.warningDialog.creator")}</strong>{" "}
+                  {selectedReport.task.creator_username || "Unknown"}
+                </p>
+              </div>
+            </Box>
+          )}
+
+          <TextField
+            fullWidth
+            multiline
+            rows={4}
+            label={t("adminTaskReports.warningDialog.messageLabel")}
+            value={warningMessage}
+            onChange={(e) => setWarningMessage(e.target.value)}
+            placeholder={t("adminTaskReports.warningDialog.messagePlaceholder")}
+            required
+            inputProps={{ maxLength: 500 }}
+            helperText={`${warningMessage.length}/500 ${t("adminTaskReports.warningDialog.characters")}`}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                color: colors.text.primary,
+              },
+              "& .MuiInputBase-input::placeholder": {
+                color: colors.text.secondary,
+                opacity: 0.7,
+              },
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDialogCancel}>
+            {t("adminTaskReports.warningDialog.cancel")}
+          </Button>
+          <Button
+            onClick={handleWarnConfirm}
+            color="warning"
+            variant="contained"
+            disabled={actionLoading || !warningMessage.trim()}
+          >
+            {actionLoading ? (
+              <CircularProgress size={24} />
+            ) : (
+              t("adminTaskReports.warningDialog.confirm")
+            )}
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

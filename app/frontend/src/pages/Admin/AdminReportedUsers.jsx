@@ -27,7 +27,8 @@ import {
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import BlockIcon from "@mui/icons-material/Block";
-import { banUserThunk } from "../../features/admin/store/adminSlice";
+import WarningIcon from "@mui/icons-material/Warning";
+import { banUserThunk, sendWarningThunk } from "../../features/admin/store/adminSlice";
 import adminService from "../../features/admin/services/adminService";
 
 const AdminReportedUsers = () => {
@@ -58,6 +59,8 @@ const AdminReportedUsers = () => {
   const [selectedUserReports, setSelectedUserReports] = useState([]);
   const [banReason, setBanReason] = useState("");
   const [reportsLoading, setReportsLoading] = useState(false);
+  const [warningDialogOpen, setWarningDialogOpen] = useState(false);
+  const [warningMessage, setWarningMessage] = useState("");
 
   // Check admin access
   useEffect(() => {
@@ -198,12 +201,56 @@ const AdminReportedUsers = () => {
     }
   };
 
+  const handleWarnClick = (user) => {
+    setSelectedUser(user);
+    setWarningMessage("");
+    setWarningDialogOpen(true);
+  };
+
+  const handleWarnConfirm = async () => {
+    if (selectedUser && selectedUser.user_id && warningMessage.trim()) {
+      try {
+        setActionLoading(true);
+        setError(null);
+        // Send warning
+        await dispatch(
+          sendWarningThunk({
+            userId: selectedUser.user_id,
+            message: warningMessage.trim(),
+          })
+        ).unwrap();
+        // Dismiss all reports against this user
+        await adminService.dismissUserReports(selectedUser.user_id);
+        setSuccessMessage("Warning sent successfully and reports dismissed");
+        setWarningDialogOpen(false);
+        setSelectedUser(null);
+        setWarningMessage("");
+        // Refetch users
+        setTimeout(async () => {
+          try {
+            const response = await adminService.getReportedUsers(currentPage);
+            setReportedUsers(response.users || []);
+            setPagination(response.pagination || {});
+          } catch (err) {
+            setError(err.message || "Failed to fetch users");
+          }
+        }, 500);
+      } catch (err) {
+        setError(err.message || "Failed to send warning");
+      } finally {
+        setActionLoading(false);
+      }
+    }
+  };
+
   const handleDialogCancel = () => {
     setDismissDialogOpen(false);
     setBanDialogOpen(false);
     setReportsDialogOpen(false);
+    setWarningDialogOpen(false);
     setSelectedUser(null);
     setBanReason("");
+    setWarningMessage("");
     setSelectedUserReports([]);
   };
 
@@ -251,7 +298,7 @@ const AdminReportedUsers = () => {
           </div>
           <Button
             variant="outlined"
-            onClick={() => navigate("/admin")}
+            onClick={() => navigate(-1)}
             sx={{
               color: colors.brand.primary,
               borderColor: colors.brand.primary,
@@ -401,6 +448,15 @@ const AdminReportedUsers = () => {
                             onClick={() => handleDismissClick(user)}
                           >
                             {t("adminReportedUsers.actions.dismiss")}
+                          </Button>
+                          <Button
+                            size="small"
+                            color="warning"
+                            variant="outlined"
+                            startIcon={<WarningIcon />}
+                            onClick={() => handleWarnClick(user)}
+                          >
+                            {t("adminReportedUsers.actions.warn")}
                           </Button>
                           <Button
                             size="small"
@@ -691,6 +747,76 @@ const AdminReportedUsers = () => {
         <DialogActions>
           <Button onClick={handleDialogCancel}>
             {t("adminReportedUsers.reportsDialog.close")}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Warning Dialog */}
+      <Dialog
+        open={warningDialogOpen}
+        onClose={handleDialogCancel}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ color: colors.text.primary }}>
+          {t("adminReportedUsers.warningDialog.title")}
+        </DialogTitle>
+        <DialogContent>
+          {selectedUser && (
+            <Box sx={{ mb: 2 }}>
+              <Alert severity="info" sx={{ mb: 2 }}>
+                {t("adminReportedUsers.warningDialog.infoMessage")}
+              </Alert>
+              <div style={{ marginBottom: "16px", color: colors.text.primary }}>
+                <p>
+                  <strong>{t("adminReportedUsers.warningDialog.user")}</strong>{" "}
+                  {selectedUser.username}
+                </p>
+                <p>
+                  <strong>{t("adminReportedUsers.warningDialog.email")}</strong>{" "}
+                  {selectedUser.email}
+                </p>
+              </div>
+            </Box>
+          )}
+
+          <TextField
+            fullWidth
+            multiline
+            rows={4}
+            label={t("adminReportedUsers.warningDialog.messageLabel")}
+            value={warningMessage}
+            onChange={(e) => setWarningMessage(e.target.value)}
+            placeholder={t("adminReportedUsers.warningDialog.messagePlaceholder")}
+            required
+            inputProps={{ maxLength: 500 }}
+            helperText={`${warningMessage.length}/500 ${t("adminReportedUsers.warningDialog.characters")}`}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                color: colors.text.primary,
+              },
+              "& .MuiInputBase-input::placeholder": {
+                color: colors.text.secondary,
+                opacity: 0.7,
+              },
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDialogCancel}>
+            {t("adminReportedUsers.warningDialog.cancel")}
+          </Button>
+          <Button
+            onClick={handleWarnConfirm}
+            color="warning"
+            variant="contained"
+            disabled={actionLoading || !warningMessage.trim()}
+          >
+            {actionLoading ? (
+              <CircularProgress size={24} />
+            ) : (
+              t("adminReportedUsers.warningDialog.confirm")
+            )}
           </Button>
         </DialogActions>
       </Dialog>

@@ -214,6 +214,25 @@ export const dismissUserReports = async (userId) => {
   }
 };
 
+/**
+ * Send warning notification to a user
+ * @param {number} userId - ID of the user to warn
+ * @param {string} message - Warning message (max 500 chars)
+ * @returns {Promise} Promise that resolves to created notification
+ */
+export const sendWarning = async (userId, message) => {
+  try {
+    const response = await api.post('/notifications/send-warning/', {
+      user_id: userId,
+      message: message.trim(),
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error sending warning to user ${userId}:`, error);
+    throw error;
+  }
+};
+
 export default {
   getReports,
   getTaskReports,
@@ -225,4 +244,5 @@ export default {
   deleteTask,
   getAdminUserDetail,
   dismissUserReports,
+  sendWarning,
 };

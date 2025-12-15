@@ -364,14 +364,21 @@ const ProfilePage = () => {
 
   // Sync user data with editProfile slice when user data changes
   useEffect(() => {
-    if (user && canEdit) {
-      dispatch(updateUserLocally(user));
-    }
-  }, [user, canEdit, dispatch]);
+    if (!user || !canEdit) return;
+    // Ensure the user data in profile slice actually belongs to the logged-in user
+    const profileUserId = user?.id != null ? String(user.id) : null;
+    if (!profileUserId || profileUserId !== effectiveLoggedInId) return;
+    dispatch(updateUserLocally(user));
+  }, [user, canEdit, effectiveLoggedInId, dispatch]);
 
   // Sync new profile photo into auth slice so sidebar/footer avatar updates without refresh
   useEffect(() => {
     if (!canEdit) return;
+    // Ensure the user data in profile slice actually belongs to the logged-in user
+    // This prevents syncing another user's photo when navigating between profiles
+    const profileUserId = user?.id != null ? String(user.id) : null;
+    if (!profileUserId || profileUserId !== effectiveLoggedInId) return;
+
     const newPhoto =
       user?.profile_photo || user?.profilePhoto || user?.profilePicture;
     if (!newPhoto) return;
@@ -390,10 +397,12 @@ const ProfilePage = () => {
     }
   }, [
     canEdit,
+    user?.id,
     user?.profile_photo,
     user?.profilePhoto,
     user?.profilePicture,
     auth?.user,
+    effectiveLoggedInId,
     dispatch,
   ]);
   const handleRoleChange = (event, newValue) => {

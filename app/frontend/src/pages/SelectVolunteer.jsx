@@ -263,7 +263,7 @@ const SelectVolunteer = () => {
             </Typography>
             <Button
               startIcon={<ArrowBackIcon />}
-              onClick={() => navigate(`/requests/${requestId}`)}
+              onClick={() => navigate(-1)}
               sx={{ 
                 mt: 2,
                 bgcolor: colors.brand.primary,
@@ -306,7 +306,7 @@ const SelectVolunteer = () => {
             </Typography>
             <Button
               startIcon={<ArrowBackIcon />}
-              onClick={() => navigate(`/requests/${requestId}`)}
+              onClick={() => navigate(-1)}
               sx={{ 
                 mt: 2,
                 bgcolor: colors.brand.primary,
@@ -339,7 +339,7 @@ const SelectVolunteer = () => {
         {/* Header */}
         <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
           <IconButton
-            onClick={() => navigate(`/requests/${requestId}`)}
+            onClick={() => navigate(-1)}
             sx={{ mr: 2, color: colors.text.secondary }}
             aria-label={t("selectVolunteer.aria.backToRequest")}
           >
