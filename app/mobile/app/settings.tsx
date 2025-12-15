@@ -52,10 +52,13 @@ export default function Settings() {
         style: 'destructive',
         onPress: async () => {
           try {
-            resetToLaunch();
+            // Logout and clear session first
             await apiLogout();
             await AsyncStorage.removeItem('token');
             await contextLogout();
+
+            // Then reset navigation to index/landing page
+            resetToLaunch();
           } catch (error) {
             console.error('Error during logout:', error);
             Alert.alert(t('common.error'), t('settings.logoutError'));

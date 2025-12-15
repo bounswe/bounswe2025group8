@@ -70,8 +70,9 @@ export default function CRAddress() {
         return;
       }
 
-      if (!address.country || !address.state || !address.city) {
-        Alert.alert(t('common.error'), t('createRequest.errorAddress'));
+      if (!address.country) {
+        Alert.alert(t('common.error'), t('createRequest.errorAddressCountry'));
+        setUploading(false);
         return;
       }
 
