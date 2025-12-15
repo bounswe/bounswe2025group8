@@ -11,7 +11,6 @@ import {
   Chip,
   CircularProgress,
   Grid,
-  useTheme,
   Tooltip,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
@@ -36,10 +35,11 @@ import {
 } from "../features/request/services/requestService";
 import Sidebar from "../components/Sidebar";
 import { toAbsoluteUrl } from "../utils/url";
+import { useTheme } from "../hooks/useTheme";
 
 const SelectVolunteer = () => {
   const { requestId } = useParams();
-  const theme = useTheme();
+  const { colors } = useTheme();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -223,13 +223,14 @@ const SelectVolunteer = () => {
           minHeight: "50vh",
           flexDirection: "column",
           gap: 2,
+          bgcolor: colors.background.primary,
         }}
         role="status"
         aria-live="polite"
         aria-busy="true"
       >
-        <CircularProgress />
-        <Typography variant="body1" color="text.secondary">
+        <CircularProgress sx={{ color: colors.brand.primary }} />
+        <Typography variant="body1" sx={{ color: colors.text.secondary }}>
           {t("selectVolunteer.loading")}
         </Typography>
       </Box>
@@ -239,7 +240,7 @@ const SelectVolunteer = () => {
   // Error state
   if (error) {
     return (
-      <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f5f5f5" }}>
+      <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: colors.background.primary }}>
         <Sidebar />
         <Box
           sx={{
@@ -248,21 +249,29 @@ const SelectVolunteer = () => {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            bgcolor: colors.background.primary,
           }}
           role="alert"
           aria-live="assertive"
         >
           <Box sx={{ textAlign: "center", maxWidth: 400 }}>
-            <Typography variant="h5" color="error" gutterBottom>
+            <Typography variant="h5" sx={{ color: colors.semantic.error }} gutterBottom>
               {t("selectVolunteer.errorLoading")}
             </Typography>
-            <Typography variant="body1" color="text.secondary" paragraph>
+            <Typography variant="body1" sx={{ color: colors.text.secondary }} paragraph>
               {error}
             </Typography>
             <Button
               startIcon={<ArrowBackIcon />}
               onClick={() => navigate(-1)}
-              sx={{ mt: 2 }}
+              sx={{ 
+                mt: 2,
+                bgcolor: colors.brand.primary,
+                color: '#ffffff',
+                '&:hover': {
+                  bgcolor: colors.brand.primaryHover || colors.brand.primary,
+                }
+              }}
               aria-label={t("selectVolunteer.aria.backToRequest")}
             >
               {t("selectVolunteer.backToRequest")}
@@ -276,7 +285,7 @@ const SelectVolunteer = () => {
   // Not authorized
   if (!isTaskCreator) {
     return (
-      <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f5f5f5" }}>
+      <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: colors.background.primary }}>
         <Sidebar />
         <Box
           sx={{
@@ -285,19 +294,27 @@ const SelectVolunteer = () => {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            bgcolor: colors.background.primary,
           }}
         >
           <Box sx={{ textAlign: "center", maxWidth: 400 }}>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h5" sx={{ color: colors.text.primary }} gutterBottom>
               {t("selectVolunteer.accessDenied")}
             </Typography>
-            <Typography variant="body1" color="text.secondary" paragraph>
+            <Typography variant="body1" sx={{ color: colors.text.secondary }} paragraph>
               {t("selectVolunteer.onlyCreatorCanSelect")}
             </Typography>
             <Button
               startIcon={<ArrowBackIcon />}
               onClick={() => navigate(-1)}
-              sx={{ mt: 2 }}
+              sx={{ 
+                mt: 2,
+                bgcolor: colors.brand.primary,
+                color: '#ffffff',
+                '&:hover': {
+                  bgcolor: colors.brand.primaryHover || colors.brand.primary,
+                }
+              }}
             >
               {t("selectVolunteer.backToRequest")}
             </Button>
@@ -308,13 +325,13 @@ const SelectVolunteer = () => {
   }
 
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f5f5f5" }}>
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: colors.background.primary }}>
       {/* Sidebar */}
       <Sidebar />
 
       {/* Main Content */}
       <Box
-        sx={{ flexGrow: 1, p: 3 }}
+        sx={{ flexGrow: 1, p: 3, bgcolor: colors.background.primary }}
         component="main"
         role="main"
         aria-labelledby="select-volunteer-title"
@@ -323,7 +340,7 @@ const SelectVolunteer = () => {
         <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
           <IconButton
             onClick={() => navigate(-1)}
-            sx={{ mr: 2, color: "text.secondary" }}
+            sx={{ mr: 2, color: colors.text.secondary }}
             aria-label={t("selectVolunteer.aria.backToRequest")}
           >
             <ArrowBackIcon />
@@ -331,31 +348,40 @@ const SelectVolunteer = () => {
           <Typography
             id="select-volunteer-title"
             variant="h4"
-            sx={{ flexGrow: 1, fontWeight: "bold" }}
+            sx={{ flexGrow: 1, fontWeight: "bold", color: colors.text.primary }}
           >
             {t("selectVolunteer.title")}
           </Typography>
-          <IconButton aria-label={t("selectVolunteer.moreOptions")}>
+          <IconButton 
+            aria-label={t("selectVolunteer.moreOptions")}
+            sx={{ color: colors.text.secondary }}
+          >
             <MoreVertIcon />
           </IconButton>
         </Box>
 
         {/* Selection Info */}
         <Box
-          sx={{ mb: 3, p: 2, bgcolor: "white", borderRadius: 2, boxShadow: 1 }}
+          sx={{ 
+            mb: 3, 
+            p: 2, 
+            bgcolor: colors.background.secondary, 
+            borderRadius: 2, 
+            border: `1px solid ${colors.border.primary}`,
+          }}
         >
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="body1" sx={{ color: colors.text.secondary }}>
             {t("selectVolunteer.info.peopleVolunteered", {
               count: volunteers.length,
             })}
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography variant="body1" sx={{ color: colors.text.secondary }}>
             {t("selectVolunteer.info.selectUpTo", {
               max: maxVolunteers,
               count: maxVolunteers,
             })}
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" sx={{ color: colors.text.secondary }}>
             {t("selectVolunteer.info.currentlySelecting", {
               selected: selectedVolunteers.length,
               max: maxVolunteers,
@@ -363,8 +389,7 @@ const SelectVolunteer = () => {
           </Typography>
           <Typography
             variant="body2"
-            color="text.secondary"
-            sx={{ mt: 1, fontStyle: "italic" }}
+            sx={{ mt: 1, fontStyle: "italic", color: colors.text.secondary }}
           >
             {t("selectVolunteer.info.selectedBadgeNote")}
           </Typography>
@@ -376,18 +401,18 @@ const SelectVolunteer = () => {
             sx={{
               textAlign: "center",
               py: 8,
-              bgcolor: "white",
+              bgcolor: colors.background.secondary,
               borderRadius: 2,
-              boxShadow: 1,
+              border: `1px solid ${colors.border.primary}`,
               mb: 3,
             }}
             role="status"
             aria-live="polite"
           >
-            <Typography variant="h6" color="text.secondary" gutterBottom>
+            <Typography variant="h6" sx={{ color: colors.text.secondary }} gutterBottom>
               {t("selectVolunteer.empty.noVolunteers")}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" sx={{ color: colors.text.secondary }}>
               {t("selectVolunteer.empty.waitForVolunteers")}
             </Typography>
           </Box>
@@ -411,9 +436,10 @@ const SelectVolunteer = () => {
                     sx={{
                       cursor: canSelect ? "pointer" : "not-allowed",
                       opacity: canSelect ? 1 : 0.6,
+                      bgcolor: colors.background.secondary,
                       border: isSelected
-                        ? "2px solid #7c4dff"
-                        : "1px solid #e0e0e0",
+                        ? `2px solid ${colors.brand.primary}`
+                        : `1px solid ${colors.border.primary}`,
                       transition: "all 0.2s ease-in-out",
                       position: "relative",
                       "&:hover": canSelect
@@ -451,7 +477,7 @@ const SelectVolunteer = () => {
                           position: "absolute",
                           top: 8,
                           right: 8,
-                          bgcolor: "#4caf50",
+                          bgcolor: colors.semantic.success,
                           color: "white",
                           fontSize: "0.7rem",
                           height: 20,
@@ -467,7 +493,7 @@ const SelectVolunteer = () => {
                           position: "absolute",
                           top: 8,
                           right: 8,
-                          bgcolor: "#ff9800",
+                          bgcolor: colors.semantic.warning,
                           color: "white",
                           fontSize: "0.7rem",
                           height: 20,
@@ -487,9 +513,9 @@ const SelectVolunteer = () => {
                             height: 80,
                             mx: "auto",
                             border: isSelected
-                              ? "3px solid #7c4dff"
+                              ? `3px solid ${colors.brand.primary}`
                               : "3px solid transparent",
-                            bgcolor: isVolunteerBanned ? "#9e9e9e" : undefined,
+                            bgcolor: isVolunteerBanned ? colors.text.disabled : undefined,
                           }}
                         >
                           {isVolunteerBanned && "*"}
@@ -501,18 +527,18 @@ const SelectVolunteer = () => {
                             top: -5,
                             right: "50%",
                             transform: "translateX(50%)",
-                            bgcolor: "white",
+                            bgcolor: colors.background.secondary,
                             borderRadius: "50%",
                             p: 0.5,
                           }}
                         >
                           {isSelected ? (
                             <CheckCircleIcon
-                              sx={{ color: "#7c4dff", fontSize: 24 }}
+                              sx={{ color: colors.brand.primary, fontSize: 24 }}
                             />
                           ) : (
                             <RadioButtonUncheckedIcon
-                              sx={{ color: "#ccc", fontSize: 24 }}
+                              sx={{ color: colors.border.secondary, fontSize: 24 }}
                             />
                           )}
                         </Box>
@@ -525,8 +551,8 @@ const SelectVolunteer = () => {
                         gutterBottom
                         sx={{
                           color: isVolunteerBanned
-                            ? "text.disabled"
-                            : "text.primary",
+                            ? colors.text.disabled
+                            : colors.text.primary,
                         }}
                       >
                         {volunteer.name} {volunteer.surname}
@@ -542,9 +568,9 @@ const SelectVolunteer = () => {
                         }}
                       >
                         <StarIcon
-                          sx={{ color: "#ffc107", fontSize: 20, mr: 0.5 }}
+                          sx={{ color: colors.semantic.warning, fontSize: 20, mr: 0.5 }}
                         />
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="body2" sx={{ color: colors.text.secondary }}>
                           {(
                             Math.round((volunteer.rating || 0) * 10) / 10
                           ).toFixed(1)}{" "}
@@ -570,8 +596,9 @@ const SelectVolunteer = () => {
                             sx={{
                               fontSize: "0.75rem",
                               height: 24,
-                              bgcolor: "#f0f0f0",
-                              color: "text.secondary",
+                              bgcolor: colors.background.elevated,
+                              color: colors.text.secondary,
+                              border: `1px solid ${colors.border.secondary}`,
                             }}
                           />
                         ))}
@@ -580,8 +607,7 @@ const SelectVolunteer = () => {
                       {/* Completed Tasks */}
                       <Typography
                         variant="body2"
-                        color="text.secondary"
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 2, color: colors.text.secondary }}
                       >
                         {t("selectVolunteer.volunteer.tasksCompleted", {
                           count: volunteer.completedTasks,
@@ -606,11 +632,11 @@ const SelectVolunteer = () => {
                           sx={{
                             mt: 1,
                             textTransform: "none",
-                            borderColor: "#7c4dff",
-                            color: "#7c4dff",
+                            borderColor: colors.brand.primary,
+                            color: colors.brand.primary,
                             "&:hover": {
-                              borderColor: "#6a3de8",
-                              bgcolor: "rgba(124, 77, 255, 0.04)",
+                              borderColor: colors.brand.primaryHover || colors.brand.primary,
+                              bgcolor: `${colors.brand.primary}10`,
                             },
                           }}
                           aria-label={t(
@@ -645,13 +671,14 @@ const SelectVolunteer = () => {
               textTransform: "none",
               fontWeight: 500,
               fontSize: "1rem",
-              bgcolor: "#7c4dff",
+              bgcolor: colors.brand.primary,
+              color: '#ffffff',
               "&:hover": {
-                bgcolor: "#6a3de8",
+                bgcolor: colors.brand.primaryHover || colors.brand.primary,
               },
               "&:disabled": {
-                bgcolor: "#ccc",
-                color: "#666",
+                bgcolor: colors.text.disabled,
+                color: colors.background.secondary,
               },
             }}
             aria-disabled={selectedVolunteers.length === 0}
