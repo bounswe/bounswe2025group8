@@ -210,7 +210,7 @@ const AdminTaskReports = () => {
           </div>
           <Button
             variant="outlined"
-            onClick={() => navigate("/admin")}
+            onClick={() => navigate(-1)}
             sx={{
               color: colors.brand.primary,
               borderColor: colors.brand.primary,
