@@ -12,6 +12,7 @@
   "submit": "Gönder",
   "cancel": "İptal",
   "save": "Kaydet",
+  "saveChanges": "Değişiklikleri Kaydet",
   "edit": "Düzenle",
   "delete": "Sil",
   "search": "Ara",
@@ -702,13 +703,16 @@
     "pageTitle": "Ana Sayfa",
     "popularCategories": "Popüler Kategoriler",
     "popularRequests": "Popüler İstekler",
+    "followedRequests": "Takip Ettiklerinizin İstekleri",
     "seeAll": "Tümünü Gör",
     "viewAllCategories": "Tüm kategorileri görüntüle",
     "viewAllRequests": "Tüm istekleri görüntüle",
     "loadingPopularCategories": "Popüler kategoriler yükleniyor",
     "loadingPopularRequests": "Popüler istekler yükleniyor",
+    "loadingFollowedRequests": "Takip ettiklerinizin istekleri yükleniyor",
     "failedToLoadCategories": "Kategoriler yüklenemedi",
     "failedToLoadPopularRequests": "Popüler istekler yüklenemedi",
+    "failedToLoadFollowedRequests": "Takip ettiklerinizin istekleri yüklenemedi",
     "tryAgain": "Tekrar Dene",
     "noCategoriesAvailable": "Kategori bulunamadı",
     "noRequestsAvailable": "İstek bulunamadı"
@@ -763,6 +767,10 @@
     }
   },
   "profile": {
+    "followers": "takipçi",
+    "following": "takip",
+    "follow": "Takip Et",
+    "unfollow": "Takibi Bırak",
     "reviews": {
       "title": "Değerlendirmeler",
       "noReviewsYet": "Henüz değerlendirme yok"

@@ -57,6 +57,7 @@ import Badge from "../components/Badge";
 import EditProfileDialog from "../components/EditProfileDialog";
 import RatingCategoriesModal from "../components/RatingCategoriesModal";
 import UserReportModal from "../components/UserReportModal";
+import UserListModal from "../components/UserListModal"; // Added import
 import { useTheme } from "../hooks/useTheme";
 import { toAbsoluteUrl } from "../utils/url";
 import userService from "../services/userService";
@@ -155,13 +156,44 @@ const ProfilePage = () => {
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
 
-  // Placeholder handlers for future implementation
-  const handleFollowersClick = () => {
-    console.log("Followers clicked");
+  // User list modal state
+  const [userListOpen, setUserListOpen] = useState(false);
+  const [userListTitle, setUserListTitle] = useState("");
+  const [userListUsers, setUserListUsers] = useState([]);
+  const [userListLoading, setUserListLoading] = useState(false);
+
+  const handleFollowersClick = async () => {
+    setUserListTitle("Followers");
+    setUserListOpen(true);
+    setUserListLoading(true);
+    try {
+      const response = await userService.getFollowers(effectiveProfileId);
+      // Handle pagination wrapper if present
+      const users = response.results || response.users || response.data || (Array.isArray(response) ? response : []);
+      setUserListUsers(users);
+    } catch (error) {
+      console.error("Error fetching followers:", error);
+      setUserListUsers([]);
+    } finally {
+      setUserListLoading(false);
+    }
   };
 
-  const handleFollowingClick = () => {
-    console.log("Following clicked");
+  const handleFollowingClick = async () => {
+    setUserListTitle("Following");
+    setUserListOpen(true);
+    setUserListLoading(true);
+    try {
+      const response = await userService.getFollowing(effectiveProfileId);
+      // Handle pagination wrapper if present
+      const users = response.results || response.users || response.data || (Array.isArray(response) ? response : []);
+      setUserListUsers(users);
+    } catch (error) {
+      console.error("Error fetching following:", error);
+      setUserListUsers([]);
+    } finally {
+      setUserListLoading(false);
+    }
   };
 
   const loadProfileData = useCallback(async () => {
@@ -769,7 +801,7 @@ const ProfilePage = () => {
                       variant="body2"
                       sx={{ color: colors.text.secondary }}
                     >
-                      <strong>{followersCount}</strong> followers
+                      <strong>{followersCount}</strong> {t("profile.followers")}
                     </Typography>
                   </Box>
                   <Box
@@ -787,7 +819,7 @@ const ProfilePage = () => {
                       variant="body2"
                       sx={{ color: colors.text.secondary }}
                     >
-                      <strong>{followingCount}</strong> following
+                      <strong>{followingCount}</strong> {t("profile.following")}
                     </Typography>
                   </Box>
                 </Box>
@@ -857,8 +889,8 @@ const ProfilePage = () => {
                       {followLoading
                         ? "..."
                         : isFollowing
-                          ? "Unfollow"
-                          : "Follow"}
+                          ? t("profile.unfollow")
+                          : t("profile.follow")}
                     </Button>
                     <Button
                       onClick={handleUserReport}
@@ -1304,6 +1336,16 @@ const ProfilePage = () => {
         user={user}
         role={roleTab === 0 ? "volunteer" : "requester"}
       />
+
+      {/* User List Modal */}
+      <UserListModal
+        open={userListOpen}
+        onClose={() => setUserListOpen(false)}
+        title={userListTitle}
+        users={userListUsers}
+        loading={userListLoading}
+      />
+
       {/* User Report Dialog */}
       <UserReportModal
         open={userReportDialogOpen}
