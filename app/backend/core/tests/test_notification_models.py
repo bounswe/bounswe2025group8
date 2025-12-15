@@ -204,6 +204,29 @@ class NotificationModelTests(TestCase):
         self.notification.mark_as_read()
         refreshed = Notification.objects.get(id=self.notification.id)
         self.assertTrue(refreshed.is_read)
+    
+    def test_badge_earned_notification(self):
+        """Test badge earned notification"""
+        from core.models import Badge, BadgeType
+        
+        # Create a badge
+        badge = Badge.objects.create(
+            badge_type=BadgeType.THE_ICEBREAKER,
+            name='Icebreaker',
+            description='Posted your first comment'
+        )
+        
+        # Send badge notification
+        notification = Notification.send_badge_earned_notification(self.user1, badge)
+        
+        # Verify notification
+        self.assertIsNotNone(notification)
+        self.assertEqual(notification.user, self.user1)
+        self.assertEqual(notification.type, NotificationType.BADGE_EARNED)
+        self.assertIsNone(notification.related_task)  # Badge notifications don't have related tasks
+        self.assertIn(badge.name, notification.content)
+        self.assertIn(badge.description, notification.content)
+        self.assertIn('Congratulations', notification.content)
 
 
 class NotificationTypeEnumTests(TestCase):
@@ -217,9 +240,11 @@ class NotificationTypeEnumTests(TestCase):
         self.assertEqual(NotificationType.TASK_COMPLETED, 'TASK_COMPLETED')
         self.assertEqual(NotificationType.TASK_CANCELLED, 'TASK_CANCELLED')
         self.assertEqual(NotificationType.NEW_REVIEW, 'NEW_REVIEW')
+        self.assertEqual(NotificationType.BADGE_EARNED, 'BADGE_EARNED')
         self.assertEqual(NotificationType.SYSTEM_NOTIFICATION, 'SYSTEM_NOTIFICATION')
         
         # Test choices format
         choices = NotificationType.choices
         self.assertTrue(('TASK_CREATED', 'Task Created') in choices)
         self.assertTrue(('NEW_REVIEW', 'New Review') in choices)
+        self.assertTrue(('BADGE_EARNED', 'Badge Earned') in choices)
