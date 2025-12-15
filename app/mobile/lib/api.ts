@@ -43,9 +43,9 @@ const API_HOST = Platform.select({
 // Use environment variable if present (from .env via Constants.expoConfig?.extra?.backendBaseUrl), otherwise fallback to dynamic host
 const ENV_BACKEND_URL = Constants.expoConfig?.extra?.backendBaseUrl;
 
-//export const BACKEND_BASE_URL = ENV_BACKEND_URL ? ENV_BACKEND_URL : `http://${API_HOST}:${port}`;
+export const BACKEND_BASE_URL = ENV_BACKEND_URL ? ENV_BACKEND_URL : `http://${API_HOST}:${port}`;
 
-export const BACKEND_BASE_URL = `http://${API_HOST}:${port}`;
+//export const BACKEND_BASE_URL = `http://${API_HOST}:${port}`;
 
 export const API_BASE_URL = `${BACKEND_BASE_URL}/api`;
 

@@ -18,6 +18,7 @@ import { useRouter } from 'expo-router';
 import { getTasks, type Task, type Category as ApiCategory } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useTranslation } from 'react-i18next';
+import NotificationIconWithBadge from '../components/ui/NotificationIconWithBadge';
 
 export default function Categories() {
   const { colors } = useTheme();
@@ -94,7 +95,7 @@ export default function Categories() {
             accessibilityRole="button"
             accessibilityLabel="Open notifications"
           >
-            <Ionicons name="notifications-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
+            <NotificationIconWithBadge style={{ marginRight: 12 }} />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => router.push('/settings')}

@@ -13,15 +13,14 @@
         "next": "Next",
         "loading": "Loading...",
         "category": "Category",
-        "goBack": "Go Back",
+        "goBack": "Go back",
         "time": {
             "justNow": "Just now",
-            "minutesAgo": "{{count}} minute ago",
-            "minutesAgo_other": "{{count}} minutes ago",
-            "hoursAgo": "{{count}} hour ago",
-            "hoursAgo_other": "{{count}} hours ago",
-            "daysAgo": "{{count}} day ago",
-            "daysAgo_other": "{{count}} days ago"
+            "minutesAgo_other": "minutes ago",
+            "hoursAgo": "hours ago",
+            "hoursAgo_other": "hours ago",
+            "daysAgo": "days ago",
+            "daysAgo_other": "days ago"
         },
         "low": "Low",
         "medium": "Medium",

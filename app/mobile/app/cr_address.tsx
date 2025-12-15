@@ -7,6 +7,7 @@ import { createTask, uploadTaskPhoto } from '../lib/api';
 import { AddressFields } from '../components/forms/AddressFields';
 import { AddressFieldsValue, emptyAddress, formatAddress } from '../utils/address';
 import { useTranslation } from 'react-i18next';
+import NotificationIconWithBadge from '../components/ui/NotificationIconWithBadge';
 
 interface TaskParams {
   title: string;
@@ -155,7 +156,7 @@ export default function CRAddress() {
               accessibilityRole="button"
               accessibilityLabel="Open notifications"
             >
-              <Ionicons name="notifications-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
+              <NotificationIconWithBadge style={{ marginRight: 12 }} />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push('/settings')}

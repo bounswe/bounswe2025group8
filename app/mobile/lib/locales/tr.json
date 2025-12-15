@@ -13,15 +13,13 @@
         "next": "İleri",
         "loading": "Yükleniyor...",
         "category": "Kategori",
-        "goBack": "Geri Dön",
+        "goBack": "Geri dön",
         "time": {
-            "justNow": "Az önce",
-            "minutesAgo": "{{count}} dakika önce",
-            "minutesAgo_other": "{{count}} dakika önce",
-            "hoursAgo": "{{count}} saat önce",
-            "hoursAgo_other": "{{count}} saat önce",
-            "daysAgo": "{{count}} gün önce",
-            "daysAgo_other": "{{count}} gün önce"
+            "minutesAgo_other": "dakika önce",
+            "hoursAgo": "saat önce",
+            "hoursAgo_other": "saat önce",
+            "daysAgo": "gün önce",
+            "daysAgo_other": "gün önce"
         },
         "low": "Düşük",
         "medium": "Orta",

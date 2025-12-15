@@ -22,12 +22,14 @@ import { useAuth } from '../lib/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import i18n from '../lib/i18n';
+import { useNotifications } from '../lib/NotificationContext';
 
 export default function Feed() {
   const { colors } = useTheme();
   const router = useRouter();
   const { user } = useAuth();
   const { t } = useTranslation();
+  const { unreadCount } = useNotifications();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [popularTasks, setPopularTasks] = useState<Task[]>([]);
   const [followingTasks, setFollowingTasks] = useState<Task[]>([]);
@@ -202,9 +204,8 @@ export default function Feed() {
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push('/notifications')}
-              style={{ marginRight: 12 }}
+              style={{ marginRight: 12, position: 'relative' }}
               accessible
-
               accessibilityRole="button"
               accessibilityLabel="Open notifications"
             >
@@ -215,6 +216,26 @@ export default function Feed() {
                 accessible={false}
                 importantForAccessibility="no"
               />
+              {unreadCount > 0 && (
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: -4,
+                    right: -4,
+                    backgroundColor: themeColors.error,
+                    borderRadius: 10,
+                    minWidth: 18,
+                    height: 18,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingHorizontal: 4,
+                  }}
+                >
+                  <Text style={{ color: 'white', fontSize: 10, fontWeight: 'bold' }}>
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </Text>
+                </View>
+              )}
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push('/settings')}

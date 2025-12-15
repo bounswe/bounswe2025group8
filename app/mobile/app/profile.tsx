@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import type { ThemeTokens } from '../constants/Colors';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from 'react-i18next';
+import NotificationIconWithBadge from '../components/ui/NotificationIconWithBadge';
 
 export default function ProfileScreen() {
   const { colors } = useTheme();
@@ -609,7 +610,7 @@ export default function ProfileScreen() {
                 accessibilityRole="button"
                 accessibilityLabel="Open notifications"
               >
-                <Ionicons name="notifications-outline" size={28} color={themeColors.text} />
+                <NotificationIconWithBadge size={28} style={{ marginRight: 16 }} />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => router.push('/settings')}
