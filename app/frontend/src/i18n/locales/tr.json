@@ -1379,5 +1379,52 @@
   },
   "common": {
     "retry": "Tekrar Dene"
+  },
+  "communityGuidelines": {
+    "pageTitle": "Topluluk Kuralları",
+    "introduction": {
+      "welcome": "Neighborhood Assistance Board topluluğuna hoş geldiniz! Burada olmanızdan gerçekten mutluyuz.",
+      "simpleIdea": "Bu platform basit bir fikir üzerine kuruldu: komşuların komşulara her türlü konuda yardım etmesi. Bazen yardım, market poşetlerini taşımak veya evdeki küçük bir sorunu çözmek anlamına gelir ancak destek aynı zamanda yerel hikayeler paylaşmak, özel ders vermek, çocuklara kitap okumak veya sadece deneyiminize dayanarak rehberlik etmek gibi de görünebilir.",
+      "contribution": "Herkesin katkıda bulunabileceği değerli bir şeyler vardır. Yaşlı bir komşu mahallenin tarihini paylaşabilir, bir öğrenci ödev yardımında bulunabilir, yetenekli bir gönüllü küçük tamiratlara yardımcı olabilir ve bunların hepsi eşit derecede anlamlıdır.",
+      "goal": "Amacımız, her yaştan, geçmişten ve yetenekten insanın kendileri için doğru hissettiren şekilde katılım sağlayabileceği kapsayıcı bir alan yaratmaktır. Burada nezaket önemlidir, saygı önemlidir ve büyük veya küçük her katkı topluluğumuzu daha güçlü hale getirmeye yardımcı olur.",
+      "safety": "Bu kurallar, Neighborhood Assistance Board'un herkes için güvenli, sıcak ve destekleyici kalmasını sağlamak için buradadır."
+    },
+    "corePrinciples": {
+      "title": "Temel İlkeler",
+      "p1Title": "1. Nazik ve Saygılı Olun",
+      "p1Desc": "Herkese empati ve anlayışla davranın. Taciz, hakaret veya kaba davranışlara tolerans gösterilmez.",
+      "p2Title": "2. Ayrımcılığa Sıfır Tolerans",
+      "p2Desc": "Şunlara dayalı hiçbir ayrımcılık türüne izin verilmez: Irk veya etnik köken, Cinsiyet veya cinsiyet kimliği, Cinsel yönelim, Din veya inanç, Engellilik, Yaş, Sosyoekonomik durum, Veya başka herhangi bir kişisel özellik. Herkes güvenli ve eşit bir deneyimi hak eder.",
+      "p3Title": "3. Gizliliği Koruyun",
+      "p3Desc": "Başkalarının kişisel bilgilerine saygı gösterin. Adresleri, telefon numaralarını veya özel tartışmaları platform dışında paylaşmayın. Yerleşik iletişim özelliklerini sorumlu bir şekilde kullanın.",
+      "p4Title": "4. Dürüst ve Şeffaf Olun",
+      "p4Desc": "Görev oluştururken veya kabul ederken doğru ayrıntılar sağlayın. Bir görevi artık tamamlayamayacaksanız, istek sahibini derhal bilgilendirin.",
+      "p5Title": "5. Önce Güvenlik",
+      "p5Desc": "Yalnızca kendinizi rahat hissettiğiniz görevleri kabul edin. Şüpheli veya güvensiz davranışları moderasyon araçlarını kullanarak bildirin.",
+      "p6Title": "6. Etkileşimleri Amaçlı Tutun",
+      "p6Desc": "Platform yardım içindir reklam, spam veya kendi tanıtımınız için değil. Yalnızca ilgili ve yararlı içerik yayınlayın.",
+      "p7Title": "7. İş Akışına Saygı Gösterin",
+      "p7Desc": "Topluluk içinde sorunsuz işbirliği sağlamak için görev atama, gönüllü süreçleri ve moderasyon kurallarına uyun."
+    },
+    "contentRules": {
+      "title": "İçerik Kuralları",
+      "allowedTitle": "İzin Verilenler",
+      "allowedList": "Yardım istekleri (örn. market alışverişi, özel ders, küçük tamiratlar); Gönüllü onayları ve ilerleme güncellemeleri; Saygılı, yararlı iletişim; Görevle ilgili sorular ve açıklamalar",
+      "notAllowedTitle": "İzin Verilmeyenler",
+      "notAllowedList": "Nefret söylemi veya ayrımcı dil; Taciz, tehdit veya saldırgan davranış; Yanıltıcı bilgi veya aldatıcı içerik; Ticari reklamlar veya siyasi tanıtım; Başkasının özel bilgilerini paylaşmak"
+    },
+    "responsibility": {
+      "title": "Topluluk Sorumluluğu",
+      "desc": "Her olumlu etkileşim mahallemizi güçlendirir. Bu kuralları ihlal eden bir davranışla karşılaşırsanız, moderasyon ekibinin uygun işlemi yapabilmesi için lütfen bildirin."
+    },
+    "thankYou": {
+      "title": "Teşekkür Ederiz",
+      "desc": "Neighborhood Assistance Board'un bir parçası olduğunuz için teşekkür ederiz. Nezaketiniz ve yardım etme isteğiniz gerçek bir fark yaratıyor."
+    }
+  },
+  "registerPageAgreement": {
+    "agreeTermsWithGuidelines": "Kabul ediyorum:",
+    "communityGuideline": "Topluluk Kuralları",
+    "and": "ve"
   }
 }

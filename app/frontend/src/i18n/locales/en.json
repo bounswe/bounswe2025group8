@@ -1383,5 +1383,52 @@
   },
   "common": {
     "retry": "Retry"
+  },
+  "communityGuidelines": {
+    "pageTitle": "Community Guidelines",
+    "introduction": {
+      "welcome": "Welcome to the Neighborhood Assistance Board community! We’re really happy to have you here.",
+      "simpleIdea": "This platform was built around a simple idea: neighbors helping neighbors in all kinds of ways. Sometimes help means carrying groceries or fixing a small issue at home but support can also look like sharing local stories, offering tutoring, reading to children, or simply giving guidance based on your experience.",
+      "contribution": "Everyone has something valuable to contribute. An elderly neighbor might share the history of the neighborhood, a student might offer homework help, a skilled volunteer might assist with small repairs and all of these are equally meaningful.",
+      "goal": "Our goal is to create an inclusive space where people of all ages, backgrounds, and abilities can participate in the way that feels right for them. Here, kindness matters, respect matters, and every contribution big or small helps make our community stronger.",
+      "safety": "These guidelines are here to ensure the Neighborhood Assistance Board stays safe, welcoming, and supportive for everyone."
+    },
+    "corePrinciples": {
+      "title": "Core Principles",
+      "p1Title": "1. Be Kind and Respectful",
+      "p1Desc": "Treat everyone with empathy and understanding. Harassment, insults, or rude behavior are not tolerated.",
+      "p2Title": "2. Zero Tolerance for Discrimination",
+      "p2Desc": "No form of discrimination is allowed based on: Race or ethnicity, Gender or gender identity, Sexual orientation, Religion or belief, Disability, Age, Socioeconomic status, Or any other personal attribute. Everyone deserves a safe and equal experience.",
+      "p3Title": "3. Protect Privacy",
+      "p3Desc": "Respect others’ personal information. Do not share addresses, phone numbers, or private discussions outside the platform. Use the built-in communication features responsibly.",
+      "p4Title": "4. Be Honest and Transparent",
+      "p4Desc": "Provide accurate details when creating or accepting tasks. If you can no longer complete a task, inform the requester promptly.",
+      "p5Title": "5. Safety First",
+      "p5Desc": "Accept only tasks you feel comfortable with. Report suspicious or unsafe behavior using moderation tools.",
+      "p6Title": "6. Keep Interactions Purposeful",
+      "p6Desc": "The platform is for assistance not advertising, spam, or self-promotion. Post only relevant and helpful content.",
+      "p7Title": "7. Respect the Workflow",
+      "p7Desc": "Follow task assignment, volunteer processes, and moderation rules to ensure smooth collaboration within the community."
+    },
+    "contentRules": {
+      "title": "Content Rules",
+      "allowedTitle": "Allowed",
+      "allowedList": "Assistance requests (e.g., groceries, tutoring, minor repairs); Volunteer confirmations and progress updates; Respectful, helpful communication; Task-related questions and clarifications",
+      "notAllowedTitle": "Not Allowed",
+      "notAllowedList": "Hate speech or discriminatory language; Harassment, threats, or aggressive behavior; Misinformation or deceptive content; Commercial ads or political promotion; Sharing someone else’s private information"
+    },
+    "responsibility": {
+      "title": "Community Responsibility",
+      "desc": "Every positive interaction strengthens our neighborhood. If you encounter behavior that violates these guidelines, please report it so the moderation team can take appropriate action."
+    },
+    "thankYou": {
+      "title": "Thank You",
+      "desc": "Thank you for being a part of the Neighborhood Assistance Board. Your kindness and willingness to help make a real difference."
+    }
+  },
+  "registerPageAgreement": {
+    "agreeTermsWithGuidelines": "I agree with",
+    "communityGuideline": "Community Guideline",
+    "and": "and"
   }
 }

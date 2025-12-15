@@ -20,6 +20,8 @@ import AdminTaskReports from "./pages/Admin/AdminTaskReports.jsx";
 import AdminUserReports from "./pages/Admin/AdminUserReports.jsx";
 import AdminReportedUsers from "./pages/Admin/AdminReportedUsers.jsx";
 import Notifications from './pages/Notifications.tsx';
+import CommunityGuidelinesPage from "./pages/CommunityGuidelinesPage.jsx";
+
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './contexts/ThemeContext'
 import RouteFocusHandler from './components/RouteFocusHandler'
@@ -35,6 +37,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/community-guidelines" element={<CommunityGuidelinesPage />} />
 
           {/* All other routes use MainLayout which renders an <Outlet /> */}
           <Route path="/" element={<MainLayout />}>
