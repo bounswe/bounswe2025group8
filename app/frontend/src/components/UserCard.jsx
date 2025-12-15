@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { Avatar, Rating } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../hooks/useTheme";
@@ -10,6 +11,7 @@ import { useTheme } from "../hooks/useTheme";
  * @param {Function} props.onClick - Optional click handler (defaults to navigating to profile)
  */
 const UserCard = ({ user, onClick }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { colors } = useTheme();
 
@@ -35,7 +37,10 @@ const UserCard = ({ user, onClick }) => {
     return "U";
   };
 
-  const fullName = [user.name, user.surname].filter(Boolean).join(" ") || user.username || "Unknown User";
+  const fullName =
+    [user.name, user.surname].filter(Boolean).join(" ") ||
+    user.username ||
+    t("userCard.unknownUser");
 
   return (
     <div
@@ -48,7 +53,7 @@ const UserCard = ({ user, onClick }) => {
       }}
       role="button"
       tabIndex={0}
-      aria-label={`View profile of ${fullName}`}
+      aria-label={t("userCard.viewProfileOf", { name: fullName })}
       style={{
         display: "flex",
         alignItems: "center",
@@ -128,7 +133,14 @@ const UserCard = ({ user, onClick }) => {
         )}
         {/* Rating */}
         {user.rating !== undefined && user.rating !== null && (
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "8px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginTop: "8px",
+            }}
+          >
             <Rating
               value={user.rating || 0}
               precision={0.1}

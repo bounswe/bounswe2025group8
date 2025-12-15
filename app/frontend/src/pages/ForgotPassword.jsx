@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import useAuth from "../features/authentication/hooks/useAuth";
 import logoImage from "../assets/logo.png";
 import { useTheme } from "../hooks/useTheme";
@@ -7,6 +8,7 @@ import EmailIcon from "@mui/icons-material/Email";
 
 const ForgotPassword = () => {
   const { colors, theme, setTheme } = useTheme();
+  const { t, i18n } = useTranslation();
   const [email, setEmail] = useState("");
   const [forgotError, setForgotError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -21,7 +23,7 @@ const ForgotPassword = () => {
       const result = await forgotPassword(email);
 
       if (result && result.success) {
-        setSuccessMessage("Password reset link sent to your email!");
+        setSuccessMessage(t("forgotPassword.passwordResetLinkSent"));
 
         // In development mode, if token is returned, show it
         if (result.token) {
@@ -31,7 +33,9 @@ const ForgotPassword = () => {
       }
     } catch (error) {
       setForgotError(
-        "Failed to reset password: " + (error.message || "Request failed")
+        t("forgotPassword.failedToResetPassword") +
+          ": " +
+          (error.message || t("forgotPassword.requestFailed"))
       );
     }
   };
@@ -41,13 +45,14 @@ const ForgotPassword = () => {
       className="flex min-h-screen items-center justify-center"
       style={{ backgroundColor: colors.background.primary }}
     >
-      {/* Theme Toggle Button */}
-      <div className="fixed top-4 right-4 z-50">
+      {/* Theme and Language Toggle Buttons */}
+      <div className="fixed top-4 right-4 z-50 flex gap-2">
+        {/* Language Selector */}
         <select
-          value={theme}
-          onChange={(e) => setTheme(e.target.value)}
+          value={i18n.language}
+          onChange={(e) => i18n.changeLanguage(e.target.value)}
           className="px-3 py-2 rounded-md border text-sm focus:outline-none"
-          aria-label="Theme selection"
+          aria-label={t("forgotPassword.changeLanguage")}
           style={{
             backgroundColor: colors.background.secondary,
             color: colors.text.primary,
@@ -58,9 +63,29 @@ const ForgotPassword = () => {
           }
           onBlur={(e) => (e.target.style.boxShadow = "none")}
         >
-          <option value="light">Light Mode</option>
-          <option value="dark">Dark Mode</option>
-          <option value="high-contrast">High Contrast</option>
+          <option value="en">{t("english")}</option>
+          <option value="tr">{t("turkish")}</option>
+        </select>
+
+        {/* Theme Selector */}
+        <select
+          value={theme}
+          onChange={(e) => setTheme(e.target.value)}
+          className="px-3 py-2 rounded-md border text-sm focus:outline-none"
+          aria-label={t("forgotPassword.themeSelection")}
+          style={{
+            backgroundColor: colors.background.secondary,
+            color: colors.text.primary,
+            borderColor: colors.border.primary,
+          }}
+          onFocus={(e) =>
+            (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+          }
+          onBlur={(e) => (e.target.style.boxShadow = "none")}
+        >
+          <option value="light">{t("lightMode")}</option>
+          <option value="dark">{t("darkMode")}</option>
+          <option value="high-contrast">{t("highContrast")}</option>
         </select>
       </div>
 
@@ -71,15 +96,25 @@ const ForgotPassword = () => {
       >
         {/* Logo and Title updated to be side by side */}
         <div className="flex flex-row items-center justify-center mb-1">
-          <img src={logoImage} alt="Logo" width="160" height="160" />
+          <img
+            src={logoImage}
+            alt={t("forgotPassword.logoAlt")}
+            width="160"
+            height="160"
+          />
           <h1
             className="text-4xl font-bold ml-2"
             style={{ color: colors.text.primary }}
             id="forgot-page-title"
           >
-            Neighborhood
-            <br />
-            Assistance Board
+            {t("forgotPassword.pageTitle")
+              .split("\n")
+              .map((line, i) => (
+                <span key={i}>
+                  {line}
+                  {i === 0 && <br />}
+                </span>
+              ))}
           </h1>
         </div>
 
@@ -96,14 +131,13 @@ const ForgotPassword = () => {
                 className="font-bold text-base mb-1.5"
                 style={{ color: colors.text.primary }}
               >
-                Forgot Password
+                {t("forgotPassword.title")}
               </p>
               <p
                 className="text-sm mb-3"
                 style={{ color: colors.text.secondary }}
               >
-                Enter your email and we'll send you a link to reset your
-                password
+                {t("forgotPassword.description")}
               </p>
 
               {/* Show either the forgot error or the Redux error */}
@@ -165,7 +199,7 @@ const ForgotPassword = () => {
                       border: 0,
                     }}
                   >
-                    Email
+                    {t("forgotPassword.emailLabel")}
                   </label>
                   <input
                     required
@@ -180,7 +214,7 @@ const ForgotPassword = () => {
                     }
                     onBlur={(e) => (e.target.style.boxShadow = "none")}
                     id="email"
-                    placeholder="Email"
+                    placeholder={t("forgotPassword.emailPlaceholder")}
                     name="email"
                     type="email"
                     autoComplete="email"
@@ -216,7 +250,7 @@ const ForgotPassword = () => {
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
                   disabled={loading}
                 >
-                  Send Reset Link
+                  {t("forgotPassword.sendResetLink")}
                 </button>
 
                 <div className="text-center mb-2">
@@ -231,7 +265,7 @@ const ForgotPassword = () => {
                       (e.currentTarget.style.color = colors.brand.primary)
                     }
                   >
-                    Back to login
+                    {t("forgotPassword.backToLogin")}
                   </RouterLink>
                 </div>
               </form>

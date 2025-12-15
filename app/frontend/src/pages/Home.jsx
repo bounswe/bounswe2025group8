@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import CategoryCard from "../components/CategoryCard";
 import RequestCard from "../components/RequestCard";
 import * as categoryService from "../features/category/services/categoryService";
 import * as requestService from "../features/request/services/requestService";
 import { toAbsoluteUrl } from "../utils/url";
-import { getCategoryImage } from "../constants/categories";
+import { getCategoryImage, getCategoryName } from "../constants/categories";
 import { useTheme } from "../hooks/useTheme";
 import { useAppSelector } from "../store/hooks";
 import { selectIsAuthenticated } from "../features/authentication/store/authSlice";
@@ -14,6 +15,7 @@ const Home = () => {
   const navigate = useNavigate();
   const { colors } = useTheme();
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const { t } = useTranslation();
   const handleCategoryClick = (categoryId) => {
     // Navigate to requests filtered by this category
     navigate(`/requests?category=${categoryId}`);
@@ -40,7 +42,7 @@ const Home = () => {
       // Transform API response to match UI component expectations
       const formattedCategories = popularCategories.map((category) => ({
         id: category.value,
-        title: category.name,
+        title: getCategoryName(category.value, t),
         image: getCategoryImage(category.value),
         requestCount: category.task_count,
       }));
@@ -50,7 +52,7 @@ const Home = () => {
       console.error("Failed to fetch categories:", err);
       setError((prev) => ({
         ...prev,
-        categories: "Failed to load categories",
+        categories: "failedToLoadCategories",
       }));
     } finally {
       setLoading((prev) => ({ ...prev, categories: false }));
@@ -76,7 +78,7 @@ const Home = () => {
       console.error("Failed to fetch popular requests:", err);
       setError((prev) => ({
         ...prev,
-        requests: "Failed to load popular requests",
+        requests: "failedToLoadPopularRequests",
       }));
       // Clear requests on error
       setRequests([]);
@@ -120,8 +122,7 @@ const Home = () => {
   useEffect(() => {
     fetchCategories();
     fetchRequests();
-    fetchFollowedRequests();
-  }, [isAuthenticated]);
+  }, [t, isAuthenticated]);
   // Using the centralized getCategoryImage function from constants/categories.js
 
   return (
@@ -143,7 +144,7 @@ const Home = () => {
             style={{ color: colors.text.primary }}
             id="popular-categories-title"
           >
-            Popular Categories
+            {t("home.popularCategories")}
           </h2>
           {categories.length > 4 && (
             <button
@@ -165,9 +166,9 @@ const Home = () => {
               onBlur={(e) => {
                 e.currentTarget.style.outline = "none";
               }}
-              aria-label="View all categories"
+              aria-label={t("home.viewAllCategories")}
             >
-              See All
+              {t("home.seeAll")}
             </button>
           )}
         </div>
@@ -177,7 +178,7 @@ const Home = () => {
             className="flex justify-center py-12"
             role="status"
             aria-live="polite"
-            aria-label="Loading popular categories"
+            aria-label={t("home.loadingPopularCategories")}
             aria-busy="true"
           >
             <div
@@ -193,7 +194,7 @@ const Home = () => {
               style={{ color: colors.semantic.error }}
               id="categories-error"
             >
-              {error.categories}
+              {t(`home.${error.categories}`)}
             </p>
             <button
               className="px-4 py-2 rounded transition-colors"
@@ -218,7 +219,7 @@ const Home = () => {
               }}
               onClick={fetchCategories}
             >
-              Try Again
+              {t("home.tryAgain")}
             </button>
           </div>
         ) : (
@@ -237,7 +238,7 @@ const Home = () => {
             ) : (
               <div className="col-span-full text-center py-8">
                 <p style={{ color: colors.text.secondary }}>
-                  No categories available
+                  {t("home.noCategoriesAvailable")}
                 </p>
               </div>
             )}
@@ -340,7 +341,7 @@ const Home = () => {
             style={{ color: colors.text.primary }}
             id="popular-requests-title"
           >
-            Popular Requests
+            {t("home.popularRequests")}
           </h2>
           {requests.length > 6 && (
             <button
@@ -362,9 +363,9 @@ const Home = () => {
               onBlur={(e) => {
                 e.currentTarget.style.outline = "none";
               }}
-              aria-label="View all requests"
+              aria-label={t("home.viewAllRequests")}
             >
-              See All
+              {t("home.seeAll")}
             </button>
           )}
         </div>
@@ -374,7 +375,7 @@ const Home = () => {
             className="flex justify-center py-12"
             role="status"
             aria-live="polite"
-            aria-label="Loading popular requests"
+            aria-label={t("home.loadingPopularRequests")}
             aria-busy="true"
           >
             <div
@@ -390,7 +391,7 @@ const Home = () => {
               style={{ color: colors.semantic.error }}
               id="requests-error"
             >
-              {error.requests}
+              {t(`home.${error.requests}`)}
             </p>
             <button
               className="px-4 py-2 rounded transition-colors"
@@ -415,7 +416,7 @@ const Home = () => {
               }}
               onClick={fetchRequests}
             >
-              Try Again
+              {t("home.tryAgain")}
             </button>
           </div>
         ) : (
@@ -432,7 +433,7 @@ const Home = () => {
             ) : (
               <div className="col-span-full text-center py-8">
                 <p style={{ color: colors.text.secondary }}>
-                  No requests available
+                  {t("home.noRequestsAvailable")}
                 </p>
               </div>
             )}
@@ -441,7 +442,7 @@ const Home = () => {
       </div>
       {/* Page Title for landmark association */}
       <h1 id="home-page-title" className="sr-only">
-        Home
+        {t("home.pageTitle")}
       </h1>
     </main>
   );

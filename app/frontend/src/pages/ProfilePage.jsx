@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Box,
   Container,
@@ -35,7 +36,9 @@ import {
   fetchUserReviews,
   fetchUserCreatedRequests,
   fetchUserVolunteeredRequests,
+
   fetchUserBadges,
+  fetchAllBadges,
   uploadProfilePicture,
   clearUpdateSuccess,
   clearUploadSuccess,
@@ -58,8 +61,10 @@ import { useTheme } from "../hooks/useTheme";
 import { toAbsoluteUrl } from "../utils/url";
 import userService from "../services/userService";
 // No need for CSS module import as we're using Material UI's sx prop
+import { checkBadges } from "../features/badges/services/badgeService";
 
 const ProfilePage = () => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const { userId } = useParams();
   const navigate = useNavigate();
@@ -92,9 +97,9 @@ const ProfilePage = () => {
   console.log(
     "Condition check for Edit button:",
     userId === "current" ||
-      userId === "me" ||
-      !userId ||
-      userId === loggedInUserId
+    userId === "me" ||
+    !userId ||
+    userId === loggedInUserId
   );
 
   const dispatch = useDispatch();
@@ -104,9 +109,11 @@ const ProfilePage = () => {
     createdRequests,
     volunteeredRequests,
     badges = [],
+    allBadges = [],
     loading,
     error,
   } = useSelector((state) => state.profile || {});
+
   const auth = useSelector((s) => s.auth);
   const authUserId = auth?.user?.id != null ? String(auth.user.id) : null;
   const lsUserRaw = localStorage.getItem("user");
@@ -216,7 +223,11 @@ const ProfilePage = () => {
         ).unwrap();
       }
 
+
+
+      // Fetch user badges AND all available badges
       await dispatch(fetchUserBadges(currentId)).unwrap();
+      await dispatch(fetchAllBadges()).unwrap();
     } catch (err) {
       console.error("Failed to fetch profile data:", err);
     }
@@ -430,10 +441,44 @@ const ProfilePage = () => {
 
   // No need for client-side pagination since we're using server pagination now
 
+  // Handle badge manuall check
+  const handleCheckBadges = async () => {
+    try {
+      await checkBadges();
+      setRefreshData(true); // Trigger reload to get new badges
+      alert(t("profile.badges.checkSuccess") || "Badges refreshed successfully!");
+    } catch (error) {
+      console.error("Error checking badges:", error);
+    }
+  };
+
   // Get earned and in-progress badges
-  const badgesToUse = badges.length > 0 ? badges : mockBadges;
-  const earnedBadges = badgesToUse.filter((badge) => badge.earned);
-  const inProgressBadges = badgesToUse.filter((badge) => !badge.earned);
+  // badges = UserBadge objects { id, user_id, badge: {}, earned_at }
+  // allBadges = BadgeDefinition objects { id, badge_type, ... }
+
+  // If badges array is empty but we have allBadges, it means user has 0 badges
+  // If both are empty, we might be loading or failed
+  // Ensure badges is an array before mapping
+  // Handle pagination in badges/allBadges if present
+  const safeBadges = Array.isArray(badges) ? badges : (badges?.results || badges?.data || []);
+  const safeAllBadges = Array.isArray(allBadges) ? allBadges : (allBadges?.results || allBadges?.data || []);
+
+  const earnedBadges = safeBadges.map(userBadge => ({
+    ...(userBadge.badge || userBadge), // Handle if badge is nested or flat
+    earned_at: userBadge.earned_at || userBadge.earnedDate, // Add earned date
+    user_badge_id: userBadge.id,
+    earned: true
+  }));
+
+  const earnedBadgeIds = new Set(earnedBadges.map(b => b.id));
+
+  // In progress = All badges that are NOT in earned badges
+  const inProgressBadges = safeAllBadges
+    .filter(badge => !earnedBadgeIds.has(badge.id))
+    .map(badge => ({
+      ...badge,
+      earned: false
+    }));
 
   // Check if the profile being viewed belongs to a banned user
   const isUserBanned = user?.name === "*deleted";
@@ -471,43 +516,31 @@ const ProfilePage = () => {
   };
 
   const handleUserReportSuccess = () => {
-    alert(
-      "Thank you for reporting this user! Our team will review it shortly."
-    );
+    alert(t("profile.report.successMessage"));
   };
 
   // Handler for follow/unfollow
-  const handleFollowToggle = async () => {
-    if (followLoading) return;
+const handleFollowToggle = async () => {
+  if (followLoading) return;
 
-    setFollowLoading(true);
-    try {
-      if (isFollowing) {
-        await userService.unfollowUser(effectiveProfileId);
-        setIsFollowing(false);
-        setFollowersCount((prev) => Math.max(0, prev - 1));
-      } else {
-        await userService.followUser(effectiveProfileId);
-        setIsFollowing(true);
-        setFollowersCount((prev) => prev + 1);
-      }
-    } catch (error) {
-      console.error("Error toggling follow:", error);
-      alert(error.message || "Failed to update follow status");
-    } finally {
-      setFollowLoading(false);
+  setFollowLoading(true);
+  try {
+    if (isFollowing) {
+      await userService.unfollowUser(effectiveProfileId);
+      setIsFollowing(false);
+      setFollowersCount((prev) => Math.max(0, prev - 1));
+    } else {
+      await userService.followUser(effectiveProfileId);
+      setIsFollowing(true);
+      setFollowersCount((prev) => prev + 1);
     }
-  };
-
-  // Handler for navigating to followers page
-  const handleFollowersClick = () => {
-    navigate(`/profile/${effectiveProfileId}/followers`);
-  };
-
-  // Handler for navigating to following page
-  const handleFollowingClick = () => {
-    navigate(`/profile/${effectiveProfileId}/following`);
-  };
+  } catch (error) {
+    console.error("Error toggling follow:", error);
+    alert(error?.message || "Failed to update follow status");
+  } finally {
+    setFollowLoading(false);
+  }
+};
 
   if (loading) {
     return (
@@ -545,7 +578,7 @@ const ProfilePage = () => {
           gutterBottom
           sx={{ color: colors.semantic.error }}
         >
-          Failed to load profile
+          {t("profile.error.failedToLoad")}
         </Typography>
         <Typography paragraph sx={{ color: colors.text.secondary }}>
           {error}
@@ -561,9 +594,9 @@ const ProfilePage = () => {
               backgroundColor: colors.brand.secondary,
             },
           }}
-          aria-label="Retry loading profile"
+          aria-label={t("profile.actions.retryLoading")}
         >
-          Retry
+          {t("common.retry")}
         </Button>
       </Box>
     );
@@ -602,8 +635,8 @@ const ProfilePage = () => {
                   <Avatar
                     src={toAbsoluteUrl(
                       user.profile_photo ||
-                        user.profilePhoto ||
-                        user.profilePicture
+                      user.profilePhoto ||
+                      user.profilePicture
                     )}
                     alt={user.name}
                     sx={{ width: 80, height: 80 }}
@@ -658,7 +691,7 @@ const ProfilePage = () => {
                         backgroundColor: "rgba(255,255,255,0.8)",
                         "&:hover": { backgroundColor: "rgba(255,255,255,0.9)" },
                       }}
-                      aria-label="Upload profile picture"
+                      aria-label={t("profile.actions.uploadProfilePicture")}
                     >
                       <input
                         type="file"
@@ -745,9 +778,8 @@ const ProfilePage = () => {
                   <Chip
                     label={`${(
                       Math.round((user.rating || 0) * 10) / 10
-                    ).toFixed(1)} (${
-                      user.reviewCount || reviews?.reviews?.length || 0
-                    } reviews)`}
+                    ).toFixed(1)} (${user.reviewCount || reviews?.reviews?.length || 0
+                      } ${t("profile.reviews.title")})`}
                     onClick={() => setRatingCategoriesOpen(true)}
                     sx={{
                       backgroundColor: colors.brand.primary,
@@ -812,9 +844,8 @@ const ProfilePage = () => {
                       }}
                       variant="outlined"
                     >
-                      Report
+                      {t("profile.actions.report")}
                     </Button>
-                  </Box>
                 )}
               </Box>
             </Box>
@@ -837,9 +868,9 @@ const ProfilePage = () => {
                   textTransform: "none",
                   fontWeight: 500,
                 }}
-                aria-label="Edit profile"
+                aria-label={t("profile.actions.editProfile")}
               >
-                Edit Profile
+                {t("profile.actions.editProfile")}
               </Button>
             )}
           </Box>
@@ -861,7 +892,7 @@ const ProfilePage = () => {
                 component="h2"
                 sx={{ fontWeight: "bold", color: colors.text.primary }}
               >
-                Badges
+                {t("profile.badges.title")}
               </Typography>
               <MuiBadge
                 badgeContent={earnedBadges.length}
@@ -872,8 +903,20 @@ const ProfilePage = () => {
                     color: colors.text.inverse,
                   },
                 }}
-                aria-label={`Earned badges: ${earnedBadges.length}`}
+                aria-label={`${t("profile.badges.earned")}: ${earnedBadges.length
+                  }`}
               />
+              {/* Manual Check Button - Only for own profile */}
+              {canEdit && (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={handleCheckBadges}
+                  sx={{ ml: 'auto' }}
+                >
+                  {t("profile.badges.refreshBadges")}
+                </Button>
+              )}
             </Box>
 
             {/* Earned badges */}
@@ -882,7 +925,7 @@ const ProfilePage = () => {
                 variant="subtitle2"
                 sx={{ mb: 1, color: colors.text.secondary }}
               >
-                Earned Achievements
+                {t("profile.badges.earnedAchievements")}
               </Typography>
               <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mb: 2 }}>
                 {earnedBadges.length > 0 ? (
@@ -894,7 +937,7 @@ const ProfilePage = () => {
                     variant="body2"
                     sx={{ color: colors.text.secondary }}
                   >
-                    No badges earned yet. Complete tasks to earn badges!
+                    {t("profile.badges.noBadgesYet")}
                   </Typography>
                 )}
               </Box>
@@ -912,7 +955,7 @@ const ProfilePage = () => {
                   variant="subtitle2"
                   sx={{ mb: 1, color: colors.text.secondary }}
                 >
-                  In Progress
+                  {t("profile.badges.inProgress")}
                 </Typography>
                 <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
                   {inProgressBadges.map((badge) => (
@@ -943,7 +986,7 @@ const ProfilePage = () => {
                 TabIndicatorProps={{ style: { display: "none" } }}
               >
                 <Tab
-                  label="Volunteer"
+                  label={t("profile.tabs.volunteer")}
                   sx={{
                     borderRadius: "4px",
                     backgroundColor:
@@ -965,7 +1008,7 @@ const ProfilePage = () => {
                   }}
                 />
                 <Tab
-                  label="Requester"
+                  label={t("profile.tabs.requester")}
                   sx={{
                     borderRadius: "4px",
                     backgroundColor:
@@ -997,7 +1040,7 @@ const ProfilePage = () => {
                 <IconButton
                   onClick={() => handleRequestTabChange(0)}
                   sx={{ mr: -1 }}
-                  aria-label="Back to active requests"
+                  aria-label={t("profile.actions.backToActiveRequests")}
                 >
                   <ArrowBack fontSize="small" />
                 </IconButton>
@@ -1019,7 +1062,9 @@ const ProfilePage = () => {
                   },
                 }}
               >
-                {roleTab === 0 ? "Active Volunteering" : "Active Requests"}
+                {roleTab === 0
+                  ? t("profile.requests.activeVolunteering")
+                  : t("profile.requests.activeRequests")}
               </Typography>
               <Typography
                 variant="h6"
@@ -1037,7 +1082,9 @@ const ProfilePage = () => {
                   },
                 }}
               >
-                {roleTab === 0 ? "Past Volunteering" : "Past Requests"}
+                {roleTab === 0
+                  ? t("profile.requests.pastVolunteering")
+                  : t("profile.requests.pastRequests")}
               </Typography>
             </Box>
             {/* Requester-specific instructions when no requests */}
@@ -1050,7 +1097,7 @@ const ProfilePage = () => {
                     gutterBottom
                     sx={{ color: colors.text.secondary }}
                   >
-                    You haven't made any requests yet
+                    {t("profile.requests.noRequestsYet")}
                   </Typography>
                   <Button
                     variant="contained"
@@ -1067,7 +1114,7 @@ const ProfilePage = () => {
                     }}
                     href="/create-request"
                   >
-                    Create New Request
+                    {t("profile.requests.createNewRequest")}
                   </Button>
                 </Box>
               )}
@@ -1081,7 +1128,7 @@ const ProfilePage = () => {
                     gutterBottom
                     sx={{ color: colors.text.secondary }}
                   >
-                    You're not volunteering for any tasks yet
+                    {t("profile.requests.noVolunteeringYet")}
                   </Typography>
                   <Button
                     variant="contained"
@@ -1098,7 +1145,7 @@ const ProfilePage = () => {
                     }}
                     href="/requests"
                   >
-                    Find Tasks to Help With
+                    {t("profile.requests.findTasks")}
                   </Button>
                 </Box>
               )}
@@ -1126,7 +1173,9 @@ const ProfilePage = () => {
                         align="center"
                         sx={{ mb: 4, mt: 2, color: colors.text.secondary }}
                       >
-                        No past {roleTab === 0 ? "volunteering" : "requests"}.
+                        {roleTab === 0
+                          ? t("profile.requests.noPastVolunteering")
+                          : t("profile.requests.noPastRequests")}
                       </Typography>
                     )}
                   </Grid>
@@ -1142,12 +1191,14 @@ const ProfilePage = () => {
                 component="h2"
                 sx={{ fontWeight: "bold", mr: 2, color: colors.text.primary }}
               >
-                Reviews
+                {t("profile.reviews.title")}
               </Typography>
               <Chip
                 label={`${(Math.round((user.rating || 0) * 10) / 10).toFixed(
                   1
-                )} (${reviews?.reviews?.length || 0} reviews)`}
+                )} (${reviews?.reviews?.length || 0} ${t(
+                  "profile.reviews.title"
+                )})`}
                 size="small"
                 sx={{
                   backgroundColor: colors.brand.primary,
@@ -1195,7 +1246,7 @@ const ProfilePage = () => {
                 </>
               ) : (
                 <Typography sx={{ color: colors.text.secondary }}>
-                  No reviews yet.
+                  {t("profile.reviews.noReviewsYet")}
                 </Typography>
               )}
             </Box>

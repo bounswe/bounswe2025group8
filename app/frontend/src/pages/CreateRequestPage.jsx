@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   fetchCategories,
   nextStep,
@@ -17,18 +18,19 @@ import { useAttachTaskPhoto } from "../features/photo";
 import { useTheme } from "../hooks/useTheme";
 import useAuth from "../features/authentication/hooks/useAuth";
 
-const steps = [
-  "General Information",
-  "Upload Photos",
-  "Determine Deadline",
-  "Setup Address",
-];
-
 const CreateRequestPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation();
+
+  const steps = [
+    t("createRequestPage.generalInformation"),
+    t("createRequestPage.uploadPhotos"),
+    t("createRequestPage.determineDeadline"),
+    t("createRequestPage.setupAddress"),
+  ];
   const { currentStep, loading, success, error, formData } = useSelector(
     (state) => state.createRequest
   );
@@ -99,9 +101,7 @@ const CreateRequestPage = () => {
       if (setupAddressRef.current) {
         const isAddressValid = await setupAddressRef.current.validateForm();
         if (!isAddressValid) {
-          setValidationError(
-            "Please select your location (country, city, and district) before creating the request."
-          );
+          setValidationError(t("createRequestPage.validationError"));
           return;
         }
       }
@@ -140,7 +140,7 @@ const CreateRequestPage = () => {
       case 3:
         return <SetupAddressStep ref={setupAddressRef} />;
       default:
-        return <p>Unknown step</p>;
+        return <p>{t("createRequestPage.unknownStep")}</p>;
     }
   };
 
@@ -170,7 +170,7 @@ const CreateRequestPage = () => {
               }}
               id="create-request-title"
             >
-              Create Request &gt; {steps[currentStep]}
+              {t("createRequestPage.createRequest")} &gt; {steps[currentStep]}
             </h1>
           </div>
 
@@ -182,7 +182,7 @@ const CreateRequestPage = () => {
               marginBottom: "32px",
             }}
             role="tablist"
-            aria-label="Create request steps"
+            aria-label={t("createRequestPage.createRequestSteps")}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
               {steps.map((label, index) => (
@@ -299,10 +299,10 @@ const CreateRequestPage = () => {
                   marginBottom: "8px",
                 }}
               >
-                Your request has been submitted successfully!
+                {t("createRequestPage.requestSubmittedSuccess")}
               </h3>
               <p style={{ fontSize: "1rem", color: colors.text.primary }}>
-                You will be redirected to the home page shortly.
+                {t("createRequestPage.redirectingHome")}
               </p>
             </div>
           ) : null}
@@ -331,7 +331,7 @@ const CreateRequestPage = () => {
                   color: colors.semantic.error,
                 }}
               >
-                Error: {error}
+                {t("createRequestPage.error")}: {error}
               </h3>
             </div>
           ) : null}
@@ -412,7 +412,7 @@ const CreateRequestPage = () => {
                     (e.currentTarget.style.color = colors.text.secondary)
                   }
                 >
-                  Back
+                  {t("createRequestPage.back")}
                 </button>
               )}
             </div>
@@ -444,7 +444,9 @@ const CreateRequestPage = () => {
                   (e.currentTarget.style.backgroundColor = colors.brand.primary)
                 }
               >
-                {currentStep === steps.length - 1 ? "Create Request" : "Next"}
+                {currentStep === steps.length - 1
+                  ? t("createRequestPage.createRequest")
+                  : t("createRequestPage.next")}
               </button>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import useAuth from "../features/authentication/hooks/useAuth";
 import logoImage from "../assets/logo.png";
 import { useTheme } from "../hooks/useTheme";
@@ -10,6 +11,7 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 const LoginPage = () => {
   const { colors, theme, setTheme } = useTheme();
+  const { t, i18n } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
@@ -32,13 +34,13 @@ const LoginPage = () => {
       if (success) {
         navigate("/"); // Only redirect on successful login
       } else {
-        setLoginError(
-          "Invalid credentials. Please check your email and password."
-        );
+        setLoginError(t("loginPage.invalidCredentials"));
       }
     } catch (error) {
       setLoginError(
-        "Failed to sign in: " + (error.message || "Invalid credentials")
+        t("loginPage.failedToSignIn") +
+          ": " +
+          (error.message || t("loginPage.invalidCredentials"))
       );
     }
   };
@@ -49,13 +51,14 @@ const LoginPage = () => {
       className="flex min-h-screen items-center justify-center"
       style={{ backgroundColor: colors.background.primary }}
     >
-      {/* Theme Toggle Button */}
-      <div className="fixed top-4 right-4 z-50">
+      {/* Theme and Language Toggle Buttons */}
+      <div className="fixed top-4 right-4 z-50 flex gap-2">
+        {/* Language Selector */}
         <select
-          value={theme}
-          onChange={(e) => setTheme(e.target.value)}
+          value={i18n.language}
+          onChange={(e) => i18n.changeLanguage(e.target.value)}
           className="px-3 py-2 rounded-md border text-sm focus:outline-none"
-          aria-label="Theme selection"
+          aria-label={t("loginPage.changeLanguage")}
           style={{
             backgroundColor: colors.background.secondary,
             color: colors.text.primary,
@@ -66,9 +69,29 @@ const LoginPage = () => {
           }
           onBlur={(e) => (e.target.style.boxShadow = "none")}
         >
-          <option value="light">Light Mode</option>
-          <option value="dark">Dark Mode</option>
-          <option value="high-contrast">High Contrast</option>
+          <option value="en">{t("english")}</option>
+          <option value="tr">{t("turkish")}</option>
+        </select>
+
+        {/* Theme Selector */}
+        <select
+          value={theme}
+          onChange={(e) => setTheme(e.target.value)}
+          className="px-3 py-2 rounded-md border text-sm focus:outline-none"
+          aria-label={t("loginPage.themeSelection")}
+          style={{
+            backgroundColor: colors.background.secondary,
+            color: colors.text.primary,
+            borderColor: colors.border.primary,
+          }}
+          onFocus={(e) =>
+            (e.target.style.boxShadow = `0 0 0 2px ${colors.brand.primary}40`)
+          }
+          onBlur={(e) => (e.target.style.boxShadow = "none")}
+        >
+          <option value="light">{t("lightMode")}</option>
+          <option value="dark">{t("darkMode")}</option>
+          <option value="high-contrast">{t("highContrast")}</option>
         </select>
       </div>
 
@@ -79,15 +102,25 @@ const LoginPage = () => {
       >
         {/* Logo and Title updated to be side by side */}
         <div className="flex flex-row items-center justify-center mb-1">
-          <img src={logoImage} alt="Logo" width="160" height="160" />
+          <img
+            src={logoImage}
+            alt={t("loginPage.logoAlt")}
+            width="160"
+            height="160"
+          />
           <h1
             className="text-4xl font-bold ml-2"
             style={{ color: colors.text.primary }}
             id="login-page-title"
           >
-            Neighborhood
-            <br />
-            Assistance Board
+            {t("loginPage.pageTitle")
+              .split("\n")
+              .map((line, i) => (
+                <span key={i}>
+                  {line}
+                  {i === 0 && <br />}
+                </span>
+              ))}
           </h1>
         </div>
 
@@ -122,7 +155,7 @@ const LoginPage = () => {
                       colors.brand.primary)
                   }
                 >
-                  LOGIN
+                  {t("loginPage.login").toUpperCase()}
                 </RouterLink>
                 <RouterLink
                   to="/register"
@@ -140,7 +173,7 @@ const LoginPage = () => {
                       colors.background.secondary)
                   }
                 >
-                  REGISTER
+                  {t("loginPage.register").toUpperCase()}
                 </RouterLink>
               </div>
             </div>
@@ -149,13 +182,13 @@ const LoginPage = () => {
                 className="text-lg font-bold mb-1"
                 style={{ color: colors.text.primary }}
               >
-                Welcome back
+                {t("loginPage.welcomeBack")}
               </h2>
               <p
                 className="text-sm mb-6"
                 style={{ color: colors.text.secondary }}
               >
-                Enter your details to sign in to your account
+                {t("loginPage.enterDetailsToSignIn")}
               </p>
 
               {/* Show registration success message if applicable */}
@@ -170,8 +203,7 @@ const LoginPage = () => {
                   role="alert"
                   aria-live="assertive"
                 >
-                  Registration successful! You can now log in with your
-                  credentials.
+                  {t("loginPage.registrationSuccessful")}
                 </div>
               )}
 
@@ -219,13 +251,13 @@ const LoginPage = () => {
                         border: 0,
                       }}
                     >
-                      Email
+                      {t("loginPage.email")}
                     </label>
                     <input
                       type="email"
                       id="email"
                       name="email"
-                      placeholder="Email"
+                      placeholder={t("loginPage.email")}
                       autoComplete="email"
                       autoFocus
                       required
@@ -270,13 +302,13 @@ const LoginPage = () => {
                         border: 0,
                       }}
                     >
-                      Password
+                      {t("loginPage.password")}
                     </label>
                     <input
                       type={showPassword ? "text" : "password"}
                       id="password"
                       name="password"
-                      placeholder="Password"
+                      placeholder={t("loginPage.password")}
                       autoComplete="current-password"
                       required
                       value={password}
@@ -299,7 +331,9 @@ const LoginPage = () => {
                         onClick={() => setShowPassword(!showPassword)}
                         className="focus:outline-none"
                         aria-label={
-                          showPassword ? "Hide password" : "Show password"
+                          showPassword
+                            ? t("loginPage.hidePassword")
+                            : t("loginPage.showPassword")
                         }
                         style={{ color: colors.text.tertiary }}
                         onMouseOver={(e) =>
@@ -335,7 +369,7 @@ const LoginPage = () => {
                       className="ml-2 text-sm"
                       style={{ color: colors.text.primary }}
                     >
-                      Remember me
+                      {t("loginPage.rememberMe")}
                     </span>
                   </label>
                 </div>
@@ -365,7 +399,7 @@ const LoginPage = () => {
                   }
                   onBlur={(e) => (e.target.style.boxShadow = "none")}
                 >
-                  Login
+                  {t("loginPage.login")}
                 </button>
 
                 <div className="text-center mb-4">
@@ -380,7 +414,7 @@ const LoginPage = () => {
                       (e.currentTarget.style.color = colors.brand.primary)
                     }
                   >
-                    Forgot my password
+                    {t("loginPage.forgotMyPassword")}
                   </RouterLink>
                 </div>
               </form>
@@ -390,7 +424,7 @@ const LoginPage = () => {
 
         <div className="text-center my-4">
           <p className="text-sm" style={{ color: colors.text.secondary }}>
-            OR
+            {t("loginPage.or")}
           </p>
         </div>
 
@@ -406,7 +440,7 @@ const LoginPage = () => {
               (e.currentTarget.style.color = colors.brand.primary)
             }
           >
-            Continue as a guest
+            {t("loginPage.continueAsGuest")}
           </RouterLink>
         </div>
       </main>

@@ -2,23 +2,52 @@ import React from "react";
 import { Box, Typography, Tooltip, CircularProgress } from "@mui/material";
 import { Icon } from "@mui/material";
 import { formatDate } from "../utils/dateUtils";
+import { useTranslation } from "react-i18next";
 import { useTheme } from "../hooks/useTheme";
+
+import { badgeIcons } from "../assets/badge-icons";
 
 const Badge = ({ badge }) => {
   const { colors } = useTheme();
-  const {
-    title,
-    description,
-    icon,
-    image,
-    color,
-    earned,
-    earnedDate,
-    progress,
-  } = badge;
+
+  const { t } = useTranslation();
+
+  // Handle both old/mock format and new API format
+  // API format: { badge_type_display, name, description, icon_url, earned_at, badge_type }
+  // UserBadge wrapper: { earned_at, badge: { ... } }
+
+  // If badge is wrapped in a UserBadge object (from user-badges API)
+  const actualBadge = badge.badge || badge;
+  const isEarned = badge.earned || !!badge.earned_at;
+  const earnedDate = badge.earnedDate || badge.earned_at;
+
+  // Get translation key from badge_type
+  const badgeTypeKey = actualBadge.badge_type ? actualBadge.badge_type.toLowerCase() : null;
+
+  // Try to get translated title and description
+  const translatedTitle = badgeTypeKey ? t(`profile.badges.names.${badgeTypeKey}`) : null;
+  const translatedDesc = badgeTypeKey ? t(`profile.badges.descriptions.${badgeTypeKey}`) : null;
+
+  // Fallback to existing properties if translation returns the key or is missing
+  // i18next returns the key if translation is missing usually, but we check if it equals key
+  const title = (translatedTitle && translatedTitle !== `profile.badges.names.${badgeTypeKey}`)
+    ? translatedTitle
+    : (actualBadge.title || actualBadge.badge_type_display || actualBadge.name);
+
+  const description = (translatedDesc && translatedDesc !== `profile.badges.descriptions.${badgeTypeKey}`)
+    ? translatedDesc
+    : actualBadge.description;
+
+  // Resolve image from local assets if available, otherwise use API url
+  const localIcon = badgeTypeKey ? badgeIcons[badgeTypeKey] : null;
+  const image = localIcon || actualBadge.image || actualBadge.icon_url;
+
+  // Use color from prop if available, otherwise generate one or use default
+  const color = actualBadge.color || colors.brand.primary;
 
   // Determine opacity based on earned status
-  const opacity = earned ? 1 : 0.5;
+  const opacity = isEarned ? 1 : 0.6;
+  const filter = isEarned ? 'none' : 'grayscale(100%)';
 
   return (
     <Tooltip
@@ -35,14 +64,9 @@ const Badge = ({ badge }) => {
           <Typography variant="body2" sx={{ color: colors.text.secondary }}>
             {description}
           </Typography>
-          {earned && earnedDate && (
-            <Typography variant="caption" sx={{ color: colors.text.tertiary }}>
+          {isEarned && earnedDate && (
+            <Typography variant="caption" sx={{ color: colors.text.tertiary, display: 'block', mt: 1 }}>
               Earned on {formatDate(earnedDate, "MMM d, yyyy")}
-            </Typography>
-          )}
-          {!earned && progress !== undefined && (
-            <Typography variant="caption" sx={{ color: colors.text.tertiary }}>
-              {progress}% complete
             </Typography>
           )}
         </Box>
@@ -70,54 +94,46 @@ const Badge = ({ badge }) => {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          width: 70,
-          height: 90,
+          width: 90,
+          height: 110,
           opacity,
-          transition: "transform 0.2s, opacity 0.2s",
+          filter,
+          transition: "transform 0.2s, opacity 0.2s, filter 0.2s",
+          cursor: "pointer",
           "&:hover": {
             transform: "scale(1.05)",
             opacity: 1,
+            filter: 'none', // Remove grayscale on hover if desired, or keep it. User said "not earned a little bit transparent and if possible white and black". 
+            // Usually unearned icons stay unearned on hover, but user might want to see the color version on hover.
+            // I'll assume they want to see the full version on hover to know what they are missing, 
+            // OR strictly follow the "not earned" look. 
+            // Given "opacity: 1" is in the original hover style, I'll allow color on hover too for better UX unless specified otherwise.
+            // Actually, usually unearned badges stay unearned looking. I will keep filter: 'none' to reveal color on hover as a "preview".
           },
         }}
         tabIndex={0}
         role="img"
-        aria-label={`${title}${earned ? ", earned" : ", not yet earned"}${
-          !earned && progress !== undefined ? `, ${progress}% complete` : ""
-        }`}
+        aria-label={`${title}${isEarned ? ", earned" : ", not yet earned"}`}
       >
         <Box
           sx={{
-            width: 56,
-            height: 56,
+            width: 64,
+            height: 64,
             borderRadius: "50%",
-            bgcolor: color,
+            bgcolor: isEarned ? color : 'transparent', // Maybe remove background color for unearned if using icon only? 
+            // Or keep it grayscale. The filter is on the parent Box, so everything inside will be grayscale.
+            // Let's keep the circle but maybe less intense for unearned?
+            // Since parent has grayscale, the color will be gray.
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            boxShadow: earned ? "0 3px 8px rgba(0,0,0,0.2)" : "none",
+            boxShadow: isEarned ? "0 3px 8px rgba(0,0,0,0.2)" : "none",
             mb: 1,
             position: "relative",
             overflow: "hidden",
+            border: isEarned ? `2px solid ${colors.brand.secondary}` : `2px solid ${colors.border.secondary}`,
           }}
         >
-          {!earned && progress !== undefined && (
-            <CircularProgress
-              variant="determinate"
-              value={progress}
-              size={56}
-              thickness={4}
-              sx={{
-                position: "absolute",
-                color: color,
-                opacity: 0.8,
-              }}
-              role="progressbar"
-              aria-valuenow={progress}
-              aria-valuemin={0}
-              aria-valuemax={100}
-            />
-          )}
-
           {/* Display either image or icon based on what's provided */}
           {image ? (
             <Box
@@ -125,26 +141,42 @@ const Badge = ({ badge }) => {
               src={image}
               alt={title}
               sx={{
-                width: 36,
-                height: 36,
-                objectFit: "cover",
-                borderRadius: "50%",
+                width: 40,
+                height: 40,
+                objectFit: "contain",
+              }}
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.parentNode.children[1].style.display = 'block'; // Show fallback icon
               }}
             />
-          ) : (
-            <Icon sx={{ color: "white", fontSize: 30 }} aria-hidden>
-              {icon}
-            </Icon>
-          )}
+          ) : null}
+
+          {/* Fallback icon if no image or image fails */}
+          <Icon
+            sx={{
+              color: "white",
+              fontSize: 32,
+              display: image ? 'none' : 'block'
+            }}
+            aria-hidden
+          >
+            emoji_events
+          </Icon>
         </Box>
         <Typography
           variant="caption"
           align="center"
-          noWrap
           sx={{
             width: "100%",
-            fontWeight: earned ? "bold" : "normal",
+            fontWeight: isEarned ? "bold" : "normal",
             color: colors.text.primary,
+            lineHeight: 1.2,
+            fontSize: '0.75rem',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
           }}
         >
           {title}

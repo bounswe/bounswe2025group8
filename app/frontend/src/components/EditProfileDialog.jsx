@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import { Close, PhotoCamera } from "@mui/icons-material";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 import {
   updateUserProfile,
   uploadProfilePicture,
@@ -35,6 +36,7 @@ import { toAbsoluteUrl } from "../utils/url";
 
 const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const { colors } = useTheme();
 
   // Use the new editProfile selectors
@@ -233,7 +235,7 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
     const file = event.target.files[0];
     if (file) {
       if (file.size > MAX_PHOTO_SIZE_BYTES) {
-        setPhotoError("Profile picture must be 5MB or smaller.");
+        setPhotoError(t("profilePictureTooLarge"));
         return;
       }
       setPhotoError(null);
@@ -278,11 +280,11 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
             fontWeight="bold"
             sx={{ color: colors.text.primary }}
           >
-            Edit Profile
+            {t("editProfileDialog.title")}
           </Typography>
           <IconButton
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t("editProfileDialog.closeDialog")}
             sx={{
               color: colors.text.secondary,
               "&:hover": {
@@ -304,7 +306,9 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
                 src={resolvedPhoto}
                 alt={
                   resolvedUser?.name ||
-                  `${resolvedUser?.name || ""} ${resolvedUser?.surname || ""}` ||
+                  `${resolvedUser?.name || ""} ${
+                    resolvedUser?.surname || ""
+                  }` ||
                   "User"
                 }
                 sx={{
@@ -339,20 +343,20 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
                   },
                   color: colors.brand.primary,
                 }}
-                aria-label="Upload profile picture"
+                aria-label={t("editProfileDialog.uploadProfilePicture")}
               >
                 <input
                   type="file"
                   accept="image/*"
                   hidden
                   onChange={handleProfilePictureUpload}
-                  aria-label="Choose profile picture file"
+                  aria-label={t("editProfileDialog.chooseProfilePicture")}
                 />
                 <PhotoCamera />
               </IconButton>
             </Box>
             <Typography variant="caption" sx={{ color: colors.text.secondary }}>
-              Click the camera icon to change your profile picture
+              {t("editProfileDialog.profilePictureClick")}
             </Typography>
             {photoError && (
               <Typography
@@ -401,7 +405,9 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
                     borderRadius: "6px",
                   }}
                 >
-                  {message}
+                  {typeof message === "string"
+                    ? message
+                    : t("editProfileDialog.errorUpdatingProfile")}
                 </Typography>
               ))}
             </Box>
@@ -412,7 +418,7 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
             <Grid item xs={6}>
               <TextField
                 name="name"
-                label="First Name"
+                label={t("editProfileDialog.firstName")}
                 value={formData.name}
                 onChange={handleChange}
                 fullWidth
@@ -445,7 +451,7 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
             <Grid item xs={6}>
               <TextField
                 name="surname"
-                label="Last Name"
+                label={t("editProfileDialog.lastName")}
                 value={formData.surname}
                 onChange={handleChange}
                 fullWidth
@@ -478,7 +484,7 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
             <Grid item xs={12}>
               <TextField
                 name="username"
-                label="Username"
+                label={t("username")}
                 value={formData.username}
                 onChange={handleChange}
                 fullWidth
@@ -511,7 +517,7 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
             <Grid item xs={12}>
               <TextField
                 name="email"
-                label="Email"
+                label={t("email")}
                 value={formData.email}
                 fullWidth
                 variant="outlined"
@@ -536,14 +542,14 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
                     color: colors.text.tertiary,
                   },
                 }}
-                helperText="Email cannot be changed"
+                helperText={t("editProfileDialog.emailCannotBeChanged")}
               />
             </Grid>
 
             <Grid item xs={12}>
               <TextField
                 name="phone"
-                label="Phone Number"
+                label={t("editProfileDialog.phoneNumber")}
                 value={formData.phone}
                 fullWidth
                 variant="outlined"
@@ -567,7 +573,7 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
                     color: colors.text.tertiary,
                   },
                 }}
-                helperText="Phone number cannot be changed"
+                helperText={t("editProfileDialog.phoneCannotBeChanged")}
               />
             </Grid>
           </Grid>
@@ -585,7 +591,7 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
               },
             }}
           >
-            Cancel
+            {t("cancel")}
           </Button>
           <Button
             type="submit"
@@ -608,7 +614,7 @@ const EditProfileDialog = ({ open, onClose, onSuccess, user }) => {
             {loading ? (
               <CircularProgress size={24} sx={{ color: colors.text.inverse }} />
             ) : (
-              "Save Changes"
+              t("editProfileDialog.saveChanges")
             )}
           </Button>
         </DialogActions>

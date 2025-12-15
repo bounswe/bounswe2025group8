@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import RequestCardForHomePage from "../components/RequestCardForHomePage";
 import UserCard from "../components/UserCard";
 import {
@@ -8,8 +9,12 @@ import {
   clearError,
 } from "../features/request/store/allRequestsSlice";
 import { searchUsers } from "../features/user/services/userSearchService";
-import { categoryMapping, getCategoryImage } from "../constants/categories";
-import { urgencyLevels } from "../constants/urgency_level";
+import {
+  categoryMapping,
+  getCategoryImage,
+  getCategoryName,
+} from "../constants/categories";
+import { urgencyLevels, getUrgencyLevelName } from "../constants/urgency_level";
 import { formatRelativeTime } from "../utils/dateUtils";
 import { extractRegionFromLocation } from "../utils/taskUtils";
 import sortIcon from "../assets/sort.svg";
@@ -22,6 +27,7 @@ const SearchResults = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
   const { tasks, pagination, loading, error } = useSelector(
     (state) => state.allRequests
@@ -205,9 +211,8 @@ const SearchResults = () => {
 
   // Format task data for RequestCardForHomePage component
   const formatTaskForCard = (task) => {
-    const categoryDisplayName = categoryMapping[task.category] || task.category;
-    const urgencyDisplayName =
-      urgencyLevels[task.urgency_level]?.name || "Unknown";
+    const categoryDisplayName = getCategoryName(task.category, t);
+    const urgencyDisplayName = getUrgencyLevelName(task.urgency_level, t);
     const imageUrl = getCategoryImage(task.category);
 
     // Format location (fallback to "Location not specified")
@@ -293,7 +298,7 @@ const SearchResults = () => {
               marginBottom: "8px",
             }}
           >
-            Error Loading Search Results
+            {t("searchResults.errors.loadingSearchResults")}
           </h3>
           <p style={{ color: colors.text.secondary, marginBottom: "16px" }}>
             {error}
@@ -323,9 +328,9 @@ const SearchResults = () => {
             onMouseOut={(e) =>
               (e.currentTarget.style.backgroundColor = colors.brand.primary)
             }
-            aria-label="Retry loading search results"
+            aria-label={t("searchResults.aria.retryLoading")}
           >
-            Try Again
+            {t("searchResults.errors.tryAgain")}
           </button>
         </div>
       </div>
@@ -335,7 +340,7 @@ const SearchResults = () => {
   return (
     <main
       role="main"
-      aria-busy={(loading || usersLoading) ? "true" : "false"}
+      aria-busy={loading || usersLoading ? "true" : "false"}
       aria-labelledby="search-results-title"
     >
       {/* Header Section */}
@@ -358,7 +363,7 @@ const SearchResults = () => {
             }}
             id="search-results-title"
           >
-            Search Results
+            {t("searchResults.title")}
           </h1>
           <p
             style={{
@@ -367,52 +372,55 @@ const SearchResults = () => {
               marginTop: "4px",
             }}
           >
-            Results for "<strong>{searchQuery}</strong>"
-            {activeTab === "tasks" && (categoryFilter || urgencyFilter || locationFilter) && (
-              <button
-                onClick={handleClearFilters}
-                style={{
-                  color: colors.brand.primary,
-                  textDecoration: "underline",
-                  marginLeft: "8px",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "0.875rem",
-                }}
-                onMouseOver={(e) =>
-                  (e.currentTarget.style.color = colors.brand.primaryHover)
-                }
-                onMouseOut={(e) =>
-                  (e.currentTarget.style.color = colors.brand.primary)
-                }
-              >
-                Clear filters
-              </button>
-            )}
+            {t("searchResults.resultsFor", { query: searchQuery })}
+            {activeTab === "tasks" &&
+              (categoryFilter || urgencyFilter || locationFilter) && (
+                <button
+                  onClick={handleClearFilters}
+                  style={{
+                    color: colors.brand.primary,
+                    textDecoration: "underline",
+                    marginLeft: "8px",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: "0.875rem",
+                  }}
+                  onMouseOver={(e) =>
+                    (e.currentTarget.style.color = colors.brand.primaryHover)
+                  }
+                  onMouseOut={(e) =>
+                    (e.currentTarget.style.color = colors.brand.primary)
+                  }
+                >
+                  {t("searchResults.clearFilters")}
+                </button>
+              )}
           </p>
-          {activeTab === "tasks" && (categoryFilter || urgencyFilter || locationFilter) && (
-            <p
-              style={{
-                fontSize: "0.75rem",
-                color: colors.text.tertiary,
-                marginTop: "4px",
-              }}
-            >
-              {categoryFilter &&
-                `Showing results in ${
-                  categoryMapping[categoryFilter] || categoryFilter
-                } category`}
-              {urgencyFilter &&
-                `${categoryFilter ? " • " : ""}${
-                  urgencyLevels[urgencyFilter]?.name || urgencyFilter
-                } priority`}
-              {locationFilter &&
-                `${
-                  categoryFilter || urgencyFilter ? " • " : ""
-                }Near: ${locationFilter}`}
-            </p>
-          )}
+          {activeTab === "tasks" &&
+            (categoryFilter || urgencyFilter || locationFilter) && (
+              <p
+                style={{
+                  fontSize: "0.75rem",
+                  color: colors.text.tertiary,
+                  marginTop: "4px",
+                }}
+              >
+                {categoryFilter &&
+                  t("searchResults.showingResultsIn", {
+                    category: getCategoryName(categoryFilter, t),
+                  })}
+                {urgencyFilter &&
+                  `${categoryFilter ? " • " : ""}${t("searchResults.priority", {
+                    urgency: getUrgencyLevelName(Number(urgencyFilter), t),
+                  })}`}
+                {locationFilter &&
+                  `${categoryFilter || urgencyFilter ? " • " : ""}${t(
+                    "searchResults.near",
+                    { location: locationFilter }
+                  )}`}
+              </p>
+            )}
         </div>
 
         {/* Header Icons - only show for tasks tab */}
@@ -431,7 +439,7 @@ const SearchResults = () => {
             >
               <input
                 type="text"
-                placeholder="Filter by location (district/city)"
+                placeholder={t("searchResults.filterByLocation")}
                 style={{
                   padding: "8px 16px",
                   fontSize: "0.875rem",
@@ -446,7 +454,7 @@ const SearchResults = () => {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") applyLocationFilter();
                 }}
-                aria-label="Filter by location (district or city)"
+                aria-label={t("searchResults.filterByLocation")}
               />
               <button
                 onClick={applyLocationFilter}
@@ -466,9 +474,9 @@ const SearchResults = () => {
                 onMouseOut={(e) =>
                   (e.currentTarget.style.backgroundColor = colors.brand.primary)
                 }
-                aria-label="Apply location filter"
+                aria-label={t("searchResults.applyFilter")}
               >
-                Apply
+                {t("searchResults.applyFilter")}
               </button>
             </div>
             {/* Sort Icon */}
@@ -489,7 +497,7 @@ const SearchResults = () => {
               onMouseOut={(e) =>
                 (e.currentTarget.style.color = colors.text.primary)
               }
-              aria-label="Sort requests"
+              aria-label={t("searchResults.sortRequests")}
             >
               <img
                 src={sortIcon}
@@ -523,7 +531,7 @@ const SearchResults = () => {
               onMouseOut={(e) =>
                 (e.currentTarget.style.color = colors.text.primary)
               }
-              aria-label="Open address filter"
+              aria-label={t("searchResults.openAddressFilter")}
             >
               <img
                 src={filterIcon}
@@ -549,7 +557,7 @@ const SearchResults = () => {
           marginBottom: "24px",
         }}
         role="tablist"
-        aria-label="Search result type"
+        aria-label={t("searchResults.aria.searchResultType")}
       >
         <button
           role="tab"
@@ -565,21 +573,25 @@ const SearchResults = () => {
             cursor: "pointer",
             transition: "all 0.2s",
             backgroundColor:
-              activeTab === "tasks" ? colors.brand.primary : colors.background.secondary,
+              activeTab === "tasks"
+                ? colors.brand.primary
+                : colors.background.secondary,
             color: activeTab === "tasks" ? "#FFFFFF" : colors.text.primary,
           }}
           onMouseOver={(e) => {
             if (activeTab !== "tasks") {
-              e.currentTarget.style.backgroundColor = colors.interactive?.hover || colors.background.tertiary;
+              e.currentTarget.style.backgroundColor =
+                colors.interactive?.hover || colors.background.tertiary;
             }
           }}
           onMouseOut={(e) => {
             if (activeTab !== "tasks") {
-              e.currentTarget.style.backgroundColor = colors.background.secondary;
+              e.currentTarget.style.backgroundColor =
+                colors.background.secondary;
             }
           }}
         >
-          Tasks
+          {t("searchResults.tabs.tasks")}
         </button>
         <button
           role="tab"
@@ -595,21 +607,25 @@ const SearchResults = () => {
             cursor: "pointer",
             transition: "all 0.2s",
             backgroundColor:
-              activeTab === "users" ? colors.brand.primary : colors.background.secondary,
+              activeTab === "users"
+                ? colors.brand.primary
+                : colors.background.secondary,
             color: activeTab === "users" ? "#FFFFFF" : colors.text.primary,
           }}
           onMouseOver={(e) => {
             if (activeTab !== "users") {
-              e.currentTarget.style.backgroundColor = colors.interactive?.hover || colors.background.tertiary;
+              e.currentTarget.style.backgroundColor =
+                colors.interactive?.hover || colors.background.tertiary;
             }
           }}
           onMouseOut={(e) => {
             if (activeTab !== "users") {
-              e.currentTarget.style.backgroundColor = colors.background.secondary;
+              e.currentTarget.style.backgroundColor =
+                colors.background.secondary;
             }
           }}
         >
-          Users
+          {t("searchResults.tabs.users")}
         </button>
       </div>
 
@@ -617,344 +633,363 @@ const SearchResults = () => {
       {activeTab === "tasks" && (
         <>
           {/* Request Cards Grid */}
-      <div style={{ padding: "0 20px", overflow: "hidden" }}>
-        {loading ? (
-          // Loading state - show skeleton cards
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(2, 1fr)",
-              gap: "20px",
-            }}
-          >
-            {[...Array(6)].map((_, index) => (
+          <div style={{ padding: "0 20px", overflow: "hidden" }}>
+            {loading ? (
+              // Loading state - show skeleton cards
               <div
-                key={index}
                 style={{
-                  backgroundColor: colors.background.secondary,
-                  borderRadius: "16px",
-                  animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, 1fr)",
+                  gap: "20px",
                 }}
               >
-                <div style={{ padding: "8px" }}>
+                {[...Array(6)].map((_, index) => (
                   <div
+                    key={index}
                     style={{
-                      backgroundColor: colors.background.tertiary,
-                      borderRadius: "12px",
-                      height: "64px",
-                      marginBottom: "8px",
-                    }}
-                  ></div>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "8px",
+                      backgroundColor: colors.background.secondary,
+                      borderRadius: "16px",
+                      animation:
+                        "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
                     }}
                   >
-                    <div
-                      style={{
-                        height: "16px",
-                        backgroundColor: colors.background.tertiary,
-                        borderRadius: "4px",
-                        width: "75%",
-                      }}
-                    ></div>
-                    <div
-                      style={{
-                        height: "12px",
-                        backgroundColor: colors.background.tertiary,
-                        borderRadius: "4px",
-                        width: "50%",
-                      }}
-                    ></div>
+                    <div style={{ padding: "8px" }}>
+                      <div
+                        style={{
+                          backgroundColor: colors.background.tertiary,
+                          borderRadius: "12px",
+                          height: "64px",
+                          marginBottom: "8px",
+                        }}
+                      ></div>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "8px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            height: "16px",
+                            backgroundColor: colors.background.tertiary,
+                            borderRadius: "4px",
+                            width: "75%",
+                          }}
+                        ></div>
+                        <div
+                          style={{
+                            height: "12px",
+                            backgroundColor: colors.background.tertiary,
+                            borderRadius: "4px",
+                            width: "50%",
+                          }}
+                        ></div>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
-            ))}
-          </div>
-        ) : (
-          // Actual content
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(2, 1fr)",
-              gap: "20px",
-            }}
-          >
-            {tasks.map((task) => {
-              const formattedTask = formatTaskForCard(task);
-              return (
-                <RequestCardForHomePage
-                  key={task.id}
-                  title={formattedTask.title}
-                  location={formattedTask.location}
-                  timeAgo={formattedTask.timeAgo}
-                  category={formattedTask.category}
-                  urgencyLevel={formattedTask.urgencyLevel}
-                  imageUrl={formattedTask.imageUrl}
-                  imageAlt={formattedTask.imageAlt}
-                  onClick={() => handleCardClick(task.id)}
-                  onCategoryClick={() => handleCategoryClick(task.category)}
-                  onUrgencyClick={() => handleUrgencyClick(task.urgency_level)}
-                  onNavigateClick={() => handleNavigateClick(task.id)}
-                />
-              );
-            })}
-
-            {/* Fill empty slots if less than 6 tasks */}
-            {tasks.length < 6 &&
-              [...Array(Math.max(0, 6 - tasks.length))].map((_, index) => (
-                <div
-                  key={`empty-${index}`}
-                  style={{ width: "407px", height: "122px" }}
-                >
-                  {/* Empty slot - maintains grid layout */}
-                </div>
-              ))}
-          </div>
-        )}
-
-        {/* Empty state when no tasks */}
-        {!loading && tasks.length === 0 && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              height: "100%",
-            }}
-          >
-            <div style={{ textAlign: "center" }}>
+            ) : (
+              // Actual content
               <div
                 style={{
-                  width: "64px",
-                  height: "64px",
-                  backgroundColor: colors.background.secondary,
-                  borderRadius: "50%",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, 1fr)",
+                  gap: "20px",
+                }}
+              >
+                {tasks.map((task) => {
+                  const formattedTask = formatTaskForCard(task);
+                  return (
+                    <RequestCardForHomePage
+                      key={task.id}
+                      title={formattedTask.title}
+                      location={formattedTask.location}
+                      timeAgo={formattedTask.timeAgo}
+                      category={formattedTask.category}
+                      urgencyLevel={formattedTask.urgencyLevel}
+                      imageUrl={formattedTask.imageUrl}
+                      imageAlt={formattedTask.imageAlt}
+                      onClick={() => handleCardClick(task.id)}
+                      onCategoryClick={() => handleCategoryClick(task.category)}
+                      onUrgencyClick={() =>
+                        handleUrgencyClick(task.urgency_level)
+                      }
+                      onNavigateClick={() => handleNavigateClick(task.id)}
+                    />
+                  );
+                })}
+
+                {/* Fill empty slots if less than 6 tasks */}
+                {tasks.length < 6 &&
+                  [...Array(Math.max(0, 6 - tasks.length))].map((_, index) => (
+                    <div
+                      key={`empty-${index}`}
+                      style={{ width: "407px", height: "122px" }}
+                    >
+                      {/* Empty slot - maintains grid layout */}
+                    </div>
+                  ))}
+              </div>
+            )}
+
+            {/* Empty state when no tasks */}
+            {!loading && tasks.length === 0 && (
+              <div
+                style={{
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  margin: "0 auto 16px",
+                  height: "100%",
                 }}
               >
-                <svg
-                  style={{
-                    width: "32px",
-                    height: "32px",
-                    color: colors.text.tertiary,
-                  }}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
-                </svg>
-              </div>
-              <h3
-                style={{
-                  fontSize: "1.125rem",
-                  fontWeight: 500,
-                  color: colors.text.primary,
-                  marginBottom: "8px",
-                }}
-              >
-                No Results Found
-              </h3>
-              <p style={{ color: colors.text.secondary, marginBottom: "16px" }}>
-                No requests matching "<strong>{searchQuery}</strong>"
-                {(categoryFilter || urgencyFilter || locationFilter) &&
-                  " with the selected filters"}
-                .
-              </p>
-              <button
-                onClick={handleClearSearch}
-                style={{
-                  padding: "8px 16px",
-                  backgroundColor: colors.brand.primary,
-                  color: "#FFFFFF",
-                  borderRadius: "6px",
-                  border: "none",
-                  cursor: "pointer",
-                  transition: "background-color 0.2s",
-                  fontSize: "0.875rem",
-                }}
-                onMouseOver={(e) =>
-                  (e.currentTarget.style.backgroundColor =
-                    colors.brand.primaryHover)
-                }
-                onMouseOut={(e) =>
-                  (e.currentTarget.style.backgroundColor = colors.brand.primary)
-                }
-              >
-                Back to All Requests
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Pagination Controls */}
-      {!loading && tasks.length > 0 && pagination.totalPages > 1 && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: "32px",
-            gap: "16px",
-          }}
-        >
-          <button
-            onClick={handlePreviousPage}
-            disabled={!pagination.hasPreviousPage}
-            style={{
-              padding: "8px 16px",
-              borderRadius: "6px",
-              fontSize: "0.875rem",
-              fontWeight: 500,
-              transition: "all 0.2s",
-              backgroundColor: pagination.hasPreviousPage
-                ? colors.brand.primary
-                : colors.interactive.disabled,
-              color: pagination.hasPreviousPage
-                ? colors.text.inverse
-                : colors.text.tertiary,
-              cursor: pagination.hasPreviousPage ? "pointer" : "not-allowed",
-              border: "none",
-            }}
-            onMouseOver={(e) => {
-              if (pagination.hasPreviousPage) {
-                e.currentTarget.style.backgroundColor =
-                  colors.brand.primaryHover;
-              }
-            }}
-            onMouseOut={(e) => {
-              if (pagination.hasPreviousPage) {
-                e.currentTarget.style.backgroundColor = colors.brand.primary;
-              }
-            }}
-          >
-            Previous
-          </button>
-
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            {/* Page numbers */}
-            {Array.from(
-              { length: Math.min(5, pagination.totalPages) },
-              (_, i) => {
-                let pageNumber;
-                if (pagination.totalPages <= 5) {
-                  pageNumber = i + 1;
-                } else if (currentPage <= 3) {
-                  pageNumber = i + 1;
-                } else if (currentPage >= pagination.totalPages - 2) {
-                  pageNumber = pagination.totalPages - 4 + i;
-                } else {
-                  pageNumber = currentPage - 2 + i;
-                }
-
-                const isActive = currentPage === pageNumber;
-                return (
-                  <button
-                    key={pageNumber}
-                    onClick={() => handlePageChange(pageNumber)}
+                <div style={{ textAlign: "center" }}>
+                  <div
                     style={{
-                      padding: "8px 12px",
-                      borderRadius: "6px",
-                      fontSize: "0.875rem",
-                      fontWeight: 500,
-                      transition: "all 0.2s",
-                      backgroundColor: isActive
-                        ? colors.brand.primary
-                        : colors.background.secondary,
-                      color: isActive
-                        ? colors.text.inverse
-                        : colors.text.primary,
-                      cursor: "pointer",
-                      border: "none",
+                      width: "64px",
+                      height: "64px",
+                      backgroundColor: colors.background.secondary,
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      margin: "0 auto 16px",
                     }}
-                    onMouseOver={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.backgroundColor =
-                          colors.interactive.hover;
-                      }
-                    }}
-                    onMouseOut={(e) => {
-                      if (!isActive) {
-                        e.currentTarget.style.backgroundColor =
-                          colors.background.secondary;
-                      }
-                    }}
-                    aria-label={`Go to page ${pageNumber}`}
-                    aria-current={isActive ? "page" : undefined}
                   >
-                    {pageNumber}
+                    <svg
+                      style={{
+                        width: "32px",
+                        height: "32px",
+                        color: colors.text.tertiary,
+                      }}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                  </div>
+                  <h3
+                    style={{
+                      fontSize: "1.125rem",
+                      fontWeight: 500,
+                      color: colors.text.primary,
+                      marginBottom: "8px",
+                    }}
+                  >
+                    {t("searchResults.empty.noResultsFound")}
+                  </h3>
+                  <p
+                    style={{
+                      color: colors.text.secondary,
+                      marginBottom: "16px",
+                    }}
+                  >
+                    {t("searchResults.empty.noRequestsMatching", {
+                      query: searchQuery,
+                    })}
+                    {(categoryFilter || urgencyFilter || locationFilter) &&
+                      ` ${t("searchResults.empty.withSelectedFilters")}`}
+                    .
+                  </p>
+                  <button
+                    onClick={handleClearSearch}
+                    style={{
+                      padding: "8px 16px",
+                      backgroundColor: colors.brand.primary,
+                      color: "#FFFFFF",
+                      borderRadius: "6px",
+                      border: "none",
+                      cursor: "pointer",
+                      transition: "background-color 0.2s",
+                      fontSize: "0.875rem",
+                    }}
+                    onMouseOver={(e) =>
+                      (e.currentTarget.style.backgroundColor =
+                        colors.brand.primaryHover)
+                    }
+                    onMouseOut={(e) =>
+                      (e.currentTarget.style.backgroundColor =
+                        colors.brand.primary)
+                    }
+                  >
+                    {t("searchResults.empty.backToAllRequests")}
                   </button>
-                );
-              }
+                </div>
+              </div>
             )}
           </div>
 
-          <button
-            onClick={handleNextPage}
-            disabled={!pagination.hasNextPage}
-            style={{
-              padding: "8px 16px",
-              borderRadius: "6px",
-              fontSize: "0.875rem",
-              fontWeight: 500,
-              transition: "all 0.2s",
-              backgroundColor: pagination.hasNextPage
-                ? colors.brand.primary
-                : colors.interactive.disabled,
-              color: pagination.hasNextPage
-                ? colors.text.inverse
-                : colors.text.tertiary,
-              cursor: pagination.hasNextPage ? "pointer" : "not-allowed",
-              border: "none",
-            }}
-            onMouseOver={(e) => {
-              if (pagination.hasNextPage) {
-                e.currentTarget.style.backgroundColor =
-                  colors.brand.primaryHover;
-              }
-            }}
-            onMouseOut={(e) => {
-              if (pagination.hasNextPage) {
-                e.currentTarget.style.backgroundColor = colors.brand.primary;
-              }
-            }}
-          >
-            Next
-          </button>
-        </div>
-      )}
+          {/* Pagination Controls */}
+          {!loading && tasks.length > 0 && pagination.totalPages > 1 && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                marginTop: "32px",
+                gap: "16px",
+              }}
+            >
+              <button
+                onClick={handlePreviousPage}
+                disabled={!pagination.hasPreviousPage}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "6px",
+                  fontSize: "0.875rem",
+                  fontWeight: 500,
+                  transition: "all 0.2s",
+                  backgroundColor: pagination.hasPreviousPage
+                    ? colors.brand.primary
+                    : colors.interactive.disabled,
+                  color: pagination.hasPreviousPage
+                    ? colors.text.inverse
+                    : colors.text.tertiary,
+                  cursor: pagination.hasPreviousPage
+                    ? "pointer"
+                    : "not-allowed",
+                  border: "none",
+                }}
+                onMouseOver={(e) => {
+                  if (pagination.hasPreviousPage) {
+                    e.currentTarget.style.backgroundColor =
+                      colors.brand.primaryHover;
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (pagination.hasPreviousPage) {
+                    e.currentTarget.style.backgroundColor =
+                      colors.brand.primary;
+                  }
+                }}
+              >
+                Previous
+              </button>
 
-      {/* Pagination Info */}
-      {!loading && tasks.length > 0 && (
-        <div
-          style={{
-            textAlign: "center",
-            marginTop: "16px",
-            fontSize: "0.875rem",
-            color: colors.text.secondary,
-          }}
-        >
-          Showing {tasks.length} of {pagination.totalItems} results
-          {pagination.totalPages > 1 && (
-            <span>
-              {" "}
-              (Page {currentPage} of {pagination.totalPages})
-            </span>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                {/* Page numbers */}
+                {Array.from(
+                  { length: Math.min(5, pagination.totalPages) },
+                  (_, i) => {
+                    let pageNumber;
+                    if (pagination.totalPages <= 5) {
+                      pageNumber = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNumber = i + 1;
+                    } else if (currentPage >= pagination.totalPages - 2) {
+                      pageNumber = pagination.totalPages - 4 + i;
+                    } else {
+                      pageNumber = currentPage - 2 + i;
+                    }
+
+                    const isActive = currentPage === pageNumber;
+                    return (
+                      <button
+                        key={pageNumber}
+                        onClick={() => handlePageChange(pageNumber)}
+                        style={{
+                          padding: "8px 12px",
+                          borderRadius: "6px",
+                          fontSize: "0.875rem",
+                          fontWeight: 500,
+                          transition: "all 0.2s",
+                          backgroundColor: isActive
+                            ? colors.brand.primary
+                            : colors.background.secondary,
+                          color: isActive
+                            ? colors.text.inverse
+                            : colors.text.primary,
+                          cursor: "pointer",
+                          border: "none",
+                        }}
+                        onMouseOver={(e) => {
+                          if (!isActive) {
+                            e.currentTarget.style.backgroundColor =
+                              colors.interactive.hover;
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (!isActive) {
+                            e.currentTarget.style.backgroundColor =
+                              colors.background.secondary;
+                          }
+                        }}
+                        aria-label={t("searchResults.pagination.goToPage", {
+                          page: pageNumber,
+                        })}
+                        aria-current={isActive ? "page" : undefined}
+                      >
+                        {pageNumber}
+                      </button>
+                    );
+                  }
+                )}
+              </div>
+
+              <button
+                onClick={handleNextPage}
+                disabled={!pagination.hasNextPage}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "6px",
+                  fontSize: "0.875rem",
+                  fontWeight: 500,
+                  transition: "all 0.2s",
+                  backgroundColor: pagination.hasNextPage
+                    ? colors.brand.primary
+                    : colors.interactive.disabled,
+                  color: pagination.hasNextPage
+                    ? colors.text.inverse
+                    : colors.text.tertiary,
+                  cursor: pagination.hasNextPage ? "pointer" : "not-allowed",
+                  border: "none",
+                }}
+                onMouseOver={(e) => {
+                  if (pagination.hasNextPage) {
+                    e.currentTarget.style.backgroundColor =
+                      colors.brand.primaryHover;
+                  }
+                }}
+                onMouseOut={(e) => {
+                  if (pagination.hasNextPage) {
+                    e.currentTarget.style.backgroundColor =
+                      colors.brand.primary;
+                  }
+                }}
+              >
+                Next
+              </button>
+            </div>
           )}
-        </div>
-      )}
+
+          {/* Pagination Info */}
+          {!loading && tasks.length > 0 && (
+            <div
+              style={{
+                textAlign: "center",
+                marginTop: "16px",
+                fontSize: "0.875rem",
+                color: colors.text.secondary,
+              }}
+            >
+              Showing {tasks.length} of {pagination.totalItems} results
+              {pagination.totalPages > 1 && (
+                <span>
+                  {" "}
+                  (Page {currentPage} of {pagination.totalPages})
+                </span>
+              )}
+            </div>
+          )}
         </>
       )}
 
@@ -980,9 +1015,11 @@ const SearchResults = () => {
                     marginBottom: "8px",
                   }}
                 >
-                  Error Loading Users
+                  {t("searchResults.errors.loadingUsers")}
                 </h3>
-                <p style={{ color: colors.text.secondary, marginBottom: "16px" }}>
+                <p
+                  style={{ color: colors.text.secondary, marginBottom: "16px" }}
+                >
                   {usersError}
                 </p>
                 <button
@@ -996,7 +1033,7 @@ const SearchResults = () => {
                     cursor: "pointer",
                   }}
                 >
-                  Try Again
+                  {t("searchResults.errors.tryAgain")}
                 </button>
               </div>
             </div>
@@ -1004,7 +1041,9 @@ const SearchResults = () => {
 
           {/* User loading state */}
           {usersLoading && !usersError && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+            >
               {[...Array(6)].map((_, index) => (
                 <div
                   key={index}
@@ -1052,7 +1091,9 @@ const SearchResults = () => {
 
           {/* User results */}
           {!usersLoading && !usersError && users.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+            >
               {users.map((user) => (
                 <UserCard key={user.id} user={user} />
               ))}
@@ -1108,111 +1149,128 @@ const SearchResults = () => {
                     marginBottom: "8px",
                   }}
                 >
-                  No Users Found
+                  {t("searchResults.empty.noUsersFound")}
                 </h3>
                 <p style={{ color: colors.text.secondary }}>
-                  No users matching "<strong>{searchQuery}</strong>". Try a different name or username.
+                  {t("searchResults.empty.noUsersMatching", {
+                    query: searchQuery,
+                  })}
                 </p>
               </div>
             </div>
           )}
 
           {/* User pagination */}
-          {!usersLoading && !usersError && users.length > 0 && userPagination.totalPages > 1 && (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                marginTop: "32px",
-                gap: "16px",
-              }}
-            >
-              <button
-                onClick={handleUserPreviousPage}
-                disabled={!userPagination.hasPreviousPage}
+          {!usersLoading &&
+            !usersError &&
+            users.length > 0 &&
+            userPagination.totalPages > 1 && (
+              <div
                 style={{
-                  padding: "8px 16px",
-                  borderRadius: "6px",
-                  fontSize: "0.875rem",
-                  fontWeight: 500,
-                  backgroundColor: userPagination.hasPreviousPage
-                    ? colors.brand.primary
-                    : colors.interactive?.disabled || colors.background.tertiary,
-                  color: userPagination.hasPreviousPage
-                    ? colors.text.inverse
-                    : colors.text.tertiary,
-                  cursor: userPagination.hasPreviousPage ? "pointer" : "not-allowed",
-                  border: "none",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginTop: "32px",
+                  gap: "16px",
                 }}
               >
-                Previous
-              </button>
+                <button
+                  onClick={handleUserPreviousPage}
+                  disabled={!userPagination.hasPreviousPage}
+                  style={{
+                    padding: "8px 16px",
+                    borderRadius: "6px",
+                    fontSize: "0.875rem",
+                    fontWeight: 500,
+                    backgroundColor: userPagination.hasPreviousPage
+                      ? colors.brand.primary
+                      : colors.interactive?.disabled ||
+                        colors.background.tertiary,
+                    color: userPagination.hasPreviousPage
+                      ? colors.text.inverse
+                      : colors.text.tertiary,
+                    cursor: userPagination.hasPreviousPage
+                      ? "pointer"
+                      : "not-allowed",
+                    border: "none",
+                  }}
+                >
+                  {t("searchResults.pagination.previous")}
+                </button>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                {Array.from(
-                  { length: Math.min(5, userPagination.totalPages) },
-                  (_, i) => {
-                    let pageNumber;
-                    if (userPagination.totalPages <= 5) {
-                      pageNumber = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNumber = i + 1;
-                    } else if (currentPage >= userPagination.totalPages - 2) {
-                      pageNumber = userPagination.totalPages - 4 + i;
-                    } else {
-                      pageNumber = currentPage - 2 + i;
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
+                  {Array.from(
+                    { length: Math.min(5, userPagination.totalPages) },
+                    (_, i) => {
+                      let pageNumber;
+                      if (userPagination.totalPages <= 5) {
+                        pageNumber = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNumber = i + 1;
+                      } else if (currentPage >= userPagination.totalPages - 2) {
+                        pageNumber = userPagination.totalPages - 4 + i;
+                      } else {
+                        pageNumber = currentPage - 2 + i;
+                      }
+
+                      const isActive = currentPage === pageNumber;
+                      return (
+                        <button
+                          key={pageNumber}
+                          onClick={() => handlePageChange(pageNumber)}
+                          style={{
+                            padding: "8px 12px",
+                            borderRadius: "6px",
+                            fontSize: "0.875rem",
+                            fontWeight: 500,
+                            backgroundColor: isActive
+                              ? colors.brand.primary
+                              : colors.background.secondary,
+                            color: isActive
+                              ? colors.text.inverse
+                              : colors.text.primary,
+                            cursor: "pointer",
+                            border: "none",
+                          }}
+                          aria-label={t("searchResults.pagination.goToPage", {
+                            page: pageNumber,
+                          })}
+                          aria-current={isActive ? "page" : undefined}
+                        >
+                          {pageNumber}
+                        </button>
+                      );
                     }
+                  )}
+                </div>
 
-                    const isActive = currentPage === pageNumber;
-                    return (
-                      <button
-                        key={pageNumber}
-                        onClick={() => handlePageChange(pageNumber)}
-                        style={{
-                          padding: "8px 12px",
-                          borderRadius: "6px",
-                          fontSize: "0.875rem",
-                          fontWeight: 500,
-                          backgroundColor: isActive
-                            ? colors.brand.primary
-                            : colors.background.secondary,
-                          color: isActive ? colors.text.inverse : colors.text.primary,
-                          cursor: "pointer",
-                          border: "none",
-                        }}
-                        aria-label={`Go to page ${pageNumber}`}
-                        aria-current={isActive ? "page" : undefined}
-                      >
-                        {pageNumber}
-                      </button>
-                    );
-                  }
-                )}
+                <button
+                  onClick={handleUserNextPage}
+                  disabled={!userPagination.hasNextPage}
+                  style={{
+                    padding: "8px 16px",
+                    borderRadius: "6px",
+                    fontSize: "0.875rem",
+                    fontWeight: 500,
+                    backgroundColor: userPagination.hasNextPage
+                      ? colors.brand.primary
+                      : colors.interactive?.disabled ||
+                        colors.background.tertiary,
+                    color: userPagination.hasNextPage
+                      ? colors.text.inverse
+                      : colors.text.tertiary,
+                    cursor: userPagination.hasNextPage
+                      ? "pointer"
+                      : "not-allowed",
+                    border: "none",
+                  }}
+                >
+                  {t("searchResults.pagination.next")}
+                </button>
               </div>
-
-              <button
-                onClick={handleUserNextPage}
-                disabled={!userPagination.hasNextPage}
-                style={{
-                  padding: "8px 16px",
-                  borderRadius: "6px",
-                  fontSize: "0.875rem",
-                  fontWeight: 500,
-                  backgroundColor: userPagination.hasNextPage
-                    ? colors.brand.primary
-                    : colors.interactive?.disabled || colors.background.tertiary,
-                  color: userPagination.hasNextPage
-                    ? colors.text.inverse
-                    : colors.text.tertiary,
-                  cursor: userPagination.hasNextPage ? "pointer" : "not-allowed",
-                  border: "none",
-                }}
-              >
-                Next
-              </button>
-            </div>
-          )}
+            )}
 
           {/* User pagination info */}
           {!usersLoading && !usersError && users.length > 0 && (
@@ -1224,11 +1282,19 @@ const SearchResults = () => {
                 color: colors.text.secondary,
               }}
             >
-              Showing {users.length} of {userPagination.totalItems} users
+              {t("searchResults.pagination.showingUsers", {
+                count: users.length,
+                total: userPagination.totalItems,
+              })}
               {userPagination.totalPages > 1 && (
                 <span>
                   {" "}
-                  (Page {currentPage} of {userPagination.totalPages})
+                  (
+                  {t("searchResults.pagination.page", {
+                    current: currentPage,
+                    total: userPagination.totalPages,
+                  })}
+                  )
                 </span>
               )}
             </div>

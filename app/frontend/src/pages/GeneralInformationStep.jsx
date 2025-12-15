@@ -1,6 +1,7 @@
 import React, { forwardRef, useImperativeHandle } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useForm, Controller } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import {
   updateFormData,
   incrementRequiredPeople,
@@ -9,13 +10,15 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import CreateIcon from "@mui/icons-material/Create";
-import { urgencyLevels } from "../constants/urgency_level";
+import { urgencyLevels, getUrgencyLevelName } from "../constants/urgency_level";
+import { getCategoryName } from "../constants/categories";
 import { useTheme } from "../hooks/useTheme";
 
 const GeneralInformationStep = (props, ref) => {
   const dispatch = useDispatch();
   const { formData, categories } = useSelector((state) => state.createRequest);
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
   const {
     control,
@@ -75,16 +78,19 @@ const GeneralInformationStep = (props, ref) => {
                 className="text-sm font-bold mb-2"
                 style={{ color: colors.text.primary }}
               >
-                Title
+                {t("generalInformationStep.title")}
               </label>
               <Controller
                 name="title"
                 control={control}
                 rules={{
-                  required: { value: true, message: "Title is required" },
+                  required: {
+                    value: true,
+                    message: t("generalInformationStep.titleRequired"),
+                  },
                   minLength: {
                     value: 3,
-                    message: "Title must be at least 3 characters",
+                    message: t("generalInformationStep.titleMinLength"),
                   },
                 }}
                 render={({ field }) => (
@@ -110,7 +116,9 @@ const GeneralInformationStep = (props, ref) => {
                             ? colors.semantic.error
                             : colors.border.primary,
                         }}
-                        placeholder="Help me to see a doctor"
+                        placeholder={t(
+                          "generalInformationStep.titlePlaceholder"
+                        )}
                         onChange={(e) => {
                           field.onChange(e);
                           handleFieldChange("title", e.target.value);
@@ -152,7 +160,7 @@ const GeneralInformationStep = (props, ref) => {
                 className="text-sm font-bold mb-2"
                 style={{ color: colors.text.primary }}
               >
-                Category
+                {t("generalInformationStep.category")}
               </label>
               <Controller
                 name="category"
@@ -178,10 +186,12 @@ const GeneralInformationStep = (props, ref) => {
                     aria-required="true"
                   >
                     {/* Add "Other" as a fallback option even if API doesn't return it */}
-                    <option value="OTHER">Other Services</option>
+                    <option value="OTHER">
+                      {t("generalInformationStep.otherServices")}
+                    </option>
                     {categories.map((category) => (
                       <option key={category.value} value={category.value}>
-                        {category.name}
+                        {getCategoryName(category.value, t)}
                       </option>
                     ))}
                   </select>
@@ -199,16 +209,19 @@ const GeneralInformationStep = (props, ref) => {
                 className="text-sm font-bold mb-2"
                 style={{ color: colors.text.primary }}
               >
-                Description
+                {t("generalInformationStep.description")}
               </label>
               <Controller
                 name="description"
                 control={control}
                 rules={{
-                  required: { value: true, message: "Description is required" },
+                  required: {
+                    value: true,
+                    message: t("generalInformationStep.descriptionRequired"),
+                  },
                   minLength: {
                     value: 10,
-                    message: "Description must be at least 10 characters",
+                    message: t("generalInformationStep.descriptionMinLength"),
                   },
                 }}
                 render={({ field }) => (
@@ -229,7 +242,9 @@ const GeneralInformationStep = (props, ref) => {
                           ? colors.semantic.error
                           : colors.border.primary,
                       }}
-                      placeholder="Input text"
+                      placeholder={t(
+                        "generalInformationStep.descriptionPlaceholder"
+                      )}
                       onChange={(e) => {
                         field.onChange(e);
                         handleFieldChange("description", e.target.value);
@@ -271,7 +286,7 @@ const GeneralInformationStep = (props, ref) => {
                 className="text-sm font-bold mb-2"
                 style={{ color: colors.text.primary }}
               >
-                Urgency
+                {t("generalInformationStep.urgency")}
               </label>
               <Controller
                 name="urgency"
@@ -297,7 +312,7 @@ const GeneralInformationStep = (props, ref) => {
                   >
                     {Object.entries(urgencyLevels).map(([key, value]) => (
                       <option key={key} value={key}>
-                        {value.name}
+                        {getUrgencyLevelName(Number(key), t)}
                       </option>
                     ))}
                   </select>
@@ -314,7 +329,7 @@ const GeneralInformationStep = (props, ref) => {
             style={{ color: colors.text.primary }}
             htmlFor="required-people"
           >
-            Required number of people
+            {t("generalInformationStep.requiredPeople")}
           </label>
           <div className="flex items-center">
             <button
@@ -338,7 +353,7 @@ const GeneralInformationStep = (props, ref) => {
                 (e.currentTarget.style.backgroundColor =
                   colors.background.secondary)
               }
-              aria-label="Decrease required number of people"
+              aria-label={t("generalInformationStep.decreaseRequiredPeople")}
             >
               <RemoveIcon
                 sx={{ color: colors.text.primary }}
@@ -371,7 +386,7 @@ const GeneralInformationStep = (props, ref) => {
               onMouseOut={(e) =>
                 (e.currentTarget.style.backgroundColor = colors.brand.primary)
               }
-              aria-label="Increase required number of people"
+              aria-label={t("generalInformationStep.increaseRequiredPeople")}
             >
               <AddIcon aria-hidden="true" />
             </button>
