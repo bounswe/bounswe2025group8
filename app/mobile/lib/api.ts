@@ -32,7 +32,7 @@ const port = Constants.expoConfig?.extra?.apiPort ?? '8000';
 // use the first one returned by the command
 // Can be set via Constants.expoConfig?.extra?.localLanIp from .env file
 // const LOCAL_LAN_IP = Constants.expoConfig?.extra?.localLanIp ?? '172.20.10.2'; // Default fallback if not set
-const LOCAL_LAN_IP = '192.168.5.27'; // Hardcoded for current session
+const LOCAL_LAN_IP = '172.20.10.2'; // Hardcoded for current session
 
 const API_HOST = Platform.select({
   web: 'localhost',           // Web uses localhost
@@ -44,9 +44,9 @@ const API_HOST = Platform.select({
 // Use environment variable if present (from .env via Constants.expoConfig?.extra?.backendBaseUrl), otherwise fallback to dynamic host
 const ENV_BACKEND_URL = Constants.expoConfig?.extra?.backendBaseUrl;
 
-//export const BACKEND_BASE_URL = ENV_BACKEND_URL ? ENV_BACKEND_URL : `http://${API_HOST}:${port}`;
+export const BACKEND_BASE_URL = ENV_BACKEND_URL ? ENV_BACKEND_URL : `http://${API_HOST}:${port}`;
 
-export const BACKEND_BASE_URL = `http://${API_HOST}:${port}`;
+//export const BACKEND_BASE_URL = `http://${API_HOST}:${port}`;
 
 export const API_BASE_URL = `${BACKEND_BASE_URL}/api`;
 
@@ -881,11 +881,42 @@ const normalizeTasksResponse = (payload: unknown): TasksResponse => {
 
 export const getTasks = async (): Promise<TasksResponse> => {
   try {
-    console.log('Fetching tasks');
-    const response = await api.get('/tasks/');
-    const normalized = normalizeTasksResponse(response.data);
-    console.log('Tasks response (normalized):', normalized);
-    return normalized;
+    console.log('Fetching all tasks (all pages)');
+
+    let allResults: Task[] = [];
+    let page = 1;
+    let hasMore = true;
+    const maxPages = 10; // Safety limit to prevent infinite loops
+
+    // Fetch all pages using page number
+    while (hasMore && page <= maxPages) {
+      console.log(`Fetching page ${page}`);
+      try {
+        const response = await api.get('/tasks/', { params: { page } });
+        const data = response.data;
+
+        // Handle results
+        if (data.results && Array.isArray(data.results)) {
+          allResults = [...allResults, ...data.results];
+        }
+
+        // Check if there's a next page
+        hasMore = !!data.next;
+        page++;
+      } catch (pageError) {
+        console.error(`Error fetching page ${page}:`, pageError);
+        hasMore = false; // Stop on error
+      }
+    }
+
+    console.log('Fetched all tasks - total:', allResults.length);
+
+    return {
+      count: allResults.length,
+      next: null,
+      previous: null,
+      results: allResults,
+    };
   } catch (error) {
     if (error instanceof AxiosError) {
       console.error('Get tasks error details:', {
