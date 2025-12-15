@@ -342,7 +342,7 @@ const RequestDetail = () => {
               {error}
             </p>
             <button
-              onClick={() => navigate("/requests")}
+              onClick={() => navigate(-1)}
               className="inline-flex items-center px-4 py-2 rounded-md transition-colors"
               style={{
                 backgroundColor: colors.brand.primary,
@@ -355,10 +355,10 @@ const RequestDetail = () => {
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = colors.brand.primary;
               }}
-              aria-label="Back to Requests"
+              aria-label={t("requestDetail.backToRequests")}
             >
               <ArrowBackIcon className="mr-2 w-4 h-4" />
-              Back to Requests
+              {t("requestDetail.backToRequests")}
             </button>
           </div>
         </div>
@@ -390,7 +390,7 @@ const RequestDetail = () => {
               {t("requestDetail.requestNotFoundDescription")}
             </p>
             <button
-              onClick={() => navigate("/requests")}
+              onClick={() => navigate(-1)}
               className="inline-flex items-center px-4 py-2 rounded-md transition-colors"
               style={{
                 backgroundColor: colors.brand.primary,
@@ -403,10 +403,10 @@ const RequestDetail = () => {
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = colors.brand.primary;
               }}
-              aria-label="Back to Requests"
+              aria-label={t("requestDetail.backToRequests")}
             >
               <ArrowBackIcon className="mr-2 w-4 h-4" />
-              Back to Requests
+              {t("requestDetail.backToRequests")}
             </button>
           </div>
         </div>
@@ -888,7 +888,7 @@ const RequestDetail = () => {
         {/* Back Button and Title */}
         <div className="flex items-center mb-6">
           <button
-            onClick={() => navigate("/requests")}
+            onClick={() => navigate(-1)}
             className="mr-4 p-2 rounded-full transition-colors"
             style={{ color: colors.text.secondary }}
             onMouseEnter={(e) => {
@@ -899,7 +899,7 @@ const RequestDetail = () => {
               e.currentTarget.style.color = colors.text.secondary;
               e.currentTarget.style.backgroundColor = "transparent";
             }}
-            aria-label="Back to Requests"
+            aria-label={t("requestDetail.aria.backToRequests")}
           >
             <ArrowBackIcon className="w-6 h-6" aria-hidden="true" />
           </button>
