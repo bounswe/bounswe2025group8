@@ -64,6 +64,9 @@
         "CLEANING": "Temizlik",
         "REPAIR": "Tamir"
     },
+    "category": {
+        "noRequests": "Bu kategori için istek bulunamadı."
+    },
     "auth": {
         "signIn": "Giriş Yap",
         "signUp": "Kayıt Ol",
@@ -111,6 +114,7 @@
         "followingRequests": "Takip Ettiğiniz Kişilerin İstekleri",
         "noFollowingRequests": "İsteklerini görmek için kullanıcıları takip edin",
         "seeAllFollowing": "Takip ettiklerinizin tüm isteklerini gör",
+        "errorLoadingTasks": "Görevler yüklenemedi. Lütfen tekrar deneyin.",
         "home": "Ana Sayfa",
         "categories": "Kategoriler",
         "create": "Oluştur",
@@ -240,7 +244,10 @@
         "noResults": "Sonuç bulunamadı.",
         "urgencySuffix": "aciliyet",
         "requestsSuffix": "istek",
-        "loadError": "Arama verileri yüklenemedi. Lütfen tekrar deneyin."
+        "requestsIn": "{{location}} içindeki İstekler",
+        "loadError": "Arama verileri yüklenemedi. Lütfen tekrar deneyin.",
+        "photoError": "Profil fotoğrafı yüklenemedi. Lütfen tekrar deneyin.",
+        "logout": "Çıkış Yap"
     },
     "profile": {
         "reviewsCount": "{{count}} değerlendirme",
