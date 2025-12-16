@@ -6,6 +6,7 @@ import { useTheme } from '@react-navigation/native';
 import { useAuth } from '../lib/auth';
 import { CategoryPicker } from '../components/forms/CategoryPicker';
 import { useTranslation } from 'react-i18next';
+import NotificationIconWithBadge from '../components/ui/NotificationIconWithBadge';
 
 const urgencies = ['Low', 'Medium', 'High'];
 
@@ -141,7 +142,7 @@ export default function CreateRequest() {
               accessibilityRole="button"
               accessibilityLabel="Open notifications"
             >
-              <Ionicons name="notifications-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
+              <NotificationIconWithBadge style={{ marginRight: 12 }} />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push('/settings')}

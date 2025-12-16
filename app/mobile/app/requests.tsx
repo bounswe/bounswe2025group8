@@ -20,6 +20,7 @@ import { useAuth } from '../lib/auth';
 import { useAppTheme } from '../theme/ThemeProvider';
 import { locationMatches, normalizedLocationLabel } from '../utils/address';
 import { useTranslation } from 'react-i18next';
+import NotificationIconWithBadge from '../components/ui/NotificationIconWithBadge';
 
 export default function Requests() {
   const { colors } = useTheme();
@@ -141,10 +142,10 @@ export default function Requests() {
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
 
     if (diffInHours < 24) {
-      return `${diffInHours} ${t('common.hoursAgo')}`;
+      return `${diffInHours} ${t('common.time.hoursAgo')}`;
     } else {
       const diffInDays = Math.floor(diffInHours / 24);
-      return `${diffInDays} ${t('common.daysAgo')}`;
+      return `${diffInDays} ${t('common.time.daysAgo')}`;
     }
   };
 
@@ -154,15 +155,7 @@ export default function Requests() {
       <View style={styles.header}>
         <Image source={require('../assets/images/logo.png')} style={styles.logo} />
         <View style={styles.icons}>
-          <TouchableOpacity
-            onPress={() => router.push('/notifications')}
-            accessible
-
-            accessibilityRole="button"
-            accessibilityLabel="Open notifications"
-          >
-            <Ionicons name="notifications-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
-          </TouchableOpacity>
+          <NotificationIconWithBadge style={{ marginRight: 12 }} />
           <TouchableOpacity
             onPress={() => router.push('/settings')}
             accessible

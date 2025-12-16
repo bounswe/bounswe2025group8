@@ -1299,9 +1299,44 @@ export const createReview = async (data: CreateReviewRequest): Promise<CreateRev
 
 export const searchUsers = async (query?: string): Promise<UsersResponse> => {
   try {
-    const params = query ? { search: query } : {};
-    const response = await api.get<UsersResponse>('/users/', { params });
-    return response.data;
+    console.log('Fetching all users (all pages) with query:', query);
+
+    let allResults: UserProfile[] = [];
+    let page = 1;
+    let hasMore = true;
+    const maxPages = 10; // Safety limit
+
+    // Fetch all pages
+    while (hasMore && page <= maxPages) {
+      console.log(`Fetching users page ${page}`);
+      const params = query ? { search: query, page } : { page };
+
+      try {
+        const response = await api.get<UsersResponse>('/users/', { params });
+        const data = response.data;
+
+        // Handle results
+        if (data.results && Array.isArray(data.results)) {
+          allResults = [...allResults, ...data.results];
+        }
+
+        // Check if there's a next page
+        hasMore = !!data.next;
+        page++;
+      } catch (pageError) {
+        console.error(`Error fetching users page ${page}:`, pageError);
+        hasMore = false;
+      }
+    }
+
+    console.log('Fetched all users - total:', allResults.length);
+
+    return {
+      count: allResults.length,
+      next: null,
+      previous: null,
+      results: allResults,
+    };
   } catch (error) {
     console.error(`Error searching users with query "${query}":`, error);
     if (axios.isAxiosError(error) && error.response) {
