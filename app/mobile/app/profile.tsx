@@ -6,16 +6,22 @@ import RatingPill from '../components/ui/RatingPill';
 import ReviewCard from '../components/ui/ReviewCard';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../lib/auth';
-import { getUserProfile, type UserProfile, getTasks, type Task, getUserReviews, type Review, listVolunteers, type Volunteer, uploadProfilePhoto, deleteProfilePhoto, BACKEND_BASE_URL } from '../lib/api';
+import { getUserProfile, type UserProfile, getTasks, getUserTasks, type Task, getUserReviews, type Review, listVolunteers, type Volunteer, uploadProfilePhoto, deleteProfilePhoto, submitUserReport, BACKEND_BASE_URL, followUser, unfollowUser, getFollowers, getFollowing, type FollowerInfo, type FollowingInfo, getAllBadges, getUserBadges, checkBadges, type Badge, type UserBadge } from '../lib/api';
+import { ReportModal } from '../components/ReportModal';
+import FollowListModal from '../components/ui/FollowListModal';
+import BadgeModal from '../components/ui/BadgeModal';
+import BadgeComponent from '../components/ui/Badge';
+import BadgeDetailModal from '../components/ui/BadgeDetailModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RequestCard from '../components/ui/RequestCard';
 import { Ionicons } from '@expo/vector-icons';
 import type { ThemeTokens } from '../constants/Colors';
 import * as ImagePicker from 'expo-image-picker';
+import { useTranslation } from 'react-i18next';
 
 export default function ProfileScreen() {
   const { colors } = useTheme();
-  const themeColors = colors as ThemeTokens;
+  const themeColors = colors as unknown as ThemeTokens;
   const params = useLocalSearchParams();
   const router = useRouter();
   const { user } = useAuth();
@@ -36,8 +42,40 @@ export default function ProfileScreen() {
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewsError, setReviewsError] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+
+  // Follow-related state
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+  const [followers, setFollowers] = useState<FollowerInfo[]>([]);
+  const [following, setFollowing] = useState<FollowingInfo[]>([]);
+  const [followersModalVisible, setFollowersModalVisible] = useState(false);
+  const [followingModalVisible, setFollowingModalVisible] = useState(false);
+  const [followLoading, setFollowLoading] = useState(false);
+
+  // Badge-related state
+  const [earnedUserBadges, setEarnedUserBadges] = useState<UserBadge[]>([]);
+  const [allBadges, setAllBadges] = useState<Badge[]>([]);
+  const [badgesLoading, setBadgesLoading] = useState(false);
+  const [badgeModalVisible, setBadgeModalVisible] = useState(false);
+  const [selectedBadge, setSelectedBadge] = useState<Badge | UserBadge | null>(null);
+  const [badgeDetailModalVisible, setBadgeDetailModalVisible] = useState(false);
 
   const [selectedTab, setSelectedTab] = useState<'volunteer' | 'requester'>(initialTab);
+
+  const { t } = useTranslation();
+
+  const handleReportUser = async (reportType: string, description: string) => {
+    if (!profile?.id) return;
+    try {
+      await submitUserReport(profile.id, reportType, description);
+      Alert.alert(t('common.success'), t('profile.reportSuccess'));
+      setReportModalVisible(false);
+    } catch (err: any) {
+      Alert.alert(t('common.error'), err.message || t('profile.reportError'));
+    }
+  };
 
   const handlePhotoUpload = async () => {
     if (!user?.id) return;
@@ -45,7 +83,7 @@ export default function ProfileScreen() {
     try {
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permissionResult.granted) {
-        Alert.alert('Permission Required', 'Please allow access to your photo library.');
+        Alert.alert(t('common.error'), t('profile.photoPermission'));
         return;
       }
 
@@ -68,11 +106,11 @@ export default function ProfileScreen() {
         setProfile(updatedProfile);
         await AsyncStorage.setItem('userProfile', JSON.stringify(updatedProfile));
 
-        Alert.alert('Success', 'Profile photo updated successfully!');
+        Alert.alert(t('common.success'), t('profile.photoSuccess'));
       }
     } catch (error) {
       console.error('Photo upload error:', error);
-      Alert.alert('Error', 'Failed to upload profile photo. Please try again.');
+      Alert.alert(t('common.error'), t('profile.photoError'));
     } finally {
       setPhotoUploading(false);
     }
@@ -165,6 +203,45 @@ export default function ProfileScreen() {
     loadProfileForTargetUser();
   }, [targetUserId, user?.id, viewedUserId]);
 
+  // Fetch follower and following data
+  useEffect(() => {
+    if (!profile?.id) {
+      setFollowers([]);
+      setFollowing([]);
+      setFollowersCount(0);
+      setFollowingCount(0);
+      setIsFollowing(false);
+      return;
+    }
+
+    const fetchFollowData = async () => {
+      try {
+        const [followersList, followingList] = await Promise.all([
+          getFollowers(profile.id),
+          getFollowing(profile.id),
+        ]);
+
+        setFollowers(followersList);
+        setFollowing(followingList);
+        setFollowersCount(followersList.length);
+        setFollowingCount(followingList.length);
+
+        // Check if current user is following this profile
+        if (user?.id && profile.id !== user.id) {
+          const currentUserFollowing = await getFollowing(user.id);
+          const isCurrentlyFollowing = currentUserFollowing.some(
+            (followedUser) => followedUser.id === profile.id
+          );
+          setIsFollowing(isCurrentlyFollowing);
+        }
+      } catch (error) {
+        console.error('Error fetching follow data:', error);
+      }
+    };
+
+    fetchFollowData();
+  }, [profile?.id, user?.id]);
+
   useEffect(() => {
     if (!targetUserId) {
       setAllTasks([]);
@@ -172,13 +249,13 @@ export default function ProfileScreen() {
       return;
     }
 
-    // Fetch tasks
-    getTasks()
+    // Fetch tasks for this specific user (automatically fetches all pages)
+    getUserTasks(targetUserId)
       .then((res) => {
         setAllTasks(res.results || []);
       })
       .catch(() => {
-        Alert.alert('Error', 'Could not load task lists.');
+        Alert.alert(t('common.error'), t('profile.loadTasksError', { defaultValue: 'Could not load task lists.' }));
         setAllTasks([]);
       });
 
@@ -208,8 +285,8 @@ export default function ProfileScreen() {
 
       console.log('[ProfileScreen] Screen focused - refreshing task data');
 
-      // Refresh tasks
-      getTasks()
+      // Refresh tasks for this specific user (automatically fetches all pages)
+      getUserTasks(targetUserId)
         .then((res) => {
           setAllTasks(res.results || []);
         })
@@ -279,14 +356,19 @@ export default function ProfileScreen() {
   const getUrgencyLabel = (task: Task) => {
     switch (task.urgency_level) {
       case 3:
-        return 'High';
+        return t('urgency.high');
       case 2:
-        return 'Medium';
+        return t('urgency.medium');
       case 1:
-        return 'Low';
+        return t('urgency.low');
       default:
-        return 'Medium';
+        return t('urgency.medium');
     }
+  };
+
+  const formatStatusLabel = (status?: string) => {
+    const base = status || 'Status';
+    return t(`requestDetails.status.${base.toLowerCase().replace(/\s+/g, '_')}`);
   };
 
   const renderTaskSection = (
@@ -305,9 +387,9 @@ export default function ProfileScreen() {
             <RequestCard
               key={task.id}
               title={task.title}
-              category={task.category_display || task.category}
+              category={t(`categories.${task.category}`, { defaultValue: task.category_display || task.category })}
               urgencyLevel={getUrgencyLabel(task)}
-              status={task.status_display || task.status}
+              status={formatStatusLabel(task.status)}
               distance={task.location || 'N/A'}
               time={task.deadline ? new Date(task.deadline).toLocaleDateString() : ''}
               onPress={() => {
@@ -335,15 +417,60 @@ export default function ProfileScreen() {
         console.log('[ProfileScreen] Reviews response:', JSON.stringify(res.data.reviews));
         setReviews(res.data.reviews || []);
       })
-      .catch(() => setReviewsError('Failed to load reviews'))
+      .catch(() => setReviewsError(t('profile.loadReviewsError')))
       .finally(() => setReviewsLoading(false));
   }, [profile?.id]);
+
+  // Fetch badges when profile loads
+  useEffect(() => {
+    if (!targetUserId) {
+      setEarnedUserBadges([]);
+      setAllBadges([]);
+      return;
+    }
+
+    const fetchBadges = async () => {
+      try {
+        setBadgesLoading(true);
+        
+        // Check badges for own profile (to award new badges)
+        if (user?.id && targetUserId === user.id) {
+          try {
+            await checkBadges();
+            console.log('[ProfileScreen] Badge check completed');
+          } catch (error) {
+            console.error('[ProfileScreen] Error checking badges:', error);
+            // Don't show error to user, just log it
+          }
+        }
+
+        // Fetch user badges and all badges in parallel
+        const [userBadgesData, allBadgesData] = await Promise.all([
+          getUserBadges(targetUserId),
+          getAllBadges(),
+        ]);
+
+        // Store full UserBadge objects to preserve earned_at information
+        setEarnedUserBadges(userBadgesData);
+        setAllBadges(allBadgesData);
+      } catch (error) {
+        console.error('[ProfileScreen] Error fetching badges:', error);
+        // Don't show error to user, just set empty arrays
+        setEarnedUserBadges([]);
+        setAllBadges([]);
+      } finally {
+        setBadgesLoading(false);
+      }
+    };
+
+    fetchBadges();
+  }, [targetUserId, user?.id]);
 
   if (!viewedUserId && !user) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-        <Text style={{ color: colors.text, fontSize: 20, marginBottom: 16 }}>You are browsing as a guest.</Text>
-        <Text style={{ color: colors.text, fontSize: 16, marginBottom: 24 }}>Sign up or sign in to access your profile!</Text>
+        <Text style={{ color: colors.text, fontSize: 20, marginBottom: 16 }}>{t('profile.guestMessage')}</Text>
+        <Text style={{ color: colors.text, fontSize: 16, marginBottom: 24 }}>{t('profile.guestAction')}</Text>
         <TouchableOpacity
           style={{ backgroundColor: colors.primary, paddingHorizontal: 32, paddingVertical: 12, borderRadius: 24, marginBottom: 12 }}
           onPress={() => router.push('/signup')}
@@ -352,7 +479,7 @@ export default function ProfileScreen() {
           accessibilityRole="button"
           accessibilityLabel="Sign up"
         >
-          <Text style={{ color: colors.background, fontWeight: 'bold', fontSize: 16 }}>Sign Up</Text>
+          <Text style={{ color: colors.background, fontWeight: 'bold', fontSize: 16 }}>{t('auth.signUp')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={{ borderColor: colors.primary, borderWidth: 2, paddingHorizontal: 32, paddingVertical: 12, borderRadius: 24 }}
@@ -362,7 +489,7 @@ export default function ProfileScreen() {
           accessibilityRole="button"
           accessibilityLabel="Sign in"
         >
-          <Text style={{ color: colors.primary, fontWeight: 'bold', fontSize: 16 }}>Sign In</Text>
+          <Text style={{ color: colors.primary, fontWeight: 'bold', fontSize: 16 }}>{t('auth.signIn')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -393,7 +520,7 @@ export default function ProfileScreen() {
                 .catch(() => setError(viewedUserId ? 'Failed to load user profile.' : 'Failed to load your profile.'))
                 .finally(() => setLoading(false));
             } else {
-              Alert.alert("Error", "Cannot retry: User ID is not available.");
+              Alert.alert(t('common.error'), "Cannot retry: User ID is not available.");
             }
           }}
           accessible
@@ -401,7 +528,7 @@ export default function ProfileScreen() {
           accessibilityRole="button"
           accessibilityLabel="Retry loading profile"
         >
-          <Text style={{ color: colors.background, fontWeight: 'bold' }}>Retry</Text>
+          <Text style={{ color: colors.background, fontWeight: 'bold' }}>{t('profile.retry')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -410,7 +537,7 @@ export default function ProfileScreen() {
   if (!profile) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-        <Text style={{ color: colors.text, fontSize: 18 }}>Profile data is not available.</Text>
+        <Text style={{ color: colors.text, fontSize: 18 }}>{t('profile.dataUnavailable')}</Text>
       </View>
     );
   }
@@ -429,9 +556,52 @@ export default function ProfileScreen() {
     displayName = profile.username;
   }
   if (!displayName) {
-    displayName = 'User';
+    displayName = t('profile.defaultUser');
   }
   const usernameLabel = profile.username ? `@${profile.username}` : '';
+
+  const handleFollowToggle = async () => {
+    if (!profile?.id || !user?.id) return;
+
+    setFollowLoading(true);
+    try {
+      if (isFollowing) {
+        await unfollowUser(profile.id);
+        setIsFollowing(false);
+        setFollowersCount((prev) => Math.max(0, prev - 1));
+        // Update followers list
+        setFollowers((prev) => prev.filter((f) => f.id !== user.id));
+        Alert.alert(t('common.success'), t('profile.unfollowSuccess', { defaultValue: 'You have unfollowed this user.' }));
+      } else {
+        await followUser(profile.id);
+        setIsFollowing(true);
+        setFollowersCount((prev) => prev + 1);
+        // Optionally add current user to followers list
+        if (user.id) {
+          // Get current user profile from AsyncStorage
+          const currentUserProfileData = await AsyncStorage.getItem('userProfile');
+          if (currentUserProfileData) {
+            const currentUserProfile: UserProfile = JSON.parse(currentUserProfileData);
+            const newFollower: FollowerInfo = {
+              id: user.id,
+              username: currentUserProfile.username || '',
+              name: currentUserProfile.name || '',
+              surname: currentUserProfile.surname || '',
+              profile_photo: currentUserProfile.profile_photo || null,
+              followed_at: new Date().toISOString(),
+            };
+            setFollowers((prev) => [newFollower, ...prev]);
+          }
+        }
+        Alert.alert(t('common.success'), t('profile.followSuccess', { defaultValue: 'You are now following this user.' }));
+      }
+    } catch (error: any) {
+      console.error('Follow toggle error:', error);
+      Alert.alert(t('common.error'), error.message || t('profile.followError'));
+    } finally {
+      setFollowLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background }}>
@@ -508,6 +678,145 @@ export default function ProfileScreen() {
               </TouchableOpacity>
             </>
           )}
+          {!isOwnProfile && (
+            <TouchableOpacity
+              onPress={() => setReportModalVisible(true)}
+              style={{ marginLeft: 12 }}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Report user"
+            >
+              <Ionicons name="flag-outline" size={28} color={themeColors.error} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Badges Section */}
+        <View style={[styles.badgesSection, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+          <View style={styles.badgesHeader}>
+            <View style={styles.badgesHeaderLeft}>
+              <Ionicons name="trophy" size={20} color={themeColors.primary} />
+              <Text style={[styles.badgesTitle, { color: themeColors.text }]}>
+                {t('profile.badges.title', { defaultValue: 'Badges' })}
+              </Text>
+              {earnedUserBadges.length > 0 && (
+                <View style={[styles.badgeCountPill, { backgroundColor: themeColors.primary }]}>
+                  <Text style={[styles.badgeCountText, { color: themeColors.card }]}>
+                    {earnedUserBadges.length}
+                  </Text>
+                </View>
+              )}
+            </View>
+            <TouchableOpacity
+              onPress={() => setBadgeModalVisible(true)}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={t('profile.badges.viewAll', { defaultValue: 'View all badges' })}
+            >
+              <Text style={[styles.viewAllText, { color: themeColors.primary }]}>
+                {t('profile.badges.viewAll', { defaultValue: 'View All' })}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          
+          {badgesLoading ? (
+            <ActivityIndicator color={themeColors.primary} style={{ marginVertical: 16 }} />
+          ) : earnedUserBadges.length > 0 ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.badgesScrollContent}
+            >
+              {earnedUserBadges.slice(0, 5).map((userBadge) => (
+                <BadgeComponent
+                  key={userBadge.id}
+                  badge={userBadge}
+                  isEarned={true}
+                  size="medium"
+                  onPress={() => {
+                    setSelectedBadge(userBadge);
+                    setBadgeDetailModalVisible(true);
+                  }}
+                />
+              ))}
+              {earnedUserBadges.length > 5 && (
+                <TouchableOpacity
+                  onPress={() => setBadgeModalVisible(true)}
+                  style={[styles.moreBadgesButton, { backgroundColor: themeColors.background }]}
+                >
+                  <Text style={[styles.moreBadgesText, { color: themeColors.primary }]}>
+                    +{earnedUserBadges.length - 5}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </ScrollView>
+          ) : (
+            <Text style={[styles.noBadgesText, { color: themeColors.textMuted }]}>
+              {t('profile.badges.noBadgesYet', { defaultValue: 'No badges earned yet' })}
+            </Text>
+          )}
+        </View>
+
+        {/* Follow button and follower/following counts */}
+        <View style={styles.followSection}>
+          {!isOwnProfile && (
+            <TouchableOpacity
+              style={[
+                styles.followButton,
+                {
+                  backgroundColor: isFollowing ? themeColors.card : themeColors.primary,
+                  borderColor: themeColors.primary,
+                  borderWidth: isFollowing ? 1 : 0,
+                },
+              ]}
+              onPress={handleFollowToggle}
+              disabled={followLoading}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={isFollowing ? 'Unfollow user' : 'Follow user'}
+            >
+              {followLoading ? (
+                <ActivityIndicator size="small" color={isFollowing ? themeColors.primary : themeColors.card} />
+              ) : (
+                <Text
+                  style={[
+                    styles.followButtonText,
+                    { color: isFollowing ? themeColors.primary : themeColors.card },
+                  ]}
+                >
+                  {isFollowing ? t('profile.unfollow', { defaultValue: 'Unfollow' }) : t('profile.follow', { defaultValue: 'Follow' })}
+                </Text>
+              )}
+            </TouchableOpacity>
+          )}
+
+          <View style={styles.statsRow}>
+            <TouchableOpacity
+              style={styles.statButton}
+              onPress={() => setFollowersModalVisible(true)}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={`${followersCount} followers`}
+            >
+              <Text style={[styles.statCount, { color: themeColors.text }]}>{followersCount}</Text>
+              <Text style={[styles.statLabel, { color: themeColors.textMuted }]}>
+                {t('profile.followers', { defaultValue: 'Followers' })}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.statButton}
+              onPress={() => setFollowingModalVisible(true)}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={`${followingCount} following`}
+            >
+              <Text style={[styles.statCount, { color: themeColors.text }]}>{followingCount}</Text>
+              <Text style={[styles.statLabel, { color: themeColors.textMuted }]}>
+                {t('profile.following', { defaultValue: 'Following' })}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={[styles.tabSelectorContainer, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
@@ -521,7 +830,7 @@ export default function ProfileScreen() {
             accessibilityState={{ selected: selectedTab === 'volunteer' }}
           >
             <Text style={[styles.tabButtonText, { color: selectedTab === 'volunteer' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'volunteer' ? 'bold' : 'normal' }]}>
-              {isOwnProfile ? 'My Volunteer Tasks' : 'Volunteer Tasks'}
+              {isOwnProfile ? t('profile.myVolunteerTasks') : t('profile.volunteerTasks')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -534,7 +843,7 @@ export default function ProfileScreen() {
             accessibilityState={{ selected: selectedTab === 'requester' }}
           >
             <Text style={[styles.tabButtonText, { color: selectedTab === 'requester' ? themeColors.card : themeColors.primary, fontWeight: selectedTab === 'requester' ? 'bold' : 'normal' }]}>
-              {isOwnProfile ? 'My Created Tasks' : 'Created Tasks'}
+              {isOwnProfile ? t('profile.myCreatedTasks') : t('profile.createdTasks')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -542,15 +851,15 @@ export default function ProfileScreen() {
         {selectedTab === 'volunteer' && (
           <>
             {renderTaskSection(
-              isOwnProfile ? 'Active Tasks as Volunteer' : 'Active Volunteer Tasks',
+              isOwnProfile ? t('profile.activeVolunteerTasksMy') : t('profile.activeVolunteerTasksOther'),
               activeVolunteerTasks,
-              'No active volunteer tasks.',
+              t('profile.noActiveVolunteerTasks'),
               '/v-request-details'
             )}
             {renderTaskSection(
-              isOwnProfile ? 'Past Tasks as Volunteer' : 'Past Volunteer Tasks',
+              isOwnProfile ? t('profile.pastVolunteerTasksMy') : t('profile.pastVolunteerTasksOther'),
               pastVolunteerTasks,
-              'No past volunteer tasks.',
+              t('profile.noPastVolunteerTasks'),
               '/v-request-details'
             )}
           </>
@@ -559,15 +868,15 @@ export default function ProfileScreen() {
         {selectedTab === 'requester' && (
           <>
             {renderTaskSection(
-              isOwnProfile ? 'Active Tasks as Requester' : 'Active Requests',
+              isOwnProfile ? t('profile.activeRequesterTasksMy') : t('profile.activeRequesterTasksOther'),
               activeRequesterTasks,
-              isOwnProfile ? 'No active requester tasks.' : 'No active requests.',
+              isOwnProfile ? t('profile.noActiveRequesterTasksMy') : t('profile.noActiveRequesterTasksOther'),
               '/r-request-details'
             )}
             {renderTaskSection(
-              isOwnProfile ? 'Past Tasks as Requester' : 'Past Requests',
+              isOwnProfile ? t('profile.pastRequesterTasksMy') : t('profile.pastRequesterTasksOther'),
               pastRequesterTasks,
-              isOwnProfile ? 'No past requester tasks.' : 'No past requests.',
+              isOwnProfile ? t('profile.noPastRequesterTasksMy') : t('profile.noPastRequesterTasksOther'),
               '/r-request-details'
             )}
           </>
@@ -576,12 +885,12 @@ export default function ProfileScreen() {
         <View style={[styles.reviewsSectionContainer, { borderColor: themeColors.border }]}>
           <View style={styles.reviewsHeaderRow}>
             <Ionicons name="star-outline" size={20} color={themeColors.pink} />
-            <Text style={[styles.reviewsHeaderText, { color: themeColors.text }]}>Reviews for {profile ? profile.name : 'User'}</Text>
+            <Text style={[styles.reviewsHeaderText, { color: themeColors.text }]}>{t('profile.reviewsFor', { name: profile ? profile.name : t('profile.defaultUser') })}</Text>
           </View>
           {reviewsLoading && <ActivityIndicator color={themeColors.primary} style={{ marginVertical: 16 }} />}
           {reviewsError && <Text style={[styles.errorText, { color: themeColors.error }]}>{reviewsError}</Text>}
           {!reviewsLoading && !reviewsError && reviews.length === 0 && (
-            <Text style={[styles.emptyListText, { color: themeColors.textMuted, marginTop: 8, marginBottom: 16 }]}>No reviews yet for this user.</Text>
+            <Text style={[styles.emptyListText, { color: themeColors.textMuted, marginTop: 8, marginBottom: 16 }]}>{t('profile.noReviews')}</Text>
           )}
           {!reviewsLoading && !reviewsError && reviews.map((review) => {
             const reviewerPhotoUrl = review.reviewer.profile_photo || review.reviewer.photo;
@@ -610,6 +919,44 @@ export default function ProfileScreen() {
           })}
         </View>
 
+        <FollowListModal
+          visible={followersModalVisible}
+          onClose={() => setFollowersModalVisible(false)}
+          users={followers}
+          title={t('profile.followers', { defaultValue: 'Followers' })}
+        />
+
+        <FollowListModal
+          visible={followingModalVisible}
+          onClose={() => setFollowingModalVisible(false)}
+          users={following}
+          title={t('profile.following', { defaultValue: 'Following' })}
+        />
+
+        <ReportModal
+          visible={reportModalVisible}
+          onClose={() => setReportModalVisible(false)}
+          onSubmit={handleReportUser}
+          targetName={profile ? `${profile.name} ${profile.surname}` : 'User'}
+          isUserReport={true}
+        />
+
+        <BadgeModal
+          visible={badgeModalVisible}
+          onClose={() => setBadgeModalVisible(false)}
+          earnedUserBadges={earnedUserBadges}
+          allBadges={allBadges}
+          loading={badgesLoading}
+        />
+
+        <BadgeDetailModal
+          visible={badgeDetailModalVisible}
+          onClose={() => {
+            setBadgeDetailModalVisible(false);
+            setSelectedBadge(null);
+          }}
+          badge={selectedBadge}
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -710,5 +1057,100 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 15,
     marginVertical: 16,
-  }
+  },
+  followSection: {
+    marginTop: 16,
+    marginBottom: 16,
+  },
+  followButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  followButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 8,
+  },
+  statButton: {
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  statCount: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  statLabel: {
+    fontSize: 14,
+  },
+  badgesSection: {
+    marginTop: 16,
+    marginBottom: 0,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  badgesHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  badgesHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  badgesTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginLeft: 8,
+  },
+  badgeCountPill: {
+    borderRadius: 10,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginLeft: 8,
+    minWidth: 24,
+    alignItems: 'center',
+  },
+  badgeCountText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  viewAllText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  badgesScrollContent: {
+    paddingVertical: 4,
+    gap: 12,
+  },
+  moreBadgesButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    marginLeft: 4,
+  },
+  moreBadgesText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  noBadgesText: {
+    textAlign: 'center',
+    fontSize: 14,
+    fontStyle: 'italic',
+    marginVertical: 8,
+  },
 }); 

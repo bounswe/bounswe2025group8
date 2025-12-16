@@ -6,6 +6,7 @@ import { useTheme } from '@react-navigation/native';
 import { createTask, uploadTaskPhoto } from '../lib/api';
 import { AddressFields } from '../components/forms/AddressFields';
 import { AddressFieldsValue, emptyAddress, formatAddress } from '../utils/address';
+import { useTranslation } from 'react-i18next';
 
 interface TaskParams {
   title: string;
@@ -21,6 +22,7 @@ export default function CRAddress() {
   const themeColors = colors as any;
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { t } = useTranslation();
   const [address, setAddress] = useState<AddressFieldsValue>(emptyAddress);
   const [description, setDescription] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -51,25 +53,26 @@ export default function CRAddress() {
       const deadlineDate = new Date(deadline);
 
       if (!title || !taskDescription || !category) {
-        Alert.alert('Error', 'Missing task data. Please go back and try again.');
+        Alert.alert(t('common.error'), t('createRequest.errorMissingData'));
         setUploading(false);
         return;
       }
 
       if (Number.isNaN(deadlineDate.getTime())) {
-        Alert.alert('Error', 'Invalid deadline. Please pick a valid deadline.');
+        Alert.alert(t('common.error'), t('createRequest.errorInvalidDeadline'));
         setUploading(false);
         return;
       }
 
       if (deadlineDate.getTime() <= Date.now()) {
-        Alert.alert('Invalid Deadline', 'Please select a future date and time.');
+        Alert.alert(t('common.error'), t('createRequest.errorFutureDeadline'));
         setUploading(false);
         return;
       }
 
-      if (!address.country || !address.state || !address.city) {
-        Alert.alert('Error', 'Please select a country, state and city for the address.');
+      if (!address.country) {
+        Alert.alert(t('common.error'), t('createRequest.errorAddressCountry'));
+        setUploading(false);
         return;
       }
 
@@ -115,8 +118,8 @@ export default function CRAddress() {
           console.error('Error uploading photos:', photoError);
           // Don't fail the entire task creation if photos fail
           Alert.alert(
-            'Warning',
-            'Task created but some photos could not be uploaded.',
+            t('common.warning'),
+            t('createRequest.warningPhotos'),
             [{ text: 'OK', onPress: () => router.replace('/requests') }]
           );
           return;
@@ -125,12 +128,12 @@ export default function CRAddress() {
         console.log('No photos to upload. photosParam:', photosParam, 'createdTask.id:', createdTask.id);
       }
 
-      Alert.alert('Success', 'Task created successfully!', [
+      Alert.alert(t('common.success'), t('createRequest.successCreated'), [
         { text: 'OK', onPress: () => router.replace('/requests') },
       ]);
     } catch (error) {
       console.error('Error creating task:', error);
-      Alert.alert('Error', 'Failed to create task. Please try again.');
+      Alert.alert(t('common.error'), t('createRequest.errorFailed'));
     } finally {
       setUploading(false);
     }
@@ -176,9 +179,9 @@ export default function CRAddress() {
           >
             <Ionicons name="arrow-back" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
           </TouchableOpacity>
-          <Text style={[styles.pageTitle, { color: colors.text }]}>Create Request</Text>
+          <Text style={[styles.pageTitle, { color: colors.text }]}>{t('createRequest.title')}</Text>
         </View>
-        <Text style={[styles.pageSubtitle, { color: `${colors.text}99` }]}>Setup Address</Text>
+        <Text style={[styles.pageSubtitle, { color: `${colors.text}99` }]}>{t('createRequest.setupAddress')}</Text>
         <View style={styles.tabBar}>
           <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
           <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
@@ -188,10 +191,10 @@ export default function CRAddress() {
 
         <AddressFields value={address} onChange={setAddress} />
 
-        <Text style={[styles.label, { color: colors.text }]}>Address Description</Text>
+        <Text style={[styles.label, { color: colors.text }]}>{t('createRequest.addressDescription')}</Text>
         <TextInput
           style={[styles.textArea, { backgroundColor: colors.card, color: colors.text }]}
-          placeholder="Additional address details"
+          placeholder={t('createRequest.addressDescriptionPlaceholder')}
           placeholderTextColor={colors.border}
           value={description}
           onChangeText={setDescription}
@@ -215,7 +218,7 @@ export default function CRAddress() {
             <ActivityIndicator color={themeColors.onPrimary} />
           ) : (
             <Text style={[styles.nextBtnText, { color: themeColors.onPrimary }]}>
-              {uploading ? 'Creating...' : 'Create Request'}
+              {uploading ? t('createRequest.creatingButton') : t('createRequest.createButton')}
             </Text>
           )}
         </TouchableOpacity>
@@ -228,7 +231,7 @@ export default function CRAddress() {
           >
             <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
               <View style={styles.modalHeader}>
-                <Text style={[styles.modalTitle, { color: colors.text }]}>Select</Text>
+                <Text style={[styles.modalTitle, { color: colors.text }]}>{t('createRequest.select')}</Text>
                 <TouchableOpacity
                   onPress={closeModal}
                   accessible

@@ -15,16 +15,21 @@ import { useTheme } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { forgotPassword } from '../lib/api';
+import { useTranslation } from 'react-i18next';
+
+import { ThemeTokens } from '@/constants/Colors';
 
 export default function ForgotPassword() {
   const { colors } = useTheme();
+  const themeColors = colors as unknown as ThemeTokens;
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
 
   const handleForgotPassword = async () => {
     if (!email) {
-      Alert.alert('Error', 'Please enter your email address');
+      Alert.alert(t('common.error'), t('auth.fillAllFields'));
       return;
     }
 
@@ -32,18 +37,18 @@ export default function ForgotPassword() {
       setIsLoading(true);
       const response = await forgotPassword(email);
       Alert.alert(
-        'Success',
-        'If your email exists in our system, you will receive a password reset link shortly.',
+        t('common.ok'), // Using OK as success title placeholder or add success key
+        t('auth.passwordResetNotice'), // Needs translation key if not present
         [
           {
-            text: 'OK',
+            text: t('common.ok'),
             onPress: () => router.back()
           }
         ]
       );
     } catch (error: any) {
       Alert.alert(
-        'Error',
+        t('common.error'),
         error.response?.data?.message || 'Failed to process your request. Please try again.'
       );
     } finally {
@@ -66,13 +71,13 @@ export default function ForgotPassword() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Ionicons name="arrow-back" size={24} color={colors.primary}  accessible={false} importantForAccessibility="no"/>
-            <Text style={[styles.backText, { color: colors.primary }]}>Back</Text>
+            <Ionicons name="arrow-back" size={24} color={colors.primary} accessible={false} importantForAccessibility="no" />
+            <Text style={[styles.backText, { color: colors.primary }]}>{t('common.back')}</Text>
           </TouchableOpacity>
 
-          <Text style={[styles.title, { color: colors.primary }]}>Forgot Password</Text>
+          <Text style={[styles.title, { color: colors.primary }]}>{t('auth.forgotPassword')}</Text>
           <Text style={[styles.subtitle, { color: colors.text }]}>
-            Enter your email address and we'll send you a link to reset your password.
+            {t('auth.passwordResetPrompt')}
           </Text>
 
           <View style={styles.inputContainer}>
@@ -80,7 +85,7 @@ export default function ForgotPassword() {
               <Ionicons name="mail-outline" size={20} color={colors.text} style={styles.inputIcon} />
               <TextInput
                 style={[styles.input, { color: colors.text }]}
-                placeholder="Email"
+                placeholder={t('auth.email')}
                 placeholderTextColor={colors.text + '80'}
                 value={email}
                 onChangeText={setEmail}
@@ -102,8 +107,8 @@ export default function ForgotPassword() {
             accessibilityLabel="Send reset link"
             accessibilityState={{ disabled: isLoading }}
           >
-            <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
-              {isLoading ? 'Sending...' : 'Send Reset Link'}
+            <Text style={[styles.buttonText, { color: themeColors.onPrimary }]}>
+              {isLoading ? t('common.loading') : t('auth.sendResetLink')}
             </Text>
           </TouchableOpacity>
         </ScrollView>

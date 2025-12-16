@@ -31,7 +31,8 @@ const port = Constants.expoConfig?.extra?.apiPort ?? '8000';
 // Find your LAN IP with: ipconfig getifaddr en0
 // use the first one returned by the command
 // Can be set via Constants.expoConfig?.extra?.localLanIp from .env file
-const LOCAL_LAN_IP = Constants.expoConfig?.extra?.localLanIp ?? '192.168.4.23'; // Default fallback if not set
+// const LOCAL_LAN_IP = Constants.expoConfig?.extra?.localLanIp ?? '172.20.10.2'; // Default fallback if not set
+const LOCAL_LAN_IP = '172.20.10.2'; // Hardcoded for current session
 
 const API_HOST = Platform.select({
   web: 'localhost',           // Web uses localhost
@@ -44,6 +45,8 @@ const API_HOST = Platform.select({
 const ENV_BACKEND_URL = Constants.expoConfig?.extra?.backendBaseUrl;
 
 export const BACKEND_BASE_URL = ENV_BACKEND_URL ? ENV_BACKEND_URL : `http://${API_HOST}:${port}`;
+
+//export const BACKEND_BASE_URL = `http://${API_HOST}:${port}`;
 
 export const API_BASE_URL = `${BACKEND_BASE_URL}/api`;
 
@@ -110,6 +113,7 @@ export interface Task {
   creator: UserProfile;
   assignee: UserProfile | null;
   photo?: string;
+  primary_photo_url?: string;
   urgency_level: number;
   volunteer_number: number;
   is_recurring: boolean;
@@ -264,6 +268,42 @@ export interface UpdateTaskResponse {
   data: Task;
 }
 
+// Follow-related interfaces
+export interface FollowerInfo {
+  id: number;
+  username: string;
+  name: string;
+  surname: string;
+  profile_photo: string | null;
+  followed_at: string;
+}
+
+export interface FollowingInfo {
+  id: number;
+  username: string;
+  name: string;
+  surname: string;
+  profile_photo: string | null;
+  followed_at: string;
+}
+
+export interface FollowUserResponse {
+  status: string;
+  message: string;
+}
+
+export interface FollowersResponse {
+  status: string;
+  message?: string;
+  data: FollowerInfo[];
+}
+
+export interface FollowingResponse {
+  status: string;
+  message?: string;
+  data: FollowingInfo[];
+}
+
 
 // Log the API configuration on module load
 console.log('=== API Configuration ===');
@@ -279,6 +319,10 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
   timeout: 10000, // 10 second timeout
+  validateStatus: (status) => {
+    // Accept all 2xx and 204 status codes as successful
+    return (status >= 200 && status < 300) || status === 204;
+  },
 });
 
 // Add a request interceptor to add auth token
@@ -303,9 +347,38 @@ api.interceptors.request.use(
 // Add a response interceptor to handle network errors
 api.interceptors.response.use(
   (response) => {
+    // Handle 204 No Content responses gracefully
+    if (response.status === 204) {
+      // Ensure we return a consistent structure even for 204
+      if (!response.data) {
+        response.data = { status: 'success', message: 'Operation completed successfully.' };
+      }
+    }
     return response;
   },
   (error: AxiosError) => {
+    // Handle 204 responses that might be treated as errors
+    if (error.response?.status === 204) {
+      // Convert to successful response
+      return Promise.resolve({
+        ...error.response,
+        data: error.response.data || { status: 'success', message: 'Operation completed successfully.' }
+      });
+    }
+
+    // React Native iOS specific: ERR_NETWORK with no response often means 204 No Content
+    // This happens when a DELETE request returns 204 with no body
+    if (error.code === 'ERR_NETWORK' && !error.response && error.config?.method?.toLowerCase() === 'delete') {
+      console.log('[API] Treating ERR_NETWORK on DELETE as successful 204 response');
+      return Promise.resolve({
+        status: 204,
+        statusText: 'No Content',
+        data: { status: 'success', message: 'Operation completed successfully.' },
+        headers: {},
+        config: error.config,
+      } as any);
+    }
+
     // Enhanced error logging for network issues
     if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND' || error.message.includes('Network Error')) {
       console.error('[API Network Error]', {
@@ -600,6 +673,148 @@ export const getUserProfile = async (userId: number): Promise<UserProfile> => {
   }
 };
 
+/**
+ * Follow a user
+ * @param userId - ID of the user to follow
+ */
+export const followUser = async (userId: number): Promise<FollowUserResponse> => {
+  try {
+    console.log('Following user:', userId);
+    const response = await api.post<FollowUserResponse>(`/users/${userId}/follow/`);
+    console.log('Follow user response:', response.data);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Follow user error details:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+
+      // Extract error message from backend response
+      const errorData = error.response?.data;
+      if (errorData?.message) {
+        throw new Error(errorData.message);
+      }
+    }
+    throw error;
+  }
+};
+
+/**
+ * Unfollow a user
+ * @param userId - ID of the user to unfollow
+ */
+export const unfollowUser = async (userId: number): Promise<FollowUserResponse> => {
+  try {
+    console.log('Unfollowing user:', userId);
+    const response = await api.post<FollowUserResponse>(`/users/${userId}/unfollow/`);
+    console.log('Unfollow user response:', response.data);
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Unfollow user error details:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+
+      // Extract error message from backend response
+      const errorData = error.response?.data;
+      if (errorData?.message) {
+        throw new Error(errorData.message);
+      }
+    }
+    throw error;
+  }
+};
+
+/**
+ * Get list of followers for a user
+ * @param userId - ID of the user to get followers for
+ */
+export const getFollowers = async (userId: number): Promise<FollowerInfo[]> => {
+  try {
+    console.log('Fetching followers for user:', userId);
+    const response = await api.get(`/users/${userId}/followers/`);
+    console.log('Get followers raw response:', JSON.stringify(response.data, null, 2));
+
+    // Handle different response structures
+    // Backend uses pagination: {count, next, previous, results}
+    if (response.data?.results && Array.isArray(response.data.results)) {
+      console.log('Followers found in response.data.results:', response.data.results.length);
+      return response.data.results as FollowerInfo[];
+    }
+    // Backend uses format_response which wraps data in {status, message, data}
+    if (response.data?.data && Array.isArray(response.data.data)) {
+      console.log('Followers found in response.data.data:', response.data.data.length);
+      return response.data.data as FollowerInfo[];
+    }
+    if (Array.isArray(response.data)) {
+      console.log('Followers found as direct array:', response.data.length);
+      return response.data as FollowerInfo[];
+    }
+    console.log('No followers found, returning empty array');
+    return [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get followers error details:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+    }
+    throw error;
+  }
+};
+
+/**
+ * Get list of users that a user is following
+ * @param userId - ID of the user to get following list for
+ */
+export const getFollowing = async (userId: number): Promise<FollowingInfo[]> => {
+  try {
+    console.log('Fetching following list for user:', userId);
+    const response = await api.get(`/users/${userId}/following/`);
+    console.log('Get following raw response:', JSON.stringify(response.data, null, 2));
+
+    // Handle different response structures
+    // Backend uses pagination: {count, next, previous, results}
+    if (response.data?.results && Array.isArray(response.data.results)) {
+      console.log('Following found in response.data.results:', response.data.results.length);
+      return response.data.results as FollowingInfo[];
+    }
+    // Backend uses format_response which wraps data in {status, message, data}
+    if (response.data?.data && Array.isArray(response.data.data)) {
+      console.log('Following found in response.data.data:', response.data.data.length);
+      return response.data.data as FollowingInfo[];
+    }
+    if (Array.isArray(response.data)) {
+      console.log('Following found as direct array:', response.data.length);
+      return response.data as FollowingInfo[];
+    }
+    console.log('No following found, returning empty array');
+    return [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get following error details:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+    }
+    throw error;
+  }
+};
+
 const normalizeTasksResponse = (payload: unknown): TasksResponse => {
   const empty: TasksResponse = {
     count: 0,
@@ -666,11 +881,42 @@ const normalizeTasksResponse = (payload: unknown): TasksResponse => {
 
 export const getTasks = async (): Promise<TasksResponse> => {
   try {
-    console.log('Fetching tasks');
-    const response = await api.get('/tasks/');
-    const normalized = normalizeTasksResponse(response.data);
-    console.log('Tasks response (normalized):', normalized);
-    return normalized;
+    console.log('Fetching all tasks (all pages)');
+
+    let allResults: Task[] = [];
+    let page = 1;
+    let hasMore = true;
+    const maxPages = 10; // Safety limit to prevent infinite loops
+
+    // Fetch all pages using page number
+    while (hasMore && page <= maxPages) {
+      console.log(`Fetching page ${page}`);
+      try {
+        const response = await api.get('/tasks/', { params: { page } });
+        const data = response.data;
+
+        // Handle results
+        if (data.results && Array.isArray(data.results)) {
+          allResults = [...allResults, ...data.results];
+        }
+
+        // Check if there's a next page
+        hasMore = !!data.next;
+        page++;
+      } catch (pageError) {
+        console.error(`Error fetching page ${page}:`, pageError);
+        hasMore = false; // Stop on error
+      }
+    }
+
+    console.log('Fetched all tasks - total:', allResults.length);
+
+    return {
+      count: allResults.length,
+      next: null,
+      previous: null,
+      results: allResults,
+    };
   } catch (error) {
     if (error instanceof AxiosError) {
       console.error('Get tasks error details:', {
@@ -684,6 +930,51 @@ export const getTasks = async (): Promise<TasksResponse> => {
     throw error;
   }
 };
+
+export const getUserTasks = async (userId: number, page: number = 1, limit: number = 100): Promise<TasksResponse> => {
+  try {
+    console.log(`Fetching tasks for user ${userId} with page: ${page}, limit: ${limit}`);
+    const response = await api.get(`/users/${userId}/tasks/`, {
+      params: { page, limit }
+    });
+    console.log('User tasks response:', response.data);
+
+    // Backend returns { status, data: { tasks: Task[], pagination: {...} } }
+    if (response.data?.data) {
+      const { tasks, pagination } = response.data.data;
+      let allTasks = tasks || [];
+
+      // Check if there are more pages and recursively fetch them
+      if (pagination?.next_page && pagination.next_page > page) {
+        console.log(`Fetching next page ${pagination.next_page} for user ${userId}`);
+        const nextPageResponse = await getUserTasks(userId, pagination.next_page, limit);
+        allTasks = [...allTasks, ...nextPageResponse.results];
+      }
+
+      return {
+        count: pagination?.total_records || allTasks.length,
+        next: null,
+        previous: null,
+        results: allTasks
+      };
+    }
+
+    // Fallback to normalize if structure is different
+    return normalizeTasksResponse(response.data);
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get user tasks error details:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+    }
+    throw error;
+  }
+};
+
 
 export const getPopularTasks = async (limit: number = 6): Promise<Task[]> => {
   try {
@@ -711,6 +1002,38 @@ export const getPopularTasks = async (limit: number = 6): Promise<Task[]> => {
         headers: error.response?.headers
       });
     }
+    return [];
+  }
+};
+
+export const getFollowedTasks = async (limit: number = 6): Promise<Task[]> => {
+  try {
+    console.log(`[API Request] GET /tasks/followed/ with limit=${limit}`);
+    const response = await api.get('/tasks/followed/', {
+      params: { limit },
+    });
+    console.log('Followed tasks response:', response.data);
+
+    // Handle format_response structure: {status, message, data}
+    if (response.data?.status === 'success' && response.data?.data) {
+      return Array.isArray(response.data.data) ? response.data.data as Task[] : [];
+    }
+    // Fallback for direct array response
+    if (Array.isArray(response.data)) {
+      return response.data as Task[];
+    }
+    return [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get followed tasks error details:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+    }
+    // Return empty array on error instead of throwing
     return [];
   }
 };
@@ -1416,6 +1739,471 @@ export const deleteProfilePhoto = async (userId: number): Promise<{ status: stri
     if (error instanceof AxiosError) {
       console.error(`Delete profile photo error:`, error.response?.data);
       throw new Error(error.response?.data?.message || 'Failed to delete profile photo.');
+    }
+    throw error;
+  }
+};
+
+// Comment interfaces
+export interface Comment {
+  id: number;
+  content: string;
+  timestamp: string; // ISO date string
+  user: UserProfile;
+  task: number; // task ID
+}
+
+export interface TaskCommentsResponse {
+  status: string;
+  message?: string;
+  data: {
+    comments: Comment[];
+    pagination: PaginationInfo;
+  };
+}
+
+export interface CreateCommentResponse {
+  status: string;
+  message: string;
+  data: Comment;
+}
+
+// Comment API functions
+export const getTaskComments = async (taskId: number, page = 1, limit = 20): Promise<TaskCommentsResponse> => {
+  try {
+    const response = await api.get<TaskCommentsResponse>(`/tasks/${taskId}/comments/`, {
+      params: { page, limit }
+    });
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get task comments error:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+    }
+    throw error;
+  }
+};
+
+export const createTaskComment = async (taskId: number, content: string): Promise<CreateCommentResponse> => {
+  try {
+    const response = await api.post<CreateCommentResponse>(`/tasks/${taskId}/comments/`, {
+      content: content.trim()
+    });
+    console.log('Create comment response:', response.data);
+    if (response.data.status !== 'success') {
+      throw new Error(response.data.message || 'Failed to create comment.');
+    }
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Create comment error:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers,
+      });
+      // Extract detailed error message from backend
+      const errorData = error.response?.data;
+      let errMessage = 'Failed to create comment.';
+
+      if (errorData?.message) {
+        errMessage = errorData.message;
+      } else if (errorData?.error) {
+        errMessage = errorData.error;
+      } else if (typeof errorData === 'string') {
+        errMessage = errorData;
+      } else if (errorData) {
+        // Try to extract validation errors
+        const validationErrors = Object.values(errorData).flat();
+        if (validationErrors.length > 0) {
+          errMessage = Array.isArray(validationErrors[0])
+            ? validationErrors[0][0]
+            : String(validationErrors[0]);
+        }
+      }
+
+      throw new Error(errMessage);
+    }
+    const errMessage = (error as Error).message || 'An unexpected error occurred while trying to create comment.';
+    throw new Error(errMessage);
+  }
+};
+
+export const updateComment = async (commentId: number, content: string): Promise<CreateCommentResponse> => {
+  try {
+    const response = await api.patch<CreateCommentResponse>(`/comments/${commentId}/`, {
+      content: content.trim()
+    });
+    console.log('Update comment response:', response.data);
+    if (response.data.status !== 'success') {
+      throw new Error(response.data.message || 'Failed to update comment.');
+    }
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Update comment error:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      const errorData = error.response?.data;
+      let errMessage = 'Failed to update comment.';
+
+      if (errorData?.message) {
+        errMessage = errorData.message;
+      } else if (errorData?.error) {
+        errMessage = errorData.error;
+      } else if (typeof errorData === 'string') {
+        errMessage = errorData;
+      } else if (errorData) {
+        const validationErrors = Object.values(errorData).flat();
+        if (validationErrors.length > 0) {
+          errMessage = Array.isArray(validationErrors[0])
+            ? validationErrors[0][0]
+            : String(validationErrors[0]);
+        }
+      }
+
+      throw new Error(errMessage);
+    }
+    const errMessage = (error as Error).message || 'An unexpected error occurred while updating comment.';
+    throw new Error(errMessage);
+  }
+};
+
+export const deleteComment = async (commentId: number): Promise<{ status: string; message: string }> => {
+  try {
+    const response = await api.delete(`/comments/${commentId}/`);
+    console.log('Delete comment response:', response.data);
+
+    // Handle 204 No Content response (may have empty body)
+    if (response.status === 204) {
+      return { status: 'success', message: 'Comment deleted successfully.' };
+    }
+
+    return response.data || { status: 'success', message: 'Comment deleted successfully.' };
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      // Handle 204 response that might be treated as error by some axios configurations
+      if (error.response?.status === 204) {
+        return { status: 'success', message: 'Comment deleted successfully.' };
+      }
+
+      console.error('Delete comment error:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+      const errorData = error.response?.data;
+      let errMessage = 'Failed to delete comment.';
+
+      if (errorData?.message) {
+        errMessage = errorData.message;
+      } else if (errorData?.error) {
+        errMessage = errorData.error;
+      } else if (typeof errorData === 'string') {
+        errMessage = errorData;
+      }
+
+      throw new Error(errMessage);
+    }
+    const errMessage = (error as Error).message || 'An unexpected error occurred while deleting comment.';
+    throw new Error(errMessage);
+  }
+};
+
+// Report Types
+export enum ReportType {
+  SPAM = 'SPAM',
+  INAPPROPRIATE_CONTENT = 'INAPPROPRIATE_CONTENT',
+  HARASSMENT = 'HARASSMENT',
+  FRAUD = 'FRAUD',
+  FAKE_REQUEST = 'FAKE_REQUEST',
+  NO_SHOW = 'NO_SHOW',
+  SAFETY_CONCERN = 'SAFETY_CONCERN',
+  OTHER = 'OTHER',
+}
+
+export const REPORT_TYPE_LABELS: Record<ReportType, string> = {
+  [ReportType.SPAM]: 'Spam',
+  [ReportType.INAPPROPRIATE_CONTENT]: 'Inappropriate Content',
+  [ReportType.HARASSMENT]: 'Harassment',
+  [ReportType.FRAUD]: 'Fraud',
+  [ReportType.FAKE_REQUEST]: 'Fake Request',
+  [ReportType.NO_SHOW]: 'No Show',
+  [ReportType.SAFETY_CONCERN]: 'Safety Concern',
+  [ReportType.OTHER]: 'Other',
+};
+
+export interface ReportResponse {
+  status: string;
+  message: string;
+  data?: any;
+}
+
+/**
+ * Submit a report for a task
+ * @param taskId - ID of the task to report
+ * @param reportType - Type of report
+ * @param description - Description/details of the report
+ */
+export const submitReport = async (
+  taskId: number,
+  reportType: ReportType | string,
+  description: string
+): Promise<ReportResponse> => {
+  try {
+    const response = await api.post<ReportResponse>('/task-reports/', {
+      task_id: taskId,
+      report_type: reportType,
+      description,
+    });
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const errorData = error.response?.data;
+      let errMessage = 'Failed to submit report.';
+
+      if (errorData?.message) {
+        errMessage = errorData.message;
+      } else if (errorData?.error) {
+        errMessage = errorData.error;
+      } else if (errorData?.errors) {
+        errMessage = Object.values(errorData.errors).flat().join(', ');
+      }
+
+      throw new Error(errMessage);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Submit a report for a user
+ * @param userId - ID of the user to report
+ * @param reportType - Type of report
+ * @param description - Description/details of the report
+ */
+export const submitUserReport = async (
+  userId: number,
+  reportType: ReportType | string,
+  description: string
+): Promise<ReportResponse> => {
+  try {
+    const response = await api.post<ReportResponse>('/user-reports/', {
+      reported_user_id: userId,
+      report_type: reportType,
+      description,
+    });
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const errorData = error.response?.data;
+      let errMessage = 'Failed to submit user report.';
+
+      if (errorData?.message) {
+        errMessage = errorData.message;
+      } else if (errorData?.error) {
+        errMessage = errorData.error;
+      } else if (errorData?.errors) {
+        errMessage = Object.values(errorData.errors).flat().join(', ');
+      }
+
+      throw new Error(errMessage);
+    }
+    throw error;
+  }
+};
+
+// ==================== Badge API Functions ====================
+
+export interface Badge {
+  id: number;
+  badge_type: string;
+  badge_type_display: string;
+  name: string;
+  description: string;
+  icon_url?: string;
+  created_at: string;
+}
+
+export interface UserBadge {
+  id: number;
+  user_id: number;
+  username: string;
+  badge: Badge;
+  earned_at: string;
+}
+
+export interface UserBadgeSimple {
+  badge_name: string;
+  badge_type: string;
+  badge_icon?: string;
+  earned_at: string;
+}
+
+export interface BadgeType {
+  value: string;
+  label: string;
+}
+
+export interface BadgesResponse {
+  status: string;
+  message?: string;
+  data?: Badge[];
+  results?: Badge[];
+}
+
+export interface UserBadgesResponse {
+  status: string;
+  message?: string;
+  data?: UserBadge[];
+  results?: UserBadge[];
+}
+
+export interface UserBadgesSimpleResponse {
+  status: string;
+  message?: string;
+  data?: UserBadgeSimple[];
+}
+
+export interface CheckBadgesResponse {
+  status: string;
+  message: string;
+  data?: {
+    badges_awarded: string[];
+  };
+}
+
+/**
+ * Fetch all available badge definitions
+ * GET /api/badges/
+ */
+export const getAllBadges = async (): Promise<Badge[]> => {
+  try {
+    const response = await api.get<BadgesResponse>('/badges/');
+    const data = response.data;
+    
+    // Handle both direct array and wrapped response formats
+    if (Array.isArray(data)) {
+      return data;
+    }
+    if (data.results && Array.isArray(data.results)) {
+      return data.results;
+    }
+    if (data.data && Array.isArray(data.data)) {
+      return data.data;
+    }
+    
+    return [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get all badges error:', error.response?.data);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Fetch all badge type enums
+ * GET /api/badges/types/
+ */
+export const getBadgeTypes = async (): Promise<BadgeType[]> => {
+  try {
+    const response = await api.get<BadgeType[]>('/badges/types/');
+    return Array.isArray(response.data) ? response.data : [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get badge types error:', error.response?.data);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Fetch earned badges for a specific user
+ * GET /api/user-badges/?user_id={userId}
+ */
+export const getUserBadges = async (userId: number): Promise<UserBadge[]> => {
+  try {
+    const response = await api.get<UserBadgesResponse>('/user-badges/', {
+      params: { user_id: userId },
+    });
+    const data = response.data;
+    
+    // Handle both direct array and wrapped response formats
+    if (Array.isArray(data)) {
+      return data;
+    }
+    if (data.results && Array.isArray(data.results)) {
+      return data.results;
+    }
+    if (data.data && Array.isArray(data.data)) {
+      return data.data;
+    }
+    
+    return [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get user badges error:', error.response?.data);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Fetch authenticated user's badges (simplified format)
+ * GET /api/user-badges/my_badges/
+ */
+export const getMyBadges = async (): Promise<UserBadgeSimple[]> => {
+  try {
+    const response = await api.get<UserBadgesSimpleResponse>('/user-badges/my_badges/');
+    const data = response.data;
+    
+    // Handle both direct array and wrapped response formats
+    if (Array.isArray(data)) {
+      return data;
+    }
+    if (data.data && Array.isArray(data.data)) {
+      return data.data;
+    }
+    
+    return [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get my badges error:', error.response?.data);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Manually trigger badge check for authenticated user
+ * POST /api/user-badges/check_all/
+ */
+export const checkBadges = async (): Promise<CheckBadgesResponse> => {
+  try {
+    const response = await api.post<CheckBadgesResponse>('/user-badges/check_all/');
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const errorData = error.response?.data;
+      let errMessage = 'Failed to check badges.';
+      
+      if (errorData?.message) {
+        errMessage = errorData.message;
+      } else if (errorData?.error) {
+        errMessage = errorData.error;
+      }
+      
+      throw new Error(errMessage);
     }
     throw error;
   }

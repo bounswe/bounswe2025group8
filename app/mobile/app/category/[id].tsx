@@ -5,6 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
 import { getTasks, type Task } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
+import { useTranslation } from 'react-i18next';
+import i18n from '../../lib/i18n';
 
 export default function CategoryPage() {
   const { colors } = useTheme();
@@ -15,6 +17,7 @@ export default function CategoryPage() {
   const [loading, setLoading] = useState(true);
   const [categoryName, setCategoryName] = useState('');
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   // Filter out completed and cancelled tasks
   const filterActiveTasks = (tasksList: Task[]): Task[] => {
@@ -27,6 +30,13 @@ export default function CategoryPage() {
   useEffect(() => {
     fetchTasks();
   }, [categoryId]);
+
+  const formatUrgency = (level?: number) => {
+    if (level === 3) return t('urgency.high');
+    if (level === 2) return t('urgency.medium');
+    if (level === 1) return t('urgency.low');
+    return t('urgency.medium');
+  };
 
   const fetchTasks = async () => {
     try {
@@ -66,59 +76,67 @@ export default function CategoryPage() {
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <Ionicons name="arrow-back" size={24} color={colors.text}  accessible={false} importantForAccessibility="no"/>
+          <Ionicons name="arrow-back" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
         </TouchableOpacity>
         <Text style={[styles.title, { color: colors.text }]}>{categoryName}</Text>
       </View>
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 80 }]}>
         {tasks.length === 0 ? (
-          <Text style={[styles.noTasks, { color: colors.text }]}>No requests found for this category.</Text>
+          <Text style={[styles.noTasks, { color: colors.text }]}>{t('category.noRequests')}</Text>
         ) : (
-          tasks.map((task) => (
-            <TouchableOpacity
-              key={task.id}
-              style={[styles.card, { backgroundColor: colors.card }]}
-              onPress={() =>
-                router.push({
-                  pathname: (task.creator && task.creator.id === user?.id) ? '/r-request-details' : '/v-request-details',
-                  params: { id: task.id },
-                })
-              }
-              accessible
+          tasks.map((task) => {
+            const urgencyLabel = formatUrgency(task.urgency_level);
+            return (
+              <TouchableOpacity
+                key={task.id}
+                style={[styles.card, { backgroundColor: colors.card }]}
+                onPress={() =>
+                  router.push({
+                    pathname: (task.creator && task.creator.id === user?.id) ? '/r-request-details' : '/v-request-details',
+                    params: { id: task.id },
+                  })
+                }
+                accessible
 
-              accessibilityRole="button"
-              accessibilityLabel={`Open request ${task.title}`}
-            >
-              <Image source={require('../../assets/images/help.png')} style={styles.cardImage} />
-              <View style={styles.cardContent}>
-                <Text style={[styles.cardTitle, { color: colors.text }]}>{task.title}</Text>
-                <Text style={[styles.cardMeta, { color: `${colors.text}99` }]}>{task.location}</Text>
-                <View style={styles.pillRow}>
-                  <View
-                    style={[
-                      styles.urgencyBadge,
-                      {
-                        backgroundColor:
-                          task.urgency_level === 3
-                            ? '#e74c3c'
-                            : task.urgency_level === 2
-                            ? '#f1c40f'
-                            : '#2ecc71',
-                      },
-                    ]}
-                  >
-                    <Text style={styles.urgencyText}>
-                      {task.urgency_level === 3 ? 'High' : task.urgency_level === 2 ? 'Medium' : 'Low'}
-                    </Text>
-                  </View>
-                  <View style={[styles.categoryPill, { backgroundColor: colors.primary }]}>
-                    <Text style={styles.categoryText}>{task.category_display || task.category}</Text>
+                accessibilityRole="button"
+                accessibilityLabel={`Open request ${task.title}`}
+              >
+                <Image
+                  source={task.primary_photo_url ? { uri: task.primary_photo_url } : require('../../assets/images/help.png')}
+                  style={styles.cardImage}
+                  accessibilityRole="image"
+                  accessibilityLabel={task.primary_photo_url ? `Photo for ${task.title}` : `Default illustration for ${task.title}`}
+                />
+                <View style={styles.cardContent}>
+                  <Text style={[styles.cardTitle, { color: colors.text }]}>{task.title}</Text>
+                  <Text style={[styles.cardMeta, { color: `${colors.text}99` }]}>{task.location}</Text>
+                  <View style={styles.pillRow}>
+                    <View
+                      style={[
+                        styles.urgencyBadge,
+                        {
+                          backgroundColor:
+                            task.urgency_level === 3
+                              ? '#e74c3c'
+                              : task.urgency_level === 2
+                                ? '#f1c40f'
+                                : '#2ecc71',
+                        },
+                      ]}
+                    >
+                      <Text style={styles.urgencyText}>
+                        {`${urgencyLabel} ${t('createRequest.urgency')}`}
+                      </Text>
+                    </View>
+                    <View style={[styles.categoryPill, { backgroundColor: colors.primary }]}>
+                      <Text style={styles.categoryText}>{t(`categories.${task.category}`, { defaultValue: task.category })}</Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color={colors.text} />
-            </TouchableOpacity>
-          ))
+                <Ionicons name="chevron-forward" size={20} color={colors.text} />
+              </TouchableOpacity>
+            )
+          })
         )}
       </ScrollView>
     </SafeAreaView>

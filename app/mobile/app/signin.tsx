@@ -20,22 +20,26 @@ import {
 import { login } from '../lib/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../lib/auth';
+import { useTranslation } from 'react-i18next';
+import { ThemeTokens } from '@/constants/Colors';
 
 export default function SignIn() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { colors } = useTheme();
+  const themeColors = colors as unknown as ThemeTokens;
   const [showPwd, setShowPwd] = useState(false);
   const [remember, setRemember] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { setUser } = useAuth();
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
+  const { t } = useTranslation();
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert(t('common.error'), t('auth.fillAllFields'));
       return;
     }
 
@@ -62,8 +66,8 @@ export default function SignIn() {
         headers: error.response?.headers
       });
       Alert.alert(
-        'Login Failed',
-        error.response?.data?.message || error.message || 'An error occurred during login'
+        t('auth.loginFailed'),
+        error.response?.data?.message || error.message || t('auth.loginError')
       );
     } finally {
       setIsLoading(false);
@@ -76,10 +80,11 @@ export default function SignIn() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingView}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView testID="signin-scroll-view" contentContainerStyle={styles.scrollContent}>
           <TouchableOpacity
             style={styles.backButton}
             accessible
+            testID="signin-back-button"
             accessibilityRole="button"
             accessibilityLabel="Go back"
             onPress={() => {
@@ -97,7 +102,7 @@ export default function SignIn() {
               accessible={false}
               importantForAccessibility="no"
             />
-            <Text style={[styles.backText, { color: colors.primary }]}>Back</Text>
+            <Text style={[styles.backText, { color: colors.primary }]}>{t('common.back')}</Text>
           </TouchableOpacity>
 
           <Image
@@ -107,9 +112,9 @@ export default function SignIn() {
             accessibilityLabel="AccessEase logo"
           />
 
-          <Text style={[styles.title, { color: colors.primary }]}>Welcome Back!</Text>
+          <Text style={[styles.title, { color: colors.primary }]}>{t('auth.welcomeBack')}</Text>
           <Text style={[styles.subtitle, { color: colors.text }]}>
-            Sign in to continue to your account
+            {t('auth.signInSubtitle')}
           </Text>
 
           <View style={styles.inputContainer}>
@@ -130,7 +135,7 @@ export default function SignIn() {
                     importantForAccessibility="no"
                     pointerEvents="none"
                   >
-                    Email
+                    {t('auth.email')}
                   </Text>
                 )}
                 <TextInput
@@ -166,7 +171,7 @@ export default function SignIn() {
                     importantForAccessibility="no"
                     pointerEvents="none"
                   >
-                    Password
+                    {t('auth.password')}
                   </Text>
                 )}
                 <TextInput
@@ -175,6 +180,8 @@ export default function SignIn() {
                   onChangeText={setPassword}
                   secureTextEntry={!showPwd}
                   editable={!isLoading}
+                  textContentType="none"
+                  autoComplete="off"
                   accessibilityLabel="Password input"
                   accessibilityValue={{
                     text: password
@@ -194,6 +201,7 @@ export default function SignIn() {
 
                 accessibilityRole="button"
                 accessibilityLabel={showPwd ? 'Hide password' : 'Show password'}
+                testID="signin-password-toggle"
               >
                 <Ionicons
                   name={showPwd ? 'eye-off-outline' : 'eye-outline'}
@@ -213,9 +221,10 @@ export default function SignIn() {
 
               accessibilityRole="button"
               accessibilityLabel="Forgot Password"
+              testID="signin-forgot-password-link"
             >
               <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>
-                Forgot Password?
+                {t('auth.forgotPassword')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -231,21 +240,22 @@ export default function SignIn() {
             accessibilityState={{ disabled: isLoading }}
             testID="signin-button"
           >
-            <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
-              {isLoading ? 'Signing in...' : 'Sign In'}
+            <Text style={[styles.buttonText, { color: themeColors.onPrimary }]}>
+              {isLoading ? t('auth.signingIn') : t('auth.signIn')}
             </Text>
           </TouchableOpacity>
 
           <View style={styles.signupContainer}>
-            <Text style={[styles.signupText, { color: colors.text }]}>Don't have an account? </Text>
+            <Text style={[styles.signupText, { color: colors.text }]}>{t('auth.noAccount')} </Text>
             <TouchableOpacity
               onPress={() => router.replace('/signup')}
               accessible
 
               accessibilityRole="button"
               accessibilityLabel="Go to Sign Up"
+              testID="signin-signup-link"
             >
-              <Text style={[styles.signupLink, { color: colors.primary }]}>Sign Up</Text>
+              <Text style={[styles.signupLink, { color: colors.primary }]}>{t('auth.signUp')}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

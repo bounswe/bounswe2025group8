@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, TextInput, Text, TouchableOpacity, ScrollView, StyleSheet, Image, ImageSourcePropType } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { locationMatches } from '../../utils/address';
+import { useTranslation } from 'react-i18next';
 
 export type Category = { id: string; title: string; count: number; image: ImageSourcePropType };
 export type Request = { id: string; title: string; urgency: string; meta?: string; category?: string; color?: string; image?: ImageSourcePropType };
@@ -33,6 +34,7 @@ export default function SearchBarWithResults({
   const [urgency, setUrgency] = useState<typeof URGENCY_LEVELS[number]>('All');
   const [sortAsc, setSortAsc] = useState(true);
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
   const lowerSearch = search.trim().toLowerCase();
 
@@ -72,7 +74,7 @@ export default function SearchBarWithResults({
       <View style={styles.searchBar}>
         <TextInput
           style={[styles.input, { borderColor: colors.border, color: colors.text, backgroundColor: colors.card }]}
-          placeholder={`Search ${tab}`}
+          placeholder={t('search.placeholder', { tab: t(`search.tabs.${tab.toLowerCase()}`) })}
           placeholderTextColor={colors.text + '99'}
           value={search}
           onChangeText={setSearch}
@@ -84,14 +86,14 @@ export default function SearchBarWithResults({
         </TouchableOpacity>
       </View>
       <View style={styles.tabs}>
-        {TABS.map((t) => (
+        {TABS.map((tabName) => (
           <TouchableOpacity
-            key={t}
-            style={[styles.tab, tab === t && { borderBottomColor: colors.primary }]}
-            onPress={() => setTab(t)}
-            testID={`search-tab-${t}`}
+            key={tabName}
+            style={[styles.tab, tab === tabName && { borderBottomColor: colors.primary }]}
+            onPress={() => setTab(tabName)}
+            testID={`search-tab-${tabName}`}
           >
-            <Text style={[styles.tabText, { color: colors.text }, tab === t && { color: colors.primary }]}>{t}</Text>
+            <Text style={[styles.tabText, { color: colors.text }, tab === tabName && { color: colors.primary }]}>{t(`search.tabs.${tabName.toLowerCase()}`)}</Text>
           </TouchableOpacity>
         ))}
       </View>
@@ -114,7 +116,7 @@ export default function SearchBarWithResults({
                   urgency === level && { color: colors.background, fontWeight: 'bold' },
                 ]}
               >
-                {level}
+                {t(`search.urgency.${level.toLowerCase()}`)}
               </Text>
             </TouchableOpacity>
           ))}
@@ -122,7 +124,7 @@ export default function SearchBarWithResults({
       )}
       <ScrollView style={styles.results} contentContainerStyle={{ flexGrow: 1, width: '100%' }}>
         {filtered.length === 0 && (
-          <Text style={[styles.noResults, { color: colors.text }]}>No results found.</Text>
+          <Text style={[styles.noResults, { color: colors.text }]}>{t('search.noResults')}</Text>
         )}
         {filtered.map((item) => (
           <TouchableOpacity
@@ -151,10 +153,10 @@ export default function SearchBarWithResults({
                 {'title' in item ? item.title : (item as Profile).name}
               </Text>
               {'urgency' in item && (
-                <Text style={[styles.resultMeta, { color: colors.text }]}>{item.urgency} urgency</Text>
+                <Text style={[styles.resultMeta, { color: colors.text }]}>{t(`search.urgency.${item.urgency.toLowerCase()}`)} {t('search.urgencySuffix')}</Text>
               )}
               {'count' in item && (
-                <Text style={[styles.resultMeta, { color: colors.text }]}>{item.count} {tab === 'Location' ? 'requests' : 'requests'}</Text>
+                <Text style={[styles.resultMeta, { color: colors.text }]}>{item.count} {t('search.requestsSuffix')}</Text>
               )}
               {'meta' in item && item.meta && (
                 <Text style={[styles.resultMeta, { color: colors.text }]}>{item.meta}</Text>

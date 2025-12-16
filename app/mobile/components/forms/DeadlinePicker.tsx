@@ -4,6 +4,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { useTranslation } from 'react-i18next';
 
 interface DeadlinePickerProps {
   value: Date | null;
@@ -12,11 +13,14 @@ interface DeadlinePickerProps {
   label?: string;
 }
 
-export function DeadlinePicker({ value, onChange, minimumDate = new Date(), label = 'Deadline' }: DeadlinePickerProps) {
+export function DeadlinePicker({ value, onChange, minimumDate = new Date(), label }: DeadlinePickerProps) {
   const { colors } = useTheme();
   const theme = useColorScheme();
+  const { t } = useTranslation();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
+
+  const effectiveLabel = label || t('common.deadline');
 
   const isDarkLike = theme === 'dark' || theme === 'highContrast';
   const pickerTextColor = isDarkLike ? '#FFFFFF' : '#000000';
@@ -25,11 +29,11 @@ export function DeadlinePicker({ value, onChange, minimumDate = new Date(), labe
 
   const formattedDate = value
     ? value.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })
-    : 'Select date';
+    : t('common.selectDate');
 
   const formattedTime = value
     ? value.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: true })
-    : 'Select time';
+    : t('common.selectTime');
 
   const handleDateChange = (_event: any, selectedDate?: Date) => {
     setShowDatePicker(Platform.OS === 'ios');
@@ -56,7 +60,7 @@ export function DeadlinePicker({ value, onChange, minimumDate = new Date(), labe
 
   return (
     <View style={styles.wrapper}>
-      {label ? <Text style={[styles.label, { color: colors.text }]}>{label}</Text> : null}
+      {effectiveLabel ? <Text style={[styles.label, { color: colors.text }]}>{effectiveLabel}</Text> : null}
       <View style={styles.row}>
         <TouchableOpacity
           style={[styles.button, { borderColor: colors.border, backgroundColor: colors.card }]}

@@ -1,5 +1,7 @@
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+
+import '../lib/i18n';
 import React, { useEffect } from 'react';
 import 'react-native-reanimated';
 
@@ -17,6 +19,7 @@ const publicAppRoutes = [
   'category',
   'search',
   'terms',
+  'community-guidelines',
   'requests',
   'v-request-details',
   'r-request-details',
@@ -36,7 +39,7 @@ function RootNavigator() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!segments || segments.length === 0) {
+    if (!segments) {
       return;
     }
 
@@ -73,6 +76,7 @@ function RootNavigator() {
       <Stack.Screen name="v-request-details" />
       <Stack.Screen name="select-volunteer" />
       <Stack.Screen name="terms" />
+      <Stack.Screen name="community-guidelines" />
     </Stack>
   );
 }

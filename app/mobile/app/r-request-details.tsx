@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -13,12 +13,14 @@ import {
   SafeAreaView,
   Switch,
   Dimensions,
-  Keyboard
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { getTaskDetails, getTaskApplicants, completeTask, cancelTask, createReview, getTaskReviews, getTaskPhotos, BACKEND_BASE_URL, updateTask, type Task, type Volunteer, type Review, type Photo, type UpdateTaskPayload } from '../lib/api';
+import { getTaskDetails, getTaskApplicants, completeTask, cancelTask, createReview, getTaskReviews, getTaskPhotos, BACKEND_BASE_URL, updateTask, getTaskComments, createTaskComment, updateComment, deleteComment, type Task, type Volunteer, type Review, type Photo, type UpdateTaskPayload, type Comment } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { useAppTheme } from '../theme/ThemeProvider';
 import type { ThemeTokens } from '../constants/Colors';
@@ -26,12 +28,15 @@ import { CategoryPicker } from '../components/forms/CategoryPicker';
 import { DeadlinePicker } from '../components/forms/DeadlinePicker';
 import { AddressFields } from '../components/forms/AddressFields';
 import { AddressFieldsValue, emptyAddress, parseAddressString, formatAddress } from '../utils/address';
+import { useTranslation } from 'react-i18next';
+import CommentCard from '../components/ui/CommentCard';
 
 export default function RequestDetails() {
   const params = useLocalSearchParams();
   const { tokens: themeColors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const id = params.id ? Number(params.id) : null;
 
@@ -61,6 +66,11 @@ export default function RequestDetails() {
   const [addressFields, setAddressFields] = useState<AddressFieldsValue>(emptyAddress);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [photosLoading, setPhotosLoading] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [submittingComment, setSubmittingComment] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
 
   const getLabelColors = (type: string, property: 'Background' | 'Text' | 'Border') => {
     const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
@@ -148,8 +158,22 @@ export default function RequestDetails() {
       } finally {
         setPhotosLoading(false);
       }
+
+      // Fetch comments for the task
+      try {
+        setCommentsLoading(true);
+        const commentsResponse = await getTaskComments(id);
+        if (commentsResponse.status === 'success') {
+          setComments(commentsResponse.data.comments || []);
+        }
+      } catch (commentError: any) {
+        console.warn('Error fetching comments:', commentError.message);
+        setComments([]);
+      } finally {
+        setCommentsLoading(false);
+      }
     } catch (err: any) {
-      setError(err.message || 'Failed to load request details.');
+      setError(err.message || t('requestDetails.loadError'));
       setRequest(null);
       setAssignedVolunteers([]);
     } finally {
@@ -182,7 +206,7 @@ export default function RequestDetails() {
 
   const handleOpenReviewModal = () => {
     if (assignedVolunteers.length === 0) {
-      Alert.alert('No Volunteers', 'There are no volunteers to review.');
+      Alert.alert(t('requestDetails.noVolunteersTitle'), t('requestDetails.noVolunteersMessage'));
       return;
     }
     setCurrentVolunteerIndex(0);
@@ -270,11 +294,11 @@ export default function RequestDetails() {
 
   const handleSubmitReview = async () => {
     if (!reliability || !taskCompletion || !communication || !safetyAndRespect) {
-      Alert.alert('Ratings Required', 'Please provide a rating for all categories.');
+      Alert.alert(t('requestDetails.ratingsRequiredTitle'), t('requestDetails.ratingsRequiredMessage'));
       return;
     }
     if (!reviewText.trim()) {
-      Alert.alert('Review Required', 'Please write a review comment.');
+      Alert.alert(t('requestDetails.reviewRequiredTitle'), t('requestDetails.reviewRequiredMessage'));
       return;
     }
     if (!id || !request || currentVolunteerIndex >= assignedVolunteers.length) {
@@ -335,10 +359,10 @@ export default function RequestDetails() {
           setReviewText('');
         }
 
-        Alert.alert('Success', `Review submitted for ${currentVolunteer.user.name}!`);
+        Alert.alert(t('common.success'), t('requestDetails.reviewSubmitted', { name: currentVolunteer.user.name }));
       } else {
         // All volunteers reviewed
-        Alert.alert('Success', 'All reviews submitted successfully!');
+        Alert.alert(t('common.success'), t('requestDetails.allReviewsSubmitted'));
         setModalVisible(false);
         setRating(0);
         setReliability(0);
@@ -351,8 +375,8 @@ export default function RequestDetails() {
         await fetchTaskData();
       }
     } catch (err: any) {
-      const errorMessage = err?.message || 'Failed to submit review. Please try again.';
-      Alert.alert('Error', errorMessage);
+      const errorMessage = err?.message || t('requestDetails.reviewError');
+      Alert.alert(t('common.error'), errorMessage);
       console.error('Review submission error:', err);
     } finally {
       setSubmittingReview(false);
@@ -365,22 +389,22 @@ export default function RequestDetails() {
     }
 
     if (!editForm.title?.trim()) {
-      Alert.alert('Validation Error', 'Title is required.');
+      Alert.alert(t('requestDetails.validationError'), t('requestDetails.titleRequired'));
       return;
     }
 
     if (editForm.volunteer_number !== undefined && editForm.volunteer_number <= 0) {
-      Alert.alert('Validation Error', 'Volunteer number must be greater than zero.');
+      Alert.alert(t('requestDetails.validationError'), t('requestDetails.volunteerNumberError'));
       return;
     }
 
     if (!editForm.category) {
-      Alert.alert('Validation Error', 'Please select a category.');
+      Alert.alert(t('requestDetails.validationError'), t('requestDetails.categoryRequired'));
       return;
     }
 
     if (!addressFields.city.trim() || !addressFields.state.trim()) {
-      Alert.alert('Validation Error', 'Please select a city and district for the address.');
+      Alert.alert(t('requestDetails.validationError'), t('requestDetails.addressRequired'));
       return;
     }
 
@@ -398,14 +422,14 @@ export default function RequestDetails() {
 
       const updatedTask = await updateTask(id, payload);
       setRequest(updatedTask);
-      Alert.alert('Success', 'Request updated successfully.');
+      Alert.alert(t('common.success'), t('requestDetails.updateSuccess'));
       setModalVisible(false);
       setIsEdit(false);
       setEditForm({});
       await fetchTaskData();
     } catch (err: any) {
-      const errorMessage = err?.message || 'Failed to update request. Please try again.';
-      Alert.alert('Error', errorMessage);
+      const errorMessage = err?.message || t('requestDetails.updateError');
+      Alert.alert(t('common.error'), errorMessage);
     } finally {
       setUpdatingRequest(false);
     }
@@ -436,15 +460,15 @@ export default function RequestDetails() {
 
   const handleMarkAsComplete = () => {
     Alert.alert(
-      'Mark as Complete',
-      'Are you sure you want to mark this request as completed? This action cannot be undone.',
+      t('requestDetails.markCompleteTitle'),
+      t('requestDetails.markCompleteMessage'),
       [
         {
-          text: 'Cancel',
+          text: t('common.cancel'),
           style: 'cancel',
         },
         {
-          text: 'Mark as Complete',
+          text: t('requestDetails.markAsComplete'),
           style: 'destructive',
           onPress: async () => {
             if (!id || !request) return;
@@ -452,13 +476,13 @@ export default function RequestDetails() {
             setCompletingTask(true);
             try {
               const response = await completeTask(id);
-              Alert.alert('Success', response.message || 'Request marked as completed successfully!');
+              Alert.alert(t('common.success'), response.message || t('requestDetails.markCompleteSuccess'));
 
               // Refresh task data to get updated status
               await fetchTaskData();
             } catch (err: any) {
-              const errorMessage = err?.message || 'Failed to mark request as completed. Please try again.';
-              Alert.alert('Error', errorMessage);
+              const errorMessage = err?.message || t('requestDetails.markCompleteError');
+              Alert.alert(t('common.error'), errorMessage);
             } finally {
               setCompletingTask(false);
             }
@@ -470,15 +494,15 @@ export default function RequestDetails() {
 
   const handleDeleteRequest = () => {
     Alert.alert(
-      'Delete Request',
-      'Are you sure you want to delete this request? This action cannot be undone.',
+      t('requestDetails.deleteRequestTitle'),
+      t('requestDetails.deleteRequestMessage'),
       [
         {
-          text: 'Cancel',
+          text: t('common.cancel'),
           style: 'cancel',
         },
         {
-          text: 'Delete',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             if (!id || !request) return;
@@ -486,15 +510,115 @@ export default function RequestDetails() {
             setCancellingTask(true);
             try {
               const response = await cancelTask(id);
-              Alert.alert('Success', response.message || 'Request deleted successfully!');
+              Alert.alert(t('common.success'), response.message || t('requestDetails.deleteRequestSuccess'));
 
               // Navigate back to feed
               router.back();
             } catch (err: any) {
-              const errorMessage = err?.message || 'Failed to delete request. Please try again.';
-              Alert.alert('Error', errorMessage);
+              const errorMessage = err?.message || t('requestDetails.deleteRequestError');
+              Alert.alert(t('common.error'), errorMessage);
             } finally {
               setCancellingTask(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const handleSubmitComment = async () => {
+    if (!commentText.trim()) {
+      Alert.alert(t('requestDetails.commentRequiredTitle'), t('requestDetails.commentRequiredMessage'));
+      return;
+    }
+
+    if (!id || !user) {
+      Alert.alert(t('common.error'), t('requestDetails.signInRequired'));
+      return;
+    }
+
+    setSubmittingComment(true);
+    try {
+      if (editingCommentId) {
+        // Update existing comment
+        const response = await updateComment(editingCommentId, commentText);
+
+        // Update the comment in the list
+        setComments((prev) =>
+          prev.map((c) => (c.id === editingCommentId ? response.data : c))
+        );
+
+        // Clear editing state
+        setEditingCommentId(null);
+      } else {
+        // Create new comment
+        const response = await createTaskComment(id, commentText);
+
+        // Add the new comment to the end of the list (oldest to newest order)
+        setComments((prev) => [...prev, response.data]);
+
+        // Scroll to bottom to show the new comment
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      }
+
+      // Clear the input
+      setCommentText('');
+
+      // Dismiss keyboard
+      Keyboard.dismiss();
+    } catch (err: any) {
+      const errorMessage = err?.message || t('requestDetails.commentError', { action: editingCommentId ? 'update' : 'submit' });
+      Alert.alert(t('common.error'), errorMessage);
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+
+  const handleEditComment = (comment: Comment) => {
+    setCommentText(comment.content);
+    setEditingCommentId(comment.id);
+    // Scroll to bottom to show the input field
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  };
+
+  const handleCancelEdit = () => {
+    setCommentText('');
+    setEditingCommentId(null);
+  };
+
+  const handleDeleteComment = (commentId: number) => {
+    Alert.alert(
+      t('requestDetails.deleteCommentTitle'),
+      t('requestDetails.deleteCommentMessage'),
+      [
+        {
+          text: t('common.cancel'),
+          style: 'cancel',
+        },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteComment(commentId);
+
+              // Remove the comment from the list
+              setComments((prev) => prev.filter((c) => c.id !== commentId));
+
+              // Clear editing state if deleting the comment being edited
+              if (editingCommentId === commentId) {
+                setCommentText('');
+                setEditingCommentId(null);
+              }
+            } catch (err: any) {
+              const errorMessage = err?.message || t('requestDetails.commentError', { action: 'delete' });
+              Alert.alert(t('common.error'), errorMessage);
             }
           },
         },
@@ -516,7 +640,7 @@ export default function RequestDetails() {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: themeColors.background }}>
         <Text style={{ color: themeColors.error, textAlign: 'center', fontSize: 18 }}>
-          {error || 'Request details could not be loaded.'}
+          {error || t('requestDetails.loadError')}
         </Text>
         <TouchableOpacity
           onPress={() => router.back()}
@@ -526,24 +650,24 @@ export default function RequestDetails() {
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
-          <Text style={{ color: themeColors.primary }}>Go Back</Text>
+          <Text style={{ color: themeColors.primary }}>{t('requestDetails.goBack')}</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
   const title = request.title;
-  const categoryDisplay = request.category_display || request.category || 'Unknown';
-  const urgencyLevel = request.urgency_level === 3 ? 'High' : request.urgency_level === 2 ? 'Medium' : 'Low';
+  const categoryDisplay = request.category_display || request.category || t('requestDetails.unknown');
+  const urgencyLevel = request.urgency_level === 3 ? t('common.high') : request.urgency_level === 2 ? t('common.medium') : t('common.low');
   const statusDisplay = request.status_display || request.status;
   const imageUrl = request.photo || 'https://placehold.co/400x280';
-  const requesterName = request.creator?.name || 'Unknown User';
+  const requesterName = request.creator?.name || t('requestDetails.unknownUser');
   const requesterPhotoUrl = request.creator?.profile_photo || request.creator?.photo;
-  const description = request.description || 'No description provided.';
-  const datetime = request.deadline ? new Date(request.deadline).toLocaleString() : 'Not specified';
-  const locationDisplay = request.location || 'Not specified';
+  const description = request.description || t('requestDetails.noDescription');
+  const datetime = request.deadline ? new Date(request.deadline).toLocaleString() : t('requestDetails.notSpecified');
+  const locationDisplay = request.location || t('requestDetails.notSpecified');
   const requiredPerson = request.volunteer_number || 1;
-  const phoneNumber = request.creator?.phone_number || 'Not available';
+  const phoneNumber = request.creator?.phone_number || t('requestDetails.notAvailable');
 
   const isCreator = user?.id === request?.creator?.id;
   const numAssigned = assignedVolunteers.length;
@@ -613,7 +737,7 @@ export default function RequestDetails() {
               },
             ]}
           >
-            {`${urgencyLevel} Urgency`}
+            {`${urgencyLevel} ${t('requestDetails.urgency')}`}
           </Text>
           <Text
             style={[
@@ -630,14 +754,16 @@ export default function RequestDetails() {
           </Text>
         </View>
       </View>
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+      <ScrollView
+        ref={scrollViewRef}
+        contentContainerStyle={{ paddingBottom: user ? 100 : 40 }}
+      >
         {/* Show first photo as hero image if available, otherwise show default */}
         {photos.length > 0 && !photosLoading ? (
           <>
             {(() => {
               const firstPhoto = photos[0];
               const photoUrl = firstPhoto.photo_url || firstPhoto.url || firstPhoto.image || '';
-              console.log(photoUrl);
               const absoluteUrl = photoUrl.startsWith('http')
                 ? photoUrl
                 : `${BACKEND_BASE_URL}${photoUrl}`;
@@ -688,7 +814,7 @@ export default function RequestDetails() {
         )}
 
         <View style={[styles.section, { backgroundColor: themeColors.card }]}>
-          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Requester</Text>
+          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>{t('requestDetails.requester')}</Text>
           <View style={styles.requesterRow}>
             <Image
               source={
@@ -705,21 +831,21 @@ export default function RequestDetails() {
           </View>
         </View>
         <View style={[styles.section, { backgroundColor: themeColors.card }]}>
-          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Description</Text>
+          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>{t('requestDetails.description')}</Text>
           <Text style={[styles.sectionText, { color: themeColors.text }]}>{description}</Text>
         </View>
         <View style={[styles.section, { backgroundColor: themeColors.card }]}>
-          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Details</Text>
-          <DetailRow label="Date & Time" value={datetime} themeColors={themeColors} />
-          <DetailRow label="Location" value={locationDisplay} themeColors={themeColors} />
-          <DetailRow label="People Needed" value={`${requiredPerson} volunteer(s)`} themeColors={themeColors} />
+          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>{t('requestDetails.details')}</Text>
+          <DetailRow label={t('requestDetails.deadline')} value={datetime} themeColors={themeColors} />
+          <DetailRow label={t('requestDetails.location')} value={locationDisplay} themeColors={themeColors} />
+          <DetailRow label={t('requestDetails.peopleNeeded')} value={`${requiredPerson} ${t('requestDetails.volunteerSuffix', { count: requiredPerson })}`} themeColors={themeColors} />
         </View>
         <View style={[styles.section, { backgroundColor: themeColors.card }]}>
-          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Assigned Volunteers</Text>
+          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>{t('requestDetails.assignedVolunteers')}</Text>
           {assigneesLoading ? (
             <ActivityIndicator size="small" color={themeColors.primary} />
           ) : assignedVolunteers.length === 0 ? (
-            <Text style={[styles.sectionText, { color: themeColors.textMuted }]}>No volunteers assigned yet.</Text>
+            <Text style={[styles.sectionText, { color: themeColors.textMuted }]}>{t('requestDetails.noVolunteersAssigned')}</Text>
           ) : (
             assignedVolunteers.map((volunteer) => (
               <TouchableOpacity
@@ -772,7 +898,7 @@ export default function RequestDetails() {
             accessibilityLabel="Select volunteers"
           >
             <Text style={[styles.buttonText, { color: themeColors.card }]}>
-              {requiredPerson === 1 ? 'Select Volunteer' : 'Select Volunteers'}
+              {requiredPerson === 1 ? t('requestDetails.selectVolunteer') : t('requestDetails.selectVolunteers')}
             </Text>
           </TouchableOpacity>
         )}
@@ -792,7 +918,7 @@ export default function RequestDetails() {
             {completingTask ? (
               <ActivityIndicator size="small" color={themeColors.card} />
             ) : (
-              <Text style={[styles.buttonText, { color: themeColors.card }]}>Mark as Complete</Text>
+              <Text style={[styles.buttonText, { color: themeColors.card }]}>{t('requestDetails.markAsComplete')}</Text>
             )}
           </TouchableOpacity>
         )}
@@ -810,7 +936,7 @@ export default function RequestDetails() {
             >
               <View style={styles.buttonContent}>
                 <Ionicons name="pencil" size={18} color={themeColors.secondary} style={{ marginRight: 6 }} />
-                <Text style={[styles.buttonText, { color: themeColors.secondary }]}>Edit Request</Text>
+                <Text style={[styles.buttonText, { color: themeColors.secondary }]}>{t('requestDetails.editRequest')}</Text>
               </View>
             </TouchableOpacity>
             <TouchableOpacity
@@ -829,7 +955,7 @@ export default function RequestDetails() {
               ) : (
                 <View style={styles.buttonContent}>
                   <Ionicons name="close" size={18} color={themeColors.error} style={{ marginRight: 6 }} />
-                  <Text style={[styles.buttonText, { color: themeColors.error }]}>Delete Request</Text>
+                  <Text style={[styles.buttonText, { color: themeColors.error }]}>{t('requestDetails.deleteRequest')}</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -851,7 +977,7 @@ export default function RequestDetails() {
             accessibilityLabel="Volunteer for this request"
             testID="request-details-volunteer-button"
           >
-            <Text style={[styles.buttonText, { color: themeColors.card }]}>Volunteer for this Request</Text>
+            <Text style={[styles.buttonText, { color: themeColors.card }]}>{t('requestDetails.volunteerForRequest')}</Text>
           </TouchableOpacity>
         )}
 
@@ -878,14 +1004,100 @@ export default function RequestDetails() {
             >
               <Text style={[styles.buttonText, { color: themeColors.card }]}>
                 {hasReviewedAllVolunteers()
-                  ? `Edit Rate & Review ${numAssigned === 1 ? 'Volunteer' : 'Volunteers'}`
-                  : `Rate & Review ${numAssigned === 1 ? 'Volunteer' : 'Volunteers'}`
+                  ? t('requestDetails.editRateReview', { count: numAssigned })
+                  : t('requestDetails.rateReview', { count: numAssigned })
                 }
               </Text>
             </TouchableOpacity>
           </>
         )}
+
+        {/* Comments Section */}
+        <View style={[styles.section, { backgroundColor: themeColors.card }]}>
+          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>{t('requestDetails.comments')}</Text>
+          {commentsLoading ? (
+            <ActivityIndicator size="small" color={themeColors.primary} style={{ marginVertical: 16 }} />
+          ) : comments.length === 0 ? (
+            <Text style={[styles.sectionText, { color: themeColors.textMuted }]}>{t('requestDetails.noCommentsYet')}</Text>
+          ) : (
+            comments.map((comment) => (
+              <CommentCard
+                key={comment.id}
+                userName={`${comment.user.name} ${comment.user.surname}`}
+                content={comment.content}
+                timestamp={comment.timestamp}
+                avatarUrl={comment.user.profile_photo || comment.user.photo}
+                isOwnComment={comment.user.id === user?.id}
+                onEdit={() => handleEditComment(comment)}
+                onDelete={() => handleDeleteComment(comment.id)}
+                userId={comment.user.id}
+                onProfilePress={() => router.push({
+                  pathname: '/profile',
+                  params: { userId: comment.user.id }
+                })}
+                userRating={comment.user.rating}
+                isRequester={comment.user.id === request?.creator?.id}
+                completedTaskCount={comment.user.completed_task_count}
+              />
+            ))
+          )}
+        </View>
       </ScrollView>
+
+      {/* Comment Input Section - Fixed at Bottom */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0}
+        style={styles.commentInputContainer}
+      >
+        {editingCommentId && (
+          <View style={[styles.editingBanner, { backgroundColor: themeColors.lightPurple }]}>
+            <Text style={[styles.editingText, { color: themeColors.primary }]}>{t('requestDetails.editingComment')}</Text>
+            <TouchableOpacity onPress={handleCancelEdit}>
+              <Ionicons name="close" size={20} color={themeColors.textMuted} />
+            </TouchableOpacity>
+          </View>
+        )}
+        <View style={[styles.inputRow, { backgroundColor: themeColors.card, borderTopColor: themeColors.border }]}>
+          <TextInput
+            style={[
+              styles.commentInput,
+              {
+                borderColor: themeColors.border,
+                color: themeColors.text,
+                backgroundColor: themeColors.background,
+              },
+            ]}
+            placeholder={t('requestDetails.addComment')}
+            placeholderTextColor={themeColors.textMuted}
+            value={commentText}
+            onChangeText={setCommentText}
+            multiline
+            editable={!submittingComment}
+            accessibilityLabel={t('requestDetails.commentInputA11y')}
+          />
+          <TouchableOpacity
+            style={[
+              styles.sendButton,
+              {
+                backgroundColor: submittingComment || !commentText.trim() ? themeColors.border : themeColors.primary,
+              },
+            ]}
+            onPress={handleSubmitComment}
+            disabled={submittingComment || !commentText.trim()}
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel={editingCommentId ? t('requestDetails.updateCommentA11y') : t('requestDetails.sendCommentA11y')}
+            accessibilityState={{ disabled: submittingComment || !commentText.trim() }}
+          >
+            {submittingComment ? (
+              <ActivityIndicator size="small" color={themeColors.card} />
+            ) : (
+              <Ionicons name={editingCommentId ? "checkmark" : "send"} size={20} color={themeColors.card} />
+            )}
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
 
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View
@@ -896,76 +1108,76 @@ export default function RequestDetails() {
           <View style={[styles.modalContent, { backgroundColor: themeColors.card }]} accessible>
             <Text style={[styles.modalTitle, { color: themeColors.text }]}>
               {isEdit
-                ? 'Edit Request'
+                ? t('requestDetails.editRequest')
                 : assignedVolunteers.length > 0
                   ? (() => {
                     const currentVolunteer = assignedVolunteers[currentVolunteerIndex];
                     const existingReview = getExistingReviewForVolunteer(currentVolunteer?.user?.id);
                     return existingReview
-                      ? `Edit Rate & Review ${currentVolunteer?.user?.name || 'Volunteer'}`
-                      : `Rate & Review ${currentVolunteer?.user?.name || 'Volunteer'}`;
+                      ? t('requestDetails.editRateReview', { count: 1 })
+                      : t('requestDetails.rateReview', { count: 1 });
                   })()
-                  : 'Rate Request'
+                  : t('requestDetails.rateRequest')
               }
             </Text>
             {isEdit ? (
               <ScrollView style={styles.editFormContainer} showsVerticalScrollIndicator={false}>
                 <View style={styles.editField}>
-                  <Text style={[styles.editLabel, { color: themeColors.textMuted }]}>Title</Text>
+                  <Text style={[styles.editLabel, { color: themeColors.textMuted }]}>{t('requestDetails.title')}</Text>
                   <TextInput
                     style={[
                       styles.editInput,
                       { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background },
                     ]}
-                    placeholder="Update title"
+                    placeholder={t('requestDetails.titlePlaceholder')}
                     placeholderTextColor={themeColors.textMuted}
                     value={editForm.title ?? ''}
                     onChangeText={(text) => handleEditInputChange('title', text)}
-                    accessibilityLabel="Edit title"
+                    accessibilityLabel={t('requestDetails.title')}
                   />
                 </View>
                 <View style={styles.editField}>
-                  <Text style={[styles.editLabel, { color: themeColors.textMuted }]}>Description</Text>
+                  <Text style={[styles.editLabel, { color: themeColors.textMuted }]}>{t('requestDetails.description')}</Text>
                   <TextInput
                     style={[
                       styles.editInput,
                       { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background, minHeight: 80, textAlignVertical: 'top' },
                     ]}
-                    placeholder="Update description"
+                    placeholder={t('requestDetails.descriptionPlaceholder')}
                     placeholderTextColor={themeColors.textMuted}
                     multiline
                     value={editForm.description ?? ''}
                     onChangeText={(text) => handleEditInputChange('description', text)}
-                    accessibilityLabel="Edit description"
+                    accessibilityLabel={t('requestDetails.description')}
                   />
                 </View>
                 <CategoryPicker value={editForm.category} onChange={(val) => handleEditInputChange('category', val)} />
                 <DeadlinePicker value={deadlineDate} onChange={handleDeadlineChange} />
                 <AddressFields value={addressFields} onChange={setAddressFields} />
                 <View style={styles.editField}>
-                  <Text style={[styles.editLabel, { color: themeColors.textMuted }]}>Address Description</Text>
+                  <Text style={[styles.editLabel, { color: themeColors.textMuted }]}>{t('requestDetails.addressDescription')}</Text>
                   <TextInput
                     style={[
                       styles.editInput,
                       { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background, minHeight: 80, textAlignVertical: 'top' },
                     ]}
-                    placeholder="Additional address details"
+                    placeholder={t('requestDetails.addressDescriptionPlaceholder')}
                     placeholderTextColor={themeColors.textMuted}
                     multiline
                     value={editForm.requirements ?? ''}
                     onChangeText={(text) => handleEditInputChange('requirements', text)}
-                    accessibilityLabel="Address description"
+                    accessibilityLabel={t('requestDetails.addressDescription')}
                   />
                 </View>
                 <View style={styles.editField}>
-                  <Text style={[styles.editLabel, { color: themeColors.textMuted }]}>Urgency Level</Text>
+                  <Text style={[styles.editLabel, { color: themeColors.textMuted }]}>{t('requestDetails.urgency')}</Text>
                   <TextInput
                     style={[
                       styles.editInput,
                       { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background },
                     ]}
                     keyboardType="numeric"
-                    placeholder="Enter urgency (1-3)"
+                    placeholder={t('requestDetails.urgencyPlaceholder')}
                     placeholderTextColor={themeColors.textMuted}
                     value={editForm.urgency_level !== undefined ? String(editForm.urgency_level) : ''}
                     onChangeText={(text) => {
@@ -977,18 +1189,18 @@ export default function RequestDetails() {
                       const parsed = Number(cleaned);
                       handleEditInputChange('urgency_level', Number.isNaN(parsed) ? undefined : parsed);
                     }}
-                    accessibilityLabel="Urgency level"
+                    accessibilityLabel={t('requestDetails.urgency')}
                   />
                 </View>
                 <View style={styles.editField}>
-                  <Text style={[styles.editLabel, { color: themeColors.textMuted }]}>Volunteer Number</Text>
+                  <Text style={[styles.editLabel, { color: themeColors.textMuted }]}>{t('requestDetails.peopleNeeded')}</Text>
                   <TextInput
                     style={[
                       styles.editInput,
                       { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background },
                     ]}
                     keyboardType="numeric"
-                    placeholder="Required volunteers"
+                    placeholder={t('requestDetails.peopleNeededPlaceholder')}
                     placeholderTextColor={themeColors.textMuted}
                     value={editForm.volunteer_number !== undefined ? String(editForm.volunteer_number) : ''}
                     onChangeText={(text) => {
@@ -1000,11 +1212,11 @@ export default function RequestDetails() {
                       const parsed = Number(cleaned);
                       handleEditInputChange('volunteer_number', Number.isNaN(parsed) ? undefined : parsed);
                     }}
-                    accessibilityLabel="Volunteer count"
+                    accessibilityLabel={t('requestDetails.peopleNeeded')}
                   />
                 </View>
                 <View style={[styles.editField, styles.editSwitchRow]}>
-                  <Text style={[styles.editLabel, { color: themeColors.text }]}>Recurring Task</Text>
+                  <Text style={[styles.editLabel, { color: themeColors.text }]}>{t('requestDetails.recurringTask')}</Text>
                   <Switch
                     value={Boolean(editForm.is_recurring)}
                     onValueChange={(value) => handleEditInputChange('is_recurring', value)}
@@ -1017,7 +1229,7 @@ export default function RequestDetails() {
               <>
                 {assignedVolunteers.length > 1 && (
                   <Text style={[styles.modalSubtitle, { color: themeColors.textMuted }]}>
-                    {currentVolunteerIndex + 1} of {assignedVolunteers.length}
+                    {t('requestDetails.reviewProgress', { current: currentVolunteerIndex + 1, total: assignedVolunteers.length })}
                   </Text>
                 )}
                 <TextInput
@@ -1025,7 +1237,7 @@ export default function RequestDetails() {
                     styles.modalInput,
                     { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background },
                   ]}
-                  placeholder="Leave your review..."
+                  placeholder={t('requestDetails.writeReview')}
                   placeholderTextColor={themeColors.textMuted}
                   multiline
                   returnKeyType="done"
@@ -1033,10 +1245,10 @@ export default function RequestDetails() {
                   onSubmitEditing={Keyboard.dismiss}
                   value={reviewText}
                   onChangeText={setReviewText}
-                  accessibilityLabel="Review input"
+                  accessibilityLabel={t('requestDetails.reviewInputA11y')}
                 />
                 <View style={styles.starRow}>
-                  <Text style={[styles.editLabel, { color: themeColors.text, marginBottom: 4 }]}>Reliability</Text>
+                  <Text style={[styles.editLabel, { color: themeColors.text, marginBottom: 4 }]}>{t('requestDetails.reliability')}</Text>
                   <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
                     {[1, 2, 3, 4, 5].map((star) => (
                       <TouchableOpacity
@@ -1053,7 +1265,7 @@ export default function RequestDetails() {
                   </View>
                 </View>
                 <View style={styles.starRow}>
-                  <Text style={[styles.editLabel, { color: themeColors.text, marginBottom: 4 }]}>Task Completion</Text>
+                  <Text style={[styles.editLabel, { color: themeColors.text, marginBottom: 4 }]}>{t('requestDetails.taskCompletion')}</Text>
                   <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
                     {[1, 2, 3, 4, 5].map((star) => (
                       <TouchableOpacity
@@ -1070,7 +1282,7 @@ export default function RequestDetails() {
                   </View>
                 </View>
                 <View style={styles.starRow}>
-                  <Text style={[styles.editLabel, { color: themeColors.text, marginBottom: 4 }]}>Communication</Text>
+                  <Text style={[styles.editLabel, { color: themeColors.text, marginBottom: 4 }]}>{t('requestDetails.communication')}</Text>
                   <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
                     {[1, 2, 3, 4, 5].map((star) => (
                       <TouchableOpacity
@@ -1087,7 +1299,7 @@ export default function RequestDetails() {
                   </View>
                 </View>
                 <View style={styles.starRow}>
-                  <Text style={[styles.editLabel, { color: themeColors.text, marginBottom: 4 }]}>Safety & Respect</Text>
+                  <Text style={[styles.editLabel, { color: themeColors.text, marginBottom: 4 }]}>{t('requestDetails.safetyAndRespect')}</Text>
                   <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
                     {[1, 2, 3, 4, 5].map((star) => (
                       <TouchableOpacity
@@ -1111,34 +1323,32 @@ export default function RequestDetails() {
                 onPress={handleCloseModal}
                 disabled={isEdit ? updatingRequest : submittingReview}
                 accessible
-
                 accessibilityRole="button"
-                accessibilityLabel="Cancel"
+                accessibilityLabel={t('common.cancel')}
                 accessibilityState={{ disabled: isEdit ? updatingRequest : submittingReview }}
               >
-                <Text style={{ color: themeColors.text }}>Cancel</Text>
+                <Text style={{ color: themeColors.text }}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: isEdit ? themeColors.primary : themeColors.pink }]}
                 onPress={isEdit ? handleUpdateRequest : handleSubmitReview}
                 disabled={isEdit ? updatingRequest : submittingReview}
                 accessible
-
                 accessibilityRole="button"
-                accessibilityLabel={isEdit ? 'Save request' : 'Submit review'}
+                accessibilityLabel={isEdit ? t('requestDetails.saveChanges') : t('requestDetails.submitReview')}
                 accessibilityState={{ disabled: isEdit ? updatingRequest : submittingReview }}
               >
                 {isEdit ? (
                   updatingRequest ? (
                     <ActivityIndicator size="small" color={themeColors.card} />
                   ) : (
-                    <Text style={{ color: themeColors.card }}>Save</Text>
+                    <Text style={{ color: themeColors.card }}>{t('common.save')}</Text>
                   )
                 ) : submittingReview ? (
                   <ActivityIndicator size="small" color={themeColors.card} />
                 ) : (
                   <Text style={{ color: themeColors.card }}>
-                    {currentVolunteerIndex < assignedVolunteers.length - 1 ? 'Next' : 'Submit'}
+                    {currentVolunteerIndex < assignedVolunteers.length - 1 ? t('common.next') : t('requestDetails.submit')}
                   </Text>
                 )}
               </TouchableOpacity>
@@ -1146,7 +1356,7 @@ export default function RequestDetails() {
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+    </SafeAreaView >
   );
 }
 
@@ -1395,5 +1605,43 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 16,
     marginHorizontal: 16,
+  },
+  commentInputContainer: {
+    borderTopWidth: 1,
+    paddingBottom: 20,
+  },
+  editingBanner: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  editingText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  commentInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    maxHeight: 100,
+    marginRight: 8,
+    fontSize: 14,
+  },
+  sendButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

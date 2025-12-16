@@ -15,30 +15,34 @@ import {
 } from 'react-native';
 import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { getTasks, getPopularTasks, getUserProfile, getTaskPhotos, BACKEND_BASE_URL, type Task, type UserProfile, type Category as ApiCategory, type Photo } from '../lib/api';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { getTasks, getPopularTasks, getUserProfile, getFollowedTasks, BACKEND_BASE_URL, type Task, type UserProfile, type Category as ApiCategory } from '../lib/api';
 import type { ThemeTokens } from '@/constants/Colors';
 import { useAuth } from '../lib/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
+import i18n from '../lib/i18n';
 
 export default function Feed() {
   const { colors } = useTheme();
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [popularTasks, setPopularTasks] = useState<Task[]>([]);
+  const [followingTasks, setFollowingTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [followingLoading, setFollowingLoading] = useState(false);
   const [taskDerivedCategories, setTaskDerivedCategories] = useState<ApiCategory[]>([]);
-  const [taskPhotos, setTaskPhotos] = useState<Map<number, Photo[]>>(new Map());
   const scrollRef = useRef<ScrollView>(null);
   const themeColors = colors as unknown as ThemeTokens;
 
   const formatUrgency = (level?: number) => {
-    if (level === 3) return 'High';
-    if (level === 2) return 'Medium';
-    if (level === 1) return 'Low';
-    return 'Medium';
+    if (level === 3) return t('urgency.high');
+    if (level === 2) return t('urgency.medium');
+    if (level === 1) return t('urgency.low');
+    return t('urgency.medium');
   };
 
   const getUrgencyColors = (level?: number) => {
@@ -59,6 +63,28 @@ export default function Feed() {
     });
   };
 
+  // Fetch tasks from users the current user is following
+  const fetchFollowingTasks = async () => {
+    if (!user) {
+      setFollowingTasks([]);
+      return;
+    }
+
+    try {
+      setFollowingLoading(true);
+
+      // Call backend endpoint for followed tasks (much more efficient!)
+      const tasks = await getFollowedTasks(6);
+
+      setFollowingTasks(tasks);
+    } catch (error) {
+      console.error('Error fetching following tasks:', error);
+      setFollowingTasks([]);
+    } finally {
+      setFollowingLoading(false);
+    }
+  };
+
   const fetchTasks = async () => {
     try {
       setLoading(true);
@@ -73,23 +99,6 @@ export default function Feed() {
       const activePopularTasks = filterActiveTasks(popular);
 
       setPopularTasks(activePopularTasks);
-
-      // Fetch photos for popular tasks
-      const photosMap = new Map<number, Photo[]>();
-      await Promise.all(
-        activePopularTasks.map(async (task) => {
-          try {
-            const photosResponse = await getTaskPhotos(task.id);
-            if (photosResponse.status === 'success' && photosResponse.data.photos.length > 0) {
-              photosMap.set(task.id, photosResponse.data.photos);
-            }
-          } catch (error) {
-            // Silently fail for individual photo fetches
-            console.warn(`Failed to fetch photos for task ${task.id}`);
-          }
-        })
-      );
-      setTaskPhotos(photosMap);
 
       if (activeTasks.length > 0) {
         const uniqueCategoriesMap = new Map<string, ApiCategory>();
@@ -112,7 +121,7 @@ export default function Feed() {
 
     } catch (error) {
       console.error('Error fetching tasks:', error);
-      Alert.alert('Error', 'Failed to load tasks. Please try again.');
+      Alert.alert(t('common.error'), t('feed.errorLoadingTasks') || 'Failed to load tasks. Please try again.');
       setTasks([]);
       setPopularTasks([]);
       setTaskDerivedCategories([]);
@@ -124,11 +133,23 @@ export default function Feed() {
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+    fetchFollowingTasks();
+  }, [user?.id]); // Re-fetch when user changes
+
+  // Refresh following tasks when screen comes into focus
+  // This ensures the list updates after unfollowing someone
+  useFocusEffect(
+    React.useCallback(() => {
+      if (user) {
+        fetchFollowingTasks();
+      }
+    }, [user?.id])
+  );
 
   const onRefresh = () => {
     setRefreshing(true);
     fetchTasks();
+    fetchFollowingTasks();
   };
 
   if (loading) {
@@ -143,6 +164,7 @@ export default function Feed() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background, paddingTop: 36 }]}>
       <ScrollView
         ref={scrollRef}
+        style={{ flex: 1 }}
         contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -158,11 +180,27 @@ export default function Feed() {
               accessibilityLabel="AccessEase logo"
             />
             <View>
-              <Text style={[styles.welcomeText, { color: colors.text }]}>{user ? 'Welcome back' : 'Welcome Guest'}</Text>
+              <Text style={[styles.welcomeText, { color: colors.text }]}>
+                {user ? t('feed.welcome') : t('feed.welcome') + ' ' + t('feed.guest')}
+              </Text>
             </View>
           </View>
           {/* Always show notifications and settings buttons */}
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity
+              onPress={() => {
+                const newLang = i18n.language === 'en' ? 'tr' : 'en';
+                i18n.changeLanguage(newLang);
+              }}
+              style={{ marginRight: 12, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 12, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border }}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel="Change language"
+            >
+              <Text style={{ color: colors.text, fontWeight: 'bold', fontSize: 12 }}>
+                {i18n.language === 'en' ? 'TR' : 'EN'}
+              </Text>
+            </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push('/notifications')}
               style={{ marginRight: 12 }}
@@ -215,12 +253,12 @@ export default function Feed() {
             accessible={false}
             importantForAccessibility="no"
           />
-          <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>What are you looking for?</Text>
+          <Text style={[styles.searchInput, { color: colors.text, flex: 1 }]}>{t('feed.searchPlaceholder')}</Text>
         </TouchableOpacity>
 
         {/* — Categories — */}
         <Text style={[styles.sectionTitle, { color: colors.text }]}>
-          Popular Categories
+          {t('feed.popularCategories')}
         </Text>
         <View style={styles.categories}>
           {taskDerivedCategories.map((cat) => (
@@ -240,7 +278,7 @@ export default function Feed() {
                 accessibilityRole="image"
                 accessibilityLabel={`${cat.name} category illustration`}
               />
-              <Text style={[styles.cardTitle, { color: colors.text }]}> {cat.name} </Text>
+              <Text style={[styles.cardTitle, { color: colors.text }]}> {t(`categories.${cat.id}`, { defaultValue: cat.name })} </Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -252,22 +290,106 @@ export default function Feed() {
           accessibilityRole="button"
           accessibilityLabel="See all categories"
         >
-          <Text style={[styles.seeAllText, { color: colors.primary }]}>See all categories</Text>
+          <Text style={[styles.seeAllText, { color: colors.primary }]}>{t('feed.seeAllCategories')}</Text>
         </TouchableOpacity>
+
+        {/* — Requests from People You Follow — */}
+        {user && (
+          <>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              {t('feed.followingRequests')}
+            </Text>
+            {followingLoading ? (
+              <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: 16 }} />
+            ) : followingTasks.length > 0 ? (
+              <>
+                {followingTasks.map((task) => {
+                  const urgencyLabel = formatUrgency(task.urgency_level);
+                  const urgencyPalette = getUrgencyColors(task.urgency_level);
+
+                  return (
+                    <TouchableOpacity
+                      key={task.id}
+                      style={[styles.requestRow, { backgroundColor: colors.card }]}
+                      onPress={() =>
+                        router.push({
+                          pathname: (task.creator && task.creator.id === user?.id) ? '/r-request-details' : '/v-request-details',
+                          params: { id: task.id }
+                        })
+                      }
+                      accessible
+                      accessibilityRole="button"
+                      accessibilityLabel={`View details for ${task.title}`}
+                      testID={`following-request-item-${task.id}`}
+                    >
+                      <Image
+                        source={task.primary_photo_url ? { uri: task.primary_photo_url } : require('../assets/images/help.png')}
+                        style={styles.requestImage}
+                        accessibilityRole="image"
+                        accessibilityLabel={task.primary_photo_url ? `Photo for ${task.title}` : `Default illustration for ${task.title}`}
+                      />
+                      <View style={styles.requestInfo}>
+                        <Text style={[styles.requestTitle, { color: colors.text }]}>
+                          {task.title}
+                        </Text>
+                        <Text style={[styles.requestMeta, { color: colors.text }]}>
+                          {task.location} • {new Date(task.created_at).toLocaleDateString()}
+                        </Text>
+                        <View style={styles.requestCategoryRow}>
+                          <View
+                            style={[
+                              styles.urgencyBadge,
+                              { backgroundColor: urgencyPalette.background, borderColor: colors.border },
+                            ]}
+                          >
+                            <Text style={[styles.urgencyText, { color: urgencyPalette.text }]} numberOfLines={1} ellipsizeMode="tail">
+                              {`${urgencyLabel} ${t('createRequest.urgency')}`}
+                            </Text>
+                          </View>
+                          <View style={[styles.requestCategory, { borderColor: colors.border }]}>
+                            <Text style={[styles.requestCategoryText, { color: colors.text }]} numberOfLines={1} ellipsizeMode="tail">
+                              {t(`categories.${task.category}`, { defaultValue: task.category })}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                      <Ionicons
+                        name="chevron-forward"
+                        size={20}
+                        color={colors.text}
+                        accessible={false}
+                        importantForAccessibility="no"
+                      />
+                    </TouchableOpacity>
+                  );
+                })}
+              </>
+            ) : (
+              <View style={{ paddingVertical: 16, alignItems: 'center' }}>
+                <Text style={[styles.requestMeta, { color: colors.text, textAlign: 'center' }]}>
+                  {t('feed.noFollowingRequests')}
+                </Text>
+              </View>
+            )}
+          </>
+        )}
+        {user && followingTasks.length > 0 && (
+          <TouchableOpacity
+            onPress={() => router.push('/requests?filter=following')}
+            style={styles.seeAllLink}
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel="See all requests from people you follow"
+          >
+            <Text style={[styles.seeAllText, { color: colors.primary }]}>{t('feed.seeAllFollowing')}</Text>
+          </TouchableOpacity>
+        )}
 
         {/* — Requests — */}
         <Text style={[styles.sectionTitle, { color: colors.text }]}>
-          Popular Requests
+          {t('feed.popularRequests')}
         </Text>
         {popularTasks.map((task) => {
-          const photos = taskPhotos.get(task.id) || [];
-          const primaryPhoto = photos.length > 0 ? photos[0] : null;
-          const photoUrl = primaryPhoto ? (primaryPhoto.photo_url || primaryPhoto.url || primaryPhoto.image) : null;
-          const absolutePhotoUrl = photoUrl && photoUrl.startsWith('http')
-            ? photoUrl
-            : photoUrl
-              ? `${BACKEND_BASE_URL}${photoUrl}`
-              : null;
 
           return (
             <TouchableOpacity
@@ -286,10 +408,10 @@ export default function Feed() {
               testID={`request-item-${task.id}`}
             >
               <Image
-                source={absolutePhotoUrl ? { uri: absolutePhotoUrl } : require('../assets/images/help.png')}
+                source={task.primary_photo_url ? { uri: task.primary_photo_url } : require('../assets/images/help.png')}
                 style={styles.requestImage}
                 accessibilityRole="image"
-                accessibilityLabel={absolutePhotoUrl ? `Photo for ${task.title}` : `Default illustration for ${task.title}`}
+                accessibilityLabel={task.primary_photo_url ? `Photo for ${task.title}` : `Default illustration for ${task.title}`}
               />
               <View style={styles.requestInfo}>
                 <Text style={[styles.requestTitle, { color: colors.text }]}>
@@ -310,14 +432,14 @@ export default function Feed() {
                         ]}
                       >
                         <Text style={[styles.urgencyText, { color: urgencyPalette.text }]} numberOfLines={1} ellipsizeMode="tail">
-                          {`${urgencyLabel} Urgency`}
+                          {`${urgencyLabel} ${t('createRequest.urgency')}`}
                         </Text>
                       </View>
                     );
                   })()}
                   <View style={[styles.requestCategory, { borderColor: colors.border }]}>
                     <Text style={[styles.requestCategoryText, { color: colors.text }]} numberOfLines={1} ellipsizeMode="tail">
-                      {task.category}
+                      {t(`categories.${task.category}`, { defaultValue: task.category })}
                     </Text>
                   </View>
                 </View>
@@ -340,7 +462,7 @@ export default function Feed() {
           accessibilityRole="button"
           accessibilityLabel="See all requests"
         >
-          <Text style={[styles.seeAllText, { color: colors.primary }]}>See all requests</Text>
+          <Text style={[styles.seeAllText, { color: colors.primary }]}>{t('feed.seeAllRequests')}</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -364,7 +486,7 @@ export default function Feed() {
             accessible={false}
             importantForAccessibility="no"
           />
-          <Text style={[styles.tabLabel, { color: colors.primary }]}>Home</Text>
+          <Text style={[styles.tabLabel, { color: colors.primary }]}>{t('feed.home')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -384,7 +506,7 @@ export default function Feed() {
             importantForAccessibility="no"
           />
           <Text style={[styles.tabLabel, { color: colors.text }]}>
-            Categories
+            {t('feed.categories')}
           </Text>
         </TouchableOpacity>
 
@@ -405,7 +527,7 @@ export default function Feed() {
               accessible={false}
               importantForAccessibility="no"
             />
-            <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
+            <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.create')}</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
@@ -424,7 +546,7 @@ export default function Feed() {
               accessible={false}
               importantForAccessibility="no"
             />
-            <Text style={[styles.tabLabel, { color: colors.text }]}>Create</Text>
+            <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.create')}</Text>
           </TouchableOpacity>
         )}
 
@@ -444,7 +566,7 @@ export default function Feed() {
             accessible={false}
             importantForAccessibility="no"
           />
-          <Text style={[styles.tabLabel, { color: colors.text }]}>Requests</Text>
+          <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.requests')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -463,7 +585,7 @@ export default function Feed() {
             accessible={false}
             importantForAccessibility="no"
           />
-          <Text style={[styles.tabLabel, { color: colors.text }]}>Profile</Text>
+          <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.profile')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -542,3 +664,4 @@ const styles = StyleSheet.create({
   urgencyText: { fontSize: 12, fontWeight: 'bold' },
   requestCategoryRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
 });
+

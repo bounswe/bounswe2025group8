@@ -5,10 +5,12 @@ import SearchBarWithResults, { Category, Request, Profile, Location } from '../c
 import { getTasks, searchUsers, BACKEND_BASE_URL, type Task, type UserProfile } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { normalizedLocationLabel, locationMatches } from '../utils/address';
+import { useTranslation } from 'react-i18next';
 
 export default function SearchPage() {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [categories, setCategories] = useState<Category[]>([]);
   const [requests, setRequests] = useState<Request[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -40,8 +42,8 @@ export default function SearchPage() {
               title: task.title,
               urgency: task.urgency_level === 3 ? 'High' : task.urgency_level === 2 ? 'Medium' : 'Low',
               meta: `${locationLabel} • ${task.deadline ? new Date(task.deadline).toLocaleDateString() : 'N/A'}`,
-              category: task.category_display || task.category,
-              image: require('../assets/images/help.png'),
+              category: t(`categories.${task.category}`, task.category_display || task.category),
+              image: task.primary_photo_url ? { uri: task.primary_photo_url } : require('../assets/images/help.png'),
             };
           })
         );
@@ -53,7 +55,7 @@ export default function SearchPage() {
               if (!uniqueCategoriesMap.has(task.category)) {
                 uniqueCategoriesMap.set(task.category, {
                   id: task.category,
-                  title: task.category_display,
+                  title: t(`categories.${task.category}`, task.category_display),
                   image: require('../assets/images/help.png'),
                   count: activeTasks.filter((t) => t.category === task.category).length,
                 });
@@ -102,10 +104,10 @@ export default function SearchPage() {
           setProfiles(
             usersResponse.results.map((prof: UserProfile) => {
               const photoUrl = prof.profile_photo || prof.photo;
-              const absolutePhotoUrl = photoUrl 
+              const absolutePhotoUrl = photoUrl
                 ? (photoUrl.startsWith('http') ? photoUrl : `${BACKEND_BASE_URL}${photoUrl}`)
                 : null;
-              
+
               return {
                 id: String(prof.id),
                 name: `${prof.name} ${prof.surname}`,
@@ -118,7 +120,7 @@ export default function SearchPage() {
         }
       } catch (error) {
         console.error('Error loading search data:', error);
-        Alert.alert('Error', 'Failed to load search data. Please try again.');
+        Alert.alert(t('common.error'), t('search.loadError'));
         setRequests([]);
         setCategories([]);
         setProfiles([]);
@@ -147,10 +149,10 @@ export default function SearchPage() {
         locations={locations}
         onSelect={(item, type: string) => {
           let mappedType: 'category' | 'request' | 'profile' | 'location' = type as any;
-          if (type === 'Categories') mappedType = 'category';
-          else if (type === 'Requests') mappedType = 'request';
-          else if (type === 'Profiles') mappedType = 'profile';
-          else if (type === 'Locations') mappedType = 'location';
+          if (type === 'Category') mappedType = 'category';
+          else if (type === 'Request') mappedType = 'request';
+          else if (type === 'Profile') mappedType = 'profile';
+          else if (type === 'Location') mappedType = 'location';
           if (mappedType === 'category') router.push(('/category/' + item.id) as any);
           else if (mappedType === 'request') {
             // Find the full task object to check if user is creator

@@ -4,6 +4,7 @@ import { useTheme } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { Country, State, City } from 'country-state-city';
 import { AddressFieldsValue } from '../../utils/address';
+import { useTranslation } from 'react-i18next';
 
 interface AddressFieldsProps {
   value: AddressFieldsValue;
@@ -25,6 +26,7 @@ const COUNTRY_LIST = all_countries.map(c => c.name).sort();
 
 export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFieldsProps) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const [pickerModal, setPickerModal] = useState<{
     visible: boolean;
     title: string;
@@ -107,29 +109,29 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
   return (
     <View>
       {/* 1. Country Selector */}
-      <Text style={[styles.label, { color: colors.text }]}>{labelPrefix}Country</Text>
+      <Text style={[styles.label, { color: colors.text }]}>{labelPrefix}{t('common.address.country')}</Text>
       <TouchableOpacity
         style={[styles.selectorButton, { borderColor: colors.border, backgroundColor: colors.card }]}
-        onPress={() => openPicker('Select Country', COUNTRY_LIST, value.country, (val) => updateField('country', val))}
+        onPress={() => openPicker(t('common.address.selectCountry'), COUNTRY_LIST, value.country, (val) => updateField('country', val))}
         testID="address-country-selector"
       >
-        <Text style={[styles.selectorText, { color: colors.text }]}>{value.country || 'Select country'}</Text>
+        <Text style={[styles.selectorText, { color: colors.text }]}>{value.country || t('common.address.selectCountryPlaceholder')}</Text>
         <Ionicons name="chevron-down" size={20} color={colors.border} />
       </TouchableOpacity>
 
       {/* 2. State/Region Selector */}
-      <Text style={[styles.label, { color: colors.text }]}>{labelPrefix}State/Region</Text>
+      <Text style={[styles.label, { color: colors.text }]}>{labelPrefix}{t('common.address.state')}</Text>
       <TouchableOpacity
         style={[
           styles.selectorButton,
           { borderColor: colors.border, backgroundColor: colors.card, opacity: value.country ? 1 : 0.6 },
         ]}
         disabled={!value.country || statesList.length === 0}
-        onPress={() => openPicker('Select State/Region', statesList, value.state, (val) => updateField('state', val))}
+        onPress={() => openPicker(t('common.address.selectState'), statesList, value.state, (val) => updateField('state', val))}
         testID="address-state-selector"
       >
         <Text style={[styles.selectorText, { color: colors.text }]}>
-          {value.state || (statesList.length > 0 ? 'Select state/region' : 'Select Country first')}
+          {value.state || (statesList.length > 0 ? t('common.address.selectStatePlaceholder') : t('common.address.selectCountryFirst'))}
         </Text>
         <Ionicons name="chevron-down" size={20} color={colors.border} />
       </TouchableOpacity>
@@ -148,18 +150,18 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
 
 
       {/* 3. City Selector */}
-      <Text style={[styles.label, { color: colors.text }]}>{labelPrefix}City</Text>
+      <Text style={[styles.label, { color: colors.text }]}>{labelPrefix}{t('common.address.city')}</Text>
       <TouchableOpacity
         style={[
           styles.selectorButton,
           { borderColor: colors.border, backgroundColor: colors.card, opacity: value.state ? 1 : 0.6 },
         ]}
         disabled={!value.state || citiesList.length === 0}
-        onPress={() => openPicker('Select City', citiesList, value.city, (val) => updateField('city', val))}
+        onPress={() => openPicker(t('common.address.selectCity'), citiesList, value.city, (val) => updateField('city', val))}
         testID="address-city-selector"
       >
         <Text style={[styles.selectorText, { color: colors.text }]}>
-          {value.city || (citiesList.length > 0 ? 'Select city' : 'Select Country/State first')}
+          {value.city || (citiesList.length > 0 ? t('common.address.selectCityPlaceholder') : t('common.address.selectCountryStateFirst'))}
         </Text>
         <Ionicons name="chevron-down" size={20} color={colors.border} />
       </TouchableOpacity>
@@ -179,10 +181,10 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
 
 
       {/* 5. Neighborhood (Free Text) */}
-      <Text style={[styles.label, { color: colors.text }]}>Neighborhood</Text>
+      <Text style={[styles.label, { color: colors.text }]}>{t('common.address.neighborhood')}</Text>
       <TextInput
         style={[styles.input, { borderColor: colors.border, backgroundColor: colors.card, color: colors.text }]}
-        placeholder="Neighborhood"
+        placeholder={t('common.address.neighborhood')}
         placeholderTextColor={colors.border}
         value={value.neighborhood}
         onChangeText={(text) => updateField('neighborhood', text)}
@@ -190,10 +192,10 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
       />
 
       {/* 6. Street Line 2 (Free Text) */}
-      <Text style={[styles.label, { color: colors.text }]}>Street</Text>
+      <Text style={[styles.label, { color: colors.text }]}>{t('common.address.street')}</Text>
       <TextInput
         style={[styles.input, { borderColor: colors.border, backgroundColor: colors.card, color: colors.text }]}
-        placeholder="Street"
+        placeholder={t('common.address.street')}
         placeholderTextColor={colors.border}
         value={value.street}
         onChangeText={(text) => updateField('street', text)}
@@ -203,10 +205,10 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
       {/* Building and Door Numbers */}
       <View style={styles.row}>
         <View style={{ flex: 1, marginRight: 8 }}>
-          <Text style={[styles.label, { color: colors.text }]}>Building No</Text>
+          <Text style={[styles.label, { color: colors.text }]}>{t('common.address.buildingNo')}</Text>
           <TextInput
             style={[styles.input, { borderColor: colors.border, backgroundColor: colors.card, color: colors.text }]}
-            placeholder="Building"
+            placeholder={t('common.address.building')}
             placeholderTextColor={colors.border}
             value={value.buildingNo}
             onChangeText={(text) => updateField('buildingNo', text)}
@@ -214,10 +216,10 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
           />
         </View>
         <View style={{ flex: 1, marginLeft: 8 }}>
-          <Text style={[styles.label, { color: colors.text }]}>Door No</Text>
+          <Text style={[styles.label, { color: colors.text }]}>{t('common.address.doorNo')}</Text>
           <TextInput
             style={[styles.input, { borderColor: colors.border, backgroundColor: colors.card, color: colors.text }]}
-            placeholder="Door"
+            placeholder={t('common.address.door')}
             placeholderTextColor={colors.border}
             value={value.doorNo}
             onChangeText={(text) => updateField('doorNo', text)}

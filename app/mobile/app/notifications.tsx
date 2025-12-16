@@ -23,12 +23,14 @@ import {
   type PaginationInfo,
 } from '../lib/api';
 import { useAuth } from '../lib/auth';
+import { useTranslation } from 'react-i18next';
 
 export default function NotificationsScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const themeColors = colors as ThemeTokens;
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
@@ -64,13 +66,13 @@ export default function NotificationsScreen() {
           setPagination(response.data.pagination);
           setUnreadCount(response.data.unread_count);
         } else {
-          setError(response.message || 'Failed to load notifications.');
-          Alert.alert('Error', response.message || 'Failed to load notifications.');
+          setError(response.message || t('notifications.loadError'));
+          Alert.alert(t('common.error'), response.message || t('notifications.loadError'));
         }
       } catch (e: any) {
-        const errorMessage = e.message || 'An unexpected error occurred.';
+        const errorMessage = e.message || t('notifications.unexpectedError');
         setError(errorMessage);
-        Alert.alert('Error', errorMessage);
+        Alert.alert(t('common.error'), errorMessage);
       } finally {
         setLoading(false);
         setRefreshing(false);
@@ -104,10 +106,10 @@ export default function NotificationsScreen() {
         );
         setUnreadCount((prev) => (prev > 0 ? prev - 1 : 0));
       } else {
-        Alert.alert('Error', response.message || 'Could not mark as read.');
+        Alert.alert(t('common.error'), response.message || t('notifications.markReadError'));
       }
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'Could not mark as read.');
+      Alert.alert(t('common.error'), e.message || t('notifications.markReadError'));
     }
   };
 
@@ -117,12 +119,12 @@ export default function NotificationsScreen() {
       if (response.status === 'success') {
         setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
         setUnreadCount(0);
-        Alert.alert('Success', response.message || 'All notifications marked as read.');
+        Alert.alert(t('common.success'), t('notifications.markAllReadSuccess'));
       } else {
-        Alert.alert('Error', response.message || 'Could not mark all as read.');
+        Alert.alert(t('common.error'), response.message || t('notifications.markAllReadError'));
       }
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'Could not mark all as read.');
+      Alert.alert(t('common.error'), e.message || t('notifications.markAllReadError'));
     }
   };
 
@@ -144,16 +146,84 @@ export default function NotificationsScreen() {
         }
       }}
       accessible
-
       accessibilityRole="button"
-      accessibilityLabel={`${item.is_read ? 'Read' : 'Unread'} notification: ${item.type_display}. ${item.content}`}
+      accessibilityLabel={item.is_read ? t('notifications.readNotificationA11y', { type: t(`notifications.types.${item.type.toUpperCase()}`, { defaultValue: item.type_display }), content: item.content }) : t('notifications.unreadNotificationA11y', { type: t(`notifications.types.${item.type.toUpperCase()}`, { defaultValue: item.type_display }), content: item.content })}
       accessibilityState={{ disabled: false }}
     >
       <View style={styles.notificationHeader}>
-        <Text style={[styles.notificationType, { color: themeColors.text }]}>{item.type_display}</Text>
+        <Text style={[styles.notificationType, { color: themeColors.text }]}>
+          {t(`notifications.types.${item.type.toUpperCase()}`, { defaultValue: item.type_display })}
+        </Text>
         {!item.is_read && <View style={[styles.unreadDot, themedStyles.unreadDot]} />}
       </View>
-      <Text style={[styles.notificationContent, { color: themeColors.text }]}>{item.content}</Text>
+      <Text style={[styles.notificationContent, { color: themeColors.text }]}>
+        {(() => {
+          const content = item.content;
+
+          // 1. Volunteer Applied
+          // Pattern: "User has volunteered for your task: Task Name"
+          const volunteerWithTaskMatch = content.match(/^(.*?) has volunteered for your task: (.*)$/);
+          if (volunteerWithTaskMatch) {
+            return t('notifications.patterns.volunteeredWithTask', { user: volunteerWithTaskMatch[1], task: volunteerWithTaskMatch[2] });
+          }
+          // Pattern: "User has volunteered for your task"
+          const volunteerMatch = content.match(/^(.*?) has volunteered for your task$/);
+          if (volunteerMatch) {
+            return t('notifications.patterns.volunteered', { user: volunteerMatch[1] });
+          }
+
+          // 2. Task Assigned
+          // Pattern: "You have been assigned to task: Task Name"
+          const assignedWithTaskMatch = content.match(/^You have been assigned to task: (.*)$/);
+          if (assignedWithTaskMatch) {
+            return t('notifications.patterns.assignedWithTask', { task: assignedWithTaskMatch[1] });
+          }
+          // Pattern: "You have been assigned to a task"
+          if (content === 'You have been assigned to a task') {
+            return t('notifications.patterns.assigned');
+          }
+
+          // 3. Task Completed
+          // Pattern: "Task 'Task Name' has been completed"
+          const completedWithTaskMatch = content.match(/^Task '(.*?)' has been completed$/);
+          if (completedWithTaskMatch) {
+            return t('notifications.patterns.completedWithTask', { task: completedWithTaskMatch[1] });
+          }
+          // Pattern: "A task you are involved in has been completed"
+          if (content === 'A task you are involved in has been completed') {
+            return t('notifications.patterns.completed');
+          }
+
+          // 4. Task Cancelled
+          // Pattern: "Task 'Task Name' has been cancelled"
+          const cancelledWithTaskMatch = content.match(/^Task '(.*?)' has been cancelled$/);
+          if (cancelledWithTaskMatch) {
+            return t('notifications.patterns.cancelledWithTask', { task: cancelledWithTaskMatch[1] });
+          }
+          // Pattern: "A task you are involved in has been cancelled"
+          if (content === 'A task you are involved in has been cancelled') {
+            return t('notifications.patterns.cancelled');
+          }
+
+          // 5. Review Received
+          // Pattern: "User has reviewed..." (Need to verify exact pattern, assuming "User has reviewed you" or similar)
+          // Based on previous code: "User X has reviewed..."
+          const reviewMatch = content.match(/^(.*?) has reviewed/);
+          if (reviewMatch) {
+            return t('notifications.patterns.reviewReceived', { user: reviewMatch[1] });
+          }
+
+          // Fallback: Use structured data if available and no regex matched (e.g. if content format changed but type is correct)
+          if (item.type === 'TASK_APPLIED' && item.related_task) {
+            // Try to extract user from content if possible, else generic
+            const userMatch = content.match(/^(.*?) has /);
+            const user = userMatch ? userMatch[1] : 'Someone';
+            return t('notifications.patterns.volunteeredWithTask', { user, task: item.related_task.title });
+          }
+
+          return content;
+        })()}
+      </Text>
       <Text style={[styles.notificationTimestamp, { color: themeColors.textMuted }]}>
         {new Date(item.timestamp).toLocaleString()}
       </Text>
@@ -169,9 +239,9 @@ export default function NotificationsScreen() {
         ]}
       >
         <Text style={{ color: themeColors.text, fontSize: 18, marginBottom: 16 }}>
-          Please sign in to view notifications.
+          {t('notifications.signInRequired')}
         </Text>
-        <Button title="Go to Home" onPress={() => router.replace('/')} />
+        <Button title={t('settings.goToHome')} onPress={() => router.replace('/')} />
       </View>
     );
   }
@@ -197,16 +267,15 @@ export default function NotificationsScreen() {
           { justifyContent: 'center', alignItems: 'center', backgroundColor: themeColors.background },
         ]}
       >
-        <Text style={{ color: themeColors.error, fontSize: 16 }}>Error: {error}</Text>
+        <Text style={{ color: themeColors.error, fontSize: 16 }}>{t('common.error')}: {error}</Text>
         <TouchableOpacity
           onPress={() => fetchNotifications(1)}
           style={[styles.retryButton, { borderColor: themeColors.primary }]}
           accessible
-
           accessibilityRole="button"
-          accessibilityLabel="Try loading notifications again"
+          accessibilityLabel={t('notifications.tryAgainA11y')}
         >
-          <Text style={{ color: themeColors.primary }}>Try Again</Text>
+          <Text style={{ color: themeColors.primary }}>{t('notifications.tryAgain')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -219,9 +288,8 @@ export default function NotificationsScreen() {
           onPress={() => (router.canGoBack() ? router.back() : router.replace('/feed'))}
           style={styles.backButton}
           accessible
-
           accessibilityRole="button"
-          accessibilityLabel="Go back"
+          accessibilityLabel={t('common.goBack')}
         >
           <Ionicons
             name="arrow-back"
@@ -231,17 +299,16 @@ export default function NotificationsScreen() {
             importantForAccessibility="no"
           />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: themeColors.text }]}>Notifications</Text>
+        <Text style={[styles.headerTitle, { color: themeColors.text }]}>{t('notifications.title')}</Text>
         {unreadCount > 0 && (
           <TouchableOpacity
             onPress={handleMarkAllRead}
             style={styles.markAllReadButton}
             accessible
-
             accessibilityRole="button"
-            accessibilityLabel="Mark all notifications as read"
+            accessibilityLabel={t('notifications.markAllReadA11y')}
           >
-            <Text style={{ color: themeColors.primary }}>Mark All Read ({unreadCount})</Text>
+            <Text style={{ color: themeColors.primary }}>{t('notifications.markAllRead')} ({unreadCount})</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -261,7 +328,7 @@ export default function NotificationsScreen() {
           loadingMore ? <ActivityIndicator style={{ marginVertical: 16 }} color={themeColors.primary} /> : null
         }
         ListEmptyComponent={
-          !loading ? <Text style={[styles.emptyText, { color: themeColors.textMuted }]}>No notifications yet.</Text> : null
+          !loading ? <Text style={[styles.emptyText, { color: themeColors.textMuted }]}>{t('notifications.empty')}</Text> : null
         }
       />
     </SafeAreaView>
