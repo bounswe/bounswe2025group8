@@ -141,10 +141,10 @@ export default function Requests() {
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
 
     if (diffInHours < 24) {
-      return `${diffInHours} ${t('common.hoursAgo')}`;
+      return `${diffInHours} ${t('common.time.hoursAgo')}`;
     } else {
       const diffInDays = Math.floor(diffInHours / 24);
-      return `${diffInDays} ${t('common.daysAgo')}`;
+      return `${diffInDays} ${t('common.time.daysAgo')}`;
     }
   };
 
