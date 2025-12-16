@@ -16,12 +16,12 @@
         "goBack": "Go Back",
         "time": {
             "justNow": "Just now",
-            "minutesAgo": "{{count}} minute ago",
-            "minutesAgo_other": "{{count}} minutes ago",
-            "hoursAgo": "{{count}} hour ago",
-            "hoursAgo_other": "{{count}} hours ago",
-            "daysAgo": "{{count}} day ago",
-            "daysAgo_other": "{{count}} days ago"
+            "minutesAgo": "minutes ago",
+            "minutesAgo_other": "minutes ago",
+            "hoursAgo": "hours ago",
+            "hoursAgo_other": "hours ago",
+            "daysAgo": "days ago",
+            "daysAgo_other": "days ago"
         },
         "low": "Low",
         "medium": "Medium",
@@ -473,7 +473,8 @@
             "assigned": "Assigned",
             "completed": "Completed",
             "cancelled": "Cancelled",
-            "past": "Past"
+            "past": "Past",
+            "in_progress": "In Progress"
         },
         "urgencySuffix": "Urgency",
         "unknown": "Unknown",
@@ -501,8 +502,8 @@
         "rateAndReview": "Rate & Review",
         "accuracyOfRequest": "Accuracy of Request",
         "submit": "Submit",
-        "editRateReview": "Edit Rate & Review {{count}}",
-        "rateReview": "Rate & Review {{count}}",
+        "editRateReview": "Edit Rate & Review",
+        "rateReview": "Rate & Review",
         "participant": "Participant",
         "participants": "Participants",
         "reviewSubmittedFor": "Review submitted for {{name}}!",
@@ -526,6 +527,7 @@
         "volunteerSuffix": "volunteer(s)",
         "assignedVolunteers": "Assigned Volunteers",
         "noVolunteersAssigned": "No volunteers assigned yet.",
+        "safetyAndPreparedness": "Safety & Preparedness",
         "selectVolunteer": "Select Volunteer",
         "selectVolunteers": "Select Volunteers",
         "volunteerForRequest": "Volunteer for this Request",
