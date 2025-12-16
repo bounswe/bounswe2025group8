@@ -135,7 +135,7 @@ class Command(BaseCommand):
             {
                 'badge_type': BadgeType.THE_ICEBREAKER,
                 'name': 'The Icebreaker',
-                'description': 'Posted 25 comments on tasks. You keep the community engaged!',
+                'description': 'Posted your first comment on the platform',
                 'icon_url': '/badges/icebreaker.png'
             },
         ]
