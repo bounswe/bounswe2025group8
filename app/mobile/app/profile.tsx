@@ -250,8 +250,8 @@ export default function ProfileScreen() {
       return;
     }
 
-    // Fetch tasks for this specific user (automatically fetches all pages)
-    getUserTasks(targetUserId)
+    // Fetch all tasks to filter for both created and volunteer tasks
+    getTasks()
       .then((res) => {
         setAllTasks(res.results || []);
       })
@@ -286,8 +286,8 @@ export default function ProfileScreen() {
 
       console.log('[ProfileScreen] Screen focused - refreshing task data');
 
-      // Refresh tasks for this specific user (automatically fetches all pages)
-      getUserTasks(targetUserId)
+      // Refresh all tasks to filter for both created and volunteer tasks
+      getTasks()
         .then((res) => {
           setAllTasks(res.results || []);
         })
@@ -433,7 +433,7 @@ export default function ProfileScreen() {
     const fetchBadges = async () => {
       try {
         setBadgesLoading(true);
-        
+
         // Check badges for own profile (to award new badges)
         if (user?.id && targetUserId === user.id) {
           try {
@@ -719,7 +719,7 @@ export default function ProfileScreen() {
               </Text>
             </TouchableOpacity>
           </View>
-          
+
           {badgesLoading ? (
             <ActivityIndicator color={themeColors.primary} style={{ marginVertical: 16 }} />
           ) : earnedUserBadges.length > 0 ? (
