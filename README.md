@@ -125,17 +125,58 @@ For development with the backend and database, use Docker Compose to run all ser
 
 When working with the backend and PostgreSQL database via Docker Compose, you may need to:
 
-- Create an admin user
+- Data Seeding
 - Reset/delete all containers, volumes, and images
 
 ---
 
-#### Create an Admin User
+#### Data Seeding (Required in first time)
 
-Run this **after backend & database containers are up**:
+To ensure the application is not empty upon launch, the backend provides management commands to populate the database with essential mock data such as badges, users, and sample content.
+
+##### Step-by-Step Data Seeding Instructions
+
+Build and start all services
 ```bash
-sudo docker compose exec backend python manage.py create_admin_user
+docker compose up --build -d
 ```
+
+Create initial system data
+Run the following commands:
+```bash
+docker exec -it neighborhood_backend python manage.py create_badges
+docker exec -it neighborhood_backend python manage.py create_admin_user
+docker exec -it neighborhood_backend python manage.py create_default_user
+docker exec -it neighborhood_backend python manage.py populate_mock_data
+```
+
+After completing these steps, the application will contain:
+
+- Predefined badges
+
+- An administrator account
+
+- A regular user account
+
+- Sample requests, and accounts
+
+#### Default Login Credentials
+
+The following users are automatically created during data seeding and can be used immediately for testing.
+
+👤 Regular User
+
+Email: suzan.uskudarli@gmail.com
+
+Password: suzanUskudarli123!
+
+🛠️ Admin User
+
+Email: admin@nab.com
+
+Password: Admin123!
+
+These accounts allow testers and graders to log in without manual registration and verify both regular user and admin-level functionality.
 
 #### Delete the Entire Database & Images (FULL RESET)
 
