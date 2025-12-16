@@ -56,7 +56,7 @@ const Sidebar = () => {
 
   const { unreadCount } = useUnreadCount({
     autoFetch: isAuthenticated,
-    pollInterval: isAuthenticated ? 60000 : 0, // Poll every minute if authenticated
+    pollInterval: isAuthenticated ? 15000 : 0, // Poll every 15 seconds if authenticated
   });
 
   const handleLogout = async () => {
