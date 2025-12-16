@@ -1,7 +1,7 @@
 // app/index.tsx
 import { useTheme } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import i18n from '../lib/i18n';
@@ -12,15 +12,17 @@ export default function Index() {
   const router = useRouter();
   const { colors } = useTheme();
   const themeColors = colors as unknown as ThemeTokens;
-  const { t } = useTranslation();
+  const { t, i18n: i18nInstance } = useTranslation();
+  const [currentLang, setCurrentLang] = useState(i18n.language);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Language Toggle */}
       <TouchableOpacity
         onPress={() => {
-          const newLang = i18n.language === 'en' ? 'tr' : 'en';
+          const newLang = currentLang === 'en' ? 'tr' : 'en';
           i18n.changeLanguage(newLang);
+          setCurrentLang(newLang);
         }}
         style={{ position: 'absolute', top: 50, right: 20, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, zIndex: 10 }}
         accessible
@@ -28,7 +30,7 @@ export default function Index() {
         accessibilityLabel="Change language"
       >
         <Text style={{ color: colors.text, fontWeight: 'bold', fontSize: 14 }}>
-          {i18n.language === 'en' ? 'TR' : 'EN'}
+          {currentLang === 'en' ? 'TR' : 'EN'}
         </Text>
       </TouchableOpacity>
 

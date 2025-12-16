@@ -5,6 +5,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useTheme } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
+import NotificationIconWithBadge from '../components/ui/NotificationIconWithBadge';
 
 export default function CRUploadPhoto() {
   const { colors } = useTheme();
@@ -46,7 +47,7 @@ export default function CRUploadPhoto() {
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.header}>
-          <View style={[styles.logoCircle, { backgroundColor: `${colors.primary}22` }]}>
+          <View style={[styles.logoCircle, { backgroundColor: `${colors.primary} 22` }]}>
             <Image source={require('../assets/images/logo.png')} style={{ width: 28, height: 28, resizeMode: 'contain' }} />
           </View>
           <View style={styles.headerIcons}>
@@ -58,7 +59,7 @@ export default function CRUploadPhoto() {
               accessibilityRole="button"
               accessibilityLabel="Open notifications"
             >
-              <Ionicons name="notifications-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
+              <NotificationIconWithBadge style={{ marginRight: 12 }} />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push('/settings')}
@@ -85,7 +86,7 @@ export default function CRUploadPhoto() {
           </TouchableOpacity>
           <Text style={[styles.pageTitle, { color: colors.text }]}>{t('createRequest.title')}</Text>
         </View>
-        <Text style={[styles.pageSubtitle, { color: `${colors.text}99` }]}>{t('createRequest.uploadPhotos')}</Text>
+        <Text style={[styles.pageSubtitle, { color: `${colors.text} 99` }]}>{t('createRequest.uploadPhotos')}</Text>
 
         <View style={styles.tabBar}>
           <View style={[styles.inactiveTab, { backgroundColor: colors.border }]} />
@@ -97,7 +98,7 @@ export default function CRUploadPhoto() {
         <TouchableOpacity
           style={[
             styles.browseBtn,
-            { backgroundColor: `${colors.primary}11`, opacity: photos.length >= MAX_PHOTOS ? 0.5 : 1 },
+            { backgroundColor: `${colors.primary} 11`, opacity: photos.length >= MAX_PHOTOS ? 0.5 : 1 },
           ]}
           onPress={pickImage}
           disabled={photos.length >= MAX_PHOTOS}
@@ -112,17 +113,17 @@ export default function CRUploadPhoto() {
         </TouchableOpacity>
 
         {photos.map((photo) => (
-          <View key={`${photo.uri}-${photo.name}`} style={styles.photoBlock}>
+          <View key={`${photo.uri} -${photo.name} `} style={styles.photoBlock}>
             <View style={[styles.photoPreview, { backgroundColor: colors.card }]}>
               <Image source={{ uri: photo.uri }} style={styles.image} />
             </View>
             <TouchableOpacity
-              style={[styles.removeBtn, { borderColor: `${colors.primary}66` }]}
+              style={[styles.removeBtn, { borderColor: `${colors.primary} 66` }]}
               onPress={() => removePhoto(photo.name)}
               accessible
 
               accessibilityRole="button"
-              accessibilityLabel={`Remove photo ${photo.name}`}
+              accessibilityLabel={`Remove photo ${photo.name} `}
             >
               <Text style={[styles.removeBtnText, { color: colors.primary }]}>× {photo.name}</Text>
             </TouchableOpacity>

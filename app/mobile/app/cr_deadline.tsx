@@ -6,6 +6,7 @@ import { useTheme } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAppTheme } from '@/theme/ThemeProvider';
 import { useTranslation } from 'react-i18next';
+import NotificationIconWithBadge from '../components/ui/NotificationIconWithBadge';
 
 export default function CRDeadline() {
   const { colors } = useTheme();
@@ -54,7 +55,7 @@ export default function CRDeadline() {
               accessibilityRole="button"
               accessibilityLabel="Open notifications"
             >
-              <Ionicons name="notifications-outline" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
+              <NotificationIconWithBadge style={{ marginRight: 12 }} />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => router.push('/settings')}
