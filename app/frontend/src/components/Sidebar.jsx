@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import HomeIcon from "@mui/icons-material/Home";
 import CategoryIcon from "@mui/icons-material/Category";
 import AssignmentIcon from "@mui/icons-material/Assignment";
@@ -20,6 +21,7 @@ import { useUnreadCount } from "../features/notification";
 // import { logout as logoutService } from "../services/authService";
 
 const Sidebar = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, currentUser, userRole, logout } = useAuth();
@@ -66,14 +68,22 @@ const Sidebar = () => {
   };
 
   const menuItems = [
-    { text: "Home", icon: <HomeIcon />, path: "/" },
-    { text: "Categories", icon: <CategoryIcon />, path: "/categories" },
-    { text: "Requests", icon: <AssignmentIcon />, path: "/requests" },
+    { text: t("sidebar.home"), icon: <HomeIcon />, path: "/" },
+    {
+      text: t("sidebar.categories"),
+      icon: <CategoryIcon />,
+      path: "/categories",
+    },
+    {
+      text: t("sidebar.requests"),
+      icon: <AssignmentIcon />,
+      path: "/requests",
+    },
   ];
   // Add role-based menu items
   if (userRole === "admin") {
     menuItems.push({
-      text: "Admin Panel",
+      text: t("sidebar.adminPanel"),
       icon: <AdminPanelSettingsIcon />,
       path: "/admin",
     });
@@ -99,11 +109,11 @@ const Sidebar = () => {
             navigate("/");
           }
         }}
-        aria-label="Go to home page"
+        aria-label={t("sidebar.goToHomePage")}
       >
         <img
           src={logo}
-          alt="Neighborhood Assistance Board Logo"
+          alt={t("sidebar.logoAlt")}
           className="max-h-24 max-w-full"
         />
       </div>
@@ -112,7 +122,7 @@ const Sidebar = () => {
       <nav
         className="px-4 py-2"
         role="navigation"
-        aria-label="Primary navigation"
+        aria-label={t("sidebar.primaryNavigation")}
       >
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
@@ -206,10 +216,10 @@ const Sidebar = () => {
               e.currentTarget.style.outline = "none";
             }
           }}
-          aria-label="Create new request"
+          aria-label={t("sidebar.createNewRequest")}
         >
           <AddCircleOutlineIcon className="mr-2" />
-          Create Request
+          {t("sidebar.createRequest")}
         </button>
       </div>
 
@@ -247,10 +257,10 @@ const Sidebar = () => {
                 e.currentTarget.style.outline = "none";
               }
             }}
-            aria-label="Login to your account"
+            aria-label={t("sidebar.loginToAccount")}
           >
             <LoginIcon className="mr-2" />
-            Login
+            {t("sidebar.login")}
           </button>
           <button
             onClick={() => navigate("/register")}
@@ -276,10 +286,10 @@ const Sidebar = () => {
                 e.currentTarget.style.outline = "none";
               }
             }}
-            aria-label="Sign up for a new account"
+            aria-label={t("sidebar.signUpForAccount")}
           >
             <PersonAddIcon className="mr-2" />
-            Sign Up
+            {t("sidebar.signUp")}
           </button>
         </div>
       )}
@@ -314,12 +324,14 @@ const Sidebar = () => {
                 e.currentTarget.style.outline = "none";
               }
             }}
-            aria-label="View your profile"
+            aria-label={t("sidebar.viewProfile")}
           >
             {resolvedAvatar ? (
               <img
                 src={resolvedAvatar}
-                alt={`${currentUser?.name || "User"}'s avatar`}
+                alt={t("sidebar.userAvatar", {
+                  name: currentUser?.name || t("sidebar.user"),
+                })}
                 className="w-10 h-10 rounded-full object-cover"
               />
             ) : (
@@ -363,7 +375,7 @@ const Sidebar = () => {
             >
               {currentUser?.name && currentUser?.surname
                 ? `${currentUser.name} ${currentUser.surname}`
-                : currentUser?.name || "User"}
+                : currentUser?.name || t("sidebar.user")}
             </h3>
 
             {/* Buttons below username */}
@@ -393,8 +405,10 @@ const Sidebar = () => {
                 }}
                 aria-label={
                   unreadCount > 0
-                    ? `View notifications (${unreadCount} unread)`
-                    : "View notifications"
+                    ? t("sidebar.viewNotificationsUnread", {
+                        count: unreadCount,
+                      })
+                    : t("sidebar.viewNotifications")
                 }
               >
                 <NotificationsIcon fontSize="small" />
@@ -407,7 +421,9 @@ const Sidebar = () => {
                       fontSize: "0.625rem",
                       padding: "0 4px",
                     }}
-                    aria-label={`${unreadCount} unread notifications`}
+                    aria-label={t("sidebar.unreadNotifications", {
+                      count: unreadCount,
+                    })}
                   >
                     {unreadCount > 99 ? "99+" : unreadCount}
                   </span>
@@ -436,7 +452,7 @@ const Sidebar = () => {
                     e.currentTarget.style.outline = "none";
                   }
                 }}
-                aria-label="Go to settings"
+                aria-label={t("sidebar.goToSettings")}
               >
                 <SettingsIcon fontSize="small" />
               </button>
@@ -463,7 +479,7 @@ const Sidebar = () => {
                     e.currentTarget.style.outline = "none";
                   }
                 }}
-                aria-label="Logout from your account"
+                aria-label={t("sidebar.logoutFromAccount")}
               >
                 <LogoutIcon fontSize="small" />
               </button>

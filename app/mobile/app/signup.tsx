@@ -136,7 +136,11 @@ export default function SignUp() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingView}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView
+          testID="signup-scroll-view"
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+        >
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
@@ -235,6 +239,8 @@ export default function SignUp() {
               value={password}
               onChangeText={setPassword}
               editable={!isLoading}
+              textContentType="none"
+              autoComplete="off"
               returnKeyType="done"
               onSubmitEditing={Keyboard.dismiss}
               accessibilityLabel="Password"
@@ -246,6 +252,7 @@ export default function SignUp() {
 
               accessibilityRole="button"
               accessibilityLabel={showPwd ? 'Hide password' : 'Show password'}
+              testID="signup-password-toggle"
             >
               <Ionicons
                 name={showPwd ? 'eye' : 'eye-off'}
@@ -351,9 +358,9 @@ export default function SignUp() {
               {t('auth.hasAccount')}
             </Text>
             <TouchableOpacity
+              testID="signup-signin-link"
               onPress={() => router.replace('/signin')}
               accessible
-
               accessibilityRole="button"
               accessibilityLabel="Go to login"
             >

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 // Icons - keeping MUI icons for now as they provide good icon support
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -34,8 +35,9 @@ import Sidebar from "../components/Sidebar";
 import EditRequestModal from "../components/EditRequestModal";
 import RatingReviewModal from "../components/RatingReviewModal";
 import ReportModal from "../components/ReportModal";
-import { urgencyLevels } from "../constants/urgency_level";
-import { getCategoryImage } from "../constants/categories";
+import CommentSection from "../components/CommentSection";
+import { urgencyLevels, getUrgencyLevelName } from "../constants/urgency_level";
+import { getCategoryImage, getCategoryName } from "../constants/categories";
 import { toAbsoluteUrl } from "../utils/url";
 import { getReviewableUsers } from "../services/reviewService";
 import { useTheme } from "../hooks/useTheme";
@@ -44,6 +46,7 @@ const RequestDetail = () => {
   const { requestId } = useParams();
   const navigate = useNavigate();
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
   // Authentication state
   const currentUser = useAppSelector(selectCurrentUser);
@@ -284,13 +287,14 @@ const RequestDetail = () => {
     const date = new Date(dateString);
     const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
 
-    if (diffInHours < 1) return "Just now";
-    if (diffInHours === 1) return "1 hour ago";
-    if (diffInHours < 24) return `${diffInHours} hours ago`;
+    if (diffInHours < 1) return t("requestDetail.timeAgo.justNow");
+    if (diffInHours === 1) return t("requestDetail.timeAgo.oneHourAgo");
+    if (diffInHours < 24)
+      return t("requestDetail.timeAgo.hoursAgo", { hours: diffInHours });
 
     const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays === 1) return "1 day ago";
-    return `${diffInDays} days ago`;
+    if (diffInDays === 1) return t("requestDetail.timeAgo.oneDayAgo");
+    return t("requestDetail.timeAgo.daysAgo", { days: diffInDays });
   };
 
   // Loading state
@@ -308,7 +312,7 @@ const RequestDetail = () => {
           aria-hidden="true"
         ></div>
         <p style={{ color: colors.text.secondary }}>
-          Loading request details...
+          {t("requestDetail.loading")}
         </p>
       </div>
     );
@@ -332,7 +336,7 @@ const RequestDetail = () => {
               className="text-2xl font-semibold mb-4"
               style={{ color: colors.semantic.error }}
             >
-              Error loading request
+              {t("requestDetail.errorLoadingRequest")}
             </h2>
             <p className="mb-6" style={{ color: colors.text.secondary }}>
               {error}
@@ -380,10 +384,10 @@ const RequestDetail = () => {
               className="text-2xl font-semibold mb-4"
               style={{ color: colors.text.primary }}
             >
-              Request not found
+              {t("requestDetail.requestNotFound")}
             </h2>
             <p className="mb-6" style={{ color: colors.text.secondary }}>
-              The request you're looking for doesn't exist or has been removed.
+              {t("requestDetail.requestNotFoundDescription")}
             </p>
             <button
               onClick={() => navigate("/requests")}
@@ -428,9 +432,14 @@ const RequestDetail = () => {
   const canDelete = isAuthenticated && isTaskCreator;
   const acceptedVolunteersCount =
     request.volunteers?.filter((v) => v.status === "ACCEPTED").length || 0;
+
+  // Check if the request creator is a banned user (name shows as *deleted)
+  const isCreatorBanned = request?.creator?.name === "*deleted";
+
   const canVolunteer =
     isAuthenticated &&
     !isTaskCreator &&
+    !isCreatorBanned && // Prevent volunteering for banned user's requests
     (request?.status === "POSTED" || request?.status === "ASSIGNED") &&
     acceptedVolunteersCount < request.volunteer_number &&
     (!volunteerRecord ||
@@ -501,7 +510,7 @@ const RequestDetail = () => {
 
   const handleDeleteTask = async () => {
     if (canDelete) {
-      if (window.confirm("Are you sure you want to delete this task?")) {
+      if (window.confirm(t("requestDetail.messages.deleteConfirm"))) {
         try {
           setIsDeleting(true);
           setDeleteError(null);
@@ -541,7 +550,9 @@ const RequestDetail = () => {
     } catch (err) {
       console.error("Failed to update task:", err);
       alert(
-        err?.response?.data?.message ?? err?.message ?? "Failed to update task."
+        err?.response?.data?.message ??
+          err?.message ??
+          t("requestDetail.messages.updateError")
       );
     }
   };
@@ -560,7 +571,7 @@ const RequestDetail = () => {
       console.log("Setting volunteer record:", volunteerRecord);
       setVolunteerRecord(volunteerRecord);
 
-      alert("Successfully volunteered for this task!");
+      alert(t("requestDetail.messages.volunteerSuccess"));
 
       // Refresh the request data to get updated volunteer list
       try {
@@ -594,7 +605,9 @@ const RequestDetail = () => {
         error.response?.data?.message ||
         error.message ||
         "Failed to volunteer for task";
-      alert(`Error: ${errorMessage}`);
+      alert(
+        t("requestDetail.messages.volunteerError", { message: errorMessage })
+      );
     } finally {
       setIsVolunteering(false);
     }
@@ -618,7 +631,7 @@ const RequestDetail = () => {
       // Clear volunteer status
       setVolunteerRecord(null);
 
-      alert("Successfully withdrew from this task");
+      alert(t("requestDetail.messages.withdrawSuccess"));
 
       // Refresh the request data to get updated volunteer list
       try {
@@ -655,7 +668,9 @@ const RequestDetail = () => {
         error.response?.data?.message ||
         error.message ||
         "Failed to withdraw from task";
-      alert(`Error: ${errorMessage}`);
+      alert(
+        t("requestDetail.messages.withdrawError", { message: errorMessage })
+      );
     } finally {
       setIsVolunteering(false);
     }
@@ -716,7 +731,7 @@ const RequestDetail = () => {
       // Remove the completed task from AllRequests list immediately
       dispatch(removeTaskFromList(request.id));
 
-      alert("Task marked as completed successfully!");
+      alert(t("requestDetail.messages.volunteerSuccess"));
 
       // Force a page refresh after a short delay to ensure UI updates correctly
       setTimeout(() => {
@@ -730,7 +745,9 @@ const RequestDetail = () => {
         error.response?.data?.error ||
         error.message ||
         "Failed to mark task as completed";
-      alert(`Error: ${errorMessage}`);
+      alert(
+        t("requestDetail.messages.markCompleteError", { message: errorMessage })
+      );
     } finally {
       setIsMarkingComplete(false);
     }
@@ -760,7 +777,12 @@ const RequestDetail = () => {
       comment,
     });
     // Optionally refresh the request data or update UI state
-    alert(`Review submitted for ${reviewedUser.name} ${reviewedUser.surname}!`);
+    alert(
+      t("requestDetail.messages.reviewSubmitted", {
+        name: reviewedUser.name,
+        surname: reviewedUser.surname,
+      })
+    );
   };
 
   const handleMenuOpen = (event) => {
@@ -787,7 +809,7 @@ const RequestDetail = () => {
   };
 
   const handleReportSubmitSuccess = () => {
-    alert("Thank you for reporting this task! Our team will review it shortly.");
+    alert(t("requestDetail.messages.reportSuccess"));
   };
 
   return (
@@ -808,7 +830,7 @@ const RequestDetail = () => {
               color: colors.semantic.success,
             }}
           >
-            <span>Request deleted successfully! Redirecting...</span>
+            <span>{t("requestDetail.messages.deleteSuccess")}</span>
             <button
               onClick={() => setDeleteSuccess(false)}
               className="ml-4 transition-colors"
@@ -896,7 +918,7 @@ const RequestDetail = () => {
                 color: colors.brand.primary,
               }}
             >
-              {request.category_display}
+              {getCategoryName(request.category, t)}
             </span>
             <span
               className="px-3 py-1 text-sm font-medium rounded-full"
@@ -905,7 +927,8 @@ const RequestDetail = () => {
                 color: colors.text.inverse,
               }}
             >
-              {urgency.name} Urgency
+              {getUrgencyLevelName(request.urgency_level, t)}{" "}
+              {t("requestDetail.urgency")}
             </span>
             <button
               onClick={handleMenuOpen}
@@ -920,7 +943,7 @@ const RequestDetail = () => {
                 e.currentTarget.style.color = colors.text.secondary;
                 e.currentTarget.style.backgroundColor = "transparent";
               }}
-              aria-label="More options"
+              aria-label={t("requestDetail.aria.moreOptions")}
             >
               <MoreVertIcon className="w-6 h-6" aria-hidden="true" />
             </button>
@@ -929,22 +952,22 @@ const RequestDetail = () => {
               open={Boolean(menuAnchorEl)}
               onClose={handleMenuClose}
             >
-              {isTaskCreator && (
-                <>
-                  <MenuItem onClick={handleMenuEdit}>
-                    <EditIcon className="w-4 h-4 mr-2" />
-                    Edit
-                  </MenuItem>
-                  <MenuItem onClick={handleMenuDelete}>
-                    <DeleteIcon className="w-4 h-4 mr-2" />
-                    Delete
-                  </MenuItem>
-                </>
-              )}
+              {isTaskCreator
+                ? [
+                    <MenuItem key="edit" onClick={handleMenuEdit}>
+                      <EditIcon className="w-4 h-4 mr-2" />
+                      {t("requestDetail.edit")}
+                    </MenuItem>,
+                    <MenuItem key="delete" onClick={handleMenuDelete}>
+                      <DeleteIcon className="w-4 h-4 mr-2" />
+                      {t("requestDetail.delete")}
+                    </MenuItem>,
+                  ]
+                : null}
               {isAuthenticated && !isTaskCreator && (
                 <MenuItem onClick={handleMenuReport}>
                   <FlagIcon className="w-4 h-4 mr-2" />
-                  Report
+                  {t("requestDetail.report")}
                 </MenuItem>
               )}
             </Menu>
@@ -989,7 +1012,9 @@ const RequestDetail = () => {
                             ? "border-white"
                             : "border-transparent"
                         }`}
-                        aria-label={`Show photo ${idx + 1}`}
+                        aria-label={t("requestDetail.showPhoto", {
+                          number: idx + 1,
+                        })}
                       >
                         <img
                           src={ph.src}
@@ -1018,7 +1043,7 @@ const RequestDetail = () => {
                     color: colors.text.inverse,
                   }}
                 >
-                  {request.category_display}
+                  {getCategoryName(request.category, t)}
                 </span>
               </div>
             </div>
@@ -1049,25 +1074,40 @@ const RequestDetail = () => {
                     navigate(`/profile/${request.creator.id}`);
                   }
                 }}
-                aria-label={`View profile of ${request.creator.name} ${request.creator.surname}`}
+                aria-label={t("requestDetail.viewProfile", {
+                  name: request.creator.name,
+                  surname: request.creator.surname,
+                })}
               >
                 <div className="w-12 h-12 mr-4">
-                  {requesterPhoto ? (
+                  {/* Don't show profile photo for banned users */}
+                  {requesterPhoto && !isCreatorBanned ? (
                     <img
                       src={requesterPhoto}
                       alt={`${request.creator.name} ${request.creator.surname}`}
                       className="w-full h-full rounded-full object-cover border border-gray-200"
                     />
                   ) : (
-                    <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                      {request.creator.name.charAt(0)}
+                    <div
+                      className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-lg"
+                      style={{
+                        backgroundColor: isCreatorBanned
+                          ? colors.text.tertiary
+                          : "#2563eb",
+                      }}
+                    >
+                      {isCreatorBanned ? "?" : request.creator.name.charAt(0)}
                     </div>
                   )}
                 </div>
                 <div>
                   <h3
                     className="text-lg font-semibold"
-                    style={{ color: colors.text.primary }}
+                    style={{
+                      color: isCreatorBanned
+                        ? colors.text.tertiary
+                        : colors.text.primary,
+                    }}
                   >
                     {request.creator.name} {request.creator.surname}
                   </h3>
@@ -1127,8 +1167,9 @@ const RequestDetail = () => {
                     aria-hidden="true"
                   />
                   <span className="text-sm">
-                    {request.volunteer_number} person
-                    {request.volunteer_number > 1 ? "s" : ""} required
+                    {t("requestDetail.personsRequired", {
+                      count: request.volunteer_number,
+                    })}
                   </span>
                 </div>
                 {canSeePrivateInfo() && request.creator.phone_number && (
@@ -1181,15 +1222,16 @@ const RequestDetail = () => {
                             className="font-medium"
                             style={{ color: colors.semantic.success }}
                           >
-                            Task Completed Successfully!
+                            {t(
+                              "requestDetail.status.taskCompletedSuccessfully"
+                            )}
                           </p>
                           {isTaskCreator && (
                             <p
                               className="text-sm mt-1"
                               style={{ color: colors.semantic.success }}
                             >
-                              Don't forget to rate and review your volunteers to
-                              help the community.
+                              {t("requestDetail.status.dontForgetToReview")}
                             </p>
                           )}
                         </div>
@@ -1201,23 +1243,23 @@ const RequestDetail = () => {
                       style={{ color: colors.text.secondary }}
                     >
                       {request.status === "POSTED"
-                        ? "Waiting for Volunteers"
+                        ? t("requestDetail.status.waitingForVolunteers")
                         : request.status === "ASSIGNED"
                         ? isTaskCreator
                           ? acceptedVolunteersCount > 0
-                            ? "Ready to mark as complete"
+                            ? t("requestDetail.status.readyToMarkComplete")
                             : null
                           : volunteerRecord &&
                             volunteerRecord.status === "ACCEPTED"
-                          ? "Task Assigned to You"
+                          ? t("requestDetail.status.taskAssignedToYou")
                           : acceptedVolunteersCount < request.volunteer_number
-                          ? "Waiting for More Volunteers"
-                          : "Task Assigned"
+                          ? t("requestDetail.status.waitingForMoreVolunteers")
+                          : t("requestDetail.status.taskAssigned")
                         : request.status === "IN_PROGRESS"
                         ? isTaskCreator && acceptedVolunteersCount > 0
-                          ? "Ready to mark as complete"
-                          : "In Progress"
-                        : "Unknown Status"}
+                          ? t("requestDetail.status.readyToMarkComplete")
+                          : t("requestDetail.status.inProgress")
+                        : t("requestDetail.status.unknownStatus")}
                     </p>
                   )}
                 </div>
@@ -1246,7 +1288,7 @@ const RequestDetail = () => {
                           "linear-gradient(to right, #ec4899, #9333ea)";
                       }}
                     >
-                      ⭐ Rate & Review Volunteers
+                      ⭐ {t("requestDetail.buttons.rateReviewVolunteers")}
                     </button>
                   )}
 
@@ -1279,8 +1321,8 @@ const RequestDetail = () => {
                         }}
                       >
                         {request.status === "ASSIGNED"
-                          ? "Change Volunteers"
-                          : "Select Volunteer"}
+                          ? t("requestDetail.buttons.changeVolunteers")
+                          : t("requestDetail.buttons.selectVolunteer")}
                       </button>
 
                       {/* Mark as Complete Button */}
@@ -1307,10 +1349,10 @@ const RequestDetail = () => {
                           {isMarkingComplete ? (
                             <>
                               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                              Marking...
+                              {t("requestDetail.buttons.marking")}
                             </>
                           ) : (
-                            "Mark as Complete"
+                            t("requestDetail.buttons.markAsComplete")
                           )}
                         </button>
                       )}
@@ -1344,10 +1386,10 @@ const RequestDetail = () => {
                       {isMarkingComplete ? (
                         <>
                           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                          Marking Complete...
+                          {t("requestDetail.buttons.markingComplete")}
                         </>
                       ) : (
-                        "Mark as Complete"
+                        t("requestDetail.buttons.markAsComplete")
                       )}
                     </button>
                   )}
@@ -1373,10 +1415,30 @@ const RequestDetail = () => {
                   >
                     <VolunteerActivismIcon className="w-5 h-5 mr-2" />
                     {isVolunteering
-                      ? "Volunteering..."
-                      : "Volunteer for this Task"}
+                      ? t("requestDetail.buttons.volunteering")
+                      : t("requestDetail.buttons.volunteerForTask")}
                   </button>
                 )}
+
+                {/* Disabled volunteer button for banned user's requests */}
+                {isAuthenticated &&
+                  !isTaskCreator &&
+                  isCreatorBanned &&
+                  (request?.status === "POSTED" ||
+                    request?.status === "ASSIGNED") && (
+                    <button
+                      disabled
+                      className="w-full py-3 px-6 text-base font-medium rounded-lg cursor-not-allowed flex items-center justify-center"
+                      style={{
+                        backgroundColor: colors.interactive.disabled,
+                        color: colors.text.disabled,
+                      }}
+                      title={t("requestDetail.messages.bannedUserTooltip")}
+                    >
+                      <VolunteerActivismIcon className="w-5 h-5 mr-2" />
+                      {t("requestDetail.buttons.volunteeringUnavailable")}
+                    </button>
+                  )}
 
                 {canWithdraw && (
                   <button
@@ -1403,7 +1465,9 @@ const RequestDetail = () => {
                     }}
                   >
                     <VolunteerActivismIcon className="w-5 h-5 mr-2" />
-                    {isVolunteering ? "Withdrawing..." : "Withdraw from Task"}
+                    {isVolunteering
+                      ? t("requestDetail.buttons.withdrawing")
+                      : t("requestDetail.buttons.withdrawFromTask")}
                   </button>
                 )}
 
@@ -1423,7 +1487,7 @@ const RequestDetail = () => {
                       e.currentTarget.style.backgroundColor = "#ec4899";
                     }}
                   >
-                    ⭐ Rate & Review Requester
+                    ⭐ {t("requestDetail.buttons.rateReviewRequester")}
                   </button>
                 )}
 
@@ -1444,7 +1508,7 @@ const RequestDetail = () => {
                         colors.brand.primary;
                     }}
                   >
-                    Login to Volunteer
+                    {t("requestDetail.buttons.loginToVolunteer")}
                   </button>
                 )}
 
@@ -1468,7 +1532,7 @@ const RequestDetail = () => {
                       }}
                     >
                       <EditIcon className="w-4 h-4 mr-2" />
-                      Edit
+                      {t("requestDetail.edit")}
                     </button>
                     <button
                       onClick={handleDeleteTask}
@@ -1498,7 +1562,9 @@ const RequestDetail = () => {
                       ) : (
                         <DeleteIcon className="w-4 h-4 mr-2" />
                       )}
-                      {isDeleting ? "Deleting..." : "Delete"}
+                      {isDeleting
+                        ? t("requestDetail.buttons.deleting")
+                        : t("requestDetail.delete")}
                     </button>
                   </div>
                 )}
@@ -1506,6 +1572,13 @@ const RequestDetail = () => {
             </div>
           </div>
         </div>
+
+        {/* Comment Section */}
+        <CommentSection
+          taskId={requestId}
+          currentUser={currentUser}
+          isAuthenticated={isAuthenticated}
+        />
       </div>
 
       <EditRequestModal

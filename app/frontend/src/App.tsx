@@ -14,12 +14,16 @@ import Categories from "./pages/Categories.jsx";
 import RequestDetail from "./pages/RequestDetail.jsx";
 import SelectVolunteer from "./pages/SelectVolunteer.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
+import FollowersPage from "./pages/FollowersPage.jsx";
+import FollowingPage from "./pages/FollowingPage.jsx";
 import AdminDashboard from "./pages/Admin/AdminDashboard.jsx";
 import AdminAllRequests from "./pages/Admin/AdminAllRequests.jsx";
 import AdminTaskReports from "./pages/Admin/AdminTaskReports.jsx";
 import AdminUserReports from "./pages/Admin/AdminUserReports.jsx";
 import AdminReportedUsers from "./pages/Admin/AdminReportedUsers.jsx";
 import Notifications from './pages/Notifications.tsx';
+import CommunityGuidelinesPage from "./pages/CommunityGuidelinesPage.jsx";
+
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './contexts/ThemeContext'
 import RouteFocusHandler from './components/RouteFocusHandler'
@@ -35,6 +39,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/community-guidelines" element={<CommunityGuidelinesPage />} />
 
           {/* All other routes use MainLayout which renders an <Outlet /> */}
           <Route path="/" element={<MainLayout />}>
@@ -51,6 +56,8 @@ function App() {
             <Route path="/requests/:requestId/select-volunteer" element={<SelectVolunteer />} />
 
             <Route path="/profile/:userId" element={<ProfilePage />} />
+            <Route path="/profile/:userId/followers" element={<FollowersPage />} />
+            <Route path="/profile/:userId/following" element={<FollowingPage />} />
 
             {/* Admin routes */}
             <Route path="/admin" element={<AdminDashboard />} />

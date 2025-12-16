@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { urgencyLevels } from "../constants/urgency_level";
 import { useTheme } from "../hooks/useTheme";
 
@@ -32,6 +33,7 @@ const RequestCardForHomePage = ({
   onUrgencyClick,
   onNavigateClick,
 }) => {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   const [isHovered, setIsHovered] = useState(false);
   const [categoryHovered, setCategoryHovered] = useState(false);
@@ -75,7 +77,7 @@ const RequestCardForHomePage = ({
       onBlur={(e) => {
         e.currentTarget.style.outline = "none";
       }}
-      aria-label={`View request: ${title}`}
+      aria-label={t("requestCardForHomePage.viewRequest", { title })}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -117,7 +119,7 @@ const RequestCardForHomePage = ({
                 fontSize: "0.75rem",
               }}
             >
-              No Image
+              {t("requestCardForHomePage.noImage")}
             </div>
           )}
         </div>
@@ -209,7 +211,7 @@ const RequestCardForHomePage = ({
             onMouseLeave={() => setNavHovered(false)}
             onFocus={() => setNavFocused(true)}
             onBlur={() => setNavFocused(false)}
-            aria-label="View request details"
+            aria-label={t("requestCardForHomePage.viewRequestDetails")}
           >
             <svg
               style={{
@@ -275,7 +277,9 @@ const RequestCardForHomePage = ({
           onMouseLeave={() => setCategoryHovered(false)}
           onFocus={() => setCategoryFocused(true)}
           onBlur={() => setCategoryFocused(false)}
-          aria-label={`Filter by ${category} category`}
+          aria-label={t("requestCardForHomePage.filterByCategory", {
+            category,
+          })}
         >
           {category}
         </button>

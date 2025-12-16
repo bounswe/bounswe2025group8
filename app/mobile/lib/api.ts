@@ -31,7 +31,8 @@ const port = Constants.expoConfig?.extra?.apiPort ?? '8000';
 // Find your LAN IP with: ipconfig getifaddr en0
 // use the first one returned by the command
 // Can be set via Constants.expoConfig?.extra?.localLanIp from .env file
-const LOCAL_LAN_IP = Constants.expoConfig?.extra?.localLanIp ?? '172.20.10.2'; // Default fallback if not set
+// const LOCAL_LAN_IP = Constants.expoConfig?.extra?.localLanIp ?? '172.20.10.2'; // Default fallback if not set
+const LOCAL_LAN_IP = '172.20.10.2'; // Hardcoded for current session
 
 const API_HOST = Platform.select({
   web: 'localhost',           // Web uses localhost
@@ -880,11 +881,42 @@ const normalizeTasksResponse = (payload: unknown): TasksResponse => {
 
 export const getTasks = async (): Promise<TasksResponse> => {
   try {
-    console.log('Fetching tasks');
-    const response = await api.get('/tasks/');
-    const normalized = normalizeTasksResponse(response.data);
-    console.log('Tasks response (normalized):', normalized);
-    return normalized;
+    console.log('Fetching all tasks (all pages)');
+
+    let allResults: Task[] = [];
+    let page = 1;
+    let hasMore = true;
+    const maxPages = 10; // Safety limit to prevent infinite loops
+
+    // Fetch all pages using page number
+    while (hasMore && page <= maxPages) {
+      console.log(`Fetching page ${page}`);
+      try {
+        const response = await api.get('/tasks/', { params: { page } });
+        const data = response.data;
+
+        // Handle results
+        if (data.results && Array.isArray(data.results)) {
+          allResults = [...allResults, ...data.results];
+        }
+
+        // Check if there's a next page
+        hasMore = !!data.next;
+        page++;
+      } catch (pageError) {
+        console.error(`Error fetching page ${page}:`, pageError);
+        hasMore = false; // Stop on error
+      }
+    }
+
+    console.log('Fetched all tasks - total:', allResults.length);
+
+    return {
+      count: allResults.length,
+      next: null,
+      previous: null,
+      results: allResults,
+    };
   } catch (error) {
     if (error instanceof AxiosError) {
       console.error('Get tasks error details:', {
@@ -898,6 +930,51 @@ export const getTasks = async (): Promise<TasksResponse> => {
     throw error;
   }
 };
+
+export const getUserTasks = async (userId: number, page: number = 1, limit: number = 100): Promise<TasksResponse> => {
+  try {
+    console.log(`Fetching tasks for user ${userId} with page: ${page}, limit: ${limit}`);
+    const response = await api.get(`/users/${userId}/tasks/`, {
+      params: { page, limit }
+    });
+    console.log('User tasks response:', response.data);
+
+    // Backend returns { status, data: { tasks: Task[], pagination: {...} } }
+    if (response.data?.data) {
+      const { tasks, pagination } = response.data.data;
+      let allTasks = tasks || [];
+
+      // Check if there are more pages and recursively fetch them
+      if (pagination?.next_page && pagination.next_page > page) {
+        console.log(`Fetching next page ${pagination.next_page} for user ${userId}`);
+        const nextPageResponse = await getUserTasks(userId, pagination.next_page, limit);
+        allTasks = [...allTasks, ...nextPageResponse.results];
+      }
+
+      return {
+        count: pagination?.total_records || allTasks.length,
+        next: null,
+        previous: null,
+        results: allTasks
+      };
+    }
+
+    // Fallback to normalize if structure is different
+    return normalizeTasksResponse(response.data);
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get user tasks error details:', {
+        error: error.message,
+        request: error.config,
+        response: error.response?.data,
+        status: error.response?.status,
+        headers: error.response?.headers
+      });
+    }
+    throw error;
+  }
+};
+
 
 export const getPopularTasks = async (limit: number = 6): Promise<Task[]> => {
   try {
@@ -1222,9 +1299,44 @@ export const createReview = async (data: CreateReviewRequest): Promise<CreateRev
 
 export const searchUsers = async (query?: string): Promise<UsersResponse> => {
   try {
-    const params = query ? { search: query } : {};
-    const response = await api.get<UsersResponse>('/users/', { params });
-    return response.data;
+    console.log('Fetching all users (all pages) with query:', query);
+
+    let allResults: UserProfile[] = [];
+    let page = 1;
+    let hasMore = true;
+    const maxPages = 10; // Safety limit
+
+    // Fetch all pages
+    while (hasMore && page <= maxPages) {
+      console.log(`Fetching users page ${page}`);
+      const params = query ? { search: query, page } : { page };
+
+      try {
+        const response = await api.get<UsersResponse>('/users/', { params });
+        const data = response.data;
+
+        // Handle results
+        if (data.results && Array.isArray(data.results)) {
+          allResults = [...allResults, ...data.results];
+        }
+
+        // Check if there's a next page
+        hasMore = !!data.next;
+        page++;
+      } catch (pageError) {
+        console.error(`Error fetching users page ${page}:`, pageError);
+        hasMore = false;
+      }
+    }
+
+    console.log('Fetched all users - total:', allResults.length);
+
+    return {
+      count: allResults.length,
+      next: null,
+      previous: null,
+      results: allResults,
+    };
   } catch (error) {
     console.error(`Error searching users with query "${query}":`, error);
     if (axios.isAxiosError(error) && error.response) {
@@ -1939,6 +2051,193 @@ export const submitUserReport = async (
         errMessage = Object.values(errorData.errors).flat().join(', ');
       }
 
+      throw new Error(errMessage);
+    }
+    throw error;
+  }
+};
+
+// ==================== Badge API Functions ====================
+
+export interface Badge {
+  id: number;
+  badge_type: string;
+  badge_type_display: string;
+  name: string;
+  description: string;
+  icon_url?: string;
+  created_at: string;
+}
+
+export interface UserBadge {
+  id: number;
+  user_id: number;
+  username: string;
+  badge: Badge;
+  earned_at: string;
+}
+
+export interface UserBadgeSimple {
+  badge_name: string;
+  badge_type: string;
+  badge_icon?: string;
+  earned_at: string;
+}
+
+export interface BadgeType {
+  value: string;
+  label: string;
+}
+
+export interface BadgesResponse {
+  status: string;
+  message?: string;
+  data?: Badge[];
+  results?: Badge[];
+}
+
+export interface UserBadgesResponse {
+  status: string;
+  message?: string;
+  data?: UserBadge[];
+  results?: UserBadge[];
+}
+
+export interface UserBadgesSimpleResponse {
+  status: string;
+  message?: string;
+  data?: UserBadgeSimple[];
+}
+
+export interface CheckBadgesResponse {
+  status: string;
+  message: string;
+  data?: {
+    badges_awarded: string[];
+  };
+}
+
+/**
+ * Fetch all available badge definitions
+ * GET /api/badges/
+ */
+export const getAllBadges = async (): Promise<Badge[]> => {
+  try {
+    const response = await api.get<BadgesResponse>('/badges/');
+    const data = response.data;
+    
+    // Handle both direct array and wrapped response formats
+    if (Array.isArray(data)) {
+      return data;
+    }
+    if (data.results && Array.isArray(data.results)) {
+      return data.results;
+    }
+    if (data.data && Array.isArray(data.data)) {
+      return data.data;
+    }
+    
+    return [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get all badges error:', error.response?.data);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Fetch all badge type enums
+ * GET /api/badges/types/
+ */
+export const getBadgeTypes = async (): Promise<BadgeType[]> => {
+  try {
+    const response = await api.get<BadgeType[]>('/badges/types/');
+    return Array.isArray(response.data) ? response.data : [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get badge types error:', error.response?.data);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Fetch earned badges for a specific user
+ * GET /api/user-badges/?user_id={userId}
+ */
+export const getUserBadges = async (userId: number): Promise<UserBadge[]> => {
+  try {
+    const response = await api.get<UserBadgesResponse>('/user-badges/', {
+      params: { user_id: userId },
+    });
+    const data = response.data;
+    
+    // Handle both direct array and wrapped response formats
+    if (Array.isArray(data)) {
+      return data;
+    }
+    if (data.results && Array.isArray(data.results)) {
+      return data.results;
+    }
+    if (data.data && Array.isArray(data.data)) {
+      return data.data;
+    }
+    
+    return [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get user badges error:', error.response?.data);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Fetch authenticated user's badges (simplified format)
+ * GET /api/user-badges/my_badges/
+ */
+export const getMyBadges = async (): Promise<UserBadgeSimple[]> => {
+  try {
+    const response = await api.get<UserBadgesSimpleResponse>('/user-badges/my_badges/');
+    const data = response.data;
+    
+    // Handle both direct array and wrapped response formats
+    if (Array.isArray(data)) {
+      return data;
+    }
+    if (data.data && Array.isArray(data.data)) {
+      return data.data;
+    }
+    
+    return [];
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      console.error('Get my badges error:', error.response?.data);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Manually trigger badge check for authenticated user
+ * POST /api/user-badges/check_all/
+ */
+export const checkBadges = async (): Promise<CheckBadgesResponse> => {
+  try {
+    const response = await api.post<CheckBadgesResponse>('/user-badges/check_all/');
+    return response.data;
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      const errorData = error.response?.data;
+      let errMessage = 'Failed to check badges.';
+      
+      if (errorData?.message) {
+        errMessage = errorData.message;
+      } else if (errorData?.error) {
+        errMessage = errorData.error;
+      }
+      
       throw new Error(errMessage);
     }
     throw error;

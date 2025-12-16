@@ -5,6 +5,7 @@ import Sidebar from "../components/Sidebar";
 import Searchbar from "../components/Searchbar";
 import { loadUserFromStorage } from "../features/authentication/store/authSlice";
 import { useTheme } from "../hooks/useTheme";
+import { LanguageButtons } from "../components/LanguageSwitcher";
 
 const SIDEBAR_WIDTH = 240;
 
@@ -42,7 +43,7 @@ const MainLayout = () => {
           color: colors.text.primary,
         }}
       >
-        <div className="px-6 py-4">
+        <div className="px-6 py-4 flex items-center justify-between">
           <div className="w-full sm:w-96 md:w-[500px] mx-auto">
             <Searchbar
               onSearch={handleSearch}
@@ -50,6 +51,9 @@ const MainLayout = () => {
               autoFocus={false}
               defaultValue=""
             />
+          </div>
+          <div className="ml-4">
+            <LanguageButtons />
           </div>
         </div>
       </header>

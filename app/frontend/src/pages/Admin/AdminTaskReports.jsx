@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import useAuth from '../../features/authentication/hooks/useAuth';
-import { useTheme } from '../../hooks/useTheme';
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import useAuth from "../../features/authentication/hooks/useAuth";
+import { useTheme } from "../../hooks/useTheme";
 import {
   Container,
   Paper,
@@ -27,16 +28,16 @@ import {
   InputLabel,
   Select,
   MenuItem,
-} from '@mui/material';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+} from "@mui/material";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import {
   fetchTaskReports,
   updateReportStatusThunk,
   deleteTaskThunk,
   clearError,
   clearSuccess,
-} from '../../features/admin/store/adminSlice';
+} from "../../features/admin/store/adminSlice";
 
 const AdminTaskReports = () => {
   const dispatch = useDispatch();
@@ -44,13 +45,19 @@ const AdminTaskReports = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { userRole } = useAuth();
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
-  const { taskReports, pagination, loading, actionLoading, error, successMessage } = useSelector(
-    (state) => state.admin
-  );
+  const {
+    taskReports,
+    pagination,
+    loading,
+    actionLoading,
+    error,
+    successMessage,
+  } = useSelector((state) => state.admin);
 
-  const currentPage = parseInt(searchParams.get('page') || '1', 10);
-  const statusFilter = searchParams.get('status') || null;
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
+  const statusFilter = searchParams.get("status") || null;
 
   const [dismissDialogOpen, setDismissDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -59,8 +66,8 @@ const AdminTaskReports = () => {
 
   // Check admin access
   useEffect(() => {
-    if (userRole !== 'admin') {
-      navigate('/');
+    if (userRole !== "admin") {
+      navigate("/");
     }
   }, [userRole, navigate]);
 
@@ -81,11 +88,14 @@ const AdminTaskReports = () => {
   }, [error, successMessage, dispatch]);
 
   const handlePageChange = (event, value) => {
-    setSearchParams({ page: value.toString(), ...(statusFilter && { status: statusFilter }) });
+    setSearchParams({
+      page: value.toString(),
+      ...(statusFilter && { status: statusFilter }),
+    });
   };
 
   const handleStatusFilterChange = (status) => {
-    setSearchParams({ page: '1', ...(status && { status }) });
+    setSearchParams({ page: "1", ...(status && { status }) });
   };
 
   const handleViewReportDetails = (report) => {
@@ -102,10 +112,10 @@ const AdminTaskReports = () => {
     if (selectedReport) {
       dispatch(
         updateReportStatusThunk({
-          reportType: 'task',
+          reportType: "task",
           reportId: selectedReport.id,
-          status: 'DISMISSED',
-          notes: 'Report dismissed by admin',
+          status: "DISMISSED",
+          notes: "Report dismissed by admin",
         })
       );
       setDismissDialogOpen(false);
@@ -124,7 +134,12 @@ const AdminTaskReports = () => {
 
   const handleDeleteConfirm = () => {
     if (selectedReport && selectedReport.task) {
-      dispatch(deleteTaskThunk({ taskId: selectedReport.task.id, reason: 'Removed as per report' }));
+      dispatch(
+        deleteTaskThunk({
+          taskId: selectedReport.task.id,
+          reason: "Removed as per report",
+        })
+      );
       setDeleteDialogOpen(false);
       setSelectedReport(null);
       // Refetch reports after deletion
@@ -143,45 +158,65 @@ const AdminTaskReports = () => {
 
   const getStatusColor = (status) => {
     const statusColors = {
-      PENDING: 'warning',
-      UNDER_REVIEW: 'info',
-      RESOLVED: 'success',
-      DISMISSED: 'error',
+      PENDING: "warning",
+      UNDER_REVIEW: "info",
+      RESOLVED: "success",
+      DISMISSED: "error",
     };
-    return statusColors[status] || 'default';
+    return statusColors[status] || "default";
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
-  if (userRole !== 'admin') {
+  if (userRole !== "admin") {
     return null;
   }
 
   return (
-    <Box sx={{ backgroundColor: colors.background.primary, minHeight: '100vh', py: 4 }}>
+    <Box
+      sx={{
+        backgroundColor: colors.background.primary,
+        minHeight: "100vh",
+        py: 4,
+      }}
+    >
       <Container maxWidth="lg">
         {/* Header */}
-        <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box
+          sx={{
+            mb: 4,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <div>
-            <h1 style={{ color: colors.text.primary, marginBottom: '8px' }}>Task Reports</h1>
-            <p style={{ color: colors.text.secondary, fontSize: '14px' }}>
-              Total reports: {pagination.totalItems}
+            <h1 style={{ color: colors.text.primary, marginBottom: "8px" }}>
+              {t("adminTaskReports.title")}
+            </h1>
+            <p style={{ color: colors.text.secondary, fontSize: "14px" }}>
+              {t("adminTaskReports.totalReports", {
+                count: pagination.totalItems,
+              })}
             </p>
           </div>
           <Button
             variant="outlined"
-            onClick={() => navigate('/admin')}
-            sx={{ color: colors.brand.primary, borderColor: colors.brand.primary }}
+            onClick={() => navigate("/admin")}
+            sx={{
+              color: colors.brand.primary,
+              borderColor: colors.brand.primary,
+            }}
           >
-            Back to Dashboard
+            {t("adminTaskReports.backToDashboard")}
           </Button>
         </Box>
 
@@ -191,35 +226,43 @@ const AdminTaskReports = () => {
             <InputLabel
               sx={{
                 color: colors.brand.primary,
-                '&.Mui-focused': {
+                "&.Mui-focused": {
                   color: colors.brand.primary,
-                }
+                },
               }}
             >
-              Filter by Status
+              {t("adminTaskReports.filterByStatus")}
             </InputLabel>
             <Select
-              value={statusFilter || ''}
-              label="Filter by Status"
+              value={statusFilter || ""}
+              label={t("adminTaskReports.filterByStatus")}
               onChange={(e) => handleStatusFilterChange(e.target.value || null)}
               sx={{
                 color: colors.text.primary,
-                '& .MuiOutlinedInput-notchedOutline': {
+                "& .MuiOutlinedInput-notchedOutline": {
                   borderColor: colors.brand.primary,
                 },
-                '&:hover .MuiOutlinedInput-notchedOutline': {
+                "&:hover .MuiOutlinedInput-notchedOutline": {
                   borderColor: colors.brand.primary,
                 },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
                   borderColor: colors.brand.primary,
                 },
               }}
             >
-              <MenuItem value="">All Statuses</MenuItem>
-              <MenuItem value="PENDING">Pending</MenuItem>
-              <MenuItem value="UNDER_REVIEW">Under Review</MenuItem>
-              <MenuItem value="RESOLVED">Resolved</MenuItem>
-              <MenuItem value="DISMISSED">Dismissed</MenuItem>
+              <MenuItem value="">{t("adminTaskReports.allStatuses")}</MenuItem>
+              <MenuItem value="PENDING">
+                {t("adminTaskReports.pending")}
+              </MenuItem>
+              <MenuItem value="UNDER_REVIEW">
+                {t("adminTaskReports.underReview")}
+              </MenuItem>
+              <MenuItem value="RESOLVED">
+                {t("adminTaskReports.resolved")}
+              </MenuItem>
+              <MenuItem value="DISMISSED">
+                {t("adminTaskReports.dismissed")}
+              </MenuItem>
             </Select>
           </FormControl>
         </Box>
@@ -227,7 +270,7 @@ const AdminTaskReports = () => {
         {/* Alerts */}
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
-            {typeof error === 'string' ? error : 'An error occurred'}
+            {typeof error === "string" ? error : "An error occurred"}
           </Alert>
         )}
         {successMessage && (
@@ -238,7 +281,7 @@ const AdminTaskReports = () => {
 
         {/* Loading State */}
         {loading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
             <CircularProgress />
           </Box>
         )}
@@ -250,10 +293,10 @@ const AdminTaskReports = () => {
             sx={{
               backgroundColor: colors.background.elevated,
               color: colors.text.primary,
-              '& .MuiTable-root': {
+              "& .MuiTable-root": {
                 backgroundColor: colors.background.elevated,
               },
-              '& .MuiTableCell-root': {
+              "& .MuiTableCell-root": {
                 backgroundColor: colors.background.elevated,
                 color: colors.text.primary,
               },
@@ -262,13 +305,41 @@ const AdminTaskReports = () => {
             <Table>
               <TableHead>
                 <TableRow sx={{ backgroundColor: colors.brand.primary }}>
-                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>ID</TableCell>
-                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Request</TableCell>
-                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Report Type</TableCell>
-                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Reported By</TableCell>
-                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Status</TableCell>
-                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Created</TableCell>
-                  <TableCell sx={{ color: colors.text.inverse, fontWeight: 'bold' }}>Actions</TableCell>
+                  <TableCell
+                    sx={{ color: colors.text.inverse, fontWeight: "bold" }}
+                  >
+                    {t("adminTaskReports.table.id")}
+                  </TableCell>
+                  <TableCell
+                    sx={{ color: colors.text.inverse, fontWeight: "bold" }}
+                  >
+                    {t("adminTaskReports.table.request")}
+                  </TableCell>
+                  <TableCell
+                    sx={{ color: colors.text.inverse, fontWeight: "bold" }}
+                  >
+                    {t("adminTaskReports.table.reportType")}
+                  </TableCell>
+                  <TableCell
+                    sx={{ color: colors.text.inverse, fontWeight: "bold" }}
+                  >
+                    {t("adminTaskReports.table.reportedBy")}
+                  </TableCell>
+                  <TableCell
+                    sx={{ color: colors.text.inverse, fontWeight: "bold" }}
+                  >
+                    {t("adminTaskReports.table.status")}
+                  </TableCell>
+                  <TableCell
+                    sx={{ color: colors.text.inverse, fontWeight: "bold" }}
+                  >
+                    {t("adminTaskReports.table.created")}
+                  </TableCell>
+                  <TableCell
+                    sx={{ color: colors.text.inverse, fontWeight: "bold" }}
+                  >
+                    {t("adminTaskReports.table.actions")}
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -279,7 +350,7 @@ const AdminTaskReports = () => {
                       align="center"
                       sx={{ py: 3, color: colors.text.secondary }}
                     >
-                      No reports found
+                      {t("adminTaskReports.noReportsFound")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -288,42 +359,52 @@ const AdminTaskReports = () => {
                       key={report.id}
                       hover
                       sx={{
-                        '&:hover': { backgroundColor: colors.interactive.hover },
+                        "&:hover": {
+                          backgroundColor: colors.interactive.hover,
+                        },
                         borderBottom: `1px solid ${colors.border.secondary}`,
                       }}
                     >
-                      <TableCell sx={{ color: colors.text.primary }}>{report.id}</TableCell>
+                      <TableCell sx={{ color: colors.text.primary }}>
+                        {report.id}
+                      </TableCell>
                       <TableCell sx={{ maxWidth: 200 }}>
                         {report.task ? (
                           <Button
                             sx={{
                               color: colors.brand.primary,
-                              textTransform: 'none',
+                              textTransform: "none",
                               padding: 0,
-                              justifyContent: 'flex-start',
-                              whiteSpace: 'normal',
-                              wordBreak: 'break-word',
-                              '&:hover': {
-                                textDecoration: 'underline',
+                              justifyContent: "flex-start",
+                              whiteSpace: "normal",
+                              wordBreak: "break-word",
+                              "&:hover": {
+                                textDecoration: "underline",
                               },
                             }}
-                            onClick={() => navigate(`/requests/${report.task.id}`)}
+                            onClick={() =>
+                              navigate(`/requests/${report.task.id}`)
+                            }
                           >
                             {report.task.title}
                           </Button>
                         ) : (
-                          <span style={{ color: colors.text.primary }}>Task Deleted</span>
+                          <span style={{ color: colors.text.primary }}>
+                            {t("adminTaskReports.taskDeleted")}
+                          </span>
                         )}
                       </TableCell>
                       <TableCell sx={{ color: colors.text.primary }}>
-                        {report.report_type || 'N/A'}
+                        {report.report_type || "N/A"}
                       </TableCell>
                       <TableCell sx={{ color: colors.text.primary }}>
-                        {typeof report.reporter === 'string'
+                        {typeof report.reporter === "string"
                           ? report.reporter
                           : report.reporter?.name && report.reporter?.surname
                           ? `${report.reporter.name} ${report.reporter.surname}`
-                          : report.reporter?.username || report.reporter?.email || 'Unknown'}
+                          : report.reporter?.username ||
+                            report.reporter?.email ||
+                            "Unknown"}
                       </TableCell>
                       <TableCell>
                         <Chip
@@ -336,14 +417,14 @@ const AdminTaskReports = () => {
                         {formatDate(report.created_at)}
                       </TableCell>
                       <TableCell>
-                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                           <Button
                             size="small"
                             startIcon={<VisibilityIcon />}
                             variant="outlined"
                             onClick={() => handleViewReportDetails(report)}
                           >
-                            View
+                            {t("adminTaskReports.actions.view")}
                           </Button>
                           {report.task && (
                             <Button
@@ -352,7 +433,7 @@ const AdminTaskReports = () => {
                               variant="outlined"
                               onClick={() => handleDeleteClick(report)}
                             >
-                              Delete
+                              {t("adminTaskReports.actions.delete")}
                             </Button>
                           )}
                           <Button
@@ -361,7 +442,7 @@ const AdminTaskReports = () => {
                             variant="outlined"
                             onClick={() => handleDismissClick(report)}
                           >
-                            Dismiss
+                            {t("adminTaskReports.actions.dismiss")}
                           </Button>
                         </Box>
                       </TableCell>
@@ -375,7 +456,7 @@ const AdminTaskReports = () => {
 
         {/* Pagination */}
         {!loading && pagination.totalPages > 1 && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
             <Pagination
               count={pagination.totalPages}
               page={currentPage}
@@ -387,77 +468,128 @@ const AdminTaskReports = () => {
       </Container>
 
       {/* Dismiss Dialog */}
-      <Dialog open={dismissDialogOpen} onClose={handleDialogCancel} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ color: colors.text.primary }}>Dismiss Report</DialogTitle>
+      <Dialog
+        open={dismissDialogOpen}
+        onClose={handleDialogCancel}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ color: colors.text.primary }}>
+          {t("adminTaskReports.dismissDialog.title")}
+        </DialogTitle>
         <DialogContent>
           {selectedReport && (
             <Box sx={{ mb: 2 }}>
-              <div style={{ marginBottom: '16px', color: colors.text.primary }}>
+              <div style={{ marginBottom: "16px", color: colors.text.primary }}>
                 <p>
-                  <strong>Request:</strong> {selectedReport.task?.title || 'Task Deleted'}
+                  <strong>{t("adminTaskReports.dismissDialog.request")}</strong>{" "}
+                  {selectedReport.task?.title ||
+                    t("adminTaskReports.taskDeleted")}
                 </p>
                 <p>
-                  <strong>Report Type:</strong> {selectedReport.report_type}
+                  <strong>
+                    {t("adminTaskReports.dismissDialog.reportType")}
+                  </strong>{" "}
+                  {selectedReport.report_type}
                 </p>
                 {selectedReport.description && (
                   <p>
-                    <strong>Description:</strong> {selectedReport.description}
+                    <strong>
+                      {t("adminTaskReports.dismissDialog.description")}
+                    </strong>{" "}
+                    {selectedReport.description}
                   </p>
                 )}
-                <p style={{ marginTop: '16px', fontStyle: 'italic', color: colors.text.secondary }}>
-                  This report will be marked as dismissed.
+                <p
+                  style={{
+                    marginTop: "16px",
+                    fontStyle: "italic",
+                    color: colors.text.secondary,
+                  }}
+                >
+                  {t("adminTaskReports.dismissDialog.message")}
                 </p>
               </div>
             </Box>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDialogCancel}>Cancel</Button>
+          <Button onClick={handleDialogCancel}>
+            {t("adminTaskReports.dismissDialog.cancel")}
+          </Button>
           <Button
             onClick={handleDismissConfirm}
             color="warning"
             variant="contained"
             disabled={actionLoading}
           >
-            {actionLoading ? <CircularProgress size={24} /> : 'Dismiss Report'}
+            {actionLoading ? (
+              <CircularProgress size={24} />
+            ) : (
+              t("adminTaskReports.dismissDialog.confirm")
+            )}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Delete Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={handleDialogCancel} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ color: colors.text.primary }}>Delete Task</DialogTitle>
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDialogCancel}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ color: colors.text.primary }}>
+          {t("adminTaskReports.deleteDialog.title")}
+        </DialogTitle>
         <DialogContent>
           {selectedReport && (
             <Box sx={{ mb: 2 }}>
-              <div style={{ marginBottom: '16px', color: colors.text.primary }}>
+              <div style={{ marginBottom: "16px", color: colors.text.primary }}>
                 <p>
-                  <strong>Request:</strong> {selectedReport.task?.title || 'Task Deleted'}
+                  <strong>{t("adminTaskReports.deleteDialog.request")}</strong>{" "}
+                  {selectedReport.task?.title ||
+                    t("adminTaskReports.taskDeleted")}
                 </p>
-                <p style={{ marginTop: '16px', color: colors.semantic.error }}>
-                  Are you sure you want to delete this task? This action cannot be undone.
+                <p style={{ marginTop: "16px", color: colors.semantic.error }}>
+                  {t("adminTaskReports.deleteDialog.warning")}
                 </p>
               </div>
             </Box>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDialogCancel}>Cancel</Button>
+          <Button onClick={handleDialogCancel}>
+            {t("adminTaskReports.deleteDialog.cancel")}
+          </Button>
           <Button
             onClick={handleDeleteConfirm}
             color="error"
             variant="contained"
             disabled={actionLoading}
           >
-            {actionLoading ? <CircularProgress size={24} /> : 'Delete Task'}
+            {actionLoading ? (
+              <CircularProgress size={24} />
+            ) : (
+              t("adminTaskReports.deleteDialog.confirm")
+            )}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Report Details Dialog */}
-      <Dialog open={reportDetailsDialogOpen} onClose={handleDialogCancel} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ color: colors.text.primary }}>Report Details</DialogTitle>
-        <DialogContent sx={{ backgroundColor: colors.background.primary, py: 0, px: 0 }}>
+      <Dialog
+        open={reportDetailsDialogOpen}
+        onClose={handleDialogCancel}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ color: colors.text.primary }}>
+          {t("adminTaskReports.detailsDialog.title")}
+        </DialogTitle>
+        <DialogContent
+          sx={{ backgroundColor: colors.background.primary, py: 0, px: 0 }}
+        >
           {selectedReport && (
             <Box
               sx={{
@@ -468,35 +600,75 @@ const AdminTaskReports = () => {
               }}
             >
               <div style={{ color: colors.text.primary }}>
-                <p style={{ margin: '0 0 8px 0' }}>
-                  <strong>Report ID:</strong> {selectedReport.id}
+                <p style={{ margin: "0 0 8px 0" }}>
+                  <strong>
+                    {t("adminTaskReports.detailsDialog.reportId")}
+                  </strong>{" "}
+                  {selectedReport.id}
                 </p>
-                <p style={{ margin: '0 0 8px 0' }}>
-                  <strong>Request:</strong> {selectedReport.task?.title || 'Task Deleted'}
+                <p style={{ margin: "0 0 8px 0" }}>
+                  <strong>{t("adminTaskReports.detailsDialog.request")}</strong>{" "}
+                  {selectedReport.task?.title ||
+                    t("adminTaskReports.taskDeleted")}
                 </p>
-                <p style={{ margin: '0 0 8px 0' }}>
-                  <strong>Report Type:</strong> {selectedReport.report_type_display || selectedReport.report_type}
+                <p style={{ margin: "0 0 8px 0" }}>
+                  <strong>
+                    {t("adminTaskReports.detailsDialog.reportType")}
+                  </strong>{" "}
+                  {selectedReport.report_type_display ||
+                    selectedReport.report_type}
                 </p>
-                <p style={{ margin: '0 0 8px 0' }}>
-                  <strong>Status:</strong> <Chip label={selectedReport.status} size="small" color={getStatusColor(selectedReport.status)} />
+                <p style={{ margin: "0 0 8px 0" }}>
+                  <strong>{t("adminTaskReports.detailsDialog.status")}</strong>{" "}
+                  <Chip
+                    label={selectedReport.status}
+                    size="small"
+                    color={getStatusColor(selectedReport.status)}
+                  />
                 </p>
-                <p style={{ margin: '0 0 8px 0' }}>
-                  <strong>Reported By:</strong>{' '}
-                  {typeof selectedReport.reporter === 'string'
+                <p style={{ margin: "0 0 8px 0" }}>
+                  <strong>
+                    {t("adminTaskReports.detailsDialog.reportedBy")}
+                  </strong>{" "}
+                  {typeof selectedReport.reporter === "string"
                     ? selectedReport.reporter
-                    : selectedReport.reporter?.name && selectedReport.reporter?.surname
+                    : selectedReport.reporter?.name &&
+                      selectedReport.reporter?.surname
                     ? `${selectedReport.reporter.name} ${selectedReport.reporter.surname}`
-                    : selectedReport.reporter?.username || selectedReport.reporter?.email || 'Unknown'}
+                    : selectedReport.reporter?.username ||
+                      selectedReport.reporter?.email ||
+                      "Unknown"}
                 </p>
-                <p style={{ margin: '0 0 16px 0' }}>
-                  <strong>Created:</strong> {formatDate(selectedReport.created_at)}
+                <p style={{ margin: "0 0 16px 0" }}>
+                  <strong>{t("adminTaskReports.detailsDialog.created")}</strong>{" "}
+                  {formatDate(selectedReport.created_at)}
                 </p>
                 {selectedReport.description && (
-                  <Box sx={{ p: 1.5, backgroundColor: colors.background.primary, borderRadius: 1 }}>
-                    <p style={{ margin: '0 0 8px 0', color: colors.text.primary }}>
-                      <strong>Description:</strong>
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      backgroundColor: colors.background.primary,
+                      borderRadius: 1,
+                    }}
+                  >
+                    <p
+                      style={{
+                        margin: "0 0 8px 0",
+                        color: colors.text.primary,
+                      }}
+                    >
+                      <strong>
+                        {t("adminTaskReports.detailsDialog.description")}
+                      </strong>
                     </p>
-                    <p style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: colors.text.secondary }}>
+                    <p
+                      style={{
+                        margin: 0,
+                        whiteSpace: "pre-wrap",
+                        wordBreak: "break-word",
+                        color: colors.text.secondary,
+                      }}
+                    >
                       {selectedReport.description}
                     </p>
                   </Box>
@@ -506,7 +678,9 @@ const AdminTaskReports = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDialogCancel}>Close</Button>
+          <Button onClick={handleDialogCancel}>
+            {t("adminTaskReports.detailsDialog.close")}
+          </Button>
           {selectedReport?.task && (
             <Button
               onClick={() => {
@@ -517,7 +691,7 @@ const AdminTaskReports = () => {
               variant="contained"
               endIcon={<OpenInNewIcon />}
             >
-              View Request
+              {t("adminTaskReports.detailsDialog.viewRequest")}
             </Button>
           )}
         </DialogActions>

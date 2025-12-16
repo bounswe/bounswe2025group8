@@ -166,6 +166,7 @@ export default function Feed() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background, paddingTop: 36 }]}>
       <ScrollView
         ref={scrollRef}
+        style={{ flex: 1 }}
         contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />

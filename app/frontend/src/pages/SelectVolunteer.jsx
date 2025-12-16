@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Typography,
   Box,
@@ -11,6 +12,7 @@ import {
   CircularProgress,
   Grid,
   useTheme,
+  Tooltip,
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -19,6 +21,7 @@ import StarIcon from "@mui/icons-material/Star";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import PersonIcon from "@mui/icons-material/Person";
 import { useAppSelector } from "../store/hooks";
 import {
   selectCurrentUser,
@@ -38,6 +41,7 @@ const SelectVolunteer = () => {
   const { requestId } = useParams();
   const theme = useTheme();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Authentication state
   const currentUser = useAppSelector(selectCurrentUser);
@@ -176,7 +180,7 @@ const SelectVolunteer = () => {
   // Handle final selection
   const handleSelectVolunteers = async () => {
     if (selectedVolunteers.length === 0) {
-      alert("Please select at least one volunteer");
+      alert(t("selectVolunteer.messages.selectAtLeastOne"));
       return;
     }
 
@@ -188,14 +192,24 @@ const SelectVolunteer = () => {
 
       const message =
         task?.status === "ASSIGNED"
-          ? `Successfully updated volunteer selection. ${selectedVolunteers.length} volunteer(s) assigned.`
-          : `Successfully assigned ${selectedVolunteers.length} volunteer(s) to this task.`;
+          ? t("selectVolunteer.messages.updateSuccess", {
+              count: selectedVolunteers.length,
+            })
+          : t("selectVolunteer.messages.assignSuccess", {
+              count: selectedVolunteers.length,
+            });
       alert(message);
       navigate(`/requests/${requestId}`);
     } catch (error) {
       console.error("Error assigning volunteers:", error);
-      alert("Failed to assign volunteers. Please try again.");
+      alert(t("selectVolunteer.messages.assignFailed"));
     }
+  };
+
+  // Handle view volunteer profile
+  const handleViewProfile = (volunteerId, event) => {
+    event.stopPropagation();
+    navigate(`/profile/${volunteerId}`);
   };
 
   // Loading state
@@ -216,7 +230,7 @@ const SelectVolunteer = () => {
       >
         <CircularProgress />
         <Typography variant="body1" color="text.secondary">
-          Loading volunteers...
+          {t("selectVolunteer.loading")}
         </Typography>
       </Box>
     );
@@ -240,7 +254,7 @@ const SelectVolunteer = () => {
         >
           <Box sx={{ textAlign: "center", maxWidth: 400 }}>
             <Typography variant="h5" color="error" gutterBottom>
-              Error loading volunteers
+              {t("selectVolunteer.errorLoading")}
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
               {error}
@@ -249,9 +263,9 @@ const SelectVolunteer = () => {
               startIcon={<ArrowBackIcon />}
               onClick={() => navigate(`/requests/${requestId}`)}
               sx={{ mt: 2 }}
-              aria-label="Back to request"
+              aria-label={t("selectVolunteer.aria.backToRequest")}
             >
-              Back to Request
+              {t("selectVolunteer.backToRequest")}
             </Button>
           </Box>
         </Box>
@@ -275,17 +289,17 @@ const SelectVolunteer = () => {
         >
           <Box sx={{ textAlign: "center", maxWidth: 400 }}>
             <Typography variant="h5" gutterBottom>
-              Access Denied
+              {t("selectVolunteer.accessDenied")}
             </Typography>
             <Typography variant="body1" color="text.secondary" paragraph>
-              Only the task creator can select volunteers.
+              {t("selectVolunteer.onlyCreatorCanSelect")}
             </Typography>
             <Button
               startIcon={<ArrowBackIcon />}
               onClick={() => navigate(`/requests/${requestId}`)}
               sx={{ mt: 2 }}
             >
-              Back to Request
+              {t("selectVolunteer.backToRequest")}
             </Button>
           </Box>
         </Box>
@@ -310,7 +324,7 @@ const SelectVolunteer = () => {
           <IconButton
             onClick={() => navigate(`/requests/${requestId}`)}
             sx={{ mr: 2, color: "text.secondary" }}
-            aria-label="Back to request"
+            aria-label={t("selectVolunteer.aria.backToRequest")}
           >
             <ArrowBackIcon />
           </IconButton>
@@ -319,9 +333,9 @@ const SelectVolunteer = () => {
             variant="h4"
             sx={{ flexGrow: 1, fontWeight: "bold" }}
           >
-            Select Volunteer
+            {t("selectVolunteer.title")}
           </Typography>
-          <IconButton aria-label="More options">
+          <IconButton aria-label={t("selectVolunteer.moreOptions")}>
             <MoreVertIcon />
           </IconButton>
         </Box>
@@ -331,24 +345,28 @@ const SelectVolunteer = () => {
           sx={{ mb: 3, p: 2, bgcolor: "white", borderRadius: 2, boxShadow: 1 }}
         >
           <Typography variant="body1" color="text.secondary">
-            <strong>{volunteers.length}</strong> people have volunteered for
-            this task
+            {t("selectVolunteer.info.peopleVolunteered", {
+              count: volunteers.length,
+            })}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Select up to <strong>{maxVolunteers}</strong> volunteer
-            {maxVolunteers > 1 ? "s" : ""} to assign to this task
+            {t("selectVolunteer.info.selectUpTo", {
+              max: maxVolunteers,
+              count: maxVolunteers,
+            })}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Currently selecting: <strong>{selectedVolunteers.length}</strong> of{" "}
-            {maxVolunteers}
+            {t("selectVolunteer.info.currentlySelecting", {
+              selected: selectedVolunteers.length,
+              max: maxVolunteers,
+            })}
           </Typography>
           <Typography
             variant="body2"
             color="text.secondary"
             sx={{ mt: 1, fontStyle: "italic" }}
           >
-            Volunteers with "Selected" badge are currently assigned. You can
-            change your selection anytime.
+            {t("selectVolunteer.info.selectedBadgeNote")}
           </Typography>
         </Box>
 
@@ -367,19 +385,21 @@ const SelectVolunteer = () => {
             aria-live="polite"
           >
             <Typography variant="h6" color="text.secondary" gutterBottom>
-              No volunteers yet
+              {t("selectVolunteer.empty.noVolunteers")}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Wait for people to volunteer for this task before you can select
-              them.
+              {t("selectVolunteer.empty.waitForVolunteers")}
             </Typography>
           </Box>
         ) : (
           <Grid container spacing={2} sx={{ mb: 3 }}>
             {volunteers.map((volunteer) => {
               const isSelected = selectedVolunteers.includes(volunteer.id);
+              // Check if volunteer is banned (name shows as *deleted)
+              const isVolunteerBanned = volunteer.name === "*deleted";
               const canSelect =
-                selectedVolunteers.length < maxVolunteers || isSelected;
+                (selectedVolunteers.length < maxVolunteers || isSelected) &&
+                !isVolunteerBanned; // Banned volunteers cannot be selected
               const isCurrentlyAccepted =
                 volunteer.volunteerRecord?.status === "ACCEPTED";
               const isCurrentlyRejected =
@@ -409,7 +429,12 @@ const SelectVolunteer = () => {
                     role="checkbox"
                     aria-checked={isSelected}
                     tabIndex={0}
-                    aria-label={`${volunteer.name} ${volunteer.surname}, rating ${volunteer.rating}, ${volunteer.completedTasks} tasks completed`}
+                    aria-label={t("selectVolunteer.volunteer.ariaLabel", {
+                      name: volunteer.name,
+                      surname: volunteer.surname,
+                      rating: volunteer.rating,
+                      tasks: volunteer.completedTasks,
+                    })}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
@@ -420,7 +445,7 @@ const SelectVolunteer = () => {
                     {/* Status Badges */}
                     {isCurrentlyAccepted && (
                       <Chip
-                        label="Selected"
+                        label={t("selectVolunteer.badges.selected")}
                         size="small"
                         sx={{
                           position: "absolute",
@@ -436,7 +461,7 @@ const SelectVolunteer = () => {
                     )}
                     {isCurrentlyRejected && (
                       <Chip
-                        label="Previously Rejected"
+                        label={t("selectVolunteer.badges.previouslyRejected")}
                         size="small"
                         sx={{
                           position: "absolute",
@@ -454,7 +479,9 @@ const SelectVolunteer = () => {
                       {/* Avatar and Selection Indicator */}
                       <Box sx={{ position: "relative", mb: 2 }}>
                         <Avatar
-                          src={volunteer.avatar}
+                          src={
+                            !isVolunteerBanned ? volunteer.avatar : undefined
+                          }
                           sx={{
                             width: 80,
                             height: 80,
@@ -462,8 +489,11 @@ const SelectVolunteer = () => {
                             border: isSelected
                               ? "3px solid #7c4dff"
                               : "3px solid transparent",
+                            bgcolor: isVolunteerBanned ? "#9e9e9e" : undefined,
                           }}
-                        />
+                        >
+                          {isVolunteerBanned && "*"}
+                        </Avatar>
                         {/* Selection Circle */}
                         <Box
                           sx={{
@@ -489,7 +519,16 @@ const SelectVolunteer = () => {
                       </Box>
 
                       {/* Name */}
-                      <Typography variant="h6" fontWeight="medium" gutterBottom>
+                      <Typography
+                        variant="h6"
+                        fontWeight="medium"
+                        gutterBottom
+                        sx={{
+                          color: isVolunteerBanned
+                            ? "text.disabled"
+                            : "text.primary",
+                        }}
+                      >
                         {volunteer.name} {volunteer.surname}
                       </Typography>
 
@@ -544,16 +583,47 @@ const SelectVolunteer = () => {
                         color="text.secondary"
                         sx={{ mb: 2 }}
                       >
-                        {volunteer.completedTasks} tasks completed
+                        {t("selectVolunteer.volunteer.tasksCompleted", {
+                          count: volunteer.completedTasks,
+                        })}
                       </Typography>
 
-                      {/* View Details Arrow */}
-                      <Box sx={{ display: "flex", justifyContent: "center" }}>
-                        <ChevronRightIcon
-                          sx={{ color: "text.secondary" }}
-                          aria-hidden="true"
-                        />
-                      </Box>
+                      {/* View Profile Button */}
+                      <Tooltip
+                        title={t("selectVolunteer.volunteer.viewFullProfile")}
+                        arrow
+                      >
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          startIcon={<PersonIcon />}
+                          onClick={(e) =>
+                            handleViewProfile(
+                              volunteer.user?.id || volunteer.id,
+                              e
+                            )
+                          }
+                          sx={{
+                            mt: 1,
+                            textTransform: "none",
+                            borderColor: "#7c4dff",
+                            color: "#7c4dff",
+                            "&:hover": {
+                              borderColor: "#6a3de8",
+                              bgcolor: "rgba(124, 77, 255, 0.04)",
+                            },
+                          }}
+                          aria-label={t(
+                            "selectVolunteer.volunteer.viewProfileOf",
+                            {
+                              name: volunteer.name,
+                              surname: volunteer.surname,
+                            }
+                          )}
+                        >
+                          {t("selectVolunteer.volunteer.viewProfile")}
+                        </Button>
+                      </Tooltip>
                     </CardContent>
                   </Card>
                 </Grid>
@@ -587,13 +657,17 @@ const SelectVolunteer = () => {
             aria-disabled={selectedVolunteers.length === 0}
             aria-label={
               task?.status === "ASSIGNED"
-                ? `Update selection, ${selectedVolunteers.length} selected`
-                : `Assign volunteers, ${selectedVolunteers.length} selected`
+                ? t("selectVolunteer.buttons.updateSelectionCount", {
+                    count: selectedVolunteers.length,
+                  })
+                : t("selectVolunteer.buttons.assignVolunteersCount", {
+                    count: selectedVolunteers.length,
+                  })
             }
           >
             {task?.status === "ASSIGNED"
-              ? "Update Selection"
-              : "Assign Volunteers"}{" "}
+              ? t("selectVolunteer.buttons.updateSelection")
+              : t("selectVolunteer.buttons.assignVolunteers")}{" "}
             {selectedVolunteers.length > 0
               ? `(${selectedVolunteers.length})`
               : ""}
