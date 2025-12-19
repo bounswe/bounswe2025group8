@@ -29,7 +29,11 @@ export function CategoryPicker({ value, onChange, label, placeholder }: Category
   return (
     <View style={styles.wrapper}>
       {effectiveLabel ? <Text style={[styles.label, { color: colors.text }]}>{effectiveLabel}</Text> : null}
-      <TouchableOpacity style={[styles.button, { backgroundColor: colors.card, borderColor: colors.border }]} onPress={() => setVisible(true)}>
+      <TouchableOpacity
+        testID="create-request-category-selector"
+        style={[styles.button, { backgroundColor: colors.card, borderColor: colors.border }]}
+        onPress={() => setVisible(true)}
+      >
         <Text style={[styles.buttonText, { color: colors.text }]} numberOfLines={1}>
           {selectedLabel}
         </Text>
@@ -53,6 +57,7 @@ export function CategoryPicker({ value, onChange, label, placeholder }: Category
                 {options.map((option) => (
                   <TouchableOpacity
                     key={option.value}
+                    testID={`category-option-${option.value}`}
                     style={[styles.option, { borderBottomColor: colors.border }]}
                     onPress={() => {
                       onChange(option.value);

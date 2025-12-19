@@ -725,7 +725,7 @@ export default function RequestDetailsVolunteer() {
               importantForAccessibility="no"
             />
           </TouchableOpacity>
-          <Text style={[styles.title, { color: themeColors.text }]}>{request.title}</Text>
+          <Text style={[styles.title, { color: themeColors.text }]} testID="screen-title">{request.title}</Text>
         </View>
         <Text style={[styles.categoryLabel, { color: themeColors.primary, backgroundColor: themeColors.lightPurple }]}>
           {request.category === 'Other' || request.category === 'OTHER' ? t('categories.OTHER') : (request.category_display || request.category)}

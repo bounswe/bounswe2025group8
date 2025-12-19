@@ -97,6 +97,7 @@ describe('Error Handling and Validation Flow', () => {
             await typePassword('signup-password-input', 'signup-password-toggle', 'weak123');
 
             await element(by.id('signup-terms-checkbox')).tap();
+            await element(by.id('signup-community-guidelines-checkbox')).tap();
             await element(by.id('signup-button')).tap();
 
             await dismissAlert();
@@ -116,6 +117,7 @@ describe('Error Handling and Validation Flow', () => {
             await typePassword('signup-password-input', 'signup-password-toggle', user.password);
 
             await element(by.id('signup-terms-checkbox')).tap();
+            await element(by.id('signup-community-guidelines-checkbox')).tap();
             await element(by.id('signup-button')).tap();
 
             await dismissAlert();
@@ -135,6 +137,7 @@ describe('Error Handling and Validation Flow', () => {
             await typePassword('signup-password-input', 'signup-password-toggle', user.password);
 
             await element(by.id('signup-terms-checkbox')).tap();
+            await element(by.id('signup-community-guidelines-checkbox')).tap();
             await element(by.id('signup-button')).tap();
 
             await dismissAlert();
@@ -189,6 +192,7 @@ describe('Error Handling and Validation Flow', () => {
             await typePassword('signup-password-input', 'signup-password-toggle', user.password);
 
             await element(by.id('signup-terms-checkbox')).tap();
+            await element(by.id('signup-community-guidelines-checkbox')).tap();
 
             // Wait for keyboard animation to settle completely
             await new Promise(resolve => setTimeout(resolve, 1000));

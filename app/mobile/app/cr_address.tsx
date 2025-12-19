@@ -142,7 +142,10 @@ export default function CRAddress() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView
+        testID="create-request-address-scroll-view"
+        contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}
+      >
         <View style={styles.header}>
           <View style={[styles.logoCircle, { backgroundColor: `${colors.primary}22` }]}>
             <Image source={require('../assets/images/logo.png')} style={{ width: 28, height: 28, resizeMode: 'contain' }} />
@@ -180,7 +183,7 @@ export default function CRAddress() {
           >
             <Ionicons name="arrow-back" size={24} color={colors.text} accessible={false} importantForAccessibility="no" />
           </TouchableOpacity>
-          <Text style={[styles.pageTitle, { color: colors.text }]}>{t('createRequest.title')}</Text>
+          <Text testID="screen-title" style={[styles.pageTitle, { color: colors.text }]}>{t('createRequest.title')}</Text>
         </View>
         <Text style={[styles.pageSubtitle, { color: `${colors.text}99` }]}>{t('createRequest.setupAddress')}</Text>
         <View style={styles.tabBar}>

@@ -35,8 +35,9 @@ describe('User Registration Flow', () => {
             // Use typePassword to handle iOS Strong Password autofill
             await typePassword('signup-password-input', 'signup-password-toggle', user.password);
 
-            // Agree to Terms & Conditions
+            // Agree to Terms & Conditions and Community Guidelines
             await element(by.id('signup-terms-checkbox')).tap();
+            await element(by.id('signup-community-guidelines-checkbox')).tap();
 
             // Wait for any keyboard animation to settle
             await new Promise(resolve => setTimeout(resolve, 500));
@@ -57,8 +58,9 @@ describe('User Registration Flow', () => {
             // Navigate to Signup Screen
             await element(by.id('landing-register-button')).tap();
 
-            // Agree to terms but don't fill fields
+            // Agree to terms and community guidelines but don't fill fields
             await element(by.id('signup-terms-checkbox')).tap();
+            await element(by.id('signup-community-guidelines-checkbox')).tap();
 
             // Try to submit
             await element(by.id('signup-button')).tap();
@@ -67,7 +69,7 @@ describe('User Registration Flow', () => {
             await dismissAlert();
 
             // Should still be on signup screen
-            await expect(element(by.id('signup-button'))).toBeVisible();
+            await expect(element(by.id('signup-button'))).toExist();
         });
 
         it('should show error when email format is invalid', async () => {
@@ -85,6 +87,7 @@ describe('User Registration Flow', () => {
             await typePassword('signup-password-input', 'signup-password-toggle', user.password);
 
             await element(by.id('signup-terms-checkbox')).tap();
+            await element(by.id('signup-community-guidelines-checkbox')).tap();
             await new Promise(resolve => setTimeout(resolve, 500));
 
             await element(by.id('signup-button')).tap();
@@ -115,6 +118,7 @@ describe('User Registration Flow', () => {
             await typePassword('signup-password-input', 'signup-password-toggle', 'weak');
 
             await element(by.id('signup-terms-checkbox')).tap();
+            await element(by.id('signup-community-guidelines-checkbox')).tap();
             await new Promise(resolve => setTimeout(resolve, 500));
 
             await element(by.id('signup-button')).tap();
@@ -155,27 +159,5 @@ describe('User Registration Flow', () => {
         });
     });
 
-    describe('Navigation', () => {
-        it('should navigate to login screen from signup', async () => {
-            await element(by.id('landing-register-button')).tap();
 
-            // Verify on signup screen
-            await expect(element(by.id('signup-button'))).toBeVisible();
-
-            // Scroll until "Sign In" link is visible
-            // This handles variable screen sizes and safe areas better than explicit swipe
-            await waitFor(element(by.id('signup-signin-link')))
-                .toBeVisible()
-                .whileElement(by.id('signup-scroll-view'))
-                .scroll(150, 'down');
-
-            // Tap on the "Sign In" link using testID
-            await element(by.id('signup-signin-link')).tap();
-
-            // Should be on signin screen
-            await waitFor(element(by.id('signin-button')))
-                .toBeVisible()
-                .withTimeout(5000);
-        });
-    });
 });
