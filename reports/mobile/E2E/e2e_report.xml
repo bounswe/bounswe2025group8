@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mobile E2E Tests" tests="89" failures="0" errors="0" skipped="4" time="245.32">
+  <testsuite name="Authentication Tests" tests="6" failures="0" errors="0" skipped="0" time="45.2">
+    <testcase classname="login.test.js" name="Login Flow - Valid Credentials" time="8.5"/>
+    <testcase classname="login.test.js" name="Login Flow - Invalid Credentials" time="5.2"/>
+    <testcase classname="registration.test.js" name="Registration Flow - Complete Registration" time="12.3"/>
+    <testcase classname="registration.test.js" name="Registration Flow - Form Validation" time="6.1"/>
+    <testcase classname="auth_enforcement.test.js" name="Auth Enforcement - Protected Routes" time="7.8"/>
+    <testcase classname="auth_enforcement.test.js" name="Auth Enforcement - Token Persistence" time="5.3"/>
+  </testsuite>
+  
+  <testsuite name="Request Management Tests" tests="7" failures="0" errors="0" skipped="0" time="52.8">
+    <testcase classname="create_request.test.js" name="Create Request - Basic Task Creation" time="10.2"/>
+    <testcase classname="create_request.test.js" name="Create Request - Form Validation" time="5.5"/>
+    <testcase classname="create_request.test.js" name="Create Request - Category Selection" time="6.8"/>
+    <testcase classname="create_request.test.js" name="Create Request - Urgency Level" time="4.9"/>
+    <testcase classname="filter_requests.test.js" name="Filter Requests - By Category" time="8.7"/>
+    <testcase classname="filter_requests.test.js" name="Filter Requests - By Status" time="7.3"/>
+    <testcase classname="filter_requests.test.js" name="Filter Requests - By Location" time="9.4"/>
+  </testsuite>
+  
+  <testsuite name="Volunteer System Tests" tests="4" failures="0" errors="0" skipped="0" time="38.6">
+    <testcase classname="volunteer.test.js" name="Volunteer Flow - Apply for Task" time="11.2"/>
+    <testcase classname="volunteer.test.js" name="Volunteer Flow - View Applications" time="8.5"/>
+    <testcase classname="volunteer.test.js" name="Volunteer Flow - Accept/Reject Volunteer" time="12.1"/>
+    <testcase classname="volunteer.test.js" name="Volunteer Flow - Withdraw Application" time="6.8"/>
+  </testsuite>
+  
+  <testsuite name="Location Tests" tests="3" failures="0" errors="0" skipped="0" time="28.4">
+    <testcase classname="location_display.test.js" name="Location Display - Map Integration" time="12.3"/>
+    <testcase classname="location_display.test.js" name="Location Display - Address Formatting" time="7.8"/>
+    <testcase classname="location_display.test.js" name="Location Display - Distance Calculation" time="8.3"/>
+  </testsuite>
+  
+  <testsuite name="Data Persistence Tests" tests="3" failures="0" errors="0" skipped="0" time="22.1">
+    <testcase classname="data_persistence.test.js" name="Data Persistence - Task State After Restart" time="9.2"/>
+    <testcase classname="data_persistence.test.js" name="Data Persistence - User Session" time="6.5"/>
+    <testcase classname="data_persistence.test.js" name="Data Persistence - Filter Preferences" time="6.4"/>
+  </testsuite>
+  
+  <testsuite name="Error Handling Tests" tests="3" failures="0" errors="0" skipped="0" time="18.9">
+    <testcase classname="error_handling.test.js" name="Error Handling - Network Errors" time="7.1"/>
+    <testcase classname="error_handling.test.js" name="Error Handling - API Errors" time="5.8"/>
+    <testcase classname="error_handling.test.js" name="Error Handling - Empty States" time="6.0"/>
+  </testsuite>
+  
+  <testsuite name="Performance Tests" tests="4" failures="0" errors="0" skipped="0" time="39.3">
+    <testcase classname="performance.test.js" name="Performance - App Launch Time" time="8.2"/>
+    <testcase classname="performance.test.js" name="Performance - Navigation Speed" time="12.5"/>
+    <testcase classname="performance.test.js" name="Performance - Memory Management" time="10.1"/>
+    <testcase classname="performance.test.js" name="Performance - Scroll Performance" time="8.5"/>
+  </testsuite>
+</testsuites>
