@@ -4,11 +4,13 @@ import { useTheme } from '@react-navigation/native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 
 export default function Terms() {
   const { colors } = useTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { t } = useTranslation();
 
   const handleAgree = async () => {
     try {
@@ -32,96 +34,85 @@ export default function Terms() {
         accessibilityRole="button"
         accessibilityLabel="Go back"
       >
-        <Ionicons name="arrow-back" size={24} color={colors.primary}  accessible={false} importantForAccessibility="no"/>
-        <Text style={[styles.backText, { color: colors.primary }]}>Back</Text>
+        <Ionicons name="arrow-back" size={24} color={colors.primary} accessible={false} importantForAccessibility="no" />
+        <Text style={[styles.backText, { color: colors.primary }]}>{t('common.back')}</Text>
       </TouchableOpacity>
 
-      <Text style={[styles.title, { color: colors.text }]}>Terms &amp; Conditions</Text>
-      <Text style={[styles.subtitle, { color: colors.text + '99' }]}>Last updated: 11 May 2025</Text>
+      <Text style={[styles.title, { color: colors.text }]}>{t('terms.title')}</Text>
+      <Text style={[styles.subtitle, { color: colors.text + '99' }]}>{t('terms.lastUpdated')}</Text>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.primary }]}>1. Data Confiscation</Text>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>{t('terms.section1.title')}</Text>
         <Text style={[styles.sectionText, { color: colors.text }]}>
-          • We will collect, store, and monetize every piece of data you generate: messages, photos, biometric readings, and even your thoughts (if we figure out how).{'\n'}
-          • Consent? You gave it by using the App. No take-backs.
+          {t('terms.section1.text')}
         </Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.primary }]}>2. No Legal Recourse</Text>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>{t('terms.section2.title')}</Text>
         <Text style={[styles.sectionText, { color: colors.text }]}>
-          • You cannot sue, dispute, protest, or complain in any forum, real or digital.{'\n'}
-          • All claims against us are waived forever.{'\n'}
-          • If you try to initiate legal action, we will countersue for betrayal of trust.
+          {t('terms.section2.text')}
         </Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.primary }]}>3. License to Abuse</Text>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>{t('terms.section3.title')}</Text>
         <Text style={[styles.sectionText, { color: colors.text }]}>
-          • We may modify, delete, or corrupt your Content at will, for any reason or no reason.{'\n'}
-          • You grant us a perpetual, irrevocable license to abuse your Content, profile, and reputation in marketing or blackmailer newsletters.
+          {t('terms.section3.text')}
         </Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.primary }]}>4. Required Cooperation</Text>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>{t('terms.section4.title')}</Text>
         <Text style={[styles.sectionText, { color: colors.text }]}>
-          • You must comply with any request to provide additional personal data, including but not limited to DNA samples, social security numbers.{'\n'}
-          • Failure to comply will result in account suspension and public shaming on our official Twitter account.
+          {t('terms.section4.text')}
         </Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.primary }]}>5. Unlimited Liability Shift</Text>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>{t('terms.section5.title')}</Text>
         <Text style={[styles.sectionText, { color: colors.text }]}>
-          • We assume zero liability for loss, theft, data breaches, emotional distress, or existential crisis caused by the App.{'\n'}
-          • Our only obligation is to send you one apology emoji if we feel like it.
+          {t('terms.section5.text')}
         </Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.primary }]}>6. Mandatory Arbitration</Text>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>{t('terms.section6.title')}</Text>
         <Text style={[styles.sectionText, { color: colors.text }]}>
-          • Any disputes will be settled by a secret tribunal composed entirely of our board members.{'\n'}
-          • Decisions are final and binding.{'\n'}
-          • Appeals are strictly prohibited.
+          {t('terms.section6.text')}
         </Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.primary }]}>7. Changes Without Notice</Text>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>{t('terms.section7.title')}</Text>
         <Text style={[styles.sectionText, { color: colors.text }]}>
-          • We may alter these Terms at any time, for any reason, without notifying you.{'\n'}
-          • Continued use constitutes acceptance of the new, possibly more draconian, Terms.
+          {t('terms.section7.text')}
         </Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.primary }]}>8. Termination Rights</Text>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>{t('terms.section8.title')}</Text>
         <Text style={[styles.sectionText, { color: colors.text }]}>
-          • We may terminate or suspend your account at our sole discretion.{'\n'}
-          • This will permanently block access to any content or funds you've entrusted to the App.
+          {t('terms.section8.text')}
         </Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={[styles.sectionTitle, { color: colors.primary }]}>9. Governing Law</Text>
+        <Text style={[styles.sectionTitle, { color: colors.primary }]}>{t('terms.section9.title')}</Text>
         <Text style={[styles.sectionText, { color: colors.text }]}>
-          • These Terms are governed by the laws of Banana Republic.{'\n'}
-          • You waive any jurisdictional immunity or local consumer protection rights.
+          {t('terms.section9.text')}
         </Text>
       </View>
 
-      <TouchableOpacity 
-        style={[styles.agreeButton, { backgroundColor: colors.primary }]} 
+      <TouchableOpacity
+        style={[styles.agreeButton, { backgroundColor: colors.primary }]}
         onPress={handleAgree}
         accessible
 
         accessibilityRole="button"
         accessibilityLabel="Agree to terms"
       >
-        <Text style={styles.agreeButtonText}>I Agree</Text>
+        <Text style={styles.agreeButtonText}>{t('terms.agreeButton')}</Text>
       </TouchableOpacity>
     </ScrollView>
   );

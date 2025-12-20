@@ -70,4 +70,9 @@ def check_comment_badges(sender, instance, created, **kwargs):
     """Check and award badges when a comment is created"""
     if created:
         user = instance.user
+        # Award badges
         BadgeService.check_icebreaker(user)
+        
+        # Send notifications
+        from core.models import Notification
+        Notification.send_comment_added_notification(instance)

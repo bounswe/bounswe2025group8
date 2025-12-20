@@ -4,10 +4,13 @@ from core.models import TaskReport, UserReport, ReportType, ReportStatus, Task, 
 
 class TaskNestedSerializer(serializers.ModelSerializer):
     """Nested serializer for Task in reports"""
+    creator_id = serializers.IntegerField(source='creator.id', read_only=True)
+    creator_username = serializers.CharField(source='creator.username', read_only=True)
+
     class Meta:
         model = Task
-        fields = ['id', 'title', 'description', 'created_at']
-        read_only_fields = ['id', 'title', 'description', 'created_at']
+        fields = ['id', 'title', 'description', 'created_at', 'creator_id', 'creator_username']
+        read_only_fields = ['id', 'title', 'description', 'created_at', 'creator_id', 'creator_username']
 
 
 class TaskReportSerializer(serializers.ModelSerializer):

@@ -12,16 +12,21 @@ import {
   Alert,
   SafeAreaView,
   Dimensions,
-  Keyboard
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTheme, useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAppTheme } from '../theme/ThemeProvider';
-import { getTaskDetails, listVolunteers, type Task, type Volunteer, volunteerForTask, withdrawVolunteer, createReview, getTaskReviews, type Review, type UserProfile, getTaskPhotos, BACKEND_BASE_URL, type Photo } from '../lib/api';
+import { getTaskDetails, listVolunteers, type Task, type Volunteer, volunteerForTask, withdrawVolunteer, createReview, getTaskReviews, type Review, type UserProfile, getTaskPhotos, BACKEND_BASE_URL, type Photo, getTaskComments, createTaskComment, updateComment, deleteComment, submitReport, type Comment } from '../lib/api';
+import { ReportModal } from '../components/ReportModal';
 import { useAuth } from '../lib/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { ThemeTokens } from '../constants/Colors';
+import CommentCard from '../components/ui/CommentCard';
+import { useTranslation } from 'react-i18next';
 
 export default function RequestDetailsVolunteer() {
   const params = useLocalSearchParams();
@@ -29,6 +34,7 @@ export default function RequestDetailsVolunteer() {
   const { tokens: themeColors } = useAppTheme();
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const id = params.id ? Number(params.id) : null;
   const [request, setRequest] = useState<Task | null>(null);
@@ -50,6 +56,12 @@ export default function RequestDetailsVolunteer() {
   const [volunteerRecord, setVolunteerRecord] = useState<{ id: number; status?: string } | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [photosLoading, setPhotosLoading] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [submittingComment, setSubmittingComment] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
   const storageKey = id && user?.id ? `volunteer-record-${id}-${user.id}` : null;
   const legacyStorageKey = id ? `volunteer-record-${id}` : null;
   const volunteerRecordRef = useRef<{ id: number; status?: string } | null>(null);
@@ -81,7 +93,7 @@ export default function RequestDetailsVolunteer() {
 
   const fetchRequestDetails = useCallback(async () => {
     if (!id) {
-      setError('Request not found.');
+      setError(t('requestDetails.notFound'));
       setLoading(false);
       return;
     }
@@ -193,6 +205,20 @@ export default function RequestDetailsVolunteer() {
       } finally {
         setPhotosLoading(false);
       }
+
+      // Fetch comments for the task
+      try {
+        setCommentsLoading(true);
+        const commentsResponse = await getTaskComments(id);
+        if (commentsResponse.status === 'success') {
+          setComments(commentsResponse.data.comments || []);
+        }
+      } catch (commentError: any) {
+        console.warn('Error fetching comments:', commentError.message);
+        setComments([]);
+      } finally {
+        setCommentsLoading(false);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load request.';
       setError(message);
@@ -293,7 +319,7 @@ export default function RequestDetailsVolunteer() {
 
   const handleOpenReviewModal = () => {
     if (reviewableParticipants.length === 0) {
-      Alert.alert('No Participants', 'There are no participants to review.');
+      Alert.alert(t('common.error'), t('requestDetails.noParticipants'));
       return;
     }
     setCurrentReviewIndex(0);
@@ -320,15 +346,15 @@ export default function RequestDetailsVolunteer() {
 
   const handleSubmitReview = async () => {
     if (!accuracyOfRequest || !communication || !safetyAndPreparedness) {
-      Alert.alert('Ratings Required', 'Please provide a rating for all categories.');
+      Alert.alert(t('requestDetails.ratingsRequired'), t('requestDetails.ratingsRequiredMsg'));
       return;
     }
     if (!reviewText.trim()) {
-      Alert.alert('Review Required', 'Please write a review comment.');
+      Alert.alert(t('requestDetails.reviewRequired'), t('requestDetails.reviewRequiredMsg'));
       return;
     }
     if (!id || !request || currentReviewIndex >= reviewableParticipants.length) {
-      Alert.alert('Error', 'Unable to submit review. Missing information.');
+      Alert.alert(t('common.error'), t('requestDetails.submitReviewError'));
       return;
     }
 
@@ -383,10 +409,10 @@ export default function RequestDetailsVolunteer() {
           setReviewText('');
         }
 
-        Alert.alert('Success', `Review submitted for ${currentParticipant.name}!`);
+        Alert.alert(t('common.success'), t('requestDetails.reviewSubmittedFor', { name: currentParticipant.name }));
       } else {
         // All participants reviewed
-        Alert.alert('Success', 'All reviews submitted successfully!');
+        Alert.alert(t('common.success'), t('requestDetails.allReviewsSubmitted'));
         setModalVisible(false);
         setRating(0);
         setAccuracyOfRequest(0);
@@ -398,8 +424,8 @@ export default function RequestDetailsVolunteer() {
         await fetchRequestDetails();
       }
     } catch (err: any) {
-      const errorMessage = err?.message || 'Failed to submit review. Please try again.';
-      Alert.alert('Error', errorMessage);
+      const errorMessage = err?.message || t('requestDetails.submitReviewErrorMsg');
+      Alert.alert(t('common.error'), errorMessage);
       console.error('Review submission error:', err);
     } finally {
       setSubmittingReview(false);
@@ -408,22 +434,22 @@ export default function RequestDetailsVolunteer() {
 
   const handleBeVolunteer = async () => {
     if (!user) {
-      Alert.alert('Login Required', 'Please sign in to volunteer for tasks.', [
-        { text: 'OK', onPress: () => router.push('/signin') },
+      Alert.alert(t('requestDetails.loginRequired'), t('requestDetails.loginRequiredMsg'), [
+        { text: t('common.ok'), onPress: () => router.push('/signin') },
       ]);
       return;
     }
     if (!request) return;
 
     if (statusNormalized !== 'POSTED') {
-      Alert.alert('Request Closed', 'This request is not accepting new volunteers right now.');
+      Alert.alert(t('requestDetails.requestClosed'), t('requestDetails.requestClosedMsg'));
       return;
     }
 
     setActionLoading(true);
     try {
       const response = await volunteerForTask(request.id);
-      Alert.alert('Success', response.message || 'You have successfully volunteered for this task!');
+      Alert.alert(t('common.success'), t('requestDetails.volunteerSuccess'));
       setHasVolunteered(true);
 
       const recordPayload = (response as any)?.data ?? response.data;
@@ -444,13 +470,13 @@ export default function RequestDetailsVolunteer() {
 
       await fetchRequestDetails();
     } catch (err: any) {
-      const errorMessage = err?.response?.data?.message || err?.message || 'Could not volunteer for the task. Please try again.';
+      const errorMessage = err?.response?.data?.message || err?.message || t('requestDetails.volunteerError');
       if (errorMessage.toLowerCase().includes('invalid credentials')) {
-        Alert.alert('Session expired', 'Please sign in again to continue.');
+        Alert.alert(t('requestDetails.sessionExpired'), t('requestDetails.sessionExpiredMsg'));
       } else if (errorMessage.toLowerCase().includes('not available')) {
-        Alert.alert('Request Closed', 'This request is currently assigned. The creator must reopen it to accept new volunteers.');
+        Alert.alert(t('requestDetails.requestClosed'), t('requestDetails.requestAssignedMsg'));
       } else {
-        Alert.alert('Error', errorMessage);
+        Alert.alert(t('common.error'), errorMessage);
       }
     } finally {
       setActionLoading(false);
@@ -459,14 +485,14 @@ export default function RequestDetailsVolunteer() {
 
   const handleWithdraw = async () => {
     if (!volunteerRecord?.id) {
-      Alert.alert('Unable to withdraw', 'Could not determine your volunteer application.');
+      Alert.alert(t('requestDetails.withdrawError'), t('requestDetails.withdrawErrorMsg'));
       return;
     }
 
     setActionLoading(true);
     try {
       const response = await withdrawVolunteer(volunteerRecord.id);
-      Alert.alert('Success', response.message || 'Volunteer request withdrawn successfully.');
+      Alert.alert(t('common.success'), t('requestDetails.withdrawSuccess'));
       const updatedRecord = { id: volunteerRecord.id, status: 'WITHDRAWN' as const };
       setHasVolunteered(false);
       setVolunteerRecord(updatedRecord);
@@ -479,9 +505,122 @@ export default function RequestDetailsVolunteer() {
       }
       await fetchRequestDetails();
     } catch (err: any) {
-      Alert.alert('Error', err.message || 'Could not withdraw volunteer request. Please try again.');
+      Alert.alert(t('common.error'), err.message || t('requestDetails.withdrawFail'));
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const handleSubmitComment = async () => {
+    if (!commentText.trim()) {
+      Alert.alert(t('requestDetails.commentRequired'), t('requestDetails.commentRequiredMsg'));
+      return;
+    }
+
+    if (!id || !user) {
+      Alert.alert(t('common.error'), t('requestDetails.submitCommentError'));
+      return;
+    }
+
+    setSubmittingComment(true);
+    try {
+      if (editingCommentId) {
+        // Update existing comment
+        const response = await updateComment(editingCommentId, commentText);
+
+        // Update the comment in the list
+        setComments((prev) =>
+          prev.map((c) => (c.id === editingCommentId ? response.data : c))
+        );
+
+        // Clear editing state
+        setEditingCommentId(null);
+      } else {
+        // Create new comment
+        const response = await createTaskComment(id, commentText);
+
+        // Add the new comment to the end of the list (oldest to newest order)
+        setComments((prev) => [...prev, response.data]);
+
+        // Scroll to bottom to show the new comment
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      }
+
+      // Clear the input
+      setCommentText('');
+
+      // Dismiss keyboard
+      Keyboard.dismiss();
+    } catch (err: any) {
+      const errorMessage = err?.message || t('requestDetails.commentError', { action: editingCommentId ? 'update' : 'submit' });
+      Alert.alert(t('common.error'), errorMessage);
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+
+  const handleEditComment = (comment: Comment) => {
+    setCommentText(comment.content);
+    setEditingCommentId(comment.id);
+    // Scroll to bottom to show the input field
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  };
+
+  const handleCancelEdit = () => {
+    setCommentText('');
+    setEditingCommentId(null);
+  };
+
+  const handleDeleteComment = (commentId: number) => {
+    Alert.alert(
+      t('requestDetails.deleteCommentTitle'),
+      t('requestDetails.deleteCommentMsg'),
+      [
+        {
+          text: t('common.cancel'),
+          style: 'cancel',
+        },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteComment(commentId);
+
+              // Remove the comment from the list
+              setComments((prev) => prev.filter((c) => c.id !== commentId));
+
+              // Clear editing state if deleting the comment being edited
+              if (editingCommentId === commentId) {
+                setCommentText('');
+                setEditingCommentId(null);
+              }
+            } catch (err: any) {
+              const errorMessage = err?.message || t('requestDetails.deleteCommentError');
+              Alert.alert(t('common.error'), errorMessage);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+
+
+  const handleReportTask = async (reportType: string, description: string) => {
+    if (!id) return;
+    try {
+      await submitReport(id, reportType, description);
+      Alert.alert(t('common.success'), t('requestDetails.reportSuccess'));
+      setReportModalVisible(false);
+    } catch (err: any) {
+      Alert.alert(t('common.error'), err.message || t('requestDetails.reportError'));
     }
   };
 
@@ -497,7 +636,7 @@ export default function RequestDetailsVolunteer() {
   if (error || !request) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: themeColors.background }}>
-        <Text style={{ color: themeColors.pink, textAlign: 'center', fontSize: 18 }}>{error || 'Request not found.'}</Text>
+        <Text style={{ color: themeColors.pink, textAlign: 'center', fontSize: 18 }}>{error || t('requestDetails.notFound')}</Text>
       </View>
     );
   }
@@ -507,10 +646,10 @@ export default function RequestDetailsVolunteer() {
     request.urgency_level === 3 ? 'High' : request.urgency_level === 2 ? 'Medium' : request.urgency_level === 1 ? 'Low' : 'Medium';
   const statusDisplay = request.status_display || request.status || '';
   const statusDisplayLower = statusDisplay.toLowerCase();
-  const requesterName = request.creator?.name || 'Unknown';
-  const requestTitleForA11y = request.title || 'this request';
+  const requesterName = request.creator?.name || t('requestDetails.unknown');
+  const requestTitleForA11y = request.title || t('requestDetails.thisRequest');
   const datetime = request.deadline ? new Date(request.deadline).toLocaleString() : '';
-  const locationDisplay = request.location || 'N/A';
+  const locationDisplay = request.location || t('requestDetails.na');
   const requiredPerson = request.volunteer_number || 1;
   const phoneNumber = request.creator?.phone_number || '';
   const isCreatorView = user?.id === request.creator?.id;
@@ -534,22 +673,18 @@ export default function RequestDetailsVolunteer() {
   const volunteerStatusMessage = !isCreatorView && (userAssigned || ['pending', 'accepted', 'rejected', 'withdrawn'].includes(volunteerStatusLabel ?? ''))
     ? (() => {
       if (userAssigned || volunteerStatusLabel === 'accepted') {
-        console.log("userAssigned", userAssigned);
-        console.log("volunteerStatusLabel", volunteerStatusLabel);
-        console.log(request);
-        console.log(user);
-        return 'You have been assigned to this request.';
+        return t('requestDetails.statusAssigned');
       }
       if (volunteerStatusLabel === 'rejected') {
-        return 'Your volunteer request was declined.';
+        return t('requestDetails.statusRejected');
       }
       if (volunteerStatusLabel === 'withdrawn') {
-        return 'You withdrew your volunteer request. Contact the requester if you wish to volunteer again.';
+        return t('requestDetails.statusWithdrawn');
       }
       if (volunteerStatusLabel === 'pending') {
-        return 'Your volunteer request is pending approval.';
+        return t('requestDetails.statusPending');
       }
-      return 'You have volunteered for this request.';
+      return t('requestDetails.statusVolunteered');
     })()
     : null;
 
@@ -558,8 +693,6 @@ export default function RequestDetailsVolunteer() {
     volunteerRecord?.id &&
     isTaskOpen &&
     volunteerStatusLabel === 'pending';
-
-  console.log('DEBUG: showWithdrawButton', !isCreator, volunteerRecord?.id, isTaskOpen, volunteerStatusLabel);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background }}>
@@ -595,7 +728,7 @@ export default function RequestDetailsVolunteer() {
           <Text style={[styles.title, { color: themeColors.text }]}>{request.title}</Text>
         </View>
         <Text style={[styles.categoryLabel, { color: themeColors.primary, backgroundColor: themeColors.lightPurple }]}>
-          {request.category_display || request.category}
+          {request.category === 'Other' || request.category === 'OTHER' ? t('categories.OTHER') : (request.category_display || request.category)}
         </Text>
         <Text
           style={[
@@ -608,11 +741,41 @@ export default function RequestDetailsVolunteer() {
             },
           ]}
         >
-          {statusDisplayLower === 'past' ? statusDisplay : `${urgencyLevelDisplay} Urgency`}
+          {statusDisplayLower === 'past' ? statusDisplay : `${t('urgency.' + urgencyLevelDisplay.toLowerCase())} ${t('requestDetails.urgencySuffix')}`}
         </Text>
       </View>
 
-      <ScrollView contentContainerStyle={[styles.container, { backgroundColor: themeColors.background }]}>
+      <View style={{ position: 'absolute', top: 56, right: 16, zIndex: 10 }}>
+        {!isCreator && (
+          <TouchableOpacity
+            onPress={() => setReportModalVisible(true)}
+            style={{
+              backgroundColor: themeColors.card,
+              padding: 8,
+              borderRadius: 20,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+              elevation: 3,
+            }}
+          >
+            <Ionicons name="flag-outline" size={20} color={themeColors.error} />
+          </TouchableOpacity>
+        )}
+      </View>
+      <ReportModal
+        visible={reportModalVisible}
+        onClose={() => setReportModalVisible(false)}
+        onSubmit={handleReportTask}
+        targetName={request?.title || 'Task'}
+        isUserReport={false}
+      />
+
+      <ScrollView
+        ref={scrollViewRef}
+        contentContainerStyle={[styles.container, { backgroundColor: themeColors.background, paddingBottom: user ? 100 : 40 }]}
+      >
         {/* Show first photo as hero image if available */}
         {photos.length > 0 && !photosLoading && (
           <>
@@ -659,7 +822,7 @@ export default function RequestDetailsVolunteer() {
                           style={styles.smallThumbnailImage}
                           resizeMode="cover"
                           accessibilityRole="image"
-                          accessibilityLabel={`Additional photo ${index + 2} for ${requestTitleForA11y}`}
+                          accessibilityLabel={t('requestDetails.additionalPhotoA11y', { index: index + 2, title: requestTitleForA11y })}
                         />
                       </View>
                     );
@@ -683,7 +846,7 @@ export default function RequestDetailsVolunteer() {
             accessible
 
             accessibilityRole="button"
-            accessibilityLabel={`View ${requesterName}'s profile`}
+            accessibilityLabel={t('requestDetails.viewProfile', { name: requesterName })}
             accessibilityState={{ disabled: !request.creator?.id }}
           >
             {(() => {
@@ -691,13 +854,6 @@ export default function RequestDetailsVolunteer() {
               const absolutePhotoUrl = photoUrl
                 ? (photoUrl.startsWith('http') ? photoUrl : `${BACKEND_BASE_URL}${photoUrl}`)
                 : null;
-              console.log('[v-request-details] Rendering avatar Image:', {
-                creatorId: request.creator?.id,
-                creatorName: request.creator?.name,
-                photoUrl,
-                absolutePhotoUrl,
-                hasPhoto: !!photoUrl
-              });
               return (
                 <Image
                   source={
@@ -707,9 +863,7 @@ export default function RequestDetailsVolunteer() {
                   }
                   style={[styles.avatar, { backgroundColor: themeColors.gray }]}
                   accessibilityRole="image"
-                  accessibilityLabel={`Profile photo of ${requesterName}`}
-                  onError={(error) => console.log('[v-request-details] Image load error:', error.nativeEvent)}
-                  onLoad={() => console.log('[v-request-details] Image loaded successfully for:', photoUrl)}
+                  accessibilityLabel={t('requestDetails.profilePhotoOf', { name: requesterName })}
                 />
               );
             })()}
@@ -722,13 +876,13 @@ export default function RequestDetailsVolunteer() {
             <DetailRow icon="location-outline" value={locationDisplay} themeColors={themeColors} />
             <DetailRow
               icon="people-circle-outline"
-              value={`Volunteers needed: ${requiredPerson}`}
+              value={t('requestDetails.volunteersNeeded', { count: requiredPerson })}
               themeColors={themeColors}
             />
             {!isTaskOpen && (
               <DetailRow
                 icon="remove-circle-outline"
-                value="This request is not accepting new volunteers at the moment."
+                value={t('requestDetails.requestClosedMsg')}
                 themeColors={themeColors}
               />
             )}
@@ -763,7 +917,7 @@ export default function RequestDetailsVolunteer() {
         >
           {statusDisplayLower === 'past' && request.assignee
             ? `☆ ${(Number((request.assignee as any)?.rating) || 0).toFixed(1)}`
-            : statusDisplay}
+            : t('requestDetails.status.' + statusDisplayLower, { defaultValue: statusDisplay })}
         </Text>
 
         {actionLoading ? (
@@ -776,8 +930,8 @@ export default function RequestDetailsVolunteer() {
               style={[styles.actionButton, { backgroundColor: themeColors.pink }]}
               onPress={() => {
                 if (!user) {
-                  Alert.alert('Login Required', 'Please sign in to rate/review.', [
-                    { text: 'OK', onPress: () => router.push('/signin') },
+                  Alert.alert(t('requestDetails.loginRequired'), t('requestDetails.loginRequiredRate'), [
+                    { text: t('common.ok'), onPress: () => router.push('/signin') },
                   ]);
                   return;
                 }
@@ -786,13 +940,13 @@ export default function RequestDetailsVolunteer() {
               accessible
 
               accessibilityRole="button"
-              accessibilityLabel="Rate and review participants"
+              accessibilityLabel={t('requestDetails.rateAndReviewA11y')}
               testID="volunteer-review-button"
             >
               <Text style={[styles.buttonText, { color: themeColors.card }]}>
                 {hasReviewedAllParticipants()
-                  ? `Edit Rate & Review ${reviewableParticipants.length === 1 ? 'Participant' : 'Participants'}`
-                  : `Rate & Review ${reviewableParticipants.length === 1 ? 'Participant' : 'Participants'}`
+                  ? t('requestDetails.editRateReview', { count: reviewableParticipants.length })
+                  : t('requestDetails.rateReview', { count: reviewableParticipants.length })
                 }
               </Text>
             </TouchableOpacity>
@@ -804,11 +958,11 @@ export default function RequestDetailsVolunteer() {
               accessible
 
               accessibilityRole="button"
-              accessibilityLabel="Volunteer for this request"
+              accessibilityLabel={t('requestDetails.volunteerA11y')}
               accessibilityState={{ disabled: actionLoading }}
               testID="volunteer-button"
             >
-              <Text style={[styles.buttonText, { color: themeColors.card }]}>Be a Volunteer</Text>
+              <Text style={[styles.buttonText, { color: themeColors.card }]}>{t('requestDetails.beVolunteer')}</Text>
             </TouchableOpacity>
           ) : null)
         )}
@@ -822,11 +976,11 @@ export default function RequestDetailsVolunteer() {
             accessible
 
             accessibilityRole="button"
-            accessibilityLabel="Withdraw volunteer request"
+            accessibilityLabel={t('requestDetails.withdrawA11y')}
             accessibilityState={{ disabled: actionLoading }}
             testID="volunteer-withdraw-button"
           >
-            <Text style={[styles.buttonText, { color: themeColors.error }]}>Withdraw Volunteer Request</Text>
+            <Text style={[styles.buttonText, { color: themeColors.error }]}>{t('requestDetails.withdrawVolunteerRequest')}</Text>
           </TouchableOpacity>
         )}
 
@@ -837,12 +991,101 @@ export default function RequestDetailsVolunteer() {
             accessible
 
             accessibilityRole="button"
-            accessibilityLabel="View requester profile"
+            accessibilityLabel={t('requestDetails.viewRequesterProfileA11y')}
           >
-            <Text style={[styles.buttonText, { color: themeColors.primary }]}>View Requester Profile</Text>
+            <Text style={[styles.buttonText, { color: themeColors.primary }]}>{t('requestDetails.viewRequesterProfile')}</Text>
           </TouchableOpacity>
         )}
+
+        {/* Comments Section */}
+        <View style={[styles.detailsContainer, { backgroundColor: themeColors.card }]}>
+          <Text style={[styles.sectionTitle, { color: themeColors.text }]}>{t('requestDetails.comments')}</Text>
+          {commentsLoading ? (
+            <ActivityIndicator size="small" color={themeColors.primary} style={{ marginVertical: 16 }} />
+          ) : comments.length === 0 ? (
+            <Text style={[styles.descriptionText, { color: themeColors.textMuted }]}>{t('requestDetails.noComments')}</Text>
+          ) : (
+            comments.map((comment) => (
+              <CommentCard
+                key={comment.id}
+                userName={`${comment.user.name} ${comment.user.surname}`}
+                content={comment.content}
+                timestamp={comment.timestamp}
+                avatarUrl={comment.user.profile_photo || comment.user.photo}
+                isOwnComment={comment.user.id === user?.id}
+                onEdit={() => handleEditComment(comment)}
+                onDelete={() => handleDeleteComment(comment.id)}
+                userId={comment.user.id}
+                onProfilePress={() => router.push({
+                  pathname: '/profile',
+                  params: { userId: comment.user.id }
+                })}
+                userRating={comment.user.rating}
+                isRequester={comment.user.id === request?.creator?.id}
+                completedTaskCount={comment.user.completed_task_count}
+              />
+            ))
+          )}
+        </View>
       </ScrollView>
+
+      {/* Comment Input Section - Fixed at Bottom */}
+      {user && (
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        >
+          <View style={[styles.commentInputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border }]}>
+            {editingCommentId && (
+              <View style={[styles.editingBanner, { backgroundColor: themeColors.lightPurple }]}>
+                <Text style={[styles.editingText, { color: themeColors.primary }]}>{t('requestDetails.editingComment')}</Text>
+                <TouchableOpacity onPress={handleCancelEdit}>
+                  <Ionicons name="close" size={20} color={themeColors.textMuted} />
+                </TouchableOpacity>
+              </View>
+            )}
+            <View style={styles.inputRow}>
+              <TextInput
+                style={[
+                  styles.commentInput,
+                  {
+                    borderColor: themeColors.border,
+                    color: themeColors.text,
+                    backgroundColor: themeColors.background,
+                  },
+                ]}
+                placeholder={t('requestDetails.addComment')}
+                placeholderTextColor={themeColors.textMuted}
+                value={commentText}
+                onChangeText={setCommentText}
+                multiline
+                editable={!submittingComment}
+                accessibilityLabel={t('requestDetails.commentInputA11y')}
+              />
+              <TouchableOpacity
+                style={[
+                  styles.sendButton,
+                  {
+                    backgroundColor: submittingComment ? themeColors.border : themeColors.primary,
+                  },
+                ]}
+                onPress={handleSubmitComment}
+                disabled={submittingComment || !commentText.trim()}
+                accessible
+                accessibilityRole="button"
+                accessibilityLabel={editingCommentId ? t('requestDetails.updateCommentA11y') : t('requestDetails.sendCommentA11y')}
+                accessibilityState={{ disabled: submittingComment || !commentText.trim() }}
+              >
+                {submittingComment ? (
+                  <ActivityIndicator size="small" color={themeColors.card} />
+                ) : (
+                  <Ionicons name={editingCommentId ? "checkmark" : "send"} size={20} color={themeColors.card} />
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      )}
 
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View
@@ -857,15 +1100,15 @@ export default function RequestDetailsVolunteer() {
                   const currentParticipant = reviewableParticipants[currentReviewIndex];
                   const existingReview = getExistingReviewForParticipant(currentParticipant?.id);
                   return existingReview
-                    ? `Edit Rate & Review ${currentParticipant?.name || 'Participant'}`
-                    : `Rate & Review ${currentParticipant?.name || 'Participant'}`;
+                    ? t('requestDetails.editRateReviewParticipant', { name: currentParticipant?.name || t('requestDetails.participant') })
+                    : t('requestDetails.rateReviewParticipant', { name: currentParticipant?.name || t('requestDetails.participant') });
                 })()
-                : 'Rate & Review'
+                : t('requestDetails.rateAndReview')
               }
             </Text>
             {reviewableParticipants.length > 1 && (
               <Text style={[styles.modalSubtitle, { color: themeColors.textMuted }]}>
-                {currentReviewIndex + 1} of {reviewableParticipants.length}
+                {t('requestDetails.reviewProgress', { current: currentReviewIndex + 1, total: reviewableParticipants.length })}
               </Text>
             )}
             <TextInput
@@ -873,7 +1116,7 @@ export default function RequestDetailsVolunteer() {
                 styles.modalInput,
                 { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.background },
               ]}
-              placeholder="Leave your review..."
+              placeholder={t('requestDetails.writeReview')}
               placeholderTextColor={themeColors.textMuted}
               multiline
               returnKeyType="done"
@@ -881,10 +1124,10 @@ export default function RequestDetailsVolunteer() {
               onSubmitEditing={Keyboard.dismiss}
               value={reviewText}
               onChangeText={setReviewText}
-              accessibilityLabel="Review input"
+              accessibilityLabel={t('requestDetails.reviewInputA11y')}
             />
             <View style={styles.starRow}>
-              <Text style={[styles.categoryLabel, { color: themeColors.text, marginBottom: 4 }]}>Accuracy of Request</Text>
+              <Text style={[styles.categoryLabel, { color: themeColors.text, marginBottom: 4 }]}>{t('requestDetails.accuracyOfRequest')}</Text>
               <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
                 {[1, 2, 3, 4, 5].map((star) => (
                   <TouchableOpacity
@@ -901,7 +1144,7 @@ export default function RequestDetailsVolunteer() {
               </View>
             </View>
             <View style={styles.starRow}>
-              <Text style={[styles.categoryLabel, { color: themeColors.text, marginBottom: 4 }]}>Communication</Text>
+              <Text style={[styles.categoryLabel, { color: themeColors.text, marginBottom: 4 }]}>{t('requestDetails.communication')}</Text>
               <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
                 {[1, 2, 3, 4, 5].map((star) => (
                   <TouchableOpacity
@@ -918,7 +1161,7 @@ export default function RequestDetailsVolunteer() {
               </View>
             </View>
             <View style={styles.starRow}>
-              <Text style={[styles.categoryLabel, { color: themeColors.text, marginBottom: 4 }]}>Safety & Preparedness</Text>
+              <Text style={[styles.categoryLabel, { color: themeColors.text, marginBottom: 4 }]}>{t('requestDetails.safetyAndPreparedness')}</Text>
               <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
                 {[1, 2, 3, 4, 5].map((star) => (
                   <TouchableOpacity
@@ -950,10 +1193,10 @@ export default function RequestDetailsVolunteer() {
                 accessible
 
                 accessibilityRole="button"
-                accessibilityLabel="Cancel review"
+                accessibilityLabel={t('requestDetails.cancelReviewA11y')}
                 accessibilityState={{ disabled: submittingReview }}
               >
-                <Text style={{ color: themeColors.text }}>Cancel</Text>
+                <Text style={{ color: themeColors.text }}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: themeColors.pink }]}
@@ -962,14 +1205,14 @@ export default function RequestDetailsVolunteer() {
                 accessible
 
                 accessibilityRole="button"
-                accessibilityLabel={currentReviewIndex < reviewableParticipants.length - 1 ? 'Next participant' : 'Submit review'}
+                accessibilityLabel={currentReviewIndex < reviewableParticipants.length - 1 ? t('requestDetails.nextParticipantA11y') : t('requestDetails.submitReviewA11y')}
                 accessibilityState={{ disabled: submittingReview }}
               >
                 {submittingReview ? (
                   <ActivityIndicator size="small" color={themeColors.card} />
                 ) : (
                   <Text style={{ color: themeColors.card }}>
-                    {currentReviewIndex < reviewableParticipants.length - 1 ? 'Next' : 'Submit'}
+                    {currentReviewIndex < reviewableParticipants.length - 1 ? t('common.next') : t('requestDetails.submit')}
                   </Text>
                 )}
               </TouchableOpacity>
@@ -1195,5 +1438,43 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 12,
     borderWidth: 1,
+  },
+  commentInputContainer: {
+    borderTopWidth: 1,
+    paddingBottom: 20,
+  },
+  editingBanner: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  editingText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  commentInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    maxHeight: 100,
+    marginRight: 8,
+    fontSize: 14,
+  },
+  sendButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

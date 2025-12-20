@@ -20,6 +20,8 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { register } from '../lib/api';
+import { useTranslation } from 'react-i18next';
+import { ThemeTokens } from '@/constants/Colors';
 
 const validatePassword = (password: string) => {
   const hasUpperCase = /[A-Z]/.test(password);
@@ -43,15 +45,18 @@ const validatePassword = (password: string) => {
 export default function SignUp() {
   const router = useRouter();
   const { colors } = useTheme();
+  const themeColors = colors as unknown as ThemeTokens;
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [agree, setAgree] = useState(false);
+  const [agreeCommunityGuidelines, setAgreeCommunityGuidelines] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPasswordRequirements, setShowPasswordRequirements] = useState(false);
+  const { t } = useTranslation();
 
   useFocusEffect(
     useCallback(() => {
@@ -66,30 +71,38 @@ export default function SignUp() {
           console.error("Failed to read terms agreement from AsyncStorage", e);
         }
       };
+      const checkCommunityGuidelinesAgreement = async () => {
+        try {
+          const agreed = await AsyncStorage.getItem('communityGuidelinesAgreedV1');
+          if (agreed === 'true') {
+            setAgreeCommunityGuidelines(true);
+            await AsyncStorage.removeItem('communityGuidelinesAgreedV1');
+          }
+        } catch (e) {
+          console.error("Failed to read community guidelines agreement from AsyncStorage", e);
+        }
+      };
       checkTermsAgreement();
+      checkCommunityGuidelinesAgreement();
     }, [])
   );
 
   const handleSignUp = async () => {
     if (!fullName || !username || !phone || !email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert(t('common.error'), t('auth.fillAllFields'));
       return;
     }
 
-    if (!agree) {
-      Alert.alert('Error', 'Please agree to the Terms & Conditions');
+    if (!agree || !agreeCommunityGuidelines) {
+      Alert.alert(t('common.error'), t('auth.agreeTerms'));
       return;
     }
 
     const passwordValidation = validatePassword(password);
     if (!passwordValidation.isValid) {
-      let errorMessage = 'Password must ';
-      if (passwordValidation.errors.length) errorMessage += 'be at least 8 characters long';
-      else if (passwordValidation.errors.uppercase) errorMessage += 'include an uppercase letter';
-      else if (passwordValidation.errors.lowercase) errorMessage += 'include a lowercase letter';
-      else if (passwordValidation.errors.number) errorMessage += 'include a number';
-      else if (passwordValidation.errors.special) errorMessage += 'include a special character';
-      Alert.alert('Error', errorMessage);
+      let errorMessage = t('auth.passwordRequirements');
+      // Keeping detailed error messages in English for now as they are complex to map, or could map generic error
+      Alert.alert(t('common.error'), errorMessage);
       return;
     }
 
@@ -98,17 +111,17 @@ export default function SignUp() {
       console.log('Attempting registration with:', { email, username });
       const response = await register(email, password, fullName, username, phone);
       console.log('Registration successful:', response);
-      Alert.alert('Success', 'Registration successful! Please log in.', [
+      Alert.alert(t('common.ok'), t('auth.registrationSuccess'), [
         {
-          text: 'OK',
+          text: t('common.ok'),
           onPress: () => router.replace('/signin')
         }
       ]);
     } catch (error: any) {
       console.error('Registration failed:', error);
       Alert.alert(
-        'Registration Failed',
-        error.response?.data?.message || error.message || 'An error occurred during registration'
+        t('auth.registrationFailed'),
+        error.response?.data?.message || error.message || t('common.error')
       );
     } finally {
       setIsLoading(false);
@@ -123,7 +136,11 @@ export default function SignUp() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingView}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView
+          testID="signup-scroll-view"
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+        >
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
@@ -133,14 +150,14 @@ export default function SignUp() {
             accessibilityLabel="Go back"
           >
             <Ionicons name="arrow-back" size={24} color={colors.primary} accessible={false} importantForAccessibility="no" />
-            <Text style={[styles.backText, { color: colors.primary }]}>Back</Text>
+            <Text style={[styles.backText, { color: colors.primary }]}>{t('common.back')}</Text>
           </TouchableOpacity>
 
           <Image source={require('../assets/images/logo.png')} style={styles.logo} />
 
-          <Text style={[styles.title, { color: colors.primary }]}>Create Account</Text>
+          <Text style={[styles.title, { color: colors.primary }]}>{t('auth.createAccount')}</Text>
           <Text style={[styles.subtitle, { color: colors.text }]}>
-            Enter your details to register{'\n'}for the app
+            {t('auth.signUpSubtitle')}
           </Text>
 
           {/* Full Name */}
@@ -148,8 +165,8 @@ export default function SignUp() {
             <Ionicons name="person-outline" size={20} color={colors.icon} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
-              placeholder="Full Name"
-              placeholderTextColor={colors.textMuted}
+              placeholder={t('auth.name')}
+              placeholderTextColor={themeColors.textMuted}
               value={fullName}
               onChangeText={setFullName}
               editable={!isLoading}
@@ -164,8 +181,8 @@ export default function SignUp() {
             <Ionicons name="at-outline" size={20} color={colors.icon} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
-              placeholder="Username"
-              placeholderTextColor={colors.textMuted}
+              placeholder={t('auth.username')}
+              placeholderTextColor={themeColors.textMuted}
               value={username}
               onChangeText={setUsername}
               autoCapitalize="none"
@@ -181,8 +198,8 @@ export default function SignUp() {
             <Ionicons name="call-outline" size={20} color={colors.icon} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
-              placeholder="Phone"
-              placeholderTextColor={colors.textMuted}
+              placeholder={t('auth.phone')}
+              placeholderTextColor={themeColors.textMuted}
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
@@ -198,8 +215,8 @@ export default function SignUp() {
             <Ionicons name="mail-outline" size={20} color={colors.icon} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
-              placeholder="Email"
-              placeholderTextColor={colors.textMuted}
+              placeholder={t('auth.email')}
+              placeholderTextColor={themeColors.textMuted}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -216,12 +233,14 @@ export default function SignUp() {
             <Ionicons name="key-outline" size={20} color={colors.icon} />
             <TextInput
               style={[styles.input, { color: colors.text }]}
-              placeholder="Password"
-              placeholderTextColor={colors.textMuted}
+              placeholder={t('auth.password')}
+              placeholderTextColor={themeColors.textMuted}
               secureTextEntry={!showPwd}
               value={password}
               onChangeText={setPassword}
               editable={!isLoading}
+              textContentType="none"
+              autoComplete="off"
               returnKeyType="done"
               onSubmitEditing={Keyboard.dismiss}
               accessibilityLabel="Password"
@@ -233,6 +252,7 @@ export default function SignUp() {
 
               accessibilityRole="button"
               accessibilityLabel={showPwd ? 'Hide password' : 'Show password'}
+              testID="signup-password-toggle"
             >
               <Ionicons
                 name={showPwd ? 'eye' : 'eye-off'}
@@ -259,7 +279,7 @@ export default function SignUp() {
             </Pressable>
 
             <Text style={[styles.rememberText, { color: colors.text }]}>
-              I agree with{' '}
+              {t('auth.agreeWith')}
             </Text>
 
             <Pressable
@@ -272,7 +292,41 @@ export default function SignUp() {
               accessibilityLabel="View terms and conditions"
             >
               <Text style={[styles.rememberText, styles.linkText, { color: colors.primary }]}>
-                Terms &amp; Conditions
+                {t('auth.termsAndConditions')}
+              </Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.rememberWrapper}>
+            <Pressable
+              onPress={() => setAgreeCommunityGuidelines(a => !a)}
+              hitSlop={8}
+              disabled={isLoading}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: agreeCommunityGuidelines, disabled: isLoading }}
+              testID="signup-community-guidelines-checkbox"
+            >
+              <Ionicons
+                name={agreeCommunityGuidelines ? 'checkbox' : 'square-outline'}
+                size={20}
+                color={agreeCommunityGuidelines ? colors.primary : themeColors.icon}
+              />
+            </Pressable>
+
+            <Text style={[styles.rememberText, { color: colors.text }]}>
+              {t('auth.agreeWith')}
+            </Text>
+
+            <Pressable
+              onPress={() => router.push({ pathname: '/community-guidelines' })}
+              hitSlop={8}
+              disabled={isLoading}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel="View community guidelines"
+            >
+              <Text style={[styles.rememberText, styles.linkText, { color: colors.primary }]}>
+                {t('auth.communityGuidelines')}
               </Text>
             </Pressable>
           </View>
@@ -282,9 +336,9 @@ export default function SignUp() {
             style={[
               styles.button,
               { backgroundColor: colors.primary },
-              (!agree || isLoading) && { opacity: 0.5 }
+              (!agree || !agreeCommunityGuidelines || isLoading) && { opacity: 0.5 }
             ]}
-            disabled={!agree || isLoading}
+            disabled={!agree || !agreeCommunityGuidelines || isLoading}
             onPress={handleSignUp}
             accessible
 
@@ -292,27 +346,26 @@ export default function SignUp() {
             accessibilityLabel="Sign up"
             testID="signup-button"
             accessibilityState={{ disabled: !agree || isLoading }}
-            testID="signup-button"
           >
-            <Text style={[styles.buttonText, { color: colors.onPrimary }]}>
-              {isLoading ? 'Signing up...' : 'Sign Up'}
+            <Text style={[styles.buttonText, { color: themeColors.onPrimary }]}>
+              {isLoading ? t('auth.signingUp') : t('auth.signUp')}
             </Text>
           </TouchableOpacity>
 
           {/* Have an account? Login */}
           <View style={styles.signupPrompt}>
             <Text style={[styles.promptText, { color: colors.text }]}>
-              Have an account?
+              {t('auth.hasAccount')}
             </Text>
             <TouchableOpacity
+              testID="signup-signin-link"
               onPress={() => router.replace('/signin')}
               accessible
-
               accessibilityRole="button"
               accessibilityLabel="Go to login"
             >
               <Text style={[styles.promptLink, { color: colors.primary }]}>
-                {' '}Login
+                {' '}{t('auth.signIn')}
               </Text>
             </TouchableOpacity>
           </View>

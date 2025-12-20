@@ -9,6 +9,7 @@ import {
   banUser,
   deleteTask,
   getAdminUserDetail,
+  sendWarning,
 } from '../services/adminService';
 
 // Async thunks for reports
@@ -91,6 +92,19 @@ export const banUserThunk = createAsyncThunk(
       return { userId, ...result };
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Error banning user');
+    }
+  }
+);
+
+// Async thunk for sending warning to user
+export const sendWarningThunk = createAsyncThunk(
+  'admin/sendWarning',
+  async ({ userId, message }, { rejectWithValue }) => {
+    try {
+      const result = await sendWarning(userId, message);
+      return { userId, ...result };
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Error sending warning');
     }
   }
 );
@@ -298,6 +312,21 @@ const adminSlice = createSlice({
         state.error = null;
       })
       .addCase(deleteTaskThunk.rejected, (state, action) => {
+        state.actionLoading = false;
+        state.error = action.payload;
+      })
+
+      // Send warning
+      .addCase(sendWarningThunk.pending, (state) => {
+        state.actionLoading = true;
+        state.error = null;
+      })
+      .addCase(sendWarningThunk.fulfilled, (state, action) => {
+        state.actionLoading = false;
+        state.successMessage = 'Warning sent successfully';
+        state.error = null;
+      })
+      .addCase(sendWarningThunk.rejected, (state, action) => {
         state.actionLoading = false;
         state.error = action.payload;
       });

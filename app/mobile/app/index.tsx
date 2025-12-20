@@ -1,15 +1,39 @@
 // app/index.tsx
 import { useTheme } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import i18n from '../lib/i18n';
+
+import { ThemeTokens } from '@/constants/Colors';
 
 export default function Index() {
   const router = useRouter();
   const { colors } = useTheme();
+  const themeColors = colors as unknown as ThemeTokens;
+  const { t, i18n: i18nInstance } = useTranslation();
+  const [currentLang, setCurrentLang] = useState(i18n.language);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Language Toggle */}
+      <TouchableOpacity
+        onPress={() => {
+          const newLang = currentLang === 'en' ? 'tr' : 'en';
+          i18n.changeLanguage(newLang);
+          setCurrentLang(newLang);
+        }}
+        style={{ position: 'absolute', top: 50, right: 20, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, zIndex: 10 }}
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel="Change language"
+      >
+        <Text style={{ color: colors.text, fontWeight: 'bold', fontSize: 14 }}>
+          {currentLang === 'en' ? 'TR' : 'EN'}
+        </Text>
+      </TouchableOpacity>
+
       {/* Logo */}
       <Image
         source={require('../assets/images/logo.png')}
@@ -18,7 +42,7 @@ export default function Index() {
 
       {/* Main title */}
       <Text style={[styles.title, { color: colors.text }]}>
-        Neighborhood Assistance Board
+        {t('common.app')}
       </Text>
 
       {/* Buttons side by side */}
@@ -36,7 +60,7 @@ export default function Index() {
           accessibilityLabel="Go to login"
           testID="landing-login-button"
         >
-          <Text style={[styles.primaryText, { color: colors.onPrimary }]}>Login</Text>
+          <Text style={[styles.primaryText, { color: themeColors.onPrimary }]}>{t('auth.signIn')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -53,13 +77,13 @@ export default function Index() {
           testID="landing-register-button"
         >
           <Text style={[styles.secondaryText, { color: colors.primary }]}>
-            Register
+            {t('auth.signUp')}
           </Text>
         </TouchableOpacity>
       </View>
 
       {/* OR separator */}
-      <Text style={[styles.orText, { color: colors.text }]}>OR</Text>
+      <Text style={[styles.orText, { color: colors.text }]}>{t('common.or')}</Text>
 
       {/* Continue as guest */}
       <TouchableOpacity
@@ -70,7 +94,7 @@ export default function Index() {
         accessibilityLabel="Continue as guest"
       >
         <Text style={[styles.guestLink, { color: colors.primary }]}>
-          Continue as a guest
+          {t('feed.guest')}
         </Text>
       </TouchableOpacity>
     </View>

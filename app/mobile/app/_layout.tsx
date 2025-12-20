@@ -1,10 +1,14 @@
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+
+import '../lib/i18n';
 import React, { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { AuthProvider, useAuth } from '../lib/auth';
 import { AppThemeProvider, useAppTheme } from '@/theme/ThemeProvider';
+import { NotificationProvider, useNotifications } from '../lib/NotificationContext';
+import NotificationToast from '../components/ui/NotificationToast';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -17,6 +21,7 @@ const publicAppRoutes = [
   'category',
   'search',
   'terms',
+  'community-guidelines',
   'requests',
   'v-request-details',
   'r-request-details',
@@ -34,9 +39,10 @@ function RootNavigator() {
   const { user } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  const { newNotification, clearNewNotification } = useNotifications();
 
   useEffect(() => {
-    if (!segments || segments.length === 0) {
+    if (!segments) {
       return;
     }
 
@@ -52,28 +58,39 @@ function RootNavigator() {
   }, [user, segments, router]);
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" />
-      <Stack.Screen name="signin" />
-      <Stack.Screen name="signup" />
-      <Stack.Screen name="feed" />
-      <Stack.Screen name="forgot-password" />
-      <Stack.Screen name="settings" />
-      <Stack.Screen name="profile" />
-      <Stack.Screen name="search" />
-      <Stack.Screen name="categories" />
-      <Stack.Screen name="requests" />
-      <Stack.Screen name="create_request" />
-      <Stack.Screen name="cr_upload_photo" />
-      <Stack.Screen name="cr_deadline" />
-      <Stack.Screen name="cr_address" />
-      <Stack.Screen name="category/[id]" />
-      <Stack.Screen name="notifications" />
-      <Stack.Screen name="r-request-details" />
-      <Stack.Screen name="v-request-details" />
-      <Stack.Screen name="select-volunteer" />
-      <Stack.Screen name="terms" />
-    </Stack>
+    <>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="signin" />
+        <Stack.Screen name="signup" />
+        <Stack.Screen name="forgot-password" />
+        <Stack.Screen name="feed" />
+        <Stack.Screen name="categories" />
+        <Stack.Screen name="category/[id]" />
+        <Stack.Screen name="search" />
+        <Stack.Screen name="terms" />
+        <Stack.Screen name="community-guidelines" />
+        <Stack.Screen name="requests" />
+        <Stack.Screen name="v-request-details" />
+        <Stack.Screen name="r-request-details" />
+        <Stack.Screen name="profile" />
+        <Stack.Screen name="settings" />
+        <Stack.Screen name="notifications" />
+        <Stack.Screen name="create_request" />
+        <Stack.Screen name="cr_upload_photo" />
+        <Stack.Screen name="cr_deadline" />
+        <Stack.Screen name="cr_address" />
+        <Stack.Screen name="select-volunteer" />
+      </Stack>
+
+      {/* Notification Toast */}
+      {newNotification && (
+        <NotificationToast
+          notification={newNotification}
+          onDismiss={clearNewNotification}
+        />
+      )}
+    </>
   );
 }
 
@@ -85,11 +102,13 @@ function ThemedStatusBar() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <AppThemeProvider>
-        <RootNavigator />
-        <ThemedStatusBar />
-      </AppThemeProvider>
-    </AuthProvider>
+    <AppThemeProvider>
+      <AuthProvider>
+        <NotificationProvider>
+          <ThemedStatusBar />
+          <RootNavigator />
+        </NotificationProvider>
+      </AuthProvider>
+    </AppThemeProvider>
   );
 }

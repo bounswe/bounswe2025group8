@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@react-navigation/native';
 import { getTaskApplicants, Volunteer, batchAssignVolunteers, BACKEND_BASE_URL } from '../lib/api';
 import type { ThemeTokens } from '../constants/Colors';
+import { useTranslation } from 'react-i18next';
 
 export default function SelectVolunteer() {
     const params = useLocalSearchParams();
@@ -23,9 +24,11 @@ export default function SelectVolunteer() {
     const [error, setError] = useState<string | null>(null);
     const [isAssigning, setIsAssigning] = useState(false);
 
+    const { t } = useTranslation();
+
     useEffect(() => {
         if (!taskId) {
-            setError("Task ID is missing.");
+            setError(t('volunteers.missingTaskId'));
             setIsLoading(false);
             return;
         }
@@ -52,10 +55,10 @@ export default function SelectVolunteer() {
                     const pendingApplicants = pendingResponse.data.volunteers.filter(app => !assignedUserIds.has(app.user.id));
                     setApplicants(pendingApplicants);
                 } else if (acceptedResponse.status !== 'success') {
-                    setError(acceptedResponse.message || "Failed to fetch volunteers.");
+                    setError(acceptedResponse.message || t('volunteers.fetchError'));
                 }
             } catch (err: any) {
-                setError(err.message || "An unexpected error occurred.");
+                setError(err.message || t('volunteers.unexpectedError'));
                 console.error("Fetch volunteers error:", err);
             } finally {
                 setIsLoading(false);
@@ -73,43 +76,43 @@ export default function SelectVolunteer() {
             } else {
                 // Check if we exceed the required number
                 if (prevSelected.length >= requiredVolunteers) {
-                    Alert.alert("Selection Limit", `You can select up to ${requiredVolunteers} volunteer(s).`);
+                    Alert.alert(t('volunteers.selectionLimitTitle'), t('volunteers.selectionLimitMessage', { count: requiredVolunteers }));
                     return prevSelected;
                 }
                 return [...prevSelected, applicant];
             }
         });
     };
-    
+
     const handleConfirmAssignment = async () => {
         if (selectedApplicants.length === 0) {
-            Alert.alert("No Selection", "Please select at least one volunteer to assign.");
+            Alert.alert(t('volunteers.noSelectionTitle'), t('volunteers.noSelectionMessage'));
             return;
         }
 
         const volunteerIds = selectedApplicants.map(v => v.id);
-        const actionText = selectedApplicants.length === assignedVolunteers.length && 
-                          selectedApplicants.every(sel => assignedVolunteers.some(assigned => assigned.id === sel.id))
-                          ? "update assignments" 
-                          : `assign ${selectedApplicants.length} volunteer(s)`;
+        const actionText = selectedApplicants.length === assignedVolunteers.length &&
+            selectedApplicants.every(sel => assignedVolunteers.some(assigned => assigned.id === sel.id))
+            ? t('volunteers.actionUpdate')
+            : t('volunteers.actionAssign', { count: selectedApplicants.length });
 
         Alert.alert(
-            "Confirm Assignment", 
-            `Are you sure you want to ${actionText} to this task?`, 
+            t('volunteers.confirmTitle'),
+            t('volunteers.confirmMessage', { actionText }),
             [
-                { text: "Cancel", style: "cancel" },
-                { 
-                    text: "Confirm", 
+                { text: t('common.cancel'), style: "cancel" },
+                {
+                    text: t('common.confirm'),
                     onPress: async () => {
                         if (!taskId) {
-                            Alert.alert("Error", "Task ID is missing. Cannot assign volunteers.");
+                            Alert.alert(t('common.error'), t('volunteers.assignError'));
                             return;
                         }
                         setIsAssigning(true);
                         try {
                             const response = await batchAssignVolunteers(taskId, volunteerIds);
-                            
-                            Alert.alert("Assignment Complete", response.message || `Successfully assigned ${response.data.total_assigned} volunteer(s).`, [
+
+                            Alert.alert(t('volunteers.assignSuccessTitle'), response.message || t('volunteers.assignSuccessMessage', { count: response.data.total_assigned }), [
                                 {
                                     text: "OK",
                                     onPress: () => {
@@ -119,7 +122,7 @@ export default function SelectVolunteer() {
                                 }
                             ]);
                         } catch (e: any) {
-                            Alert.alert("Error", e.message || "An unexpected error occurred during assignment.");
+                            Alert.alert(t('common.error'), e.message || t('volunteers.assignUnexpectedError'));
                             console.error("Assignment error:", e);
                         } finally {
                             setIsAssigning(false);
@@ -171,12 +174,12 @@ export default function SelectVolunteer() {
                                     ]}
                                 >
                                     {' '}
-                                    Assigned
+                                    {t('volunteers.assignedBadge')}
                                 </Text>
                             )}
                         </View>
                         <Text style={[styles.volunteerUsername, { color: themeColors.textMuted }]}>@{item.user.username}</Text>
-                        <Text style={[styles.volunteerRating, { color: themeColors.textMuted }]}>Rating: {item.user.rating ? Number(item.user.rating).toFixed(1) : 'N/A'}</Text>
+                        <Text style={[styles.volunteerRating, { color: themeColors.textMuted }]}>{t('volunteers.rating', { rating: item.user.rating ? Number(item.user.rating).toFixed(1) : 'N/A' })}</Text>
                     </View>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -195,10 +198,10 @@ export default function SelectVolunteer() {
                     accessibilityLabel={`${isSelected ? 'Deselect' : 'Select'} ${item.user.name}`}
                     accessibilityState={{ selected: isSelected, disabled: !isSelected && !canSelectMore }}
                 >
-                    <Ionicons 
-                        name={isSelected ? "checkmark-circle" : "ellipse-outline"} 
-                        size={28} 
-                        color={isSelected ? themeColors.onPrimary : themeColors.primary} 
+                    <Ionicons
+                        name={isSelected ? "checkmark-circle" : "ellipse-outline"}
+                        size={28}
+                        color={isSelected ? themeColors.onPrimary : themeColors.primary}
                     />
                 </TouchableOpacity>
             </View>
@@ -209,7 +212,7 @@ export default function SelectVolunteer() {
         return (
             <View style={[styles.centered, { backgroundColor: themeColors.background }]}>
                 <ActivityIndicator size="large" color={themeColors.primary} />
-                <Text style={{ color: themeColors.text, marginTop: 10 }}>Loading applicants...</Text>
+                <Text style={{ color: themeColors.text, marginTop: 10 }}>{t('volunteers.loading')}</Text>
             </View>
         );
     }
@@ -226,7 +229,7 @@ export default function SelectVolunteer() {
                     accessibilityRole="button"
                     accessibilityLabel="Go back"
                 >
-                    <Text style={[styles.buttonText, { color: themeColors.onPrimary }]}>Go Back</Text>
+                    <Text style={[styles.buttonText, { color: themeColors.onPrimary }]}>{t('volunteers.goBack')}</Text>
                 </TouchableOpacity>
             </View>
         );
@@ -236,26 +239,26 @@ export default function SelectVolunteer() {
         <SafeAreaView style={{ flex: 1, backgroundColor: themeColors.background }}>
             <View style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border, borderBottomWidth: 1 }]}>
                 <TouchableOpacity
-                  onPress={() => router.canGoBack() ? router.back() : router.replace('/feed')}
-                  style={styles.backButton}
-                  accessible
+                    onPress={() => router.canGoBack() ? router.back() : router.replace('/feed')}
+                    style={styles.backButton}
+                    accessible
 
-                  accessibilityRole="button"
-                  accessibilityLabel="Go back"
+                    accessibilityRole="button"
+                    accessibilityLabel="Go back"
                 >
-                    <Ionicons name="arrow-back" size={24} color={themeColors.text}  accessible={false} importantForAccessibility="no"/>
+                    <Ionicons name="arrow-back" size={24} color={themeColors.text} accessible={false} importantForAccessibility="no" />
                 </TouchableOpacity>
-                <Text style={[styles.title, { color: themeColors.text }]}>Select Volunteers</Text>
-                <View style={{width: 24}} />{/* Spacer */}
+                <Text style={[styles.title, { color: themeColors.text }]}>{t('volunteers.title')}</Text>
+                <View style={{ width: 24 }} />{/* Spacer */}
             </View>
 
-            <Text style={[styles.infoText, { color: themeColors.textMuted, marginHorizontal: 15, marginVertical: 5}]}>
-                Required: {requiredVolunteers}, Currently Selected: {selectedApplicants.length}
+            <Text style={[styles.infoText, { color: themeColors.textMuted, marginHorizontal: 15, marginVertical: 5 }]}>
+                {t('volunteers.infoRequired', { required: requiredVolunteers, selected: selectedApplicants.length })}
             </Text>
-            <Text style={[styles.infoText, { color: themeColors.primary, marginHorizontal: 15, marginBottom: 10}]}>
-                {selectedApplicants.length > 0 
-                    ? `${selectedApplicants.length} selected. ${requiredVolunteers - selectedApplicants.length} slot(s) remaining.` 
-                    : `Select up to ${requiredVolunteers} volunteer(s).`}
+            <Text style={[styles.infoText, { color: themeColors.primary, marginHorizontal: 15, marginBottom: 10 }]}>
+                {selectedApplicants.length > 0
+                    ? t('volunteers.infoSelected', { selected: selectedApplicants.length, remaining: requiredVolunteers - selectedApplicants.length })
+                    : t('volunteers.infoSelectUpTo', { required: requiredVolunteers })}
             </Text>
 
             {(assignedVolunteers.length > 0 || applicants.length > 0) && (
@@ -269,15 +272,15 @@ export default function SelectVolunteer() {
             )}
 
             {assignedVolunteers.length === 0 && applicants.length === 0 && (
-                <Text style={[styles.centeredText, { color: themeColors.textMuted }]}>No volunteers available for this task.</Text>
+                <Text style={[styles.centeredText, { color: themeColors.textMuted }]}>{t('volunteers.noVolunteers')}</Text>
             )}
 
             {selectedApplicants.length > 0 && (
-                 <TouchableOpacity
+                <TouchableOpacity
                     style={[
-                        styles.confirmButton, 
-                        { 
-                            backgroundColor: selectedApplicants.length > 0 && !isAssigning ? themeColors.primary : themeColors.border 
+                        styles.confirmButton,
+                        {
+                            backgroundColor: selectedApplicants.length > 0 && !isAssigning ? themeColors.primary : themeColors.border
                         }
                     ]}
                     onPress={handleConfirmAssignment}
@@ -300,7 +303,7 @@ export default function SelectVolunteer() {
                                 },
                             ]}
                         >
-                            Confirm {selectedApplicants.length > 0 ? `${selectedApplicants.length} Assignment(s)` : 'Assignments'}
+                            {selectedApplicants.length > 0 ? t('volunteers.confirmButton', { count: selectedApplicants.length }) : t('volunteers.confirmButtonGeneric')}
                         </Text>
                     )}
                 </TouchableOpacity>

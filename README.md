@@ -125,17 +125,58 @@ For development with the backend and database, use Docker Compose to run all ser
 
 When working with the backend and PostgreSQL database via Docker Compose, you may need to:
 
-- Create an admin user
+- Data Seeding
 - Reset/delete all containers, volumes, and images
 
 ---
 
-#### Create an Admin User
+#### Data Seeding (Required in first time)
 
-Run this **after backend & database containers are up**:
+To ensure the application is not empty upon launch, the backend provides management commands to populate the database with essential mock data such as badges, users, and sample content.
+
+##### Step-by-Step Data Seeding Instructions
+
+Build and start all services
 ```bash
-sudo docker compose exec backend python manage.py create_admin_user
+docker compose up --build -d
 ```
+
+Create initial system data
+Run the following commands:
+```bash
+docker exec -it neighborhood_backend python manage.py create_badges
+docker exec -it neighborhood_backend python manage.py create_admin_user
+docker exec -it neighborhood_backend python manage.py create_default_user
+docker exec -it neighborhood_backend python manage.py populate_mock_data
+```
+
+After completing these steps, the application will contain:
+
+- Predefined badges
+
+- An administrator account
+
+- A regular user account
+
+- Sample requests, and accounts
+
+#### Default Login Credentials
+
+The following users are automatically created during data seeding and can be used immediately for testing.
+
+👤 Regular User
+
+Email: suzan.uskudarli@gmail.com
+
+Password: suzanUskudarli123!
+
+🛠️ Admin User
+
+Email: admin@nab.com
+
+Password: Admin123!
+
+These accounts allow testers and graders to log in without manual registration and verify both regular user and admin-level functionality.
 
 #### Delete the Entire Database & Images (FULL RESET)
 
@@ -354,8 +395,61 @@ If the build fails with "Cannot allocate memory" or "java.lang.OutOfMemoryError"
 4. Apply & Restart.
 This issue is particularly common on macOS when running emulators/simulators alongside Docker.
 
-### Backend Connection
-The mobile app connects to the backend API. Ensure your backend is running and accessible. When using Docker, you may need to configure the API host in your `.env` file or `app.json` to point to your machine's local IP address (not `localhost`) so the mobile device can reach it.
+### Backend Configuration
+
+The mobile app can connect to either a **deployed backend** or a **local backend**. You can easily switch between them by editing the `.env.example` file in the `app/mobile` directory.
+
+#### Using the Deployed Backend (Default)
+
+To connect to the production server, uncomment the `BACKEND_BASE_URL` line with the deployed URL:
+
+```env
+# ----- DEPLOYED BACKEND -----
+BACKEND_BASE_URL=https://neighborhelp.webhop.me
+# ----------------------------
+
+# ----- LOCAL BACKEND -----
+# BACKEND_BASE_URL=
+# LOCAL_LAN_IP=172.20.10.3
+# -------------------------
+```
+
+#### Using a Local Backend
+
+To connect to a backend running on your local machine:
+
+1. **Find your local LAN IP address**:
+   ```bash
+   # macOS
+   ipconfig getifaddr en0
+   
+   # Windows
+   ipconfig
+   
+   # Linux
+   hostname -I
+   ```
+
+2. **Edit `.env.example`** to use the local backend:
+   ```env
+   # ----- DEPLOYED BACKEND -----
+   # BACKEND_BASE_URL=https://neighborhelp.webhop.me
+   # ----------------------------
+
+   # ----- LOCAL BACKEND -----
+   BACKEND_BASE_URL=
+   LOCAL_LAN_IP=YOUR_LAN_IP_HERE
+   # -------------------------
+   ```
+   
+   Replace `YOUR_LAN_IP_HERE` with your actual LAN IP (e.g., `192.168.1.100`).
+
+3. **Clear cache and restart Expo** after making changes:
+   ```bash
+   npx expo start --clear
+   ```
+
+> **Note**: When `BACKEND_BASE_URL` is empty, the app automatically uses `LOCAL_LAN_IP` for physical devices and iOS simulator, `10.0.2.2` for Android emulator, and `localhost` for web.
 
 ### Guest Mode
 
