@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="61" failures="0" errors="0" time="2.6503339">
+    <testsuite name="src/test/component-examples.test.tsx" timestamp="2025-12-20T09:47:26.459Z" hostname="musakaangny" tests="2" failures="0" errors="0" skipped="0" time="0.0068222">
+        <testcase classname="src/test/component-examples.test.tsx" name="EditRequestModal Component Tests &gt; example test placeholder" time="0.0028524">
+        </testcase>
+        <testcase classname="src/test/component-examples.test.tsx" name="Auth Slice Tests &gt; example test placeholder" time="0.0004518">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/example.test.tsx" timestamp="2025-12-20T09:47:26.463Z" hostname="musakaangny" tests="2" failures="0" errors="0" skipped="0" time="0.0073335">
+        <testcase classname="src/test/example.test.tsx" name="Example Test Suite &gt; should pass a basic test" time="0.0029886">
+        </testcase>
+        <testcase classname="src/test/example.test.tsx" name="Example Test Suite &gt; should perform basic math" time="0.0003583">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/components/Badge.test.tsx" timestamp="2025-12-20T09:47:26.465Z" hostname="musakaangny" tests="8" failures="0" errors="0" skipped="0" time="0.1042941">
+        <testcase classname="src/test/components/Badge.test.tsx" name="Badge Component &gt; should render badge with title" time="0.0484623">
+        </testcase>
+        <testcase classname="src/test/components/Badge.test.tsx" name="Badge Component &gt; should render earned badge with full opacity" time="0.0086592">
+        </testcase>
+        <testcase classname="src/test/components/Badge.test.tsx" name="Badge Component &gt; should render unearned badge with reduced opacity" time="0.0119471">
+        </testcase>
+        <testcase classname="src/test/components/Badge.test.tsx" name="Badge Component &gt; should apply grayscale filter to unearned badges" time="0.0090108">
+        </testcase>
+        <testcase classname="src/test/components/Badge.test.tsx" name="Badge Component &gt; should handle badge wrapped in UserBadge object" time="0.0055539">
+        </testcase>
+        <testcase classname="src/test/components/Badge.test.tsx" name="Badge Component &gt; should use local icon when available" time="0.0059401">
+        </testcase>
+        <testcase classname="src/test/components/Badge.test.tsx" name="Badge Component &gt; should fallback to API icon when local icon not available" time="0.0053367">
+        </testcase>
+        <testcase classname="src/test/components/Badge.test.tsx" name="Badge Component &gt; should render unearned badge correctly" time="0.0062866">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/components/CategoryCard.test.tsx" timestamp="2025-12-20T09:47:26.471Z" hostname="musakaangny" tests="8" failures="0" errors="0" skipped="0" time="0.3435225">
+        <testcase classname="src/test/components/CategoryCard.test.tsx" name="CategoryCard &gt; renders category title and image" time="0.1171492">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+react-i18next:: useTranslation: You will need to pass in an i18next instance by using initReactI18next { code: [32m&apos;NO_I18NEXT_INSTANCE&apos;[39m }
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/CategoryCard.test.tsx" name="CategoryCard &gt; calls onClick when card is clicked" time="0.1004811">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/CategoryCard.test.tsx" name="CategoryCard &gt; calls onClick when Enter key is pressed" time="0.0474342">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/CategoryCard.test.tsx" name="CategoryCard &gt; calls onClick when Space key is pressed" time="0.0456404">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/CategoryCard.test.tsx" name="CategoryCard &gt; is keyboard accessible with tabIndex" time="0.0112104">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/CategoryCard.test.tsx" name="CategoryCard &gt; applies custom className when provided" time="0.0095252">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/CategoryCard.test.tsx" name="CategoryCard &gt; truncates long titles properly with line-clamp-2" time="0.0037523">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/CategoryCard.test.tsx" name="CategoryCard &gt; has proper aria-label for accessibility" time="0.0051544">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/components/LanguageSwitcher.test.tsx" timestamp="2025-12-20T09:47:26.475Z" hostname="musakaangny" tests="7" failures="0" errors="0" skipped="0" time="0.5250724">
+        <testcase classname="src/test/components/LanguageSwitcher.test.tsx" name="LanguageSwitcher &gt; should render language selector" time="0.0818046">
+        </testcase>
+        <testcase classname="src/test/components/LanguageSwitcher.test.tsx" name="LanguageSwitcher &gt; should display current language" time="0.0756527">
+        </testcase>
+        <testcase classname="src/test/components/LanguageSwitcher.test.tsx" name="LanguageSwitcher &gt; should change language when selection changes" time="0.1874047">
+        </testcase>
+        <testcase classname="src/test/components/LanguageSwitcher.test.tsx" name="LanguageSwitcher &gt; should save language preference to localStorage" time="0.1127393">
+        </testcase>
+        <testcase classname="src/test/components/LanguageSwitcher.test.tsx" name="LanguageButtons &gt; should render language buttons" time="0.0258812">
+        </testcase>
+        <testcase classname="src/test/components/LanguageSwitcher.test.tsx" name="LanguageButtons &gt; should highlight current language button" time="0.0092364">
+        </testcase>
+        <testcase classname="src/test/components/LanguageSwitcher.test.tsx" name="LanguageButtons &gt; should change language when button is clicked" time="0.0299704">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/components/RequestCard.test.tsx" timestamp="2025-12-20T09:47:26.476Z" hostname="musakaangny" tests="13" failures="0" errors="0" skipped="0" time="0.5688543">
+        <testcase classname="src/test/components/RequestCard.test.tsx" name="RequestCard &gt; renders request title" time="0.1448387">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/RequestCard.test.tsx" name="RequestCard &gt; displays category badge" time="0.0139386">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/RequestCard.test.tsx" name="RequestCard &gt; displays urgency level" time="0.0165821">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/RequestCard.test.tsx" name="RequestCard &gt; displays location information" time="0.0168117">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/RequestCard.test.tsx" name="RequestCard &gt; displays formatted creation time" time="0.014485">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/RequestCard.test.tsx" name="RequestCard &gt; calls onClick when card is clicked" time="0.1320083">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/RequestCard.test.tsx" name="RequestCard &gt; navigates to category filter when category badge is clicked" time="0.0788013">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/RequestCard.test.tsx" name="RequestCard &gt; navigates to urgency filter when urgency badge is clicked" time="0.0593288">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/RequestCard.test.tsx" name="RequestCard &gt; renders image when imageUrl is provided" time="0.0092511">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/RequestCard.test.tsx" name="RequestCard &gt; handles request without image gracefully" time="0.0113556">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/RequestCard.test.tsx" name="RequestCard &gt; handles nested urgency level in task object" time="0.0101859">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/RequestCard.test.tsx" name="RequestCard &gt; is keyboard accessible" time="0.0466882">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/RequestCard.test.tsx" name="RequestCard &gt; applies custom className when provided" time="0.0114612">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/components/Sidebar.test.tsx" timestamp="2025-12-20T09:47:26.479Z" hostname="musakaangny" tests="12" failures="0" errors="0" skipped="0" time="0.4842784">
+        <testcase classname="src/test/components/Sidebar.test.tsx" name="Sidebar &gt; renders main navigation items" time="0.0921947">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/Sidebar.test.tsx" name="Sidebar &gt; shows login and register buttons for unauthenticated users" time="0.0149323">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/Sidebar.test.tsx" name="Sidebar &gt; shows user profile and logout for authenticated users" time="0.0205178">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/Sidebar.test.tsx" name="Sidebar &gt; shows create request button for authenticated users" time="0.011007">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/Sidebar.test.tsx" name="Sidebar &gt; shows admin panel link for admin users" time="0.0168897">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/Sidebar.test.tsx" name="Sidebar &gt; navigates to home when home is clicked" time="0.0965148">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/Sidebar.test.tsx" name="Sidebar &gt; navigates to categories when categories is clicked" time="0.0461046">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/Sidebar.test.tsx" name="Sidebar &gt; navigates to requests when requests is clicked" time="0.0611332">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/Sidebar.test.tsx" name="Sidebar &gt; calls logout when logout button is clicked" time="0.0623861">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/Sidebar.test.tsx" name="Sidebar &gt; displays user initials when no profile photo" time="0.0104139">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/Sidebar.test.tsx" name="Sidebar &gt; displays single initial for user with only first name" time="0.0101607">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/Sidebar.test.tsx" name="Sidebar &gt; navigates to profile when user profile is clicked" time="0.0397126">
+            <system-err>
+Store does not have a valid reducer. Make sure the argument passed to combineReducers is an object whose values are reducers.
+
+            </system-err>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/components/UserCard.test.tsx" timestamp="2025-12-20T09:47:26.481Z" hostname="musakaangny" tests="9" failures="0" errors="0" skipped="0" time="0.6101565">
+        <testcase classname="src/test/components/UserCard.test.tsx" name="UserCard &gt; should render user name" time="0.1188467">
+        </testcase>
+        <testcase classname="src/test/components/UserCard.test.tsx" name="UserCard &gt; should render username" time="0.0464722">
+        </testcase>
+        <testcase classname="src/test/components/UserCard.test.tsx" name="UserCard &gt; should render rating" time="0.0668842">
+        </testcase>
+        <testcase classname="src/test/components/UserCard.test.tsx" name="UserCard &gt; should render initials when no profile photo" time="0.0581337">
+        </testcase>
+        <testcase classname="src/test/components/UserCard.test.tsx" name="UserCard &gt; should navigate to user profile when clicked" time="0.1122538">
+        </testcase>
+        <testcase classname="src/test/components/UserCard.test.tsx" name="UserCard &gt; should call custom onClick handler when provided" time="0.0783822">
+        </testcase>
+        <testcase classname="src/test/components/UserCard.test.tsx" name="UserCard &gt; should handle keyboard navigation" time="0.074874">
+        </testcase>
+        <testcase classname="src/test/components/UserCard.test.tsx" name="UserCard &gt; should display &quot;Unknown User&quot; when name is missing" time="0.0032339">
+        </testcase>
+        <testcase classname="src/test/components/UserCard.test.tsx" name="UserCard &gt; should render profile photo when provided" time="0.0484816">
+        </testcase>
+    </testsuite>
+</testsuites>
