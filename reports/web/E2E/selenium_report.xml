@@ -1,0 +1,1987 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="22" skipped="0" tests="63" time="1304.119" timestamp="2025-12-20T13:36:56.138402+03:00" hostname="musakaangny"><testcase classname="test_create_register_page.RegisterPageTest" name="test_01_page_loads" time="11.435" /><testcase classname="test_create_register_page.RegisterPageTest" name="test_02_successful_registration" time="14.617"><failure message="selenium.common.exceptions.TimeoutException: Message:">self = &lt;test_create_register_page.RegisterPageTest testMethod=test_02_successful_registration&gt;
+
+    def test_02_successful_registration(self):
+        """Test successful registration with valid data"""
+        self._fill_form(
+            "Ayşe",
+            "Kaya",
+            self._random_username(),
+            "5551234567",
+            self._random_email(),
+            "S3cure!234",
+            "S3cure!234"
+        )
+        self._check_terms()
+        self._submit()
+    
+&gt;       WebDriverWait(self.driver, 10).until(EC.url_contains("/login"))
+
+test_create_register_page.py:111: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="1c06422ff4302b48dbefd1745e20ac67")&gt;
+method = &lt;function url_contains.&lt;locals&gt;._predicate at 0x000001B8ABED5300&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message:
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException</failure></testcase><testcase classname="test_create_register_page.RegisterPageTest" name="test_03_duplicate_email_error" time="5.536" /><testcase classname="test_create_register_page.RegisterPageTest" name="test_04_weak_password_error" time="5.384" /><testcase classname="test_create_register_page.RegisterPageTest" name="test_05_password_mismatch_error" time="5.403" /><testcase classname="test_create_register_page.RegisterPageTest" name="test_06_terms_not_accepted_error" time="7.509" /><testcase classname="test_create_request_page.TestCreateRequestPage" name="test_01_navigate_to_create_request_page" time="95.562"><failure message="selenium.common.exceptions.TimeoutException: Message: &#10;Stacktrace:&#10;RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8&#10;WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5&#10;NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5&#10;dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16">self = &lt;test_create_request_page.TestCreateRequestPage object at 0x000001B8ABDE2710&gt;
+web_driver = &lt;selenium.webdriver.firefox.webdriver.WebDriver (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+wait = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+
+    def test_01_navigate_to_create_request_page(self, web_driver, wait):
+        """
+        Test: User can navigate to Create Request page
+        Expected: Page loads with Step 1 visible
+        """
+        page = CreateRequestPage(web_driver, wait)
+&gt;       page.navigate_to_page()
+
+test_create_request_page.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+pages\create_request_page.py:65: in navigate_to_page
+    self.wait.until(EC.presence_of_element_located(self.TITLE_INPUT))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+method = &lt;function presence_of_element_located.&lt;locals&gt;._predicate at 0x000001B8ABEBF4C0&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
+E       WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5
+E       NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5
+E       dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException</failure></testcase><testcase classname="test_create_request_page.TestCreateRequestPage" name="test_02_step1_fill_general_information" time="26.327"><failure message="selenium.common.exceptions.TimeoutException: Message: &#10;Stacktrace:&#10;RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8&#10;WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5&#10;NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5&#10;dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16">self = &lt;test_create_request_page.TestCreateRequestPage object at 0x000001B8ABDE2850&gt;
+web_driver = &lt;selenium.webdriver.firefox.webdriver.WebDriver (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+wait = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+
+    def test_02_step1_fill_general_information(self, web_driver, wait):
+        """
+        Test: User can fill Step 1 (General Information)
+        Expected: All fields accept input correctly
+        """
+        page = CreateRequestPage(web_driver, wait)
+&gt;       page.navigate_to_page()
+
+test_create_request_page.py:75: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+pages\create_request_page.py:65: in navigate_to_page
+    self.wait.until(EC.presence_of_element_located(self.TITLE_INPUT))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+method = &lt;function presence_of_element_located.&lt;locals&gt;._predicate at 0x000001B8ABEBF740&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
+E       WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5
+E       NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5
+E       dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException</failure></testcase><testcase classname="test_create_request_page.TestCreateRequestPage" name="test_03_step1_to_step2_navigation" time="30.448"><failure message="selenium.common.exceptions.TimeoutException: Message: &#10;Stacktrace:&#10;RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8&#10;WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5&#10;NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5&#10;dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16">self = &lt;test_create_request_page.TestCreateRequestPage object at 0x000001B8ABDC0E90&gt;
+web_driver = &lt;selenium.webdriver.firefox.webdriver.WebDriver (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+wait = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+
+    def test_03_step1_to_step2_navigation(self, web_driver, wait):
+        """
+        Test: User can navigate from Step 1 to Step 2
+        Expected: Next button takes user to Step 2 (Upload Photos)
+        """
+        page = CreateRequestPage(web_driver, wait)
+&gt;       page.navigate_to_page()
+
+test_create_request_page.py:101: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+pages\create_request_page.py:65: in navigate_to_page
+    self.wait.until(EC.presence_of_element_located(self.TITLE_INPUT))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+method = &lt;function presence_of_element_located.&lt;locals&gt;._predicate at 0x000001B8ABFD0B80&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
+E       WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5
+E       NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5
+E       dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException</failure></testcase><testcase classname="test_create_request_page.TestCreateRequestPage" name="test_04_step2_upload_photos_skipped" time="28.416"><failure message="selenium.common.exceptions.TimeoutException: Message: &#10;Stacktrace:&#10;RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8&#10;WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5&#10;NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5&#10;dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16">self = &lt;test_create_request_page.TestCreateRequestPage object at 0x000001B8ABDC0FC0&gt;
+web_driver = &lt;selenium.webdriver.firefox.webdriver.WebDriver (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+wait = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+
+    def test_04_step2_upload_photos_skipped(self, web_driver, wait):
+        """
+        Test: User can proceed without uploading photos (optional step)
+        Expected: Can go to Step 3 without photos
+        """
+        page = CreateRequestPage(web_driver, wait)
+&gt;       page.navigate_to_page()
+
+test_create_request_page.py:126: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+pages\create_request_page.py:65: in navigate_to_page
+    self.wait.until(EC.presence_of_element_located(self.TITLE_INPUT))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+method = &lt;function presence_of_element_located.&lt;locals&gt;._predicate at 0x000001B8ABFD1260&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
+E       WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5
+E       NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5
+E       dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException</failure></testcase><testcase classname="test_create_request_page.TestCreateRequestPage" name="test_05_step3_select_deadline" time="27.245"><failure message="selenium.common.exceptions.TimeoutException: Message: &#10;Stacktrace:&#10;RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8&#10;WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5&#10;NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5&#10;dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16">self = &lt;test_create_request_page.TestCreateRequestPage object at 0x000001B8ABF28710&gt;
+web_driver = &lt;selenium.webdriver.firefox.webdriver.WebDriver (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+wait = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+
+    def test_05_step3_select_deadline(self, web_driver, wait):
+        """
+        Test: User can select a deadline date
+        Expected: Calendar accepts date selection
+        """
+        page = CreateRequestPage(web_driver, wait)
+&gt;       page.navigate_to_page()
+
+test_create_request_page.py:155: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+pages\create_request_page.py:65: in navigate_to_page
+    self.wait.until(EC.presence_of_element_located(self.TITLE_INPUT))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+method = &lt;function presence_of_element_located.&lt;locals&gt;._predicate at 0x000001B8ABFD07C0&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
+E       WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5
+E       NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5
+E       dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException</failure></testcase><testcase classname="test_create_request_page.TestCreateRequestPage" name="test_06_step3_to_step4_navigation" time="27.195"><failure message="selenium.common.exceptions.TimeoutException: Message: &#10;Stacktrace:&#10;RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8&#10;WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5&#10;NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5&#10;dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16">self = &lt;test_create_request_page.TestCreateRequestPage object at 0x000001B8ABD33F00&gt;
+web_driver = &lt;selenium.webdriver.firefox.webdriver.WebDriver (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+wait = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+
+    def test_06_step3_to_step4_navigation(self, web_driver, wait):
+        """
+        Test: User can navigate from Step 3 to Step 4
+        Expected: Next button takes user to Step 4 (Setup Address)
+        """
+        page = CreateRequestPage(web_driver, wait)
+&gt;       page.navigate_to_page()
+
+test_create_request_page.py:184: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+pages\create_request_page.py:65: in navigate_to_page
+    self.wait.until(EC.presence_of_element_located(self.TITLE_INPUT))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+method = &lt;function presence_of_element_located.&lt;locals&gt;._predicate at 0x000001B8ABFD0C20&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
+E       WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5
+E       NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5
+E       dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException</failure></testcase><testcase classname="test_create_request_page.TestCreateRequestPage" name="test_07_step4_fill_address" time="28.493"><failure message="selenium.common.exceptions.TimeoutException: Message: &#10;Stacktrace:&#10;RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8&#10;WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5&#10;NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5&#10;dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16">self = &lt;test_create_request_page.TestCreateRequestPage object at 0x000001B8ABF24160&gt;
+web_driver = &lt;selenium.webdriver.firefox.webdriver.WebDriver (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+wait = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+
+    def test_07_step4_fill_address(self, web_driver, wait):
+        """
+        Test: User can fill Step 4 (Setup Address)
+        Expected: All address fields accept input
+        """
+        page = CreateRequestPage(web_driver, wait)
+&gt;       page.navigate_to_page()
+
+test_create_request_page.py:215: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+pages\create_request_page.py:65: in navigate_to_page
+    self.wait.until(EC.presence_of_element_located(self.TITLE_INPUT))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+method = &lt;function presence_of_element_located.&lt;locals&gt;._predicate at 0x000001B8ABFD2B60&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
+E       WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5
+E       NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5
+E       dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException</failure></testcase><testcase classname="test_create_request_page.TestCreateRequestPage" name="test_08_complete_create_request_flow" time="35.627"><failure message="selenium.common.exceptions.TimeoutException: Message: &#10;Stacktrace:&#10;RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8&#10;WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5&#10;NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5&#10;dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16">self = &lt;test_create_request_page.TestCreateRequestPage object at 0x000001B8ABD4A250&gt;
+web_driver = &lt;selenium.webdriver.firefox.webdriver.WebDriver (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+wait = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+
+    def test_08_complete_create_request_flow(self, web_driver, wait):
+        """
+        Test: User can complete entire Create Request flow
+        Expected: Request is created and persists in DB
+        Acceptance Evidence:
+            - DB record exists
+            - UI shows newly created request
+            - 201/200 API responses logged
+        """
+        page = CreateRequestPage(web_driver, wait)
+&gt;       page.navigate_to_page()
+
+test_create_request_page.py:262: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+pages\create_request_page.py:65: in navigate_to_page
+    self.wait.until(EC.presence_of_element_located(self.TITLE_INPUT))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+method = &lt;function presence_of_element_located.&lt;locals&gt;._predicate at 0x000001B8ABFD1440&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
+E       WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5
+E       NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5
+E       dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException</failure></testcase><testcase classname="test_create_request_page.TestCreateRequestPage" name="test_09_negative_empty_title" time="40.334"><failure message="selenium.common.exceptions.TimeoutException: Message: &#10;Stacktrace:&#10;RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8&#10;WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5&#10;NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5&#10;dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16">self = &lt;test_create_request_page.TestCreateRequestPage object at 0x000001B8ABD4A450&gt;
+web_driver = &lt;selenium.webdriver.firefox.webdriver.WebDriver (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+wait = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+
+    def test_09_negative_empty_title(self, web_driver, wait):
+        """
+        Test: Form validation - empty title
+        Expected: Validation error, request not created
+        """
+        page = CreateRequestPage(web_driver, wait)
+&gt;       page.navigate_to_page()
+
+test_create_request_page.py:319: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+pages\create_request_page.py:65: in navigate_to_page
+    self.wait.until(EC.presence_of_element_located(self.TITLE_INPUT))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+method = &lt;function presence_of_element_located.&lt;locals&gt;._predicate at 0x000001B8ABFD3B00&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
+E       WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5
+E       NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5
+E       dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException</failure></testcase><testcase classname="test_create_request_page.TestCreateRequestPage" name="test_10_negative_short_description" time="27.238"><failure message="selenium.common.exceptions.TimeoutException: Message: &#10;Stacktrace:&#10;RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8&#10;WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5&#10;NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5&#10;dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16">self = &lt;test_create_request_page.TestCreateRequestPage object at 0x000001B8ABDC5F40&gt;
+web_driver = &lt;selenium.webdriver.firefox.webdriver.WebDriver (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+wait = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+
+    def test_10_negative_short_description(self, web_driver, wait):
+        """
+        Test: Form validation - description too short
+        Expected: Validation error, show description requirement
+        """
+        page = CreateRequestPage(web_driver, wait)
+&gt;       page.navigate_to_page()
+
+test_create_request_page.py:348: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+pages\create_request_page.py:65: in navigate_to_page
+    self.wait.until(EC.presence_of_element_located(self.TITLE_INPUT))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+method = &lt;function presence_of_element_located.&lt;locals&gt;._predicate at 0x000001B8ABFD2B60&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
+E       WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5
+E       NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5
+E       dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException</failure></testcase><testcase classname="test_create_request_page.TestCreateRequestPage" name="test_11_negative_past_deadline" time="29.102"><failure message="selenium.common.exceptions.TimeoutException: Message: &#10;Stacktrace:&#10;RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8&#10;WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5&#10;NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5&#10;dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16">self = &lt;test_create_request_page.TestCreateRequestPage object at 0x000001B8ABDC6210&gt;
+web_driver = &lt;selenium.webdriver.firefox.webdriver.WebDriver (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+wait = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+
+    def test_11_negative_past_deadline(self, web_driver, wait):
+        """
+        Test: Form validation - deadline in the past
+        Expected: Validation error, no creation
+        """
+        page = CreateRequestPage(web_driver, wait)
+&gt;       page.navigate_to_page()
+
+test_create_request_page.py:377: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+pages\create_request_page.py:65: in navigate_to_page
+    self.wait.until(EC.presence_of_element_located(self.TITLE_INPUT))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+method = &lt;function presence_of_element_located.&lt;locals&gt;._predicate at 0x000001B8AC010540&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
+E       WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5
+E       NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5
+E       dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException</failure></testcase><testcase classname="test_create_request_page.TestCreateRequestPage" name="test_12_negative_missing_location" time="31.726"><failure message="selenium.common.exceptions.TimeoutException: Message: &#10;Stacktrace:&#10;RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8&#10;WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5&#10;NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5&#10;dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16">self = &lt;test_create_request_page.TestCreateRequestPage object at 0x000001B8ABE76EB0&gt;
+web_driver = &lt;selenium.webdriver.firefox.webdriver.WebDriver (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+wait = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+
+    def test_12_negative_missing_location(self, web_driver, wait):
+        """
+        Test: Form validation - missing required location fields
+        Expected: Clear inline error, no submission
+        """
+        page = CreateRequestPage(web_driver, wait)
+&gt;       page.navigate_to_page()
+
+test_create_request_page.py:419: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+pages\create_request_page.py:65: in navigate_to_page
+    self.wait.until(EC.presence_of_element_located(self.TITLE_INPUT))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+method = &lt;function presence_of_element_located.&lt;locals&gt;._predicate at 0x000001B8AC0102C0&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
+E       WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5
+E       NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5
+E       dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException</failure></testcase><testcase classname="test_create_request_page.TestCreateRequestPage" name="test_13_back_navigation" time="29.606"><failure message="selenium.common.exceptions.TimeoutException: Message: &#10;Stacktrace:&#10;RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8&#10;WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5&#10;NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5&#10;dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16">self = &lt;test_create_request_page.TestCreateRequestPage object at 0x000001B8ABE77310&gt;
+web_driver = &lt;selenium.webdriver.firefox.webdriver.WebDriver (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+wait = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+
+    def test_13_back_navigation(self, web_driver, wait):
+        """
+        Test: Back button navigation works correctly
+        Expected: User can go back through all steps without losing data
+        """
+        page = CreateRequestPage(web_driver, wait)
+&gt;       page.navigate_to_page()
+
+test_create_request_page.py:458: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+pages\create_request_page.py:65: in navigate_to_page
+    self.wait.until(EC.presence_of_element_located(self.TITLE_INPUT))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+method = &lt;function presence_of_element_located.&lt;locals&gt;._predicate at 0x000001B8AC010040&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
+E       WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5
+E       NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5
+E       dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException</failure></testcase><testcase classname="test_create_request_page.TestCreateRequestPageNegative" name="test_01_form_requires_authentication" time="18.634"><failure message="AssertionError: Should redirect to login for unauthenticated user&#10;assert ('login' in 'http://localhost:5173/create-request' or 'auth' in 'http://localhost:5173/create-request')&#10; +  where 'http://localhost:5173/create-request' = &lt;built-in method lower of str object at 0x000001B8AC041340&gt;()&#10; +    where &lt;built-in method lower of str object at 0x000001B8AC041340&gt; = 'http://localhost:5173/create-request'.lower&#10; +      where 'http://localhost:5173/create-request' = &lt;selenium.webdriver.firefox.webdriver.WebDriver (session=&quot;10ca1bab-89b9-41c5-9f0f-37c457cc32d4&quot;)&gt;.current_url&#10; +  and   'http://localhost:5173/create-request' = &lt;built-in method lower of str object at 0x000001B8AC040260&gt;()&#10; +    where &lt;built-in method lower of str object at 0x000001B8AC040260&gt; = 'http://localhost:5173/create-request'.lower&#10; +      where 'http://localhost:5173/create-request' = &lt;selenium.webdriver.firefox.webdriver.WebDriver (session=&quot;10ca1bab-89b9-41c5-9f0f-37c457cc32d4&quot;)&gt;.current_url">self = &lt;test_create_request_page.TestCreateRequestPageNegative object at 0x000001B8ABDE2490&gt;
+web_driver = &lt;selenium.webdriver.firefox.webdriver.WebDriver (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+wait = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+
+    @pytest.mark.skip_login
+    def test_01_form_requires_authentication(self, web_driver, wait):
+        """
+        Test: Unauthenticated user cannot access Create Request
+        Expected: Redirect to login page
+        """
+        # Clear any existing cookies/session first
+        web_driver.delete_all_cookies()
+        web_driver.execute_script("window.localStorage.clear();")
+        web_driver.execute_script("window.sessionStorage.clear();")
+        web_driver.get(f"{self.BASE_URL}/")  # Start fresh
+    
+        # Now try to access create request page without login
+        web_driver.get(f"{self.BASE_URL}/create-request")
+    
+        # Should redirect to login
+&gt;       assert "login" in web_driver.current_url.lower() or \
+               "auth" in web_driver.current_url.lower(), \
+               "Should redirect to login for unauthenticated user"
+E       AssertionError: Should redirect to login for unauthenticated user
+E       assert ('login' in 'http://localhost:5173/create-request' or 'auth' in 'http://localhost:5173/create-request')
+E        +  where 'http://localhost:5173/create-request' = &lt;built-in method lower of str object at 0x000001B8AC041340&gt;()
+E        +    where &lt;built-in method lower of str object at 0x000001B8AC041340&gt; = 'http://localhost:5173/create-request'.lower
+E        +      where 'http://localhost:5173/create-request' = &lt;selenium.webdriver.firefox.webdriver.WebDriver (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;.current_url
+E        +  and   'http://localhost:5173/create-request' = &lt;built-in method lower of str object at 0x000001B8AC040260&gt;()
+E        +    where &lt;built-in method lower of str object at 0x000001B8AC040260&gt; = 'http://localhost:5173/create-request'.lower
+E        +      where 'http://localhost:5173/create-request' = &lt;selenium.webdriver.firefox.webdriver.WebDriver (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;.current_url
+
+test_create_request_page.py:508: AssertionError</failure></testcase><testcase classname="test_create_request_page.TestCreateRequestPageNegative" name="test_02_no_empty_file_upload" time="32.914"><failure message="selenium.common.exceptions.TimeoutException: Message: &#10;Stacktrace:&#10;RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8&#10;WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5&#10;NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5&#10;dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16">self = &lt;test_create_request_page.TestCreateRequestPageNegative object at 0x000001B8ABDE25D0&gt;
+web_driver = &lt;selenium.webdriver.firefox.webdriver.WebDriver (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+wait = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+
+    def test_02_no_empty_file_upload(self, web_driver, wait):
+        """
+        Test: User cannot upload invalid file types
+        Expected: Only image files accepted
+        """
+        page = CreateRequestPage(web_driver, wait)
+&gt;       page.navigate_to_page()
+
+test_create_request_page.py:518: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+pages\create_request_page.py:65: in navigate_to_page
+    self.wait.until(EC.presence_of_element_located(self.TITLE_INPUT))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="10ca1bab-89b9-41c5-9f0f-37c457cc32d4")&gt;
+method = &lt;function presence_of_element_located.&lt;locals&gt;._predicate at 0x000001B8AC012980&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       RemoteError@chrome://remote/content/shared/RemoteError.sys.mjs:8:8
+E       WebDriverError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:202:5
+E       NoSuchElementError@chrome://remote/content/shared/webdriver/Errors.sys.mjs:555:5
+E       dom.find/&lt;/&lt;@chrome://remote/content/shared/DOM.sys.mjs:136:16
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException</failure></testcase><testcase classname="test_filter_by_category.FilterByCategoryTest" name="test_01_requests_page_loads_correctly" time="66.631" /><testcase classname="test_filter_by_category.FilterByCategoryTest" name="test_02_filter_by_home_repair_category" time="40.761" /><testcase classname="test_filter_by_category.FilterByCategoryTest" name="test_03_clear_filter_and_apply_tutoring" time="49.496" /><testcase classname="test_filter_by_category.FilterByCategoryTest" name="test_04_empty_state_when_no_posts_in_category" time="23.303" /><testcase classname="test_filter_by_category.FilterByCategoryTest" name="test_05_filter_persistence_across_page_actions" time="24.502" /><testcase classname="test_filter_by_category.FilterByCategoryTest" name="test_06_multiple_category_switches" time="57.207" /><testcase classname="test_filter_by_category.FilterByCategoryTest" name="test_07_category_filter_with_guest_user" time="20.420" /><testcase classname="test_filter_by_category.FilterByCategoryTest" name="test_08_clearing_filter_shows_all_posts" time="14.816" /><testcase classname="test_filter_by_category.FilterByCategoryTest" name="test_09_category_filter_url_parameters" time="20.117" /><testcase classname="test_filter_by_category.FilterByCategoryTest" name="test_10_rapid_category_switching" time="49.991" /><testcase classname="test_filter_by_category.FilterByCategoryTest" name="test_11_clicking_category_badge_applies_filter" time="27.473" /><testcase classname="test_guest_browsing.GuestBrowsingTest" name="test_01_navigate_to_home_from_login_page" time="16.434" /><testcase classname="test_guest_browsing.GuestBrowsingTest" name="test_02_sidebar_home_button_navigation" time="8.500" /><testcase classname="test_guest_browsing.GuestBrowsingTest" name="test_03_sidebar_categories_button_navigation" time="5.483" /><testcase classname="test_guest_browsing.GuestBrowsingTest" name="test_04_sidebar_requests_button_navigation" time="6.150" /><testcase classname="test_guest_browsing.GuestBrowsingTest" name="test_05_sidebar_create_request_button_redirects_to_login" time="8.036" /><testcase classname="test_guest_browsing.GuestBrowsingTest" name="test_06_sidebar_login_button_navigation" time="6.595" /><testcase classname="test_guest_browsing.GuestBrowsingTest" name="test_07_sidebar_register_button_navigation" time="5.700" /><testcase classname="test_guest_browsing.GuestBrowsingTest" name="test_08_sidebar_home_icon_navigation" time="10.279" /><testcase classname="test_guest_browsing.GuestBrowsingTest" name="test_09_search_bar_functionality" time="5.449" /><testcase classname="test_guest_browsing.GuestBrowsingTest" name="test_10_popular_categories_other_navigation" time="10.841" /><testcase classname="test_guest_browsing.GuestBrowsingTest" name="test_11_categories_page_other_services_navigation" time="10.852" /><testcase classname="test_guest_browsing.GuestBrowsingTest" name="test_12_filter_requests_by_location" time="15.369" /><testcase classname="test_login_page.LoginPageTest" name="test_01_login_page_loads_correctly" time="7.663" /><testcase classname="test_login_page.LoginPageTest" name="test_02_successful_login_with_valid_credentials" time="5.894" /><testcase classname="test_login_page.LoginPageTest" name="test_03_login_state_persists_after_page_refresh" time="9.670" /><testcase classname="test_login_page.LoginPageTest" name="test_04_invalid_password_shows_error" time="7.667" /><testcase classname="test_login_page.LoginPageTest" name="test_05_invalid_email_shows_error" time="7.336" /><testcase classname="test_login_page.LoginPageTest" name="test_06_empty_fields_validation" time="5.533" /><testcase classname="test_login_page.LoginPageTest" name="test_07_remember_me_functionality" time="5.644" /><testcase classname="test_login_page.LoginPageTest" name="test_08_password_visibility_toggle" time="5.322" /><testcase classname="test_login_page.LoginPageTest" name="test_09_navigation_to_register_page" time="4.956" /><testcase classname="test_login_page.LoginPageTest" name="test_10_navigation_to_forgot_password_page" time="3.916" /><testcase classname="test_login_page.LoginPageTest" name="test_11_continue_as_guest" time="5.122" /><testcase classname="test_login_page.LoginPageTest" name="test_12_theme_toggle_functionality" time="7.924" /><testcase classname="test_volunteer_request.VolunteerRequestTest" name="test_01_authenticated_user_can_view_requests" time="27.608" /><testcase classname="test_volunteer_request.VolunteerRequestTest" name="test_02_authenticated_user_can_view_request_details" time="23.306"><failure message="AssertionError: Clickable element not found: xpath=//*[@id=&quot;root&quot;]/div/div[2]/div/div[2]/div/div[1]">self = &lt;test_volunteer_request.VolunteerRequestTest testMethod=test_02_authenticated_user_can_view_request_details&gt;, by = 'xpath'
+value = '//*[@id="root"]/div/div[2]/div/div[2]/div/div[1]', timeout = 10
+
+    def _get_clickable_element(self, by, value, timeout=10):
+        """Helper method to get a clickable element"""
+        try:
+&gt;           return WebDriverWait(self.driver, timeout).until(
+                EC.element_to_be_clickable((by, value))
+            )
+
+test_volunteer_request.py:113: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="66a5f09e3496d57cac3903729415979e")&gt;
+method = &lt;function element_to_be_clickable.&lt;locals&gt;._predicate at 0x000001B8AC011D00&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       Symbols not available. Dumping unresolved backtrace:
+E       	0x7ff65c2588e5
+E       	0x7ff65c258940
+E       	0x7ff65c03165d
+E       	0x7ff65c089a33
+E       	0x7ff65c089d3c
+E       	0x7ff65c0ddf67
+E       	0x7ff65c0dac97
+E       	0x7ff65c07ac29
+E       	0x7ff65c07ba93
+E       	0x7ff65c570640
+E       	0x7ff65c56af80
+E       	0x7ff65c5896e6
+E       	0x7ff65c275de4
+E       	0x7ff65c27ed8c
+E       	0x7ff65c262004
+E       	0x7ff65c2621b5
+E       	0x7ff65c247ee2
+E       	0x7ffb39bee8d7
+E       	0x7ffb3b4cc53c
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException
+
+During handling of the above exception, another exception occurred:
+
+self = &lt;test_volunteer_request.VolunteerRequestTest testMethod=test_02_authenticated_user_can_view_request_details&gt;
+
+    def test_02_authenticated_user_can_view_request_details(self):
+        """
+        Test Case: Authenticated user can click and view request details
+    
+        Steps:
+        1. Login as volunteer user
+        2. Navigate to requests page
+        3. Click on first request card
+        4. Verify navigation to request details page
+        """
+        # Step 1: Login
+        self._login_as_volunteer()
+    
+        # Step 2: Navigate to requests page
+        self.driver.get(self.REQUESTS_URL)
+        time.sleep(2)
+    
+        # Step 3: Click on first request card
+&gt;       request_card = self._get_clickable_element(
+            By.XPATH,
+            self.FIRST_REQUEST_CARD_XPATH
+        )
+
+test_volunteer_request.py:234: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+test_volunteer_request.py:117: in _get_clickable_element
+    self.fail(f"Clickable element not found: {by}={value}")
+E   AssertionError: Clickable element not found: xpath=//*[@id="root"]/div/div[2]/div/div[2]/div/div[1]</failure></testcase><testcase classname="test_volunteer_request.VolunteerRequestTest" name="test_03_volunteer_for_available_request" time="23.160"><failure message="AssertionError: Clickable element not found: xpath=//*[@id=&quot;root&quot;]/div/div[2]/div/div[2]/div/div[1]">self = &lt;test_volunteer_request.VolunteerRequestTest testMethod=test_03_volunteer_for_available_request&gt;, by = 'xpath'
+value = '//*[@id="root"]/div/div[2]/div/div[2]/div/div[1]', timeout = 10
+
+    def _get_clickable_element(self, by, value, timeout=10):
+        """Helper method to get a clickable element"""
+        try:
+&gt;           return WebDriverWait(self.driver, timeout).until(
+                EC.element_to_be_clickable((by, value))
+            )
+
+test_volunteer_request.py:113: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="66a5f09e3496d57cac3903729415979e")&gt;
+method = &lt;function element_to_be_clickable.&lt;locals&gt;._predicate at 0x000001B8AC0119E0&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       Symbols not available. Dumping unresolved backtrace:
+E       	0x7ff65c2588e5
+E       	0x7ff65c258940
+E       	0x7ff65c03165d
+E       	0x7ff65c089a33
+E       	0x7ff65c089d3c
+E       	0x7ff65c0ddf67
+E       	0x7ff65c0dac97
+E       	0x7ff65c07ac29
+E       	0x7ff65c07ba93
+E       	0x7ff65c570640
+E       	0x7ff65c56af80
+E       	0x7ff65c5896e6
+E       	0x7ff65c275de4
+E       	0x7ff65c27ed8c
+E       	0x7ff65c262004
+E       	0x7ff65c2621b5
+E       	0x7ff65c247ee2
+E       	0x7ffb39bee8d7
+E       	0x7ffb3b4cc53c
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException
+
+During handling of the above exception, another exception occurred:
+
+self = &lt;test_volunteer_request.VolunteerRequestTest testMethod=test_03_volunteer_for_available_request&gt;
+
+    def test_03_volunteer_for_available_request(self):
+        """
+        Test Case: Main scenario - User successfully volunteers for a request
+    
+        Steps:
+        1. Login as volunteer user
+        2. Navigate to requests page
+        3. Click on first request
+        4. Click volunteer/apply button
+        5. Verify success confirmation
+        """
+        # Step 1: Login
+        self._login_as_volunteer()
+    
+        # Step 2: Navigate to requests page
+        self.driver.get(self.REQUESTS_URL)
+        time.sleep(2)
+    
+        # Step 3: Click on first request
+&gt;       request_card = self._get_clickable_element(
+            By.XPATH,
+            self.FIRST_REQUEST_CARD_XPATH
+        )
+
+test_volunteer_request.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+test_volunteer_request.py:117: in _get_clickable_element
+    self.fail(f"Clickable element not found: {by}={value}")
+E   AssertionError: Clickable element not found: xpath=//*[@id="root"]/div/div[2]/div/div[2]/div/div[1]</failure></testcase><testcase classname="test_volunteer_request.VolunteerRequestTest" name="test_04_verify_volunteer_button_exists_on_request_details" time="21.593"><failure message="AssertionError: Clickable element not found: xpath=//*[@id=&quot;root&quot;]/div/div[2]/div/div[2]/div/div[1]">self = &lt;test_volunteer_request.VolunteerRequestTest testMethod=test_04_verify_volunteer_button_exists_on_request_details&gt;, by = 'xpath'
+value = '//*[@id="root"]/div/div[2]/div/div[2]/div/div[1]', timeout = 10
+
+    def _get_clickable_element(self, by, value, timeout=10):
+        """Helper method to get a clickable element"""
+        try:
+&gt;           return WebDriverWait(self.driver, timeout).until(
+                EC.element_to_be_clickable((by, value))
+            )
+
+test_volunteer_request.py:113: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="66a5f09e3496d57cac3903729415979e")&gt;
+method = &lt;function element_to_be_clickable.&lt;locals&gt;._predicate at 0x000001B8AC03A8E0&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       Symbols not available. Dumping unresolved backtrace:
+E       	0x7ff65c2588e5
+E       	0x7ff65c258940
+E       	0x7ff65c03165d
+E       	0x7ff65c089a33
+E       	0x7ff65c089d3c
+E       	0x7ff65c0ddf67
+E       	0x7ff65c0dac97
+E       	0x7ff65c07ac29
+E       	0x7ff65c07ba93
+E       	0x7ff65c570640
+E       	0x7ff65c56af80
+E       	0x7ff65c5896e6
+E       	0x7ff65c275de4
+E       	0x7ff65c27ed8c
+E       	0x7ff65c262004
+E       	0x7ff65c2621b5
+E       	0x7ff65c247ee2
+E       	0x7ffb39bee8d7
+E       	0x7ffb3b4cc53c
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException
+
+During handling of the above exception, another exception occurred:
+
+self = &lt;test_volunteer_request.VolunteerRequestTest testMethod=test_04_verify_volunteer_button_exists_on_request_details&gt;
+
+    def test_04_verify_volunteer_button_exists_on_request_details(self):
+        """
+        Test Case: Verify volunteer/apply button is present on request details
+    
+        Steps:
+        1. Login as volunteer user
+        2. Navigate to requests page
+        3. Click on first request
+        4. Verify volunteer button exists
+        """
+        # Step 1: Login
+        self._login_as_volunteer()
+    
+        # Step 2: Navigate to requests page
+        self.driver.get(self.REQUESTS_URL)
+        time.sleep(2)
+    
+        # Step 3: Click on first request
+&gt;       request_card = self._get_clickable_element(
+            By.XPATH,
+            self.FIRST_REQUEST_CARD_XPATH
+        )
+
+test_volunteer_request.py:337: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+test_volunteer_request.py:117: in _get_clickable_element
+    self.fail(f"Clickable element not found: {by}={value}")
+E   AssertionError: Clickable element not found: xpath=//*[@id="root"]/div/div[2]/div/div[2]/div/div[1]</failure></testcase><testcase classname="test_volunteer_request.VolunteerRequestTest" name="test_05_volunteer_button_shows_confirmation" time="20.387"><failure message="AssertionError: Clickable element not found: xpath=//*[@id=&quot;root&quot;]/div/div[2]/div/div[2]/div/div[1]">self = &lt;test_volunteer_request.VolunteerRequestTest testMethod=test_05_volunteer_button_shows_confirmation&gt;, by = 'xpath'
+value = '//*[@id="root"]/div/div[2]/div/div[2]/div/div[1]', timeout = 10
+
+    def _get_clickable_element(self, by, value, timeout=10):
+        """Helper method to get a clickable element"""
+        try:
+&gt;           return WebDriverWait(self.driver, timeout).until(
+                EC.element_to_be_clickable((by, value))
+            )
+
+test_volunteer_request.py:113: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="66a5f09e3496d57cac3903729415979e")&gt;
+method = &lt;function element_to_be_clickable.&lt;locals&gt;._predicate at 0x000001B8AC03B380&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       Symbols not available. Dumping unresolved backtrace:
+E       	0x7ff65c2588e5
+E       	0x7ff65c258940
+E       	0x7ff65c03165d
+E       	0x7ff65c089a33
+E       	0x7ff65c089d3c
+E       	0x7ff65c0ddf67
+E       	0x7ff65c0dac97
+E       	0x7ff65c07ac29
+E       	0x7ff65c07ba93
+E       	0x7ff65c570640
+E       	0x7ff65c56af80
+E       	0x7ff65c5896e6
+E       	0x7ff65c275de4
+E       	0x7ff65c27ed8c
+E       	0x7ff65c262004
+E       	0x7ff65c2621b5
+E       	0x7ff65c247ee2
+E       	0x7ffb39bee8d7
+E       	0x7ffb3b4cc53c
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException
+
+During handling of the above exception, another exception occurred:
+
+self = &lt;test_volunteer_request.VolunteerRequestTest testMethod=test_05_volunteer_button_shows_confirmation&gt;
+
+    def test_05_volunteer_button_shows_confirmation(self):
+        """
+        Test Case: Verify confirmation message/modal appears after volunteering
+    
+        Steps:
+        1. Login as volunteer user
+        2. Navigate to requests page
+        3. Click on first request
+        4. Click volunteer button
+        5. Verify confirmation appears
+        """
+        # Step 1: Login
+        self._login_as_volunteer()
+    
+        # Step 2: Navigate to requests page
+        self.driver.get(self.REQUESTS_URL)
+        time.sleep(2)
+    
+        # Step 3: Click on first request
+&gt;       request_card = self._get_clickable_element(
+            By.XPATH,
+            self.FIRST_REQUEST_CARD_XPATH
+        )
+
+test_volunteer_request.py:381: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+test_volunteer_request.py:117: in _get_clickable_element
+    self.fail(f"Clickable element not found: {by}={value}")
+E   AssertionError: Clickable element not found: xpath=//*[@id="root"]/div/div[2]/div/div[2]/div/div[1]</failure></testcase><testcase classname="test_volunteer_request.VolunteerRequestTest" name="test_06_cannot_volunteer_for_own_request" time="20.444"><failure message="AssertionError: Clickable element not found: xpath=//*[@id=&quot;root&quot;]/div/div[2]/div/div[2]/div/div[1]">self = &lt;test_volunteer_request.VolunteerRequestTest testMethod=test_06_cannot_volunteer_for_own_request&gt;, by = 'xpath'
+value = '//*[@id="root"]/div/div[2]/div/div[2]/div/div[1]', timeout = 10
+
+    def _get_clickable_element(self, by, value, timeout=10):
+        """Helper method to get a clickable element"""
+        try:
+&gt;           return WebDriverWait(self.driver, timeout).until(
+                EC.element_to_be_clickable((by, value))
+            )
+
+test_volunteer_request.py:113: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="66a5f09e3496d57cac3903729415979e")&gt;
+method = &lt;function element_to_be_clickable.&lt;locals&gt;._predicate at 0x000001B8AC03B9C0&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       Symbols not available. Dumping unresolved backtrace:
+E       	0x7ff65c2588e5
+E       	0x7ff65c258940
+E       	0x7ff65c03165d
+E       	0x7ff65c089a33
+E       	0x7ff65c089d3c
+E       	0x7ff65c0ddf67
+E       	0x7ff65c0dac97
+E       	0x7ff65c07ac29
+E       	0x7ff65c07ba93
+E       	0x7ff65c570640
+E       	0x7ff65c56af80
+E       	0x7ff65c5896e6
+E       	0x7ff65c275de4
+E       	0x7ff65c27ed8c
+E       	0x7ff65c262004
+E       	0x7ff65c2621b5
+E       	0x7ff65c247ee2
+E       	0x7ffb39bee8d7
+E       	0x7ffb3b4cc53c
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException
+
+During handling of the above exception, another exception occurred:
+
+self = &lt;test_volunteer_request.VolunteerRequestTest testMethod=test_06_cannot_volunteer_for_own_request&gt;
+
+    def test_06_cannot_volunteer_for_own_request(self):
+        """
+        Test Case: User cannot volunteer for their own created request
+    
+        Steps:
+        1. Login as volunteer user
+        2. Navigate to a request created by this user (if exists)
+        3. Verify volunteer button is not present or is disabled
+    
+        Note: This test assumes the logged-in user has created at least one request
+        """
+        # Step 1: Login
+        self._login_as_volunteer()
+    
+        # Step 2: Navigate to requests page
+        self.driver.get(self.REQUESTS_URL)
+        time.sleep(2)
+    
+        # Try to find a request created by this user
+        # This is a best-effort test - may need to navigate to user's own requests
+        # For now, we'll check the first request and see if volunteer button behavior is appropriate
+    
+&gt;       request_card = self._get_clickable_element(
+            By.XPATH,
+            self.FIRST_REQUEST_CARD_XPATH
+        )
+
+test_volunteer_request.py:445: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+test_volunteer_request.py:117: in _get_clickable_element
+    self.fail(f"Clickable element not found: {by}={value}")
+E   AssertionError: Clickable element not found: xpath=//*[@id="root"]/div/div[2]/div/div[2]/div/div[1]</failure></testcase><testcase classname="test_volunteer_request.VolunteerRequestTest" name="test_07_volunteer_button_changes_to_withdraw" time="25.796"><failure message="AssertionError: Clickable element not found: xpath=//*[@id=&quot;root&quot;]/div/div[2]/div/div[2]/div/div[1]">self = &lt;test_volunteer_request.VolunteerRequestTest testMethod=test_07_volunteer_button_changes_to_withdraw&gt;, by = 'xpath'
+value = '//*[@id="root"]/div/div[2]/div/div[2]/div/div[1]', timeout = 10
+
+    def _get_clickable_element(self, by, value, timeout=10):
+        """Helper method to get a clickable element"""
+        try:
+&gt;           return WebDriverWait(self.driver, timeout).until(
+                EC.element_to_be_clickable((by, value))
+            )
+
+test_volunteer_request.py:113: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;selenium.webdriver.support.wait.WebDriverWait (session="66a5f09e3496d57cac3903729415979e")&gt;
+method = &lt;function element_to_be_clickable.&lt;locals&gt;._predicate at 0x000001B8AC03BF60&gt;, message = ''
+
+    def until(self, method: Callable[[D], Union[Literal[False], T]], message: str = "") -&gt; T:
+        """Wait until the method returns a value that is not False.
+    
+        Calls the method provided with the driver as an argument until the
+        return value does not evaluate to ``False``.
+    
+        Parameters:
+        -----------
+        method: callable(WebDriver)
+            - A callable object that takes a WebDriver instance as an argument.
+    
+        message: str
+            - Optional message for :exc:`TimeoutException`
+    
+        Return:
+        -------
+        object: T
+            - The result of the last call to `method`
+    
+        Raises:
+        -------
+        TimeoutException
+            - If 'method' does not return a truthy value within the WebDriverWait
+            object's timeout
+    
+        Example:
+        --------
+        &gt;&gt;&gt; from selenium.webdriver.common.by import By
+        &gt;&gt;&gt; from selenium.webdriver.support.ui import WebDriverWait
+        &gt;&gt;&gt; from selenium.webdriver.support import expected_conditions as EC
+    
+        # Wait until an element is visible on the page
+        &gt;&gt;&gt; wait = WebDriverWait(driver, 10)
+        &gt;&gt;&gt; element = wait.until(EC.visibility_of_element_located((By.ID, "exampleId")))
+        &gt;&gt;&gt; print(element.text)
+        """
+        screen = None
+        stacktrace = None
+    
+        end_time = time.monotonic() + self._timeout
+        while True:
+            try:
+                value = method(self._driver)
+                if value:
+                    return value
+            except self._ignored_exceptions as exc:
+                screen = getattr(exc, "screen", None)
+                stacktrace = getattr(exc, "stacktrace", None)
+            if time.monotonic() &gt; end_time:
+                break
+            time.sleep(self._poll)
+&gt;       raise TimeoutException(message, screen, stacktrace)
+E       selenium.common.exceptions.TimeoutException: Message: 
+E       Stacktrace:
+E       Symbols not available. Dumping unresolved backtrace:
+E       	0x7ff65c2588e5
+E       	0x7ff65c258940
+E       	0x7ff65c03165d
+E       	0x7ff65c089a33
+E       	0x7ff65c089d3c
+E       	0x7ff65c0ddf67
+E       	0x7ff65c0dac97
+E       	0x7ff65c07ac29
+E       	0x7ff65c07ba93
+E       	0x7ff65c570640
+E       	0x7ff65c56af80
+E       	0x7ff65c5896e6
+E       	0x7ff65c275de4
+E       	0x7ff65c27ed8c
+E       	0x7ff65c262004
+E       	0x7ff65c2621b5
+E       	0x7ff65c247ee2
+E       	0x7ffb39bee8d7
+E       	0x7ffb3b4cc53c
+
+C:\Users\musak\AppData\Local\Programs\Python\Python313\Lib\site-packages\selenium\webdriver\support\wait.py:138: TimeoutException
+
+During handling of the above exception, another exception occurred:
+
+self = &lt;test_volunteer_request.VolunteerRequestTest testMethod=test_07_volunteer_button_changes_to_withdraw&gt;
+
+    def test_07_volunteer_button_changes_to_withdraw(self):
+        """
+        Test Case: Volunteer button changes to withdraw button after volunteering
+    
+        Steps:
+        1. Login as volunteer user
+        2. Navigate to requests page
+        3. Click on first request
+        4. Verify volunteer button exists
+        5. Click volunteer button
+        6. Verify button changes to withdraw button
+        """
+        # Step 1: Login
+        self._login_as_volunteer()
+    
+        # Step 2: Navigate to requests page
+        self.driver.get(self.REQUESTS_URL)
+        time.sleep(2)
+    
+        # Step 3: Click on first request
+&gt;       request_card = self._get_clickable_element(
+            By.XPATH,
+            self.FIRST_REQUEST_CARD_XPATH
+        )
+
+test_volunteer_request.py:497: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+test_volunteer_request.py:117: in _get_clickable_element
+    self.fail(f"Clickable element not found: {by}={value}")
+E   AssertionError: Clickable element not found: xpath=//*[@id="root"]/div/div[2]/div/div[2]/div/div[1]</failure></testcase></testsuite></testsuites>

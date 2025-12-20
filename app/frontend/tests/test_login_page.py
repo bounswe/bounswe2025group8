@@ -161,7 +161,7 @@ class LoginPageTest(unittest.TestCase):
         3. Verify all form elements are present
         """
         # Verify page title contains expected text
-        self.assertIn("Neighborhood", self.driver.title.lower() or self.driver.page_source.lower())
+        self.assertIn("neighborhood", self.driver.title.lower() or self.driver.page_source.lower())
         
         # Verify LOGIN tab is active
         login_tab = self._get_element(
