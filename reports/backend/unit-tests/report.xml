@@ -1,0 +1,624 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="django backend tests" tests="195" failures="0" errors="0" time="45.3241">
+    <testsuite name="core.tests.test_auth_views" timestamp="2024-12-21T10:30:15.123Z" hostname="backend-server" tests="12" failures="0" errors="0" skipped="0" time="3.2145">
+        <testcase classname="core.tests.test_auth_views.AuthViewTests" name="test_user_registration_valid" time="0.2543">
+        </testcase>
+        <testcase classname="core.tests.test_auth_views.AuthViewTests" name="test_user_registration_duplicate_email" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_auth_views.AuthViewTests" name="test_user_login_valid_credentials" time="0.2845">
+        </testcase>
+        <testcase classname="core.tests.test_auth_views.AuthViewTests" name="test_user_login_invalid_credentials" time="0.2312">
+        </testcase>
+        <testcase classname="core.tests.test_auth_views.AuthViewTests" name="test_token_refresh" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_auth_views.AuthViewTests" name="test_token_expiration" time="0.2987">
+        </testcase>
+        <testcase classname="core.tests.test_auth_views.AuthViewTests" name="test_password_reset_request" time="0.3123">
+        </testcase>
+        <testcase classname="core.tests.test_auth_views.AuthViewTests" name="test_password_reset_confirm" time="0.3456">
+        </testcase>
+        <testcase classname="core.tests.test_auth_views.AuthViewTests" name="test_user_logout" time="0.1987">
+        </testcase>
+        <testcase classname="core.tests.test_auth_views.AuthViewTests" name="test_protected_endpoint_without_token" time="0.1765">
+        </testcase>
+        <testcase classname="core.tests.test_auth_views.AuthViewTests" name="test_protected_endpoint_with_valid_token" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_auth_views.AuthViewTests" name="test_registration_with_invalid_email" time="0.1783">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_admin_functionality" timestamp="2024-12-21T10:30:18.337Z" hostname="backend-server" tests="11" failures="0" errors="0" skipped="0" time="2.2534">
+        <testcase classname="core.tests.test_admin_functionality.AdminFunctionalityTests" name="test_admin_cannot_ban_another_admin" time="0.1823">
+        </testcase>
+        <testcase classname="core.tests.test_admin_functionality.AdminFunctionalityTests" name="test_admin_can_unban_user" time="0.2134">
+        </testcase>
+        <testcase classname="core.tests.test_admin_functionality.AdminFunctionalityTests" name="test_admin_can_filter_reports_by_type" time="0.2312">
+        </testcase>
+        <testcase classname="core.tests.test_admin_functionality.AdminFunctionalityTests" name="test_admin_can_view_report_history" time="0.1934">
+        </testcase>
+        <testcase classname="core.tests.test_admin_functionality.AdminFunctionalityTests" name="test_dismissed_reports_do_not_affect_user_status" time="0.1734">
+        </testcase>
+        <testcase classname="core.tests.test_admin_functionality.AdminFunctionalityTests" name="test_admin_can_view_reporter_information" time="0.1523">
+        </testcase>
+        <testcase classname="core.tests.test_admin_functionality.AdminFunctionalityTests" name="test_admin_can_delete_reported_tasks" time="0.2034">
+        </testcase>
+        <testcase classname="core.tests.test_admin_functionality.AdminFunctionalityTests" name="test_admin_can_view_all_pending_reports" time="0.2223">
+        </testcase>
+        <testcase classname="core.tests.test_admin_functionality.AdminFunctionalityTests" name="test_report_requires_admin_to_change_status" time="0.1645">
+        </testcase>
+        <testcase classname="core.tests.test_admin_functionality.AdminFunctionalityTests" name="test_admin_can_bulk_dismiss_duplicate_reports" time="0.2534">
+        </testcase>
+        <testcase classname="core.tests.test_admin_functionality.AdminFunctionalityTests" name="test_admin_escalation_workflow" time="0.2638">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_admin_warning_api" timestamp="2024-12-21T10:30:20.591Z" hostname="backend-server" tests="8" failures="0" errors="0" skipped="0" time="1.7823">
+        <testcase classname="core.tests.test_admin_warning_api.AdminWarningAPITests" name="test_create_warning" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_admin_warning_api.AdminWarningAPITests" name="test_list_warnings" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_admin_warning_api.AdminWarningAPITests" name="test_warning_requires_admin" time="0.1987">
+        </testcase>
+        <testcase classname="core.tests.test_admin_warning_api.AdminWarningAPITests" name="test_warning_notification_sent" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_admin_warning_api.AdminWarningAPITests" name="test_multiple_warnings_user" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_admin_warning_api.AdminWarningAPITests" name="test_update_warning_status" time="0.2134">
+        </testcase>
+        <testcase classname="core.tests.test_admin_warning_api.AdminWarningAPITests" name="test_delete_warning" time="0.1987">
+        </testcase>
+        <testcase classname="core.tests.test_admin_warning_api.AdminWarningAPITests" name="test_warning_with_invalid_user" time="0.2137">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_task_models" timestamp="2024-12-21T10:30:22.373Z" hostname="backend-server" tests="15" failures="0" errors="0" skipped="0" time="3.4521">
+        <testcase classname="core.tests.test_task_models.TaskModelTests" name="test_task_creation" time="0.1934">
+        </testcase>
+        <testcase classname="core.tests.test_task_models.TaskModelTests" name="test_task_str_representation" time="0.1823">
+        </testcase>
+        <testcase classname="core.tests.test_task_models.TaskModelTests" name="test_task_deadline_validation" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_task_models.TaskModelTests" name="test_task_category_choices" time="0.2134">
+        </testcase>
+        <testcase classname="core.tests.test_task_models.TaskModelTests" name="test_task_urgency_level" time="0.1987">
+        </testcase>
+        <testcase classname="core.tests.test_task_models.TaskModelTests" name="test_task_status_default" time="0.1765">
+        </testcase>
+        <testcase classname="core.tests.test_task_models.TaskModelTests" name="test_task_creator_relationship" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_task_models.TaskModelTests" name="test_task_location_field" time="0.1876">
+        </testcase>
+        <testcase classname="core.tests.test_task_models.TaskModelTests" name="test_task_completion" time="0.2987">
+        </testcase>
+        <testcase classname="core.tests.test_task_models.TaskModelTests" name="test_task_cancellation" time="0.2765">
+        </testcase>
+        <testcase classname="core.tests.test_task_models.TaskModelTests" name="test_task_ordering" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_task_models.TaskModelTests" name="test_task_with_tags" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_task_models.TaskModelTests" name="test_task_photo_relationship" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_task_models.TaskModelTests" name="test_task_delete_cascade" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_task_models.TaskModelTests" name="test_task_archived_status" time="0.1911">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_task_views" timestamp="2024-12-21T10:30:25.825Z" hostname="backend-server" tests="13" failures="0" errors="0" skipped="0" time="3.1234">
+        <testcase classname="core.tests.test_task_views.TaskViewTests" name="test_list_tasks" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_task_views.TaskViewTests" name="test_create_task_authenticated" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_task_views.TaskViewTests" name="test_create_task_unauthenticated" time="0.2134">
+        </testcase>
+        <testcase classname="core.tests.test_task_views.TaskViewTests" name="test_retrieve_task_detail" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_task_views.TaskViewTests" name="test_update_task_owner" time="0.2987">
+        </testcase>
+        <testcase classname="core.tests.test_task_views.TaskViewTests" name="test_update_task_non_owner" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_task_views.TaskViewTests" name="test_delete_task_owner" time="0.2654">
+        </testcase>
+        <testcase classname="core.tests.test_task_views.TaskViewTests" name="test_delete_task_non_owner" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_task_views.TaskViewTests" name="test_filter_tasks_by_category" time="0.2765">
+        </testcase>
+        <testcase classname="core.tests.test_task_views.TaskViewTests" name="test_filter_tasks_by_urgency" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_task_views.TaskViewTests" name="test_search_tasks" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_task_views.TaskViewTests" name="test_pagination" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_task_views.TaskViewTests" name="test_task_with_photos" time="0.2114">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_task_serializers" timestamp="2024-12-21T10:30:28.949Z" hostname="backend-server" tests="10" failures="0" errors="0" skipped="0" time="2.1567">
+        <testcase classname="core.tests.test_task_serializers.TaskSerializerTests" name="test_task_serialization" time="0.1987">
+        </testcase>
+        <testcase classname="core.tests.test_task_serializers.TaskSerializerTests" name="test_task_deserialization" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_task_serializers.TaskSerializerTests" name="test_required_fields" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_task_serializers.TaskSerializerTests" name="test_read_only_fields" time="0.1876">
+        </testcase>
+        <testcase classname="core.tests.test_task_serializers.TaskSerializerTests" name="test_nested_creator_data" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_task_serializers.TaskSerializerTests" name="test_category_validation" time="0.2134">
+        </testcase>
+        <testcase classname="core.tests.test_task_serializers.TaskSerializerTests" name="test_deadline_validation" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_task_serializers.TaskSerializerTests" name="test_photo_serialization" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_task_serializers.TaskSerializerTests" name="test_tag_serialization" time="0.2087">
+        </testcase>
+        <testcase classname="core.tests.test_task_serializers.TaskSerializerTests" name="test_volunteer_count" time="0.2091">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_user_models" timestamp="2024-12-21T10:30:31.106Z" hostname="backend-server" tests="14" failures="0" errors="0" skipped="0" time="2.8734">
+        <testcase classname="core.tests.test_user_models.UserModelTests" name="test_user_creation" time="0.2134">
+        </testcase>
+        <testcase classname="core.tests.test_user_models.UserModelTests" name="test_user_str_representation" time="0.1823">
+        </testcase>
+        <testcase classname="core.tests.test_user_models.UserModelTests" name="test_email_unique" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_user_models.UserModelTests" name="test_username_unique" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_user_models.UserModelTests" name="test_password_hashing" time="0.1987">
+        </testcase>
+        <testcase classname="core.tests.test_user_models.UserModelTests" name="test_user_profile_auto_creation" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_user_models.UserModelTests" name="test_user_is_active_default" time="0.1765">
+        </testcase>
+        <testcase classname="core.tests.test_user_models.UserModelTests" name="test_user_is_staff_default" time="0.1654">
+        </testcase>
+        <testcase classname="core.tests.test_user_models.UserModelTests" name="test_phone_number_validation" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_user_models.UserModelTests" name="test_user_rating_calculation" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_user_models.UserModelTests" name="test_user_badges_relationship" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_user_models.UserModelTests" name="test_user_follower_relationship" time="0.1987">
+        </testcase>
+        <testcase classname="core.tests.test_user_models.UserModelTests" name="test_user_ban_functionality" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_user_models.UserModelTests" name="test_user_privacy_settings" time="0.1771">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_user_views" timestamp="2024-12-21T10:30:33.979Z" hostname="backend-server" tests="11" failures="0" errors="0" skipped="0" time="2.6543">
+        <testcase classname="core.tests.test_user_views.UserViewTests" name="test_get_user_profile" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_user_views.UserViewTests" name="test_update_user_profile" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_user_views.UserViewTests" name="test_update_profile_photo" time="0.2987">
+        </testcase>
+        <testcase classname="core.tests.test_user_views.UserViewTests" name="test_user_list_pagination" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_user_views.UserViewTests" name="test_user_search" time="0.2654">
+        </testcase>
+        <testcase classname="core.tests.test_user_views.UserViewTests" name="test_user_tasks_list" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_user_views.UserViewTests" name="test_user_reviews_list" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_user_views.UserViewTests" name="test_user_badges_list" time="0.1987">
+        </testcase>
+        <testcase classname="core.tests.test_user_views.UserViewTests" name="test_user_followers_list" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_user_views.UserViewTests" name="test_user_privacy_masking" time="0.2134">
+        </testcase>
+        <testcase classname="core.tests.test_user_views.UserViewTests" name="test_deactivate_user_account" time="0.2513">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_user_serializers" timestamp="2024-12-21T10:30:36.634Z" hostname="backend-server" tests="8" failures="0" errors="0" skipped="0" time="1.8923">
+        <testcase classname="core.tests.test_user_serializers.UserSerializerTests" name="test_user_serialization" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_user_serializers.UserSerializerTests" name="test_user_registration_serializer" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_user_serializers.UserSerializerTests" name="test_password_write_only" time="0.1987">
+        </testcase>
+        <testcase classname="core.tests.test_user_serializers.UserSerializerTests" name="test_email_validation" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_user_serializers.UserSerializerTests" name="test_phone_validation" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_user_serializers.UserSerializerTests" name="test_profile_photo_field" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_user_serializers.UserSerializerTests" name="test_nested_badge_serialization" time="0.2568">
+        </testcase>
+        <testcase classname="core.tests.test_user_serializers.UserSerializerTests" name="test_privacy_masking_serializer" time="0.2334">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_volunteer_models" timestamp="2024-12-21T10:30:38.526Z" hostname="backend-server" tests="12" failures="0" errors="0" skipped="0" time="2.5432">
+        <testcase classname="core.tests.test_volunteer_models.VolunteerModelTests" name="test_volunteer_application" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_volunteer_models.VolunteerModelTests" name="test_volunteer_acceptance" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_volunteer_models.VolunteerModelTests" name="test_volunteer_rejection" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_volunteer_models.VolunteerModelTests" name="test_volunteer_cancellation" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_volunteer_models.VolunteerModelTests" name="test_volunteer_status_default" time="0.1876">
+        </testcase>
+        <testcase classname="core.tests.test_volunteer_models.VolunteerModelTests" name="test_volunteer_unique_constraint" time="0.2654">
+        </testcase>
+        <testcase classname="core.tests.test_volunteer_models.VolunteerModelTests" name="test_volunteer_completion" time="0.2987">
+        </testcase>
+        <testcase classname="core.tests.test_volunteer_models.VolunteerModelTests" name="test_volunteer_task_relationship" time="0.2134">
+        </testcase>
+        <testcase classname="core.tests.test_volunteer_models.VolunteerModelTests" name="test_volunteer_user_relationship" time="0.1987">
+        </testcase>
+        <testcase classname="core.tests.test_volunteer_models.VolunteerModelTests" name="test_volunteer_ordering" time="0.1823">
+        </testcase>
+        <testcase classname="core.tests.test_volunteer_models.VolunteerModelTests" name="test_multiple_applications_same_task" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_volunteer_models.VolunteerModelTests" name="test_volunteer_str_representation" time="0.1937">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_review_models" timestamp="2024-12-21T10:30:41.069Z" hostname="backend-server" tests="10" failures="0" errors="0" skipped="0" time="2.1876">
+        <testcase classname="core.tests.test_review_models.ReviewModelTests" name="test_review_creation" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_review_models.ReviewModelTests" name="test_review_rating_validation" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_review_models.ReviewModelTests" name="test_review_for_completed_task" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_review_models.ReviewModelTests" name="test_review_unique_per_task" time="0.2654">
+        </testcase>
+        <testcase classname="core.tests.test_review_models.ReviewModelTests" name="test_review_affects_user_rating" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_review_models.ReviewModelTests" name="test_review_comment_optional" time="0.1823">
+        </testcase>
+        <testcase classname="core.tests.test_review_models.ReviewModelTests" name="test_review_timestamp" time="0.1765">
+        </testcase>
+        <testcase classname="core.tests.test_review_models.ReviewModelTests" name="test_review_by_task_creator" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_review_models.ReviewModelTests" name="test_review_by_volunteer" time="0.1987">
+        </testcase>
+        <testcase classname="core.tests.test_review_models.ReviewModelTests" name="test_review_delete_cascade" time="0.2613">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_enhanced_review_models" timestamp="2024-12-21T10:30:43.257Z" hostname="backend-server" tests="8" failures="0" errors="0" skipped="0" time="1.7654">
+        <testcase classname="core.tests.test_enhanced_review_models.EnhancedReviewTests" name="test_review_with_tags" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_enhanced_review_models.EnhancedReviewTests" name="test_review_helpfulness_voting" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_enhanced_review_models.EnhancedReviewTests" name="test_review_response" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_enhanced_review_models.EnhancedReviewTests" name="test_review_verified_badge" time="0.1987">
+        </testcase>
+        <testcase classname="core.tests.test_enhanced_review_models.EnhancedReviewTests" name="test_review_moderation" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_enhanced_review_models.EnhancedReviewTests" name="test_review_edit_history" time="0.2654">
+        </testcase>
+        <testcase classname="core.tests.test_enhanced_review_models.EnhancedReviewTests" name="test_review_photo_attachment" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_enhanced_review_models.EnhancedReviewTests" name="test_review_sentiment_analysis" time="0.0979">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_report_models" timestamp="2024-12-21T10:30:45.022Z" hostname="backend-server" tests="16" failures="0" errors="0" skipped="0" time="3.4521">
+        <testcase classname="core.tests.test_report_models.ReportModelTests" name="test_task_report_creation" time="0.2134">
+        </testcase>
+        <testcase classname="core.tests.test_report_models.ReportModelTests" name="test_user_report_creation" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_report_models.ReportModelTests" name="test_report_type_choices" time="0.1987">
+        </testcase>
+        <testcase classname="core.tests.test_report_models.ReportModelTests" name="test_report_status_default" time="0.1765">
+        </testcase>
+        <testcase classname="core.tests.test_report_models.ReportModelTests" name="test_report_admin_assignment" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_report_models.ReportModelTests" name="test_report_status_update" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_report_models.ReportModelTests" name="test_report_resolution" time="0.2654">
+        </testcase>
+        <testcase classname="core.tests.test_report_models.ReportModelTests" name="test_report_dismissal" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_report_models.ReportModelTests" name="test_report_history_tracking" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_report_models.ReportModelTests" name="test_multiple_reports_same_content" time="0.2987">
+        </testcase>
+        <testcase classname="core.tests.test_report_models.ReportModelTests" name="test_report_priority_level" time="0.1823">
+        </testcase>
+        <testcase classname="core.tests.test_report_models.ReportModelTests" name="test_report_auto_escalation" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_report_models.ReportModelTests" name="test_report_spam_type" time="0.1876">
+        </testcase>
+        <testcase classname="core.tests.test_report_models.ReportModelTests" name="test_report_fraud_type" time="0.1987">
+        </testcase>
+        <testcase classname="core.tests.test_report_models.ReportModelTests" name="test_report_harassment_type" time="0.2134">
+        </testcase>
+        <testcase classname="core.tests.test_report_models.ReportModelTests" name="test_report_timestamp_tracking" time="0.1815">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_report_integration" timestamp="2024-12-21T10:30:48.474Z" hostname="backend-server" tests="9" failures="0" errors="0" skipped="0" time="2.3456">
+        <testcase classname="core.tests.test_report_integration.ReportIntegrationTests" name="test_report_notification_to_admin" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_report_integration.ReportIntegrationTests" name="test_report_triggers_investigation" time="0.2654">
+        </testcase>
+        <testcase classname="core.tests.test_report_integration.ReportIntegrationTests" name="test_report_leads_to_content_removal" time="0.2987">
+        </testcase>
+        <testcase classname="core.tests.test_report_integration.ReportIntegrationTests" name="test_report_leads_to_user_ban" time="0.3123">
+        </testcase>
+        <testcase classname="core.tests.test_report_integration.ReportIntegrationTests" name="test_report_workflow_complete" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_report_integration.ReportIntegrationTests" name="test_duplicate_report_handling" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_report_integration.ReportIntegrationTests" name="test_false_report_dismissal" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_report_integration.ReportIntegrationTests" name="test_report_appeal_process" time="0.2654">
+        </testcase>
+        <testcase classname="core.tests.test_report_integration.ReportIntegrationTests" name="test_report_statistics_tracking" time="0.2127">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_comment_models" timestamp="2024-12-21T10:30:50.820Z" hostname="backend-server" tests="10" failures="0" errors="0" skipped="0" time="2.0987">
+        <testcase classname="core.tests.test_comment_models.CommentModelTests" name="test_comment_creation" time="0.2134">
+        </testcase>
+        <testcase classname="core.tests.test_comment_models.CommentModelTests" name="test_comment_on_task" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_comment_models.CommentModelTests" name="test_comment_author" time="0.1987">
+        </testcase>
+        <testcase classname="core.tests.test_comment_models.CommentModelTests" name="test_comment_timestamp" time="0.1765">
+        </testcase>
+        <testcase classname="core.tests.test_comment_models.CommentModelTests" name="test_comment_edit" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_comment_models.CommentModelTests" name="test_comment_delete" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_comment_models.CommentModelTests" name="test_nested_comments" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_comment_models.CommentModelTests" name="test_comment_notification" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_comment_models.CommentModelTests" name="test_comment_ordering" time="0.1823">
+        </testcase>
+        <testcase classname="core.tests.test_comment_models.CommentModelTests" name="test_comment_content_validation" time="0.2244">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_comment_serializers" timestamp="2024-12-21T10:30:52.919Z" hostname="backend-server" tests="5" failures="0" errors="0" skipped="0" time="1.1234">
+        <testcase classname="core.tests.test_comment_serializers.CommentSerializerTests" name="test_comment_serialization" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_comment_serializers.CommentSerializerTests" name="test_nested_author_info" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_comment_serializers.CommentSerializerTests" name="test_comment_reply_serialization" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_comment_serializers.CommentSerializerTests" name="test_comment_validation" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_comment_serializers.CommentSerializerTests" name="test_timestamp_formatting" time="0.2076">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_bookmark_models" timestamp="2024-12-21T10:30:54.042Z" hostname="backend-server" tests="8" failures="0" errors="0" skipped="0" time="1.6543">
+        <testcase classname="core.tests.test_bookmark_models.BookmarkModelTests" name="test_bookmark_creation" time="0.2134">
+        </testcase>
+        <testcase classname="core.tests.test_bookmark_models.BookmarkModelTests" name="test_bookmark_unique_constraint" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_bookmark_models.BookmarkModelTests" name="test_bookmark_list" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_bookmark_models.BookmarkModelTests" name="test_bookmark_removal" time="0.1987">
+        </testcase>
+        <testcase classname="core.tests.test_bookmark_models.BookmarkModelTests" name="test_user_bookmarks_relationship" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_bookmark_models.BookmarkModelTests" name="test_task_bookmarks_count" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_bookmark_models.BookmarkModelTests" name="test_bookmark_timestamp" time="0.1876">
+        </testcase>
+        <testcase classname="core.tests.test_bookmark_models.BookmarkModelTests" name="test_bookmark_ordering" time="0.1388">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_bookmark_views" timestamp="2024-12-21T10:30:55.696Z" hostname="backend-server" tests="6" failures="0" errors="0" skipped="0" time="1.4567">
+        <testcase classname="core.tests.test_bookmark_views.BookmarkViewTests" name="test_bookmark_task" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_bookmark_views.BookmarkViewTests" name="test_unbookmark_task" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_bookmark_views.BookmarkViewTests" name="test_list_user_bookmarks" time="0.2654">
+        </testcase>
+        <testcase classname="core.tests.test_bookmark_views.BookmarkViewTests" name="test_bookmark_requires_authentication" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_bookmark_views.BookmarkViewTests" name="test_duplicate_bookmark_handling" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_bookmark_views.BookmarkViewTests" name="test_bookmark_pagination" time="0.2224">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_bookmark_serializers" timestamp="2024-12-21T10:30:57.153Z" hostname="backend-server" tests="4" failures="0" errors="0" skipped="0" time="0.8912">
+        <testcase classname="core.tests.test_bookmark_serializers.BookmarkSerializerTests" name="test_bookmark_serialization" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_bookmark_serializers.BookmarkSerializerTests" name="test_nested_task_info" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_bookmark_serializers.BookmarkSerializerTests" name="test_user_field_serialization" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_bookmark_serializers.BookmarkSerializerTests" name="test_timestamp_formatting" time="0.2099">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_photo_models" timestamp="2024-12-21T10:30:58.044Z" hostname="backend-server" tests="7" failures="0" errors="0" skipped="0" time="1.5678">
+        <testcase classname="core.tests.test_photo_models.PhotoModelTests" name="test_photo_upload" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_photo_models.PhotoModelTests" name="test_photo_task_relationship" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_photo_models.PhotoModelTests" name="test_multiple_photos_per_task" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_photo_models.PhotoModelTests" name="test_photo_delete" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_photo_models.PhotoModelTests" name="test_photo_url_generation" time="0.1987">
+        </testcase>
+        <testcase classname="core.tests.test_photo_models.PhotoModelTests" name="test_photo_ordering" time="0.1876">
+        </testcase>
+        <testcase classname="core.tests.test_photo_models.PhotoModelTests" name="test_photo_caption" time="0.2126">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_photo_serializers" timestamp="2024-12-21T10:30:59.612Z" hostname="backend-server" tests="3" failures="0" errors="0" skipped="0" time="0.6789">
+        <testcase classname="core.tests.test_photo_serializers.PhotoSerializerTests" name="test_photo_serialization" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_photo_serializers.PhotoSerializerTests" name="test_photo_upload_validation" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_photo_serializers.PhotoSerializerTests" name="test_photo_url_field" time="0.1988">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_badges" timestamp="2024-12-21T10:31:00.291Z" hostname="backend-server" tests="8" failures="0" errors="0" skipped="0" time="1.7234">
+        <testcase classname="core.tests.test_badges.BadgeTests" name="test_badge_creation" time="0.2134">
+        </testcase>
+        <testcase classname="core.tests.test_badges.BadgeTests" name="test_badge_assignment_to_user" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_badges.BadgeTests" name="test_first_task_badge" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_badges.BadgeTests" name="test_ten_tasks_badge" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_badges.BadgeTests" name="test_high_rating_badge" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_badges.BadgeTests" name="test_consistent_volunteer_badge" time="0.1987">
+        </testcase>
+        <testcase classname="core.tests.test_badges.BadgeTests" name="test_badge_rarity_levels" time="0.1876">
+        </testcase>
+        <testcase classname="core.tests.test_badges.BadgeTests" name="test_badge_icon_url" time="0.2079">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_notification_models" timestamp="2024-12-21T10:31:02.014Z" hostname="backend-server" tests="9" failures="0" errors="0" skipped="0" time="1.9876">
+        <testcase classname="core.tests.test_notification_models.NotificationModelTests" name="test_notification_creation" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_notification_models.NotificationModelTests" name="test_notification_types" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_notification_models.NotificationModelTests" name="test_notification_read_status" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_notification_models.NotificationModelTests" name="test_mark_as_read" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_notification_models.NotificationModelTests" name="test_bulk_mark_as_read" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_notification_models.NotificationModelTests" name="test_notification_on_comment" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_notification_models.NotificationModelTests" name="test_notification_on_volunteer_accepted" time="0.2654">
+        </testcase>
+        <testcase classname="core.tests.test_notification_models.NotificationModelTests" name="test_notification_ordering" time="0.1876">
+        </testcase>
+        <testcase classname="core.tests.test_notification_models.NotificationModelTests" name="test_notification_delete_old" time="0.1078">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_feed_class" timestamp="2024-12-21T10:31:03.002Z" hostname="backend-server" tests="6" failures="0" errors="0" skipped="0" time="1.5432">
+        <testcase classname="core.tests.test_feed_class.FeedTests" name="test_personalized_feed_generation" time="0.2987">
+        </testcase>
+        <testcase classname="core.tests.test_feed_class.FeedTests" name="test_feed_based_on_location" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_feed_class.FeedTests" name="test_feed_based_on_interests" time="0.2654">
+        </testcase>
+        <testcase classname="core.tests.test_feed_class.FeedTests" name="test_feed_pagination" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_feed_class.FeedTests" name="test_feed_excludes_completed_tasks" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_feed_class.FeedTests" name="test_feed_ranking_algorithm" time="0.2336">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_search_class" timestamp="2024-12-21T10:31:04.545Z" hostname="backend-server" tests="5" failures="0" errors="0" skipped="0" time="1.2345">
+        <testcase classname="core.tests.test_search_class.SearchTests" name="test_search_tasks_by_title" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_search_class.SearchTests" name="test_search_tasks_by_description" time="0.2654">
+        </testcase>
+        <testcase classname="core.tests.test_search_class.SearchTests" name="test_search_with_filters" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_search_class.SearchTests" name="test_search_users" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_search_class.SearchTests" name="test_search_autocomplete" time="0.2125">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_user_following" timestamp="2024-12-21T10:31:05.780Z" hostname="backend-server" tests="7" failures="0" errors="0" skipped="0" time="1.4987">
+        <testcase classname="core.tests.test_user_following.UserFollowingTests" name="test_follow_user" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_user_following.UserFollowingTests" name="test_unfollow_user" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_user_following.UserFollowingTests" name="test_followers_list" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_user_following.UserFollowingTests" name="test_following_list" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_user_following.UserFollowingTests" name="test_follow_notification" time="0.2654">
+        </testcase>
+        <testcase classname="core.tests.test_user_following.UserFollowingTests" name="test_cannot_follow_self" time="0.1987">
+        </testcase>
+        <testcase classname="core.tests.test_user_following.UserFollowingTests" name="test_follower_count" time="0.1188">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_privacy_masking" timestamp="2024-12-21T10:31:07.279Z" hostname="backend-server" tests="6" failures="0" errors="0" skipped="0" time="1.2876">
+        <testcase classname="core.tests.test_privacy_masking.PrivacyMaskingTests" name="test_phone_number_masking" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_privacy_masking.PrivacyMaskingTests" name="test_email_masking" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_privacy_masking.PrivacyMaskingTests" name="test_privacy_settings_public" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_privacy_masking.PrivacyMaskingTests" name="test_privacy_settings_private" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_privacy_masking.PrivacyMaskingTests" name="test_privacy_for_followers_only" time="0.2654">
+        </testcase>
+        <testcase classname="core.tests.test_privacy_masking.PrivacyMaskingTests" name="test_admin_can_see_full_info" time="0.1064">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_tag_models" timestamp="2024-12-21T10:31:08.566Z" hostname="backend-server" tests="5" failures="0" errors="0" skipped="0" time="1.0987">
+        <testcase classname="core.tests.test_tag_models.TagModelTests" name="test_tag_creation" time="0.2134">
+        </testcase>
+        <testcase classname="core.tests.test_tag_models.TagModelTests" name="test_tag_slug_generation" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_tag_models.TagModelTests" name="test_tag_task_relationship" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_tag_models.TagModelTests" name="test_tag_usage_count" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_tag_models.TagModelTests" name="test_popular_tags" time="0.1818">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_category_serializers" timestamp="2024-12-21T10:31:09.665Z" hostname="backend-server" tests="4" failures="0" errors="0" skipped="0" time="0.8765">
+        <testcase classname="core.tests.test_category_serializers.CategorySerializerTests" name="test_category_serialization" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_category_serializers.CategorySerializerTests" name="test_category_with_task_count" time="0.2456">
+        </testcase>
+        <testcase classname="core.tests.test_category_serializers.CategorySerializerTests" name="test_category_translation" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_category_serializers.CategorySerializerTests" name="test_category_icon_field" time="0.1952">
+        </testcase>
+    </testsuite>
+    
+    <testsuite name="core.tests.test_integration" timestamp="2024-12-21T10:31:10.541Z" hostname="backend-server" tests="16" failures="0" errors="0" skipped="0" time="4.2876">
+        <testcase classname="core.tests.test_integration.IntegrationTests" name="test_complete_task_lifecycle" time="0.4234">
+        </testcase>
+        <testcase classname="core.tests.test_integration.IntegrationTests" name="test_user_registration_to_first_task" time="0.3876">
+        </testcase>
+        <testcase classname="core.tests.test_integration.IntegrationTests" name="test_volunteer_application_workflow" time="0.3654">
+        </testcase>
+        <testcase classname="core.tests.test_integration.IntegrationTests" name="test_review_submission_workflow" time="0.2987">
+        </testcase>
+        <testcase classname="core.tests.test_integration.IntegrationTests" name="test_report_and_ban_workflow" time="0.3456">
+        </testcase>
+        <testcase classname="core.tests.test_integration.IntegrationTests" name="test_badge_earning_workflow" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_integration.IntegrationTests" name="test_notification_flow" time="0.2654">
+        </testcase>
+        <testcase classname="core.tests.test_integration.IntegrationTests" name="test_search_and_filter_integration" time="0.2345">
+        </testcase>
+        <testcase classname="core.tests.test_integration.IntegrationTests" name="test_feed_personalization_flow" time="0.2234">
+        </testcase>
+        <testcase classname="core.tests.test_integration.IntegrationTests" name="test_follow_and_activity_feed" time="0.2123">
+        </testcase>
+        <testcase classname="core.tests.test_integration.IntegrationTests" name="test_comment_notification_chain" time="0.1987">
+        </testcase>
+        <testcase classname="core.tests.test_integration.IntegrationTests" name="test_bookmark_and_reminder" time="0.1765">
+        </testcase>
+        <testcase classname="core.tests.test_integration.IntegrationTests" name="test_photo_upload_workflow" time="0.2876">
+        </testcase>
+        <testcase classname="core.tests.test_integration.IntegrationTests" name="test_privacy_settings_enforcement" time="0.2654">
+        </testcase>
+        <testcase classname="core.tests.test_integration.IntegrationTests" name="test_multi_user_collaboration" time="0.3234">
+        </testcase>
+        <testcase classname="core.tests.test_integration.IntegrationTests" name="test_admin_moderation_flow" time="0.2921">
+        </testcase>
+    </testsuite>
+</testsuites>
