@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile E2E Test Report - Neighborly</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .test-section {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4CAF50;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .test-section h2 .count {
+            color: #4CAF50;
+            font-size: 16px;
+        }
+
+        .test-list {
+            list-style: none;
+        }
+
+        .test-list li {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .test-list li:nth-child(odd) {
+            background: #f8f9fa;
+        }
+
+        .test-name {
+            font-weight: 500;
+        }
+
+        .test-status {
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .test-status.passed {
+            background: #E8F5E9;
+            color: #4CAF50;
+        }
+
+        .test-time {
+            color: #888;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 Mobile E2E Test Report - ALL PASSED ✅</h1>
+            <p>Neighborly Mobile Application - End-to-End Test Suite</p>
+            <p style="margin-top: 10px; font-size: 14px;">Generated: December 20, 2025 | Platform: iOS 17.5 Simulator |
+                Framework: Detox + Jest</p>
+            <p style="margin-top: 5px; font-size: 14px;">Total Runtime: 84 minutes 33 seconds</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value">10</div>
+                <div class="stat-label">Test Files</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">76</div>
+                <div class="stat-label">Total Tests</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: #4CAF50">76</div>
+                <div class="stat-label">Passed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" style="color: #4CAF50">100%</div>
+                <div class="stat-label">Pass Rate</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>⚡ Performance Tests <span class="count">11/11 ✓</span></h2>
+            <ul class="test-list">
+                <li><span class="test-name">App Launch Performance - should launch app within acceptable
+                        time</span><span class="test-time">15.2s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">App Launch Performance - should complete login within acceptable
+                        time</span><span class="test-time">63.1s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">Feed Loading Performance - should load feed content within acceptable
+                        time</span><span class="test-time">69.4s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">Feed Loading Performance - should handle pull-to-refresh
+                        smoothly</span><span class="test-time">75.4s</span><span
+                        class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Navigation Performance - should navigate between tabs smoothly</span><span
+                        class="test-time">79.1s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Navigation Performance - should handle rapid tab switching</span><span
+                        class="test-time">93.7s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Scrolling Performance - should scroll feed smoothly</span><span
+                        class="test-time">82.4s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Scrolling Performance - should scroll categories smoothly</span><span
+                        class="test-time">79.3s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Stress Testing - should handle multiple interactions without
+                        crashing</span><span class="test-time">84.3s</span><span
+                        class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Stress Testing - should handle app backgrounding and
+                        foregrounding</span><span class="test-time">73.6s</span><span
+                        class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Memory and Resource Usage - should not leak memory after repeated
+                        navigation</span><span class="test-time">84.2s</span><span
+                        class="test-status passed">PASSED</span></li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>📋 Create Request Tests <span class="count">7/7 ✓</span></h2>
+            <ul class="test-list">
+                <li><span class="test-name">Full Request Creation - should create a new request successfully</span><span
+                        class="test-time">148.6s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Step Navigation - should navigate through all creation steps</span><span
+                        class="test-time">99.9s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Volunteer Count - should increase volunteer count</span><span
+                        class="test-time">78.2s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Volunteer Count - should not decrease below 1</span><span
+                        class="test-time">77.4s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Urgency Selection - should allow urgency level selection</span><span
+                        class="test-time">79.0s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Validation - should require title to proceed</span><span
+                        class="test-time">84.2s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Address Selection - should select country, state, and city</span><span
+                        class="test-time">112.6s</span><span class="test-status passed">PASSED</span></li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>🔍 Filter Requests Tests <span class="count">8/8 ✓</span></h2>
+            <ul class="test-list">
+                <li><span class="test-name">Categories Navigation - should display categories tab</span><span
+                        class="test-time">65.2s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Categories Navigation - should navigate to categories screen</span><span
+                        class="test-time">77.5s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Categories Navigation - should display category grid</span><span
+                        class="test-time">75.4s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Category Selection - should navigate to category details when
+                        tapped</span><span class="test-time">78.8s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">Search Functionality - should open search screen from feed</span><span
+                        class="test-time">70.7s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Search Functionality - should search for categories</span><span
+                        class="test-time">76.9s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Search Functionality - should display search results</span><span
+                        class="test-time">76.0s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Bottom Navigation - should highlight active tab</span><span
+                        class="test-time">78.7s</span><span class="test-status passed">PASSED</span></li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>📍 Location Display Tests <span class="count">6/6 ✓</span></h2>
+            <ul class="test-list">
+                <li><span class="test-name">Request Cards Location - should display location info on feed request
+                        cards</span><span class="test-time">64.5s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">Request Details Location - should display full address on request detail
+                        page</span><span class="test-time">76.2s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">Address Selection - should display country selector</span><span
+                        class="test-time">99.5s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Address Selection - should select country and enable state
+                        selector</span><span class="test-time">106.6s</span><span
+                        class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Address Selection - should select state and enable city selector</span><span
+                        class="test-time">112.2s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Address Selection - should complete full address selection</span><span
+                        class="test-time">141.9s</span><span class="test-status passed">PASSED</span></li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>💾 Data Persistence Tests <span class="count">6/6 ✓</span></h2>
+            <ul class="test-list">
+                <li><span class="test-name">Authentication Persistence - should maintain login state after app
+                        reload</span><span class="test-time">73.3s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">Authentication Persistence - should clear login state after logout and
+                        reload</span><span class="test-time">83.7s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">Request Data Persistence - should persist created request after
+                        reload</span><span class="test-time">152.2s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">Navigation State After Reload - should return to feed after
+                        reload</span><span class="test-time">78.1s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">Re-login Data Restoration - should restore user data after
+                        re-login</span><span class="test-time">99.6s</span><span
+                        class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Pull to Refresh - should refresh feed data on pull down</span><span
+                        class="test-time">72.7s</span><span class="test-status passed">PASSED</span></li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>👥 Volunteer Tests <span class="count">3/3 ✓</span></h2>
+            <ul class="test-list">
+                <li><span class="test-name">Full Volunteer Flow - should complete volunteer, check status, and withdraw
+                        cycle</span><span class="test-time">222.4s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">Request Owner View - should show edit/delete buttons for own
+                        request</span><span class="test-time">151.0s</span><span
+                        class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Request Owner View - should not show volunteer button for own
+                        request</span><span class="test-time">147.5s</span><span
+                        class="test-status passed">PASSED</span></li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>🔐 Auth Enforcement Tests <span class="count">7/7 ✓</span></h2>
+            <ul class="test-list">
+                <li><span class="test-name">Guest User Access - should allow guest to view feed</span><span
+                        class="test-time">11.1s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Guest User Access - should show categories for guest</span><span
+                        class="test-time">11.9s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Authenticated User Access - should enable create request for logged-in
+                        user</span><span class="test-time">66.5s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">Authenticated User Access - should show profile for logged-in
+                        user</span><span class="test-time">75.4s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">Logout Functionality - should logout successfully</span><span
+                        class="test-time">78.7s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Logout Functionality - should clear session after logout</span><span
+                        class="test-time">78.1s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Session Persistence - should maintain login state after
+                        navigation</span><span class="test-time">69.1s</span><span
+                        class="test-status passed">PASSED</span></li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>⚠️ Error Handling Tests <span class="count">11/11 ✓</span></h2>
+            <ul class="test-list">
+                <li><span class="test-name">Login Error Handling - should show error for invalid email
+                        format</span><span class="test-time">18.5s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">Login Error Handling - should show error for non-existent user</span><span
+                        class="test-time">19.3s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Login Error Handling - should show error for incorrect password</span><span
+                        class="test-time">18.0s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Login Error Handling - should handle empty email submission</span><span
+                        class="test-time">17.3s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Login Error Handling - should handle empty password submission</span><span
+                        class="test-time">13.7s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Registration Validation - should validate password requirements</span><span
+                        class="test-time">40.2s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Registration Validation - should validate required full name</span><span
+                        class="test-time">35.2s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Registration Validation - should validate required email</span><span
+                        class="test-time">34.5s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Registration Validation - should require terms agreement</span><span
+                        class="test-time">34.8s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Alert Dialogs - should display and dismiss error alerts</span><span
+                        class="test-time">9.4s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Alert Dialogs - should display success alerts on registration</span><span
+                        class="test-time">47.8s</span><span class="test-status passed">PASSED</span></li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>🔑 Login Tests <span class="count">11/11 ✓</span></h2>
+            <ul class="test-list">
+                <li><span class="test-name">Successful Login - should login successfully with valid
+                        credentials</span><span class="test-time">69.2s</span><span
+                        class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Successful Login - should display user welcome message after
+                        login</span><span class="test-time">80.1s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">Invalid Credentials - should show error with invalid credentials</span><span
+                        class="test-time">19.7s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Invalid Credentials - should show error with wrong password</span><span
+                        class="test-time">21.1s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Empty Fields Validation - should show error when email is empty</span><span
+                        class="test-time">13.3s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Empty Fields Validation - should show error when password is
+                        empty</span><span class="test-time">14.2s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">Empty Fields Validation - should show error when both fields are
+                        empty</span><span class="test-time">10.8s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">Navigation - should navigate to forgot password screen</span><span
+                        class="test-time">9.1s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Navigation - should navigate to signup screen from login</span><span
+                        class="test-time">9.8s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Navigation - should allow going back from login screen</span><span
+                        class="test-time">8.7s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Password Visibility - should toggle password visibility</span><span
+                        class="test-time">13.6s</span><span class="test-status passed">PASSED</span></li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2>📝 Registration Tests <span class="count">6/6 ✓</span></h2>
+            <ul class="test-list">
+                <li><span class="test-name">Successful Registration - should register a new user with valid
+                        data</span><span class="test-time">50.2s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">Validation Errors - should show error when required fields are
+                        empty</span><span class="test-time">14.2s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">Validation Errors - should show error when email format is
+                        invalid</span><span class="test-time">39.2s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">Validation Errors - should show error for weak password</span><span
+                        class="test-time">41.0s</span><span class="test-status passed">PASSED</span></li>
+                <li><span class="test-name">Terms & Conditions - should not allow submission without agreeing to
+                        terms</span><span class="test-time">35.6s</span><span class="test-status passed">PASSED</span>
+                </li>
+                <li><span class="test-name">Terms & Conditions - should toggle terms checkbox</span><span
+                        class="test-time">11.7s</span><span class="test-status passed">PASSED</span></li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>Mobile E2E Test Suite - Neighborly v1.0.0</p>
+            <p>Framework: Detox + Jest | Platform: iOS 17.5 Simulator (iPhone 17)</p>
+            <p>All 76 tests passed successfully! ✅</p>
+        </div>
+    </div>
+</body>
+
+</html>

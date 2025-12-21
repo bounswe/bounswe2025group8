@@ -45,7 +45,10 @@ export default function CRUploadPhoto() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView
+        testID="create-request-upload-scroll-view"
+        contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}
+      >
         <View style={styles.header}>
           <View style={[styles.logoCircle, { backgroundColor: `${colors.primary} 22` }]}>
             <Image source={require('../assets/images/logo.png')} style={{ width: 28, height: 28, resizeMode: 'contain' }} />

@@ -159,7 +159,7 @@ export default function Requests() {
           <TouchableOpacity
             onPress={() => router.push('/settings')}
             accessible
-
+            testID="feed-settings-button"
             accessibilityRole="button"
             accessibilityLabel="Open settings"
           >
@@ -173,7 +173,7 @@ export default function Requests() {
         style={[styles.searchWrapper, { borderColor: colors.border }]}
         onPress={() => router.push('/search')}
         accessible
-
+        testID="feed-search-bar"
         accessibilityRole="button"
         accessibilityLabel="Search requests"
       >
@@ -239,6 +239,7 @@ export default function Requests() {
 
       {/* Requests List */}
       <ScrollView
+        testID="requests-list"
         style={styles.list}
         contentContainerStyle={{ paddingBottom: 80 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -249,6 +250,7 @@ export default function Requests() {
           return (
             <TouchableOpacity
               key={task.id}
+              testID="request-card"
               style={[styles.card, { backgroundColor: colors.card, shadowColor: themeColors.overlay }]}
               onPress={() =>
                 router.push({
@@ -311,6 +313,7 @@ export default function Requests() {
 
           accessibilityRole="button"
           accessibilityLabel="Go to home feed"
+          testID="tab-home"
         >
           <Ionicons name="home" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.home')}</Text>
@@ -322,6 +325,7 @@ export default function Requests() {
 
           accessibilityRole="button"
           accessibilityLabel="Browse categories"
+          testID="tab-categories"
         >
           <Ionicons name="pricetag-outline" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.categories')}</Text>
@@ -359,6 +363,7 @@ export default function Requests() {
           accessibilityRole="button"
           accessibilityLabel="Current tab requests"
           accessibilityState={{ selected: true }}
+          testID="tab-requests"
         >
           <Ionicons name="list-outline" size={24} color={colors.primary} />
           <Text style={[styles.tabLabel, { color: colors.primary }]}>{t('feed.requests')}</Text>
@@ -370,6 +375,7 @@ export default function Requests() {
 
           accessibilityRole="button"
           accessibilityLabel="Go to profile"
+          testID="tab-profile"
         >
           <Ionicons name="person-outline" size={24} color={colors.text} />
           <Text style={[styles.tabLabel, { color: colors.text }]}>{t('feed.profile')}</Text>

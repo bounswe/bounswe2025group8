@@ -2,202 +2,317 @@
  * E2E Test: Volunteer for a Request (Scenario 4)
  * 
  * Tests the volunteer functionality including:
- * - Navigate to request details
- * - Volunteer for a request
- * - Verify pending status
- * - Withdraw from volunteering
- * - Cannot volunteer for own request
+ * - Volunteer for a request created by another user
+ * - Verify volunteer/withdraw buttons on own vs other's requests
  */
 
-const { login, waitForElement, dismissAlert, navigateToFeed, navigateToRequests, generateTestUser, registerUser } = require('./testHelpers');
+const { registerUser, generateTestUser, typeTextAndDismiss, typePassword, logout, navigateToRequests, navigateToCreateRequest, dismissAlert, dismissKeyboard } = require('./testHelpers');
+
+/**
+ * Helper to create a request with the currently logged in user
+ * @param {string} title - Request title
+ */
+const createTestRequest = async (title) => {
+    await navigateToCreateRequest();
+
+    await waitFor(element(by.id('create-request-title-input')))
+        .toBeVisible()
+        .withTimeout(10000);
+
+    await typeTextAndDismiss('create-request-title-input', title);
+    await typeTextAndDismiss('create-request-description-input', 'Test request for volunteer flow', true);
+
+    // Select Category
+    await element(by.id('create-request-category-selector')).tap();
+    await waitFor(element(by.id('category-option-GROCERY_SHOPPING')))
+        .toExist()
+        .withTimeout(5000);
+    await element(by.id('category-option-GROCERY_SHOPPING')).tap();
+
+    // Scroll to next button
+    await waitFor(element(by.id('create-request-next-button')))
+        .toExist()
+        .whileElement(by.id('create-request-scroll-view'))
+        .scroll(150, 'down');
+
+    await dismissKeyboard();
+    await element(by.id('create-request-next-button')).tap();
+
+    // Photo step - skip
+    await waitFor(element(by.id('create-request-upload-next-button'))).toBeVisible().withTimeout(5000);
+    await element(by.id('create-request-upload-next-button')).tap();
+
+    // Deadline step - use defaults
+    await waitFor(element(by.id('create-request-deadline-next-button'))).toBeVisible().withTimeout(5000);
+    await element(by.id('create-request-deadline-next-button')).tap();
+
+    // Address step - Afghanistan/Kabul
+    await element(by.id('address-country-selector')).tap();
+    await waitFor(element(by.id('address-option-AFGHANISTAN')))
+        .toBeVisible()
+        .whileElement(by.id('address-picker-scroll-view'))
+        .scroll(100, 'down');
+    await element(by.id('address-option-AFGHANISTAN')).tap();
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    await element(by.id('address-state-selector')).tap();
+    await waitFor(element(by.id('address-option-KABUL')))
+        .toBeVisible()
+        .whileElement(by.id('address-picker-scroll-view'))
+        .scroll(100, 'down');
+    await element(by.id('address-option-KABUL')).tap();
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    await element(by.id('address-city-selector')).tap();
+    await waitFor(element(by.id('address-option-KABUL')))
+        .toBeVisible()
+        .whileElement(by.id('address-picker-scroll-view'))
+        .scroll(100, 'down');
+    await element(by.id('address-option-KABUL')).tap();
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    await typeTextAndDismiss('address-neighborhood-input', 'Test');
+    await typeTextAndDismiss('address-street-input', 'Test');
+
+    // Scroll to building input
+    await waitFor(element(by.id('address-building-input')))
+        .toExist()
+        .whileElement(by.id('create-request-address-scroll-view'))
+        .scroll(150, 'down');
+
+    await typeTextAndDismiss('address-building-input', '1');
+    await typeTextAndDismiss('address-door-input', '1');
+
+    // Scroll to submit
+    await waitFor(element(by.id('create-request-submit-button')))
+        .toBeVisible()
+        .whileElement(by.id('create-request-address-scroll-view'))
+        .scroll(200, 'down');
+
+    await new Promise(resolve => setTimeout(resolve, 500));
+    await element(by.id('create-request-submit-button')).tap();
+
+    // Handle success alert
+    await waitFor(element(by.text('OK')))
+        .toBeVisible()
+        .withTimeout(15000);
+    await element(by.text('OK')).tap();
+
+    // Wait for redirect to requests list
+    await waitFor(element(by.id('requests-list')))
+        .toBeVisible()
+        .withTimeout(15000);
+};
+
+/**
+ * Helper to login a user from landing page
+ * @param {Object} user - User with email and password
+ */
+const loginUser = async (user) => {
+    await waitFor(element(by.id('landing-login-button')))
+        .toBeVisible()
+        .withTimeout(10000);
+    await element(by.id('landing-login-button')).tap();
+
+    await element(by.id('signin-email-input')).typeText(user.email);
+    await typePassword('signin-password-input', 'signin-password-toggle', user.password);
+    await dismissKeyboard();
+    await element(by.id('signin-button')).tap();
+
+    await waitFor(element(by.id('feed-search-bar')))
+        .toBeVisible()
+        .withTimeout(10000);
+
+    // Dismiss any alerts
+    try { await element(by.text('OK')).tap(); } catch (e) { }
+    try { await element(by.text('Tamam')).tap(); } catch (e) { }
+
+    await new Promise(resolve => setTimeout(resolve, 500));
+};
 
 describe('Volunteer for Request Flow', () => {
     beforeAll(async () => {
         await device.launchApp();
     });
 
-    beforeEach(async () => {
-        await device.reloadReactNative();
-        await login();
-    });
+    describe('Full Volunteer Flow', () => {
+        it('should complete volunteer, check status, and withdraw cycle', async () => {
+            // This test creates two users and tests the full volunteer cycle
 
-    describe('Volunteer Actions', () => {
-        it('should display volunteer button on request details', async () => {
-            // Navigate to requests list
-            await navigateToRequests();
+            // --- STEP 1: Create User1 and a request ---
+            await device.reloadReactNative();
 
-            // Wait for requests to load and tap first one
-            await waitFor(element(by.id('tab-requests')))
-                .toBeVisible()
-                .withTimeout(5000);
+            const user1 = generateTestUser();
+            await registerUser(user1);
 
-            // Try to find and tap a request
-            // We scroll and look for any request item
-            try {
-                await waitFor(element(by.id('request-item-1')))
-                    .toBeVisible()
-                    .withTimeout(5000);
-                await element(by.id('request-item-1')).tap();
-            } catch (e) {
-                // If specific ID not found, tap first request by scrolling
-                await element(by.type('RCTScrollView')).scroll(100, 'down');
-            }
+            // Login as user1
+            await element(by.id('signin-email-input')).typeText(user1.email);
+            await typePassword('signin-password-input', 'signin-password-toggle', user1.password);
+            await dismissKeyboard();
+            await element(by.id('signin-button')).tap();
 
-            // Check if volunteer button is visible (for non-owner requests)
-            // The button may or may not be visible depending on who owns the request
-            await waitFor(element(by.id('volunteer-button')).or(element(by.id('request-details-edit-button'))))
-                .toBeVisible()
-                .withTimeout(5000);
-        });
-
-        it('should volunteer for a request successfully', async () => {
-            await navigateToFeed();
-
-            // Wait for feed to load
             await waitFor(element(by.id('feed-search-bar')))
                 .toBeVisible()
-                .withTimeout(5000);
+                .withTimeout(10000);
 
-            // Navigate to requests tab
-            await element(by.id('tab-requests')).tap();
+            try { await element(by.text('OK')).tap(); } catch (e) { }
 
-            // Wait for list to load and tap a request
-            await waitFor(element(by.type('RCTScrollView')))
+            // Create a request
+            const testRequestTitle = `Volunteer Flow ${Date.now()}`;
+            await createTestRequest(testRequestTitle);
+
+            // Logout user1
+            await logout();
+
+            // Reload app to ensure clean landing page state
+            await device.reloadReactNative();
+
+            // Wait for landing page
+            await waitFor(element(by.id('landing-register-button')))
                 .toBeVisible()
-                .withTimeout(5000);
+                .withTimeout(15000);
 
-            // Try to find the volunteer button after opening a request
-            // This depends on having a request that the test user didn't create
+            // --- STEP 2: Create User2 and volunteer for the request ---
+            const user2 = generateTestUser();
+            await registerUser(user2);
+
+            // Login as user2
+            await element(by.id('signin-email-input')).typeText(user2.email);
+            await typePassword('signin-password-input', 'signin-password-toggle', user2.password);
+            await dismissKeyboard();
+            await element(by.id('signin-button')).tap();
+
+            await waitFor(element(by.id('feed-search-bar')))
+                .toBeVisible()
+                .withTimeout(10000);
+
+            try { await element(by.text('OK')).tap(); } catch (e) { }
+
+            // Navigate to requests and find the request created by user1
+            await navigateToRequests();
+
+            const cardLabel = `View request ${testRequestTitle}`;
+            await waitFor(element(by.label(cardLabel)))
+                .toBeVisible()
+                .whileElement(by.id('requests-list'))
+                .scroll(300, 'down');
+
+            await element(by.label(cardLabel)).tap();
+
+            // --- STEP 3: Verify volunteer button is visible (not edit button) ---
             await waitFor(element(by.id('volunteer-button')))
                 .toBeVisible()
-                .withTimeout(8000);
+                .withTimeout(10000);
 
-            // Tap volunteer button
+            // --- STEP 4: Tap volunteer button ---
             await element(by.id('volunteer-button')).tap();
+            await dismissAlert();
 
-            // Should show success alert
-            await waitFor(element(by.text('OK')))
-                .toBeVisible()
-                .withTimeout(5000);
-            await element(by.text('OK')).tap();
-        });
-
-        it('should show pending status after volunteering', async () => {
-            // After volunteering, the status should change
-            // Navigate to a request the user has volunteered for
-
-            await navigateToRequests();
-
-            // When already volunteered, should see pending/withdraw button
-            await waitFor(element(by.id('volunteer-withdraw-button')).or(element(by.id('volunteer-button'))))
-                .toBeVisible()
-                .withTimeout(8000);
-        });
-
-        it('should allow withdrawing from a request', async () => {
-            await navigateToRequests();
-
-            // Find a request we've already volunteered for
+            // --- STEP 5: Verify withdraw button appears (volunteered status) ---
             await waitFor(element(by.id('volunteer-withdraw-button')))
                 .toBeVisible()
-                .withTimeout(8000);
+                .withTimeout(10000);
 
-            // Tap withdraw
+            // --- STEP 6: Withdraw from request ---
             await element(by.id('volunteer-withdraw-button')).tap();
+            await dismissAlert();
 
-            // Should show success alert
-            await waitFor(element(by.text('OK')))
-                .toBeVisible()
-                .withTimeout(5000);
-            await element(by.text('OK')).tap();
-
-            // Volunteer button should reappear
+            // --- STEP 7: Verify volunteer button reappears ---
             await waitFor(element(by.id('volunteer-button')))
                 .toBeVisible()
-                .withTimeout(5000);
-        });
+                .withTimeout(10000);
+        }, 300000); // 5 minute timeout for this comprehensive test
     });
 
     describe('Request Owner View', () => {
         it('should show edit/delete buttons for own request', async () => {
-            // First create a request, then view it
-            await element(by.id('tab-create')).tap();
+            await device.reloadReactNative();
 
-            const timestamp = Date.now();
-            await element(by.id('create-request-title-input')).typeText(`Owner Test ${timestamp}`);
-            await element(by.id('create-request-description-input')).typeText('Testing owner view');
-            await element(by.id('create-request-next-button')).tap();
-            await element(by.id('create-request-upload-next-button')).tap();
-            await element(by.id('create-request-deadline-next-button')).tap();
+            // Check if logged in and logout
+            try {
+                await expect(element(by.id('feed-search-bar'))).toBeVisible();
+                await logout();
+            } catch (e) { }
 
-            // Fill address
-            await element(by.id('address-country-selector')).tap();
-            await element(by.text('Turkey')).tap();
-            await element(by.id('address-state-selector')).tap();
-            await element(by.text('Istanbul')).tap();
-            await element(by.id('address-city-selector')).tap();
-            await element(by.text('Besiktas')).tap();
-            await element(by.id('address-neighborhood-input')).typeText('Test');
-            await element(by.id('address-street-input')).typeText('Test');
-            await element(by.id('address-building-input')).typeText('1');
-            await element(by.id('address-door-input')).typeText('1');
-            await element(by.id('create-request-submit-button')).tap();
+            // Register and login fresh user
+            const user = generateTestUser();
+            await registerUser(user);
 
-            await dismissAlert();
+            await element(by.id('signin-email-input')).typeText(user.email);
+            await typePassword('signin-password-input', 'signin-password-toggle', user.password);
+            await dismissKeyboard();
+            await element(by.id('signin-button')).tap();
 
-            // Navigate to requests and find our new request
-            await navigateToRequests();
-
-            // Should see edit/delete buttons (owner view)
-            await waitFor(element(by.id('request-details-edit-button')).or(element(by.id('request-details-delete-button'))))
+            await waitFor(element(by.id('feed-search-bar')))
                 .toBeVisible()
-                .withTimeout(8000);
-        });
+                .withTimeout(10000);
+
+            try { await element(by.text('OK')).tap(); } catch (e) { }
+
+            // Create a request
+            const requestTitle = `Owner Test ${Date.now()}`;
+            await createTestRequest(requestTitle);
+
+            // Find and tap our request
+            const cardLabel = `View request ${requestTitle}`;
+            await waitFor(element(by.label(cardLabel)))
+                .toBeVisible()
+                .whileElement(by.id('requests-list'))
+                .scroll(300, 'down');
+
+            await element(by.label(cardLabel)).tap();
+
+            // Wait for request details to load
+            await waitFor(element(by.id('screen-title')))
+                .toBeVisible()
+                .withTimeout(10000);
+
+            // Scroll to find edit button (owner view buttons are at the bottom)
+            await waitFor(element(by.id('request-details-edit-button')))
+                .toBeVisible()
+                .whileElement(by.id('request-details-scroll-view'))
+                .scroll(300, 'down');
+        }, 180000);
 
         it('should not show volunteer button for own request', async () => {
-            // Create and view own request
-            await element(by.id('tab-create')).tap();
+            await device.reloadReactNative();
 
-            const timestamp = Date.now();
-            await element(by.id('create-request-title-input')).typeText(`No Volunteer ${timestamp}`);
-            await element(by.id('create-request-description-input')).typeText('Should not see volunteer button');
-            await element(by.id('create-request-next-button')).tap();
-            await element(by.id('create-request-upload-next-button')).tap();
-            await element(by.id('create-request-deadline-next-button')).tap();
+            // Check if logged in and logout
+            try {
+                await expect(element(by.id('feed-search-bar'))).toBeVisible();
+                await logout();
+            } catch (e) { }
 
-            await element(by.id('address-country-selector')).tap();
-            await element(by.text('Turkey')).tap();
-            await element(by.id('address-state-selector')).tap();
-            await element(by.text('Istanbul')).tap();
-            await element(by.id('address-city-selector')).tap();
-            await element(by.text('Besiktas')).tap();
-            await element(by.id('address-neighborhood-input')).typeText('Test');
-            await element(by.id('address-street-input')).typeText('Test');
-            await element(by.id('address-building-input')).typeText('1');
-            await element(by.id('address-door-input')).typeText('1');
-            await element(by.id('create-request-submit-button')).tap();
+            // Register and login fresh user
+            const user = generateTestUser();
+            await registerUser(user);
 
-            await dismissAlert();
+            await element(by.id('signin-email-input')).typeText(user.email);
+            await typePassword('signin-password-input', 'signin-password-toggle', user.password);
+            await dismissKeyboard();
+            await element(by.id('signin-button')).tap();
+
+            await waitFor(element(by.id('feed-search-bar')))
+                .toBeVisible()
+                .withTimeout(10000);
+
+            try { await element(by.text('OK')).tap(); } catch (e) { }
+
+            // Create a request
+            const requestTitle = `No Volunteer ${Date.now()}`;
+            await createTestRequest(requestTitle);
+
+            // Find and tap our request
+            const cardLabel = `View request ${requestTitle}`;
+            await waitFor(element(by.label(cardLabel)))
+                .toBeVisible()
+                .whileElement(by.id('requests-list'))
+                .scroll(300, 'down');
+
+            await element(by.label(cardLabel)).tap();
 
             // Volunteer button should NOT be visible (owner view)
             await expect(element(by.id('volunteer-button'))).not.toBeVisible();
-        });
-    });
-
-    describe('Request Details', () => {
-        it('should display request information correctly', async () => {
-            await navigateToRequests();
-
-            // Tap a request from the list
-            await waitFor(element(by.type('RCTScrollView')))
-                .toBeVisible()
-                .withTimeout(5000);
-
-            // Check basic elements are displayed
-            // Title and description should be visible in details
-            await waitFor(element(by.id('tab-requests')))
-                .toBeVisible()
-                .withTimeout(3000);
-        });
+        }, 180000);
     });
 });

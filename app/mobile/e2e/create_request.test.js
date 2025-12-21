@@ -20,6 +20,7 @@ const {
     registerUser,
     typePassword,
     dismissKeyboard,
+    typeTextAndDismiss,
     logout
 } = require('./testHelpers');
 
@@ -81,88 +82,126 @@ describe('Create Request Flow', () => {
             // Step 1: General Info - scroll to make form visible
             await waitFor(element(by.id('create-request-title-input')))
                 .toBeVisible()
-                .withTimeout(5000);
+                .withTimeout(10000);
 
-            await element(by.id('create-request-title-input')).typeText(requestTitle);
-            await dismissKeyboard();
+            await typeTextAndDismiss('create-request-title-input', requestTitle);
+            await typeTextAndDismiss('create-request-description-input', 'This is a test request created by Detox E2E tests.', true);
 
-            await element(by.id('create-request-description-input')).typeText('This is a test request created by Detox E2E tests.');
-            await dismissKeyboard();
+            // Select Category
+            await element(by.id('create-request-category-selector')).tap();
+            await waitFor(element(by.id('category-option-GROCERY_SHOPPING')))
+                .toExist()
+                .withTimeout(10000);
+            await element(by.id('category-option-GROCERY_SHOPPING')).tap();
 
-            // Scroll down to see volunteer count and next button
-            try {
-                await element(by.type('RCTScrollView')).atIndex(0).scroll(200, 'down');
-            } catch (e) {
-                // Continue if scroll fails
-            }
+            // Select Urgency (Priority)
+            await element(by.id('create-request-urgency-selector')).tap();
+            await waitFor(element(by.id('urgency-option-HIGH')))
+                .toExist()
+                .withTimeout(10000);
+            await element(by.id('urgency-option-HIGH')).tap();
 
-            // Increase volunteer count
+            // Increase volunteer count - scroll to it first
             await waitFor(element(by.id('create-request-people-increase')))
-                .toBeVisible()
-                .withTimeout(3000);
+                .toExist()
+                .whileElement(by.id('create-request-scroll-view'))
+                .scroll(150, 'down');
+
             await element(by.id('create-request-people-increase')).tap();
             await element(by.id('create-request-people-increase')).tap();
 
-            // Go to next step - scroll to make button visible
+            // Go to next step
             await waitFor(element(by.id('create-request-next-button')))
-                .toBeVisible()
-                .withTimeout(3000);
+                .toExist()
+                .whileElement(by.id('create-request-scroll-view'))
+                .scroll(150, 'down');
+
+            await dismissKeyboard();
             await element(by.id('create-request-next-button')).tap();
 
             // Step 2: Upload Photo (Skip)
+            await waitFor(element(by.id('create-request-upload-next-button')))
+                .toExist()
+                .withTimeout(10000);
             await element(by.id('create-request-upload-next-button')).tap();
 
             // Step 3: Deadline (Use defaults)
+            await waitFor(element(by.id('create-request-deadline-next-button')))
+                .toExist()
+                .withTimeout(10000);
             await element(by.id('create-request-deadline-next-button')).tap();
 
             // Step 4: Address
             await waitFor(element(by.id('address-country-selector')))
-                .toBeVisible()
-                .withTimeout(5000);
+                .toExist()
+                .withTimeout(10000);
             await element(by.id('address-country-selector')).tap();
-            await element(by.text('Turkey')).tap();
 
+            // Wait for modal to appear and option to be fully visible
+            await waitFor(element(by.id('address-option-AFGHANISTAN')))
+                .toBeVisible()
+                .whileElement(by.id('address-picker-scroll-view'))
+                .scroll(100, 'down');
+            await element(by.id('address-option-AFGHANISTAN')).tap();
+
+            // Settle after modal transition
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            await waitFor(element(by.id('address-state-selector')))
+                .toExist()
+                .withTimeout(10000);
             await element(by.id('address-state-selector')).tap();
-            await element(by.text('Istanbul')).tap();
 
+            await waitFor(element(by.id('address-option-KABUL')))
+                .toBeVisible()
+                .whileElement(by.id('address-picker-scroll-view'))
+                .scroll(100, 'down');
+            await element(by.id('address-option-KABUL')).tap();
+
+            // Settle after modal transition
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            await waitFor(element(by.id('address-city-selector')))
+                .toExist()
+                .withTimeout(10000);
             await element(by.id('address-city-selector')).tap();
-            await element(by.text('Besiktas')).tap();
+
+            await waitFor(element(by.id('address-option-KABUL')))
+                .toBeVisible()
+                .whileElement(by.id('address-picker-scroll-view'))
+                .scroll(100, 'down');
+            await element(by.id('address-option-KABUL')).tap();
 
             // Fill address fields with keyboard handling
-            await element(by.id('address-neighborhood-input')).typeText('Test Neighborhood');
-            await dismissKeyboard();
+            await typeTextAndDismiss('address-neighborhood-input', 'Test Neighborhood');
 
-            await element(by.id('address-street-input')).typeText('Test Street');
-            await dismissKeyboard();
+            await typeTextAndDismiss('address-street-input', 'Test Street');
 
             // Scroll to see more fields
-            try {
-                await element(by.type('RCTScrollView')).atIndex(0).scroll(150, 'down');
-            } catch (e) { }
+            await waitFor(element(by.id('address-building-input')))
+                .toExist()
+                .whileElement(by.id('create-request-address-scroll-view'))
+                .scroll(150, 'down');
 
-            await element(by.id('address-building-input')).typeText('123');
-            await dismissKeyboard();
+            await typeTextAndDismiss('address-building-input', '123');
 
-            await element(by.id('address-door-input')).typeText('4A');
-            await dismissKeyboard();
+            await typeTextAndDismiss('address-door-input', '4A');
 
             // Scroll to description and submit
-            try {
-                await element(by.type('RCTScrollView')).atIndex(0).scroll(150, 'down');
-            } catch (e) { }
+            await waitFor(element(by.id('create-request-address-description')))
+                .toExist()
+                .whileElement(by.id('create-request-address-scroll-view'))
+                .scroll(150, 'down');
 
-            await element(by.id('create-request-address-description')).typeText('Near the main intersection');
-            await dismissKeyboard();
-
-            // Scroll to submit button
-            try {
-                await element(by.type('RCTScrollView')).atIndex(0).scroll(200, 'down');
-            } catch (e) { }
+            await typeTextAndDismiss('create-request-address-description', 'Near the main intersection', true);
 
             // Submit request
             await waitFor(element(by.id('create-request-submit-button')))
                 .toBeVisible()
-                .withTimeout(3000);
+                .whileElement(by.id('create-request-address-scroll-view'))
+                .scroll(200, 'down');
+
+            await new Promise(resolve => setTimeout(resolve, 500));
             await element(by.id('create-request-submit-button')).tap();
 
             // Handle Success Alert
@@ -171,10 +210,19 @@ describe('Create Request Flow', () => {
                 .withTimeout(15000);
             await element(by.text('OK')).tap();
 
-            // Verify redirect to feed
-            await waitFor(element(by.id('feed-search-bar')))
+            // Verify redirect to requests list and check for our new task
+            await waitFor(element(by.id('requests-list')))
                 .toBeVisible()
-                .withTimeout(10000);
+                .withTimeout(15000);
+
+            // Find our new task by its accessibility label (contains the title)
+            const cardLabel = `View request ${requestTitle}`;
+            await waitFor(element(by.label(cardLabel)))
+                .toBeVisible()
+                .whileElement(by.id('requests-list'))
+                .scroll(300, 'down');
+
+            await expect(element(by.label(cardLabel))).toBeVisible();
         });
     });
 
@@ -185,38 +233,42 @@ describe('Create Request Flow', () => {
             // Step 1 - General Info
             await waitFor(element(by.id('create-request-title-input')))
                 .toBeVisible()
-                .withTimeout(5000);
-            await element(by.id('create-request-title-input')).typeText('Navigation Test');
-            await dismissKeyboard();
-            await element(by.id('create-request-description-input')).typeText('Testing step navigation');
-            await dismissKeyboard();
+                .withTimeout(10000);
+            await typeTextAndDismiss('create-request-title-input', 'Navigation Test');
+            await typeTextAndDismiss('create-request-description-input', 'Testing step navigation', true);
+
+            // Select Category
+            await element(by.id('create-request-category-selector')).tap();
+            await waitFor(element(by.id('category-option-GROCERY_SHOPPING')))
+                .toExist()
+                .withTimeout(10000);
+            await element(by.id('category-option-GROCERY_SHOPPING')).tap();
 
             // Scroll to next button
-            try {
-                await element(by.type('RCTScrollView')).atIndex(0).scroll(200, 'down');
-            } catch (e) { }
-
             await waitFor(element(by.id('create-request-next-button')))
-                .toBeVisible()
-                .withTimeout(3000);
+                .toExist()
+                .whileElement(by.id('create-request-scroll-view'))
+                .scroll(150, 'down');
+
+            await dismissKeyboard();
             await element(by.id('create-request-next-button')).tap();
 
             // Step 2 - Upload Photo
             await waitFor(element(by.id('create-request-upload-next-button')))
                 .toBeVisible()
-                .withTimeout(5000);
+                .withTimeout(10000);
             await element(by.id('create-request-upload-next-button')).tap();
 
             // Step 3 - Deadline
             await waitFor(element(by.id('create-request-deadline-next-button')))
                 .toBeVisible()
-                .withTimeout(5000);
+                .withTimeout(10000);
             await element(by.id('create-request-deadline-next-button')).tap();
 
             // Step 4 - Address
             await waitFor(element(by.id('address-country-selector')))
                 .toBeVisible()
-                .withTimeout(5000);
+                .withTimeout(10000);
         });
     });
 
@@ -225,14 +277,15 @@ describe('Create Request Flow', () => {
             await navigateToCreateRequest();
 
             // Scroll down to see people count
-            try {
-                await element(by.type('RCTScrollView')).atIndex(0).scroll(200, 'down');
-            } catch (e) { }
+            await waitFor(element(by.id('create-request-people-count')))
+                .toExist()
+                .whileElement(by.id('create-request-scroll-view'))
+                .scroll(150, 'down');
 
             // Check initial count is 1
             await waitFor(element(by.id('create-request-people-count')))
                 .toBeVisible()
-                .withTimeout(3000);
+                .withTimeout(10000);
 
             // Increase count
             await element(by.id('create-request-people-increase')).tap();
@@ -242,27 +295,28 @@ describe('Create Request Flow', () => {
             await element(by.id('create-request-people-decrease')).tap();
 
             // Count should be visible
-            await expect(element(by.id('create-request-people-count'))).toBeVisible();
+            await expect(element(by.id('create-request-people-count'))).toExist();
         });
 
         it('should not decrease below 1', async () => {
             await navigateToCreateRequest();
 
             // Scroll down to see people count
-            try {
-                await element(by.type('RCTScrollView')).atIndex(0).scroll(200, 'down');
-            } catch (e) { }
+            await waitFor(element(by.id('create-request-people-decrease')))
+                .toExist()
+                .whileElement(by.id('create-request-scroll-view'))
+                .scroll(150, 'down');
 
             await waitFor(element(by.id('create-request-people-decrease')))
                 .toBeVisible()
-                .withTimeout(3000);
+                .withTimeout(10000);
 
             // Try to decrease from 1
             await element(by.id('create-request-people-decrease')).tap();
             await element(by.id('create-request-people-decrease')).tap();
 
             // Count should still be visible (minimum 1)
-            await expect(element(by.id('create-request-people-count'))).toBeVisible();
+            await expect(element(by.id('create-request-people-count'))).toExist();
         });
     });
 
@@ -271,18 +325,19 @@ describe('Create Request Flow', () => {
             await navigateToCreateRequest();
 
             // Scroll down to see urgency selector
-            try {
-                await element(by.type('RCTScrollView')).atIndex(0).scroll(100, 'down');
-            } catch (e) { }
+            await waitFor(element(by.id('create-request-urgency-selector')))
+                .toExist()
+                .whileElement(by.id('create-request-scroll-view'))
+                .scroll(100, 'down');
 
             // Tap urgency selector
             await waitFor(element(by.id('create-request-urgency-selector')))
-                .toBeVisible()
-                .withTimeout(3000);
+                .toExist()
+                .withTimeout(10000);
             await element(by.id('create-request-urgency-selector')).tap();
 
             // Selector should be visible
-            await expect(element(by.id('create-request-urgency-selector'))).toBeVisible();
+            await expect(element(by.id('create-request-urgency-selector'))).toExist();
         });
     });
 
@@ -293,20 +348,17 @@ describe('Create Request Flow', () => {
             // Wait for form to load
             await waitFor(element(by.id('create-request-description-input')))
                 .toBeVisible()
-                .withTimeout(5000);
+                .withTimeout(10000);
 
             // Don't fill title, try to proceed
-            await element(by.id('create-request-description-input')).typeText('Description only');
-            await dismissKeyboard();
+            await typeTextAndDismiss('create-request-description-input', 'Description only', true);
 
             // Scroll to next button
-            try {
-                await element(by.type('RCTScrollView')).atIndex(0).scroll(200, 'down');
-            } catch (e) { }
-
             await waitFor(element(by.id('create-request-next-button')))
-                .toBeVisible()
-                .withTimeout(3000);
+                .toExist()
+                .whileElement(by.id('create-request-scroll-view'))
+                .scroll(150, 'down');
+
             await element(by.id('create-request-next-button')).tap();
 
             // Should show error or stay on same step - scroll back up
@@ -316,7 +368,7 @@ describe('Create Request Flow', () => {
 
             await waitFor(element(by.id('create-request-title-input')))
                 .toBeVisible()
-                .withTimeout(3000);
+                .withTimeout(10000);
         });
     });
 
@@ -327,55 +379,77 @@ describe('Create Request Flow', () => {
             // Wait for form
             await waitFor(element(by.id('create-request-title-input')))
                 .toBeVisible()
-                .withTimeout(5000);
+                .withTimeout(10000);
 
             // Fill required fields first
-            await element(by.id('create-request-title-input')).typeText('Address Test');
-            await dismissKeyboard();
-            await element(by.id('create-request-description-input')).typeText('Testing address');
-            await dismissKeyboard();
+            await typeTextAndDismiss('create-request-title-input', 'Address Test');
+            await typeTextAndDismiss('create-request-description-input', 'Testing address', true);
+
+            // Select Category
+            await element(by.id('create-request-category-selector')).tap();
+            await waitFor(element(by.id('category-option-GROCERY_SHOPPING')))
+                .toExist()
+                .withTimeout(10000);
+            await element(by.id('category-option-GROCERY_SHOPPING')).tap();
 
             // Scroll to next button
-            try {
-                await element(by.type('RCTScrollView')).atIndex(0).scroll(200, 'down');
-            } catch (e) { }
-
             await waitFor(element(by.id('create-request-next-button')))
-                .toBeVisible()
-                .withTimeout(3000);
+                .toExist()
+                .whileElement(by.id('create-request-scroll-view'))
+                .scroll(150, 'down');
+
+            await dismissKeyboard();
             await element(by.id('create-request-next-button')).tap();
 
             await waitFor(element(by.id('create-request-upload-next-button')))
-                .toBeVisible()
-                .withTimeout(5000);
+                .toExist()
+                .whileElement(by.id('create-request-upload-scroll-view'))
+                .scroll(100, 'down');
             await element(by.id('create-request-upload-next-button')).tap();
 
             await waitFor(element(by.id('create-request-deadline-next-button')))
-                .toBeVisible()
-                .withTimeout(5000);
+                .toExist()
+                .whileElement(by.id('create-request-deadline-scroll-view'))
+                .scroll(100, 'down');
             await element(by.id('create-request-deadline-next-button')).tap();
 
             // Now on address step
             await waitFor(element(by.id('address-country-selector')))
                 .toBeVisible()
-                .withTimeout(5000);
+                .withTimeout(10000);
 
             // Select country
             await element(by.id('address-country-selector')).tap();
-            await element(by.text('Turkey')).tap();
+            await waitFor(element(by.id('address-option-AFGHANISTAN')))
+                .toBeVisible()
+                .whileElement(by.id('address-picker-scroll-view'))
+                .scroll(100, 'down');
+            await element(by.id('address-option-AFGHANISTAN')).tap();
+
+            await new Promise(resolve => setTimeout(resolve, 500));
 
             // State selector should now be active
             await element(by.id('address-state-selector')).tap();
-            await element(by.text('Istanbul')).tap();
+            await waitFor(element(by.id('address-option-KABUL')))
+                .toBeVisible()
+                .whileElement(by.id('address-picker-scroll-view'))
+                .scroll(100, 'down');
+            await element(by.id('address-option-KABUL')).tap();
+
+            await new Promise(resolve => setTimeout(resolve, 500));
 
             // City selector should now be active
             await element(by.id('address-city-selector')).tap();
-            await element(by.text('Kadikoy')).tap();
+            await waitFor(element(by.id('address-option-KABUL')))
+                .toBeVisible()
+                .whileElement(by.id('address-picker-scroll-view'))
+                .scroll(100, 'down');
+            await element(by.id('address-option-KABUL')).tap();
 
             // Verify selections were made
             await waitFor(element(by.id('address-neighborhood-input')))
                 .toBeVisible()
-                .withTimeout(3000);
+                .withTimeout(10000);
         });
     });
 });

@@ -9,36 +9,43 @@
  */
 const dismissKeyboard = async () => {
     // Wait a moment for keyboard to fully appear
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise(resolve => setTimeout(resolve, 300));
 
+    // Method 0: Try to tap on the screen title if it exists
     try {
-        // Method 1: Try to tap on signin scroll view specifically
-        await element(by.id('signin-scroll-view')).tap({ x: 10, y: 10 });
+        await waitFor(element(by.id('screen-title'))).toBeVisible().withTimeout(500);
+        await element(by.id('screen-title')).tap();
         await new Promise(resolve => setTimeout(resolve, 300));
         return;
-    } catch (e) {
-        // Continue to fallback
+    } catch (e) { }
+
+    // Method 1: Try specific scroll views but tap safe area
+    const scrollViews = [
+        'signup-scroll-view',
+        'signin-scroll-view',
+        'create-request-scroll-view',
+        'create-request-address-scroll-view',
+        'create-request-upload-scroll-view',
+        'create-request-deadline-scroll-view'
+    ];
+
+    for (const id of scrollViews) {
+        try {
+            await waitFor(element(by.id(id))).toBeVisible().withTimeout(300);
+            await element(by.id(id)).tap({ x: 150, y: 30 }); // Tap near top but center
+            await new Promise(resolve => setTimeout(resolve, 300));
+            return;
+        } catch (e) { }
     }
 
+    // Method 2: Generic RCTScrollView fallback
     try {
-        // Method 2: Try generic scroll view
-        await element(by.type('RCTScrollView')).atIndex(0).tap({ x: 10, y: 10 });
+        await element(by.type('RCTScrollView')).atIndex(0).tap({ x: 150, y: 30 });
         await new Promise(resolve => setTimeout(resolve, 300));
         return;
-    } catch (e) {
-        // Continue to fallback
-    }
+    } catch (e) { }
 
-    try {
-        // Method 3: Try scrolling slightly to dismiss
-        await element(by.type('RCTScrollView')).atIndex(0).scroll(1, 'down');
-        await new Promise(resolve => setTimeout(resolve, 300));
-        return;
-    } catch (e) {
-        // Continue to fallback
-    }
-
-    // Method 4: Just wait and hope keyboard animations complete
+    // Final fallback: just wait
     await new Promise(resolve => setTimeout(resolve, 500));
 };
 
@@ -46,10 +53,17 @@ const dismissKeyboard = async () => {
  * Type text and dismiss keyboard
  * @param {string} testID - Element testID
  * @param {string} text - Text to type
+ * @param {boolean} multiline - Whether the input is multiline (skips Return Key)
  */
-const typeTextAndDismiss = async (testID, text) => {
+const typeTextAndDismiss = async (testID, text, multiline = false) => {
     await element(by.id(testID)).typeText(text);
-    await element(by.id(testID)).tapReturnKey();
+    // tapReturnKey is often enough for single-line inputs, but adds a newline for multiline
+    if (!multiline) {
+        try {
+            await element(by.id(testID)).tapReturnKey();
+        } catch (e) { }
+    }
+    await dismissKeyboard();
 };
 
 /**
@@ -92,13 +106,13 @@ const typePassword = async (inputID, toggleID, password) => {
         await element(by.id(inputID)).typeText(password);
 
         // Dismiss keyboard
-        await element(by.id(inputID)).tapReturnKey();
+        await dismissKeyboard();
         await new Promise(resolve => setTimeout(resolve, 300));
     } catch (e) {
         // Fallback if toggle fails (e.g. if testID not found)
         console.warn('Password toggle failed, trying direct input', e);
         await element(by.id(inputID)).typeText(password);
-        await element(by.id(inputID)).tapReturnKey();
+        await dismissKeyboard();
     }
 };
 
@@ -109,11 +123,11 @@ const typePassword = async (inputID, toggleID, password) => {
  */
 const login = async (email = TEST_CREDENTIALS.email, password = TEST_CREDENTIALS.password) => {
     await element(by.id('landing-login-button')).tap();
-    await element(by.id('signin-email-input')).typeText(email);
+    await typeTextAndDismiss('signin-email-input', email);
     // Use safe password typing with toggle
     await typePassword('signin-password-input', 'signin-password-toggle', password);
 
-    await dismissKeyboard();
+    // typePassword now handles keyboard dismissal at the end
     await element(by.id('signin-button')).tap();
     await waitFor(element(by.id('feed-search-bar')))
         .toBeVisible()
@@ -138,6 +152,7 @@ const registerUser = async (userData) => {
     await typePassword('signup-password-input', 'signup-password-toggle', user.password);
 
     await element(by.id('signup-terms-checkbox')).tap();
+    await element(by.id('signup-community-guidelines-checkbox')).tap();
     await new Promise(resolve => setTimeout(resolve, 500)); // Wait for animation
 
     await element(by.id('signup-button')).tap();
@@ -166,14 +181,15 @@ const waitForElement = async (testID, timeout = 5000) => {
 
 /**
  * Wait for an element and tap it
+ * Uses atIndex(0) to handle potential duplicates during transitions
  * @param {string} testID - Element testID
  * @param {number} timeout - Timeout in ms
  */
 const waitAndTap = async (testID, timeout = 5000) => {
-    await waitFor(element(by.id(testID)))
+    await waitFor(element(by.id(testID)).atIndex(0))
         .toBeVisible()
         .withTimeout(timeout);
-    await element(by.id(testID)).tap();
+    await element(by.id(testID)).atIndex(0).tap();
 };
 
 /**
@@ -234,6 +250,7 @@ const dismissAlert = async () => {
  * Navigate to Feed screen (assumes logged in)
  */
 const navigateToFeed = async () => {
+    await dismissKeyboard();
     await waitAndTap('tab-home');
 };
 
@@ -241,6 +258,7 @@ const navigateToFeed = async () => {
  * Navigate to Categories screen
  */
 const navigateToCategories = async () => {
+    await dismissKeyboard();
     await waitAndTap('tab-categories');
 };
 
@@ -248,6 +266,7 @@ const navigateToCategories = async () => {
  * Navigate to Create Request screen
  */
 const navigateToCreateRequest = async () => {
+    await dismissKeyboard();
     await waitAndTap('tab-create');
 };
 
@@ -255,6 +274,7 @@ const navigateToCreateRequest = async () => {
  * Navigate to Profile screen
  */
 const navigateToProfile = async () => {
+    await dismissKeyboard();
     await waitAndTap('tab-profile');
 };
 
@@ -262,72 +282,131 @@ const navigateToProfile = async () => {
  * Navigate to Requests screen
  */
 const navigateToRequests = async () => {
-    await waitAndTap('tab-requests');
+    await dismissKeyboard();
+    try {
+        await waitAndTap('tab-requests', 5000);
+    } catch (e) {
+        console.warn('Tap by ID failed, trying by text "Requests" / "İstekler"');
+        try {
+            // Try English
+            await element(by.text('Requests')).atIndex(0).tap();
+        } catch (e2) {
+            // Try Turkish
+            await element(by.text('İstekler')).atIndex(0).tap();
+        }
+    }
+
+    // Wait for the requests list to appear, confirming navigation succeeded
+    await waitFor(element(by.id('requests-list')))
+        .toBeVisible()
+        .withTimeout(10000);
 };
 
 /**
  * Logout from the app
  */
 const logout = async () => {
-    await waitAndTap('feed-settings-button');
-    await waitAndTap('settings-logout-button');
+    // fast check if we are already on landing page
+    try {
+        await expect(element(by.id('landing-login-button'))).toBeVisible();
+        return; // Already logged out
+    } catch (e) {
+        // Continue to logout
+    }
+
+    try {
+        // Try to find settings button - could be on Feed or Requests (both have feed-settings-button now)
+        await waitFor(element(by.id('feed-settings-button')))
+            .toBeVisible()
+            .withTimeout(5000);
+        await element(by.id('feed-settings-button')).tap();
+    } catch (e) {
+        // failing to find settings button usually means we are in a weird state.
+        // Try simple back navigation loop or just fail?
+        // Let's assume we might be in a submenu.
+        console.warn('Settings button not found, attempting to continue logout flow anyway or failing', e);
+    }
+
+    try {
+        await waitFor(element(by.id('settings-logout-button')))
+            .toBeVisible()
+            .withTimeout(5000);
+        await element(by.id('settings-logout-button')).tap();
+    } catch (e) {
+        console.warn('Logout button not found');
+    }
 
     // Handle "Are you sure?" confirmation alert
-    // Standardizing on handling "Çıkış Yap" or "Logout" text
+    // The alert has a specific "Çıkış Yap" button (Red), not just "OK"
     try {
-        // Try localized 'Çıkış Yap'
-        // There might be multiple matches (Page button, Alert Title, Alert Button)
-        // Usually the Alert Button is the last one or has specific traits
-        // We try a few indices to be safe, searching for the button
-
-        // Wait for potential alert
+        // Wait for alert to appear
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        try {
-            // Try to find the button trait 
-            await element(by.text('Çıkış Yap').and(by.traits(['button']))).atIndex(0).tap();
-        } catch (e) {
-            // Fallback to index logic
-            try {
-                await element(by.text('Çıkış Yap')).atIndex(1).tap();
-            } catch (e2) {
-                // Ignore
-            }
-        }
+        // Try finding the specific confirmation button
+        // Based on user screenshot: Text is "Çıkış Yap"
+        // We try looking for the button with that text.
+        // atIndex(0) or (1) might be needed if title is also same text
 
-        // Also try English 'Logout' if localization differs
+        // Try localized 'Çıkış Yap' button (usually index 1 if title captures index 0)
         try {
-            await element(by.text('Logout').and(by.traits(['button']))).atIndex(0).tap();
+            await element(by.text('Çıkış Yap')).atIndex(1).tap();
         } catch (e) {
-            // Ignore
+            // Fallback to index 0 (if valid)
+            await element(by.text('Çıkış Yap')).atIndex(0).tap();
         }
     } catch (e) {
-        console.warn('Logout confirmation handling failed or not needed', e);
+        console.warn('Logout confirmation specific button failed, trying generic dismiss');
+        await dismissAlert();
     }
 
     // Verify we are back on landing page
     await waitFor(element(by.id('landing-login-button')))
         .toBeVisible()
-        .withTimeout(5000);
+        .withTimeout(10000);
 };
 
 /**
- * Scroll down on element
- * @param {string} testID - Element testID
- * @param {number} pixels - Pixels to scroll
+ * Ensures the app is on the landing page (logged out state)
+ * Reloads RN, checks if logged in, and logs out if necessary.
  */
-const scrollDown = async (testID, pixels = 200) => {
-    await element(by.id(testID)).scroll(pixels, 'down');
-};
+const ensureLandingPage = async () => {
+    await device.reloadReactNative();
 
-/**
- * Check if element exists (without throwing)
- * @param {string} testID - Element testID
- * @returns {Promise<boolean>}
- */
-const elementExists = async (testID) => {
+    // Wait for either landing screen OR feed screen
+    // Increased timeout to 15s to account for Splash Screen / Loading
     try {
-        await expect(element(by.id(testID))).toExist();
+        await waitFor(element(by.id('feed-search-bar')))
+            .toBeVisible()
+            .withTimeout(15000);
+
+        // If visible, we are logged in
+        await logout();
+    } catch (e) {
+        // If feed search bar is not visible, check if we are on landing page
+        try {
+            await waitFor(element(by.id('landing-login-button')))
+                .toBeVisible()
+                .withTimeout(15000);
+        } catch (e2) {
+            console.error('Neither feed nor landing page visible after reload. App might be in undefined state.');
+            throw new Error('ensureLandingPage failed: Could not determine app state (neither Feed nor Landing visible)');
+        }
+    }
+};
+
+/**
+ * Scroll down on a scroll view ID
+ */
+const scrollDown = async (testID, amount = 100) => {
+    await element(by.id(testID)).scroll(amount, 'down');
+};
+
+/**
+ * Check if element exists
+ */
+const elementExists = async (matcher) => {
+    try {
+        await expect(matcher).toExist();
         return true;
     } catch (e) {
         return false;
@@ -335,22 +414,23 @@ const elementExists = async (testID) => {
 };
 
 module.exports = {
-    generateTestUser,
-    TEST_CREDENTIALS,
-    login,
-    registerUser,
-    waitForElement,
     waitAndTap,
+    login,
+    generateTestUser,
+    registerUser,
+    TEST_CREDENTIALS,
+    waitForElement,
     dismissAlert,
-    dismissKeyboard,
     typeTextAndDismiss,
     typePassword,
+    dismissKeyboard,
     navigateToFeed,
     navigateToCategories,
     navigateToCreateRequest,
     navigateToProfile,
     navigateToRequests,
     logout,
+    ensureLandingPage,
     scrollDown,
     elementExists,
 };
