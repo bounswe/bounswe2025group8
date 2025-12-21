@@ -4,6 +4,10 @@ import { StatusBar } from 'expo-status-bar';
 import '../lib/i18n';
 import React, { useEffect } from 'react';
 import 'react-native-reanimated';
+import { LogBox } from 'react-native';
+
+// Silence all LogBox overlays (warnings and errors) to prevent them from covering UI elements
+LogBox.ignoreAllLogs();
 
 import { AuthProvider, useAuth } from '../lib/auth';
 import { AppThemeProvider, useAppTheme } from '@/theme/ThemeProvider';

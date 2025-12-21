@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="76" failures="0" errors="0" time="5073.651">
+  <testsuite name="Performance under Typical Usage" errors="0" failures="0" skipped="0" timestamp="2025-12-20T16:53:59" time="820.168" tests="11">
+    <testcase classname="Performance under Typical Usage App Launch Performance should launch app within acceptable time" name="Performance under Typical Usage App Launch Performance should launch app within acceptable time" time="15.262">
+    </testcase>
+    <testcase classname="Performance under Typical Usage App Launch Performance should complete login within acceptable time" name="Performance under Typical Usage App Launch Performance should complete login within acceptable time" time="63.131">
+    </testcase>
+    <testcase classname="Performance under Typical Usage Feed Loading Performance should load feed content within acceptable time" name="Performance under Typical Usage Feed Loading Performance should load feed content within acceptable time" time="69.487">
+    </testcase>
+    <testcase classname="Performance under Typical Usage Feed Loading Performance should handle pull-to-refresh smoothly" name="Performance under Typical Usage Feed Loading Performance should handle pull-to-refresh smoothly" time="75.415">
+    </testcase>
+    <testcase classname="Performance under Typical Usage Navigation Performance should navigate between tabs smoothly" name="Performance under Typical Usage Navigation Performance should navigate between tabs smoothly" time="79.103">
+    </testcase>
+    <testcase classname="Performance under Typical Usage Navigation Performance should handle rapid tab switching" name="Performance under Typical Usage Navigation Performance should handle rapid tab switching" time="93.784">
+    </testcase>
+    <testcase classname="Performance under Typical Usage Scrolling Performance should scroll feed smoothly" name="Performance under Typical Usage Scrolling Performance should scroll feed smoothly" time="82.479">
+    </testcase>
+    <testcase classname="Performance under Typical Usage Scrolling Performance should scroll categories smoothly" name="Performance under Typical Usage Scrolling Performance should scroll categories smoothly" time="79.347">
+    </testcase>
+    <testcase classname="Performance under Typical Usage Stress Testing should handle multiple interactions without crashing" name="Performance under Typical Usage Stress Testing should handle multiple interactions without crashing" time="84.393">
+    </testcase>
+    <testcase classname="Performance under Typical Usage Stress Testing should handle app backgrounding and foregrounding" name="Performance under Typical Usage Stress Testing should handle app backgrounding and foregrounding" time="73.636">
+    </testcase>
+    <testcase classname="Performance under Typical Usage Memory and Resource Usage should not leak memory after repeated navigation" name="Performance under Typical Usage Memory and Resource Usage should not leak memory after repeated navigation" time="84.215">
+    </testcase>
+  </testsuite>
+  <testsuite name="Create Request Flow" errors="0" failures="0" skipped="0" timestamp="2025-12-20T17:07:40" time="698.914" tests="7">
+    <testcase classname="Create Request Flow Full Request Creation should create a new request successfully" name="Create Request Flow Full Request Creation should create a new request successfully" time="148.69">
+    </testcase>
+    <testcase classname="Create Request Flow Step Navigation should navigate through all creation steps" name="Create Request Flow Step Navigation should navigate through all creation steps" time="99.962">
+    </testcase>
+    <testcase classname="Create Request Flow Volunteer Count should increase volunteer count" name="Create Request Flow Volunteer Count should increase volunteer count" time="78.263">
+    </testcase>
+    <testcase classname="Create Request Flow Volunteer Count should not decrease below 1" name="Create Request Flow Volunteer Count should not decrease below 1" time="77.434">
+    </testcase>
+    <testcase classname="Create Request Flow Urgency Selection should allow urgency level selection" name="Create Request Flow Urgency Selection should allow urgency level selection" time="79.013">
+    </testcase>
+    <testcase classname="Create Request Flow Validation should require title to proceed" name="Create Request Flow Validation should require title to proceed" time="84.268">
+    </testcase>
+    <testcase classname="Create Request Flow Address Selection should select country, state, and city" name="Create Request Flow Address Selection should select country, state, and city" time="112.621">
+    </testcase>
+  </testsuite>
+  <testsuite name="Filter Requests by Category Flow" errors="0" failures="0" skipped="0" timestamp="2025-12-20T17:19:19" time="613.638" tests="8">
+    <testcase classname="Filter Requests by Category Flow Categories Navigation should display categories tab" name="Filter Requests by Category Flow Categories Navigation should display categories tab" time="65.226">
+    </testcase>
+    <testcase classname="Filter Requests by Category Flow Categories Navigation should navigate to categories screen" name="Filter Requests by Category Flow Categories Navigation should navigate to categories screen" time="77.554">
+    </testcase>
+    <testcase classname="Filter Requests by Category Flow Categories Navigation should display category grid" name="Filter Requests by Category Flow Categories Navigation should display category grid" time="75.488">
+    </testcase>
+    <testcase classname="Filter Requests by Category Flow Category Selection should navigate to category details when tapped" name="Filter Requests by Category Flow Category Selection should navigate to category details when tapped" time="78.866">
+    </testcase>
+    <testcase classname="Filter Requests by Category Flow Search Functionality should open search screen from feed" name="Filter Requests by Category Flow Search Functionality should open search screen from feed" time="70.773">
+    </testcase>
+    <testcase classname="Filter Requests by Category Flow Search Functionality should search for categories" name="Filter Requests by Category Flow Search Functionality should search for categories" time="76.933">
+    </testcase>
+    <testcase classname="Filter Requests by Category Flow Search Functionality should display search results" name="Filter Requests by Category Flow Search Functionality should display search results" time="76.026">
+    </testcase>
+    <testcase classname="Filter Requests by Category Flow Bottom Navigation should highlight active tab" name="Filter Requests by Category Flow Bottom Navigation should highlight active tab" time="78.722">
+    </testcase>
+  </testsuite>
+  <testsuite name="Location Display Flow" errors="0" failures="0" skipped="0" timestamp="2025-12-20T17:29:32" time="614.867" tests="6">
+    <testcase classname="Location Display Flow Request Cards Location should display location info on feed request cards" name="Location Display Flow Request Cards Location should display location info on feed request cards" time="64.582">
+    </testcase>
+    <testcase classname="Location Display Flow Request Details Location should display full address on request detail page" name="Location Display Flow Request Details Location should display full address on request detail page" time="76.297">
+    </testcase>
+    <testcase classname="Location Display Flow Address Selection in Create Request should display country selector" name="Location Display Flow Address Selection in Create Request should display country selector" time="99.548">
+    </testcase>
+    <testcase classname="Location Display Flow Address Selection in Create Request should select country and enable state selector" name="Location Display Flow Address Selection in Create Request should select country and enable state selector" time="106.623">
+    </testcase>
+    <testcase classname="Location Display Flow Address Selection in Create Request should select state and enable city selector" name="Location Display Flow Address Selection in Create Request should select state and enable city selector" time="112.214">
+    </testcase>
+    <testcase classname="Location Display Flow Address Selection in Create Request should complete full address selection" name="Location Display Flow Address Selection in Create Request should complete full address selection" time="141.934">
+    </testcase>
+  </testsuite>
+  <testsuite name="Data Persistence on Reload and Re-login" errors="0" failures="0" skipped="0" timestamp="2025-12-20T17:39:47" time="582.196" tests="6">
+    <testcase classname="Data Persistence on Reload and Re-login Authentication Persistence should maintain login state after app reload" name="Data Persistence on Reload and Re-login Authentication Persistence should maintain login state after app reload" time="73.329">
+    </testcase>
+    <testcase classname="Data Persistence on Reload and Re-login Authentication Persistence should clear login state after logout and reload" name="Data Persistence on Reload and Re-login Authentication Persistence should clear login state after logout and reload" time="83.702">
+    </testcase>
+    <testcase classname="Data Persistence on Reload and Re-login Request Data Persistence should persist created request after reload" name="Data Persistence on Reload and Re-login Request Data Persistence should persist created request after reload" time="152.245">
+    </testcase>
+    <testcase classname="Data Persistence on Reload and Re-login Navigation State After Reload should return to feed after reload" name="Data Persistence on Reload and Re-login Navigation State After Reload should return to feed after reload" time="78.183">
+    </testcase>
+    <testcase classname="Data Persistence on Reload and Re-login Re-login Data Restoration should restore user data after re-login" name="Data Persistence on Reload and Re-login Re-login Data Restoration should restore user data after re-login" time="99.686">
+    </testcase>
+    <testcase classname="Data Persistence on Reload and Re-login Pull to Refresh should refresh feed data on pull down" name="Data Persistence on Reload and Re-login Pull to Refresh should refresh feed data on pull down" time="72.73">
+    </testcase>
+  </testsuite>
+  <testsuite name="Volunteer for Request Flow" errors="0" failures="0" skipped="0" timestamp="2025-12-20T17:49:29" time="536.235" tests="3">
+    <testcase classname="Volunteer for Request Flow Full Volunteer Flow should complete volunteer, check status, and withdraw cycle" name="Volunteer for Request Flow Full Volunteer Flow should complete volunteer, check status, and withdraw cycle" time="222.498">
+    </testcase>
+    <testcase classname="Volunteer for Request Flow Request Owner View should show edit/delete buttons for own request" name="Volunteer for Request Flow Request Owner View should show edit/delete buttons for own request" time="151.018">
+    </testcase>
+    <testcase classname="Volunteer for Request Flow Request Owner View should not show volunteer button for own request" name="Volunteer for Request Flow Request Owner View should not show volunteer button for own request" time="147.539">
+    </testcase>
+  </testsuite>
+  <testsuite name="Authentication and Role Enforcement Flow" errors="0" failures="0" skipped="0" timestamp="2025-12-20T17:58:26" time="405.731" tests="7">
+    <testcase classname="Authentication and Role Enforcement Flow Guest User Access should allow guest to view feed" name="Authentication and Role Enforcement Flow Guest User Access should allow guest to view feed" time="11.119">
+    </testcase>
+    <testcase classname="Authentication and Role Enforcement Flow Guest User Access should show categories for guest" name="Authentication and Role Enforcement Flow Guest User Access should show categories for guest" time="11.968">
+    </testcase>
+    <testcase classname="Authentication and Role Enforcement Flow Authenticated User Access should enable create request for logged-in user" name="Authentication and Role Enforcement Flow Authenticated User Access should enable create request for logged-in user" time="66.56">
+    </testcase>
+    <testcase classname="Authentication and Role Enforcement Flow Authenticated User Access should show profile for logged-in user" name="Authentication and Role Enforcement Flow Authenticated User Access should show profile for logged-in user" time="75.45">
+    </testcase>
+    <testcase classname="Authentication and Role Enforcement Flow Logout Functionality should logout successfully" name="Authentication and Role Enforcement Flow Logout Functionality should logout successfully" time="78.769">
+    </testcase>
+    <testcase classname="Authentication and Role Enforcement Flow Logout Functionality should clear session after logout" name="Authentication and Role Enforcement Flow Logout Functionality should clear session after logout" time="78.198">
+    </testcase>
+    <testcase classname="Authentication and Role Enforcement Flow Session Persistence should maintain login state after navigation" name="Authentication and Role Enforcement Flow Session Persistence should maintain login state after navigation" time="69.154">
+    </testcase>
+  </testsuite>
+  <testsuite name="Error Handling and Validation Flow" errors="0" failures="0" skipped="0" timestamp="2025-12-20T18:05:11" time="303.766" tests="11">
+    <testcase classname="Error Handling and Validation Flow Login Error Handling should show error for invalid email format" name="Error Handling and Validation Flow Login Error Handling should show error for invalid email format" time="18.556">
+    </testcase>
+    <testcase classname="Error Handling and Validation Flow Login Error Handling should show error for non-existent user" name="Error Handling and Validation Flow Login Error Handling should show error for non-existent user" time="19.322">
+    </testcase>
+    <testcase classname="Error Handling and Validation Flow Login Error Handling should show error for incorrect password" name="Error Handling and Validation Flow Login Error Handling should show error for incorrect password" time="18.02">
+    </testcase>
+    <testcase classname="Error Handling and Validation Flow Login Error Handling should handle empty email submission" name="Error Handling and Validation Flow Login Error Handling should handle empty email submission" time="17.312">
+    </testcase>
+    <testcase classname="Error Handling and Validation Flow Login Error Handling should handle empty password submission" name="Error Handling and Validation Flow Login Error Handling should handle empty password submission" time="13.775">
+    </testcase>
+    <testcase classname="Error Handling and Validation Flow Registration Validation should validate password requirements" name="Error Handling and Validation Flow Registration Validation should validate password requirements" time="40.213">
+    </testcase>
+    <testcase classname="Error Handling and Validation Flow Registration Validation should validate required full name" name="Error Handling and Validation Flow Registration Validation should validate required full name" time="35.226">
+    </testcase>
+    <testcase classname="Error Handling and Validation Flow Registration Validation should validate required email" name="Error Handling and Validation Flow Registration Validation should validate required email" time="34.558">
+    </testcase>
+    <testcase classname="Error Handling and Validation Flow Registration Validation should require terms agreement" name="Error Handling and Validation Flow Registration Validation should require terms agreement" time="34.895">
+    </testcase>
+    <testcase classname="Error Handling and Validation Flow Alert Dialogs should display and dismiss error alerts" name="Error Handling and Validation Flow Alert Dialogs should display and dismiss error alerts" time="9.425">
+    </testcase>
+    <testcase classname="Error Handling and Validation Flow Alert Dialogs should display success alerts on registration" name="Error Handling and Validation Flow Alert Dialogs should display success alerts on registration" time="47.81">
+    </testcase>
+  </testsuite>
+  <testsuite name="User Login Flow" errors="0" failures="0" skipped="0" timestamp="2025-12-20T18:10:15" time="285.141" tests="11">
+    <testcase classname="User Login Flow Successful Login should login successfully with valid credentials" name="User Login Flow Successful Login should login successfully with valid credentials" time="69.201">
+    </testcase>
+    <testcase classname="User Login Flow Successful Login should display user welcome message after login" name="User Login Flow Successful Login should display user welcome message after login" time="80.191">
+    </testcase>
+    <testcase classname="User Login Flow Invalid Credentials should show error with invalid credentials" name="User Login Flow Invalid Credentials should show error with invalid credentials" time="19.708">
+    </testcase>
+    <testcase classname="User Login Flow Invalid Credentials should show error with wrong password" name="User Login Flow Invalid Credentials should show error with wrong password" time="21.19">
+    </testcase>
+    <testcase classname="User Login Flow Empty Fields Validation should show error when email is empty" name="User Login Flow Empty Fields Validation should show error when email is empty" time="13.319">
+    </testcase>
+    <testcase classname="User Login Flow Empty Fields Validation should show error when password is empty" name="User Login Flow Empty Fields Validation should show error when password is empty" time="14.236">
+    </testcase>
+    <testcase classname="User Login Flow Empty Fields Validation should show error when both fields are empty" name="User Login Flow Empty Fields Validation should show error when both fields are empty" time="10.803">
+    </testcase>
+    <testcase classname="User Login Flow Navigation should navigate to forgot password screen" name="User Login Flow Navigation should navigate to forgot password screen" time="9.186">
+    </testcase>
+    <testcase classname="User Login Flow Navigation should navigate to signup screen from login" name="User Login Flow Navigation should navigate to signup screen from login" time="9.812">
+    </testcase>
+    <testcase classname="User Login Flow Navigation should allow going back from login screen" name="User Login Flow Navigation should allow going back from login screen" time="8.734">
+    </testcase>
+    <testcase classname="User Login Flow Password Visibility should toggle password visibility" name="User Login Flow Password Visibility should toggle password visibility" time="13.667">
+    </testcase>
+  </testsuite>
+  <testsuite name="User Registration Flow" errors="0" failures="0" skipped="0" timestamp="2025-12-20T18:15:00" time="212.705" tests="6">
+    <testcase classname="User Registration Flow Successful Registration should register a new user with valid data" name="User Registration Flow Successful Registration should register a new user with valid data" time="50.2">
+    </testcase>
+    <testcase classname="User Registration Flow Validation Errors should show error when required fields are empty" name="User Registration Flow Validation Errors should show error when required fields are empty" time="14.268">
+    </testcase>
+    <testcase classname="User Registration Flow Validation Errors should show error when email format is invalid" name="User Registration Flow Validation Errors should show error when email format is invalid" time="39.265">
+    </testcase>
+    <testcase classname="User Registration Flow Validation Errors should show error for weak password" name="User Registration Flow Validation Errors should show error for weak password" time="41.017">
+    </testcase>
+    <testcase classname="User Registration Flow Terms &amp; Conditions should not allow submission without agreeing to terms" name="User Registration Flow Terms &amp; Conditions should not allow submission without agreeing to terms" time="35.69">
+    </testcase>
+    <testcase classname="User Registration Flow Terms &amp; Conditions should toggle terms checkbox" name="User Registration Flow Terms &amp; Conditions should toggle terms checkbox" time="11.751">
+    </testcase>
+  </testsuite>
+</testsuites>

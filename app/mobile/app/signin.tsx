@@ -112,7 +112,7 @@ export default function SignIn() {
             accessibilityLabel="AccessEase logo"
           />
 
-          <Text style={[styles.title, { color: colors.primary }]}>{t('auth.welcomeBack')}</Text>
+          <Text style={[styles.title, { color: colors.primary }]} testID="screen-title">{t('auth.welcomeBack')}</Text>
           <Text style={[styles.subtitle, { color: colors.text }]}>
             {t('auth.signInSubtitle')}
           </Text>
@@ -149,6 +149,7 @@ export default function SignIn() {
                   accessibilityValue={{ text: email || '' }}
                   onFocus={() => setEmailFocused(true)}
                   onBlur={() => setEmailFocused(false)}
+                  returnKeyType="next"
                   testID="signin-email-input"
                 />
               </View>
@@ -192,6 +193,8 @@ export default function SignIn() {
                   }}
                   onFocus={() => setPasswordFocused(true)}
                   onBlur={() => setPasswordFocused(false)}
+                  returnKeyType="done"
+                  onSubmitEditing={handleLogin}
                   testID="signin-password-input"
                 />
               </View>

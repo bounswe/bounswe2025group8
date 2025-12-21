@@ -238,10 +238,11 @@ export function AddressFields({ value, onChange, labelPrefix = '' }: AddressFiel
                 <Ionicons name="close" size={24} color={colors.primary} />
               </TouchableOpacity>
             </View>
-            <ScrollView>
+            <ScrollView testID="address-picker-scroll-view">
               {pickerModal.options.map((option) => (
                 <TouchableOpacity
                   key={option}
+                  testID={`address-option-${option.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, '-').toUpperCase()}`}
                   style={[styles.option, { borderBottomColor: colors.border }]}
                   onPress={() => {
                     pickerModal.onSelect(option);

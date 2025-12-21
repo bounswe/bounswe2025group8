@@ -92,6 +92,7 @@ export default function Index() {
 
         accessibilityRole="button"
         accessibilityLabel="Continue as guest"
+        testID="landing-guest-button"
       >
         <Text style={[styles.guestLink, { color: colors.primary }]}>
           {t('feed.guest')}

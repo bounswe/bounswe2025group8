@@ -155,7 +155,7 @@ export default function SignUp() {
 
           <Image source={require('../assets/images/logo.png')} style={styles.logo} />
 
-          <Text style={[styles.title, { color: colors.primary }]}>{t('auth.createAccount')}</Text>
+          <Text style={[styles.title, { color: colors.primary }]} testID="screen-title">{t('auth.createAccount')}</Text>
           <Text style={[styles.subtitle, { color: colors.text }]}>
             {t('auth.signUpSubtitle')}
           </Text>

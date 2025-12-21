@@ -15,7 +15,7 @@ export default function CRDeadline() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { t } = useTranslation();
-  const [date, setDate] = useState(new Date());
+  const [date, setDate] = useState(new Date(Date.now() + 60 * 60 * 1000));
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
@@ -41,7 +41,10 @@ export default function CRDeadline() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}>
+      <ScrollView
+        testID="create-request-deadline-scroll-view"
+        contentContainerStyle={[styles.container, { backgroundColor: colors.background }]}
+      >
         <View style={styles.header}>
           <View style={[styles.logoCircle, { backgroundColor: `${colors.primary}22` }]}>
             <Image source={require('../assets/images/logo.png')} style={{ width: 28, height: 28, resizeMode: 'contain' }} />

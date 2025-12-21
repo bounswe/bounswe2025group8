@@ -40,6 +40,7 @@ export default function ProfileScreen() {
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [userVolunteers, setUserVolunteers] = useState<Volunteer[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewCount, setReviewCount] = useState(0);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewsError, setReviewsError] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
@@ -416,7 +417,11 @@ export default function ProfileScreen() {
     getUserReviews(profile.id)
       .then(res => {
         console.log('[ProfileScreen] Reviews response:', JSON.stringify(res.data.reviews));
-        setReviews(res.data.reviews || []);
+        const fetchedReviews = res.data.reviews || [];
+        setReviews(fetchedReviews);
+        // Use total count from pagination, fallback to reviews length
+        const totalCount = res.data.pagination?.total_records || fetchedReviews.length || 0;
+        setReviewCount(totalCount);
       })
       .catch(() => setReviewsError(t('profile.loadReviewsError')))
       .finally(() => setReviewsLoading(false));
@@ -649,8 +654,12 @@ export default function ProfileScreen() {
             ) : null}
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12 }}>
               <RatingPill
-                rating={profile.rating}
-                reviewCount={reviews.length}
+                rating={
+                  reviews.length > 0
+                    ? reviews.reduce((sum, r) => sum + r.score, 0) / reviews.length
+                    : profile.rating || 0
+                }
+                reviewCount={reviewCount}
                 backgroundColor={themeColors.pink}
                 textColor={themeColors.onAccent}
                 iconColor={themeColors.onAccent}

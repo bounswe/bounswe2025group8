@@ -718,7 +718,7 @@ export default function RequestDetails() {
           >
             <Ionicons name="arrow-back" size={24} color={themeColors.text} accessible={false} importantForAccessibility="no" />
           </TouchableOpacity>
-          <Text style={[styles.title, { color: themeColors.text }]} numberOfLines={1} ellipsizeMode="tail">
+          <Text style={[styles.title, { color: themeColors.text }]} numberOfLines={1} ellipsizeMode="tail" testID="screen-title">
             {title}
           </Text>
         </View>
@@ -756,6 +756,7 @@ export default function RequestDetails() {
       </View>
       <ScrollView
         ref={scrollViewRef}
+        testID="request-details-scroll-view"
         contentContainerStyle={{ paddingBottom: user ? 100 : 40 }}
       >
         {/* Show first photo as hero image if available, otherwise show default */}

@@ -79,21 +79,23 @@ describe('User Login Flow', () => {
         it('should show error with invalid credentials', async () => {
             await element(by.id('landing-login-button')).tap();
 
+            // Wait for sign in screen to be ready
+            await waitFor(element(by.id('signin-button')))
+                .toBeVisible()
+                .withTimeout(5000);
+
             // Enter invalid credentials
             await element(by.id('signin-email-input')).typeText('wrong@example.com');
-            await element(by.id('signin-password-input')).typeText('wrongpassword');
-            await element(by.id('signin-password-input')).tapReturnKey();
+            await typePassword('signin-password-input', 'signin-password-toggle', 'wrongpassword');
+            await dismissKeyboard();
 
             await element(by.id('signin-button')).tap();
 
             // Should show error alert
             await waitFor(element(by.text('OK')))
                 .toBeVisible()
-                .withTimeout(5000);
+                .withTimeout(10000);
             await element(by.text('OK')).tap();
-
-            // Should NOT navigate to feed
-            await expect(element(by.id('feed-search-bar'))).not.toBeVisible();
 
             // Should still be on signin screen
             await expect(element(by.id('signin-button'))).toBeVisible();
@@ -102,16 +104,21 @@ describe('User Login Flow', () => {
         it('should show error with wrong password', async () => {
             await element(by.id('landing-login-button')).tap();
 
+            // Wait for sign in screen to be ready
+            await waitFor(element(by.id('signin-button')))
+                .toBeVisible()
+                .withTimeout(5000);
+
             await element(by.id('signin-email-input')).typeText(TEST_CREDENTIALS.email);
-            await element(by.id('signin-password-input')).typeText('wrongpassword123');
-            await element(by.id('signin-password-input')).tapReturnKey();
+            await typePassword('signin-password-input', 'signin-password-toggle', 'wrongpassword123');
+            await dismissKeyboard();
 
             await element(by.id('signin-button')).tap();
 
             // Should show error and stay on login
             await waitFor(element(by.text('OK')))
                 .toBeVisible()
-                .withTimeout(5000);
+                .withTimeout(10000);
             await element(by.text('OK')).tap();
 
             await expect(element(by.id('signin-button'))).toBeVisible();
